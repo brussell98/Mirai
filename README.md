@@ -10,8 +10,8 @@ A ping-pong and music bot for Discord using the [Discord.js](https://github.com/
 ---
 
 ### Requirements
-- Python 2.7.x
-- Node
+- Python 2.7.x (added to path)
+- Node (added to path)
 - Visual Studio (**with C++ compiler**)
 - ffmpeg (added to path)
 
@@ -38,3 +38,5 @@ A ping-pong and music bot for Discord using the [Discord.js](https://github.com/
 	- [ ] Queue from a playlist
 	- [ ] Bind music messages to a channel
 - [ ] Add more dank memes to `games.json`
+- [ ] Semi-idiot-proof the code
+- [ ] Leave server restricted by roles or perm level
