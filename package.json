@@ -1,0 +1,25 @@
+{
+	"name": "brussellbot",
+	"version": "0.1.0",
+	"description": "A Discord ping pong and music bot using discord.js",
+	"author": "brussell98",
+	"main": "BrussellBot.js",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/brussell98/BrussellBot"
+	},
+	"bugs": {
+		"url": "https://github.com/brussell98/BrussellBot/issues"
+	},
+	"license": "MIT",
+	"dependencies": {
+		"discord.js": "*",
+		"node-opus": "*",
+		"ytdl-core": "*",
+		"fs": "*",
+		"url": "*",
+		"feedparser": "*",
+		"path": "*",
+		"request": "*",
+	}
+}
