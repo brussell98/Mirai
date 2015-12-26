@@ -27,18 +27,14 @@ bot.on("disconnected", function () {
 });
 
 bot.on("message", function(message) {
-	if (!message.startsWith(config.command_prefix)){
-		return;
-	}
-	if (message.author.id == bot.user.id){
-		return;
-	}
+	if (!message.startsWith(config.command_prefix)) { return; }
+	if (message.author.id == bot.user.id) { return; }
 	console.log("" + message.author.username + " executed: " + msg.content);
 	var cmd = message.content.split(" ")[0].substring(1).toLowerCase();
-	var suffix = message.content.substring(cmd.length + 2);
-	if (commands.commands.hasOwnProperty(cmd)) {
-		commands.commands[cmd].process(bot, message, suffix)
-	}
+	var suffix = message.content.substring( cmd.length + 2 );
+	var permLvl = 0;
+	if (perms.hasOwnProperty(msg.author.id)) { permLvl = perms(msg.author.id); }
+	if (commands.commands.hasOwnProperty(cmd)) { commands.commands[cmd].process(bot, message, suffix, permLvl); }
 });
 
 //event listeners
@@ -63,7 +59,7 @@ bot.on('channelDeleted', function(objChannel) {
 	}
 });
 
-bot.on('channelUpdated', function(objChannel) { //You could make this match channel id's to get new info
+bot.on('channelUpdated', function(objChannel) { //You could make this find the new channel by id to get new info
     if (!objChannel.isPrivate){
 		if (objChannel.type == "text"){
 			console.log('[info]', "Channel updated. Was: Type: Text. Name: " + objChannel.name + ". Topic: " + objChannel.topic);
