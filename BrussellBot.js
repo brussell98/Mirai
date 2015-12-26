@@ -8,7 +8,7 @@ Run this with node to run the bot.
 var discord = require("discord.js");
 var commands = require("./bot/commands");
 var config = require("./bot/config.json");
-var games = require("./bot/games.json");
+var games = require("./bot/games.json").games;
 var perms = require("./bot/permissions");
 
 var bot = new discord.Client();
@@ -16,7 +16,7 @@ bot.on('warn', (m) => console.log('[warn]', m));
 bot.on('debug', (m) => console.log('[debug]', m));
 
 bot.on("ready", function(message) {
-	bot.setPlayingGame(games.games[Math.floor(Math.random() * ((Object.keys(games.games).length - 1) - 0)) + 0]);
+	bot.setPlayingGame(games[Math.floor(Math.random() * (games.length - 1))]);
 	//check to see if there is a new version of BrussellBot
 	console.log("BrussellBot is ready! Listening to " + bot.channels.length + " channels on " + bot.servers.length + " servers");
 });

@@ -1,5 +1,5 @@
 var config = require("./config.json");
-var games = require("./games.json");
+var games = require("./games.json").games;
 var perms = require("./permissions");
 var version = require("./package.json").version;
 
@@ -138,7 +138,7 @@ var commands = {
 		usage: "[game]",
 		process: function (bot, msg, suffix, pL) {
 			if (pL >= this.permLevel) {
-				suffix ? bot.setPlayingGame(games.games[Math.floor(Math.random() * ((Object.keys(games.games).length - 1) - 0)) + 0]) : bot.setPlayingGame(suffix);
+				suffix ? bot.setPlayingGame(games[Math.floor(Math.random() * (games.length - 1))]) : bot.setPlayingGame(suffix);
 				console.log('[info]', "" + msg.author.username + " set the playing status to: " + bot.user.game);
 			} else { bot.sendMessage(msg, "Permission level " + this.permLevel + " required."); }
 		}
