@@ -1,6 +1,6 @@
 {
 	"name": "brussellbot",
-	"version": "0.2.2",
+	"version": "0.3.0",
 	"description": "A Discord ping pong and music bot using discord.js",
 	"author": "brussell98",
 	"main": "BrussellBot.js",

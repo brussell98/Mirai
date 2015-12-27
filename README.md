@@ -2,10 +2,13 @@
 
 A ping-pong and music bot for Discord using the [Discord.js](https://github.com/hydrabolt/discord.js/) unoffficial API.
 
+[Wiki](https://github.com/brussell98/BrussellBot/wiki)
+[Discord.js Documentation](http://discordjs.readthedocs.org/en/latest/)
+
 ---
 
 ### Features
-*Write text here when the bot works and has features*
+*Comming soon!*
 
 ---
 
@@ -29,15 +32,17 @@ A ping-pong and music bot for Discord using the [Discord.js](https://github.com/
 ### TODO
 
 - [x] Test current version
-- [ ] Timeout for commands
+- [ ] Cooldown for commands
 - [ ] Option to disable non-essential event listeners
-- [ ] Wiki page for adding commands
+	- [ ] per server
+- [x] Wiki page for adding commands
 - [ ] Add more dank memes to `games.json`
 - [ ] Semi-idiot-proof the code
-- [ ] Fully check if user has permission to execute a command in the message interpreter
+- [x] Fully check if user has permission to execute a command in the message interpreter
+- [x] Debug messages toggle
 - [ ] Commands
 	- [x] Join server
-		- [ ] Have option for silent joining of servers
+		- [x] Have option for silent joining of servers
 	- [x] Leave Server
 		- [x] Leave server restricted by roles or perm level
 	- [x] Help
@@ -52,17 +57,22 @@ A ping-pong and music bot for Discord using the [Discord.js](https://github.com/
 		- [ ] Queue from a playlist
 		- [ ] Bind music messages to a channel
 		- [ ] List of queues songs
-	- [ ] Cleverbot command
+	- [ ] Cleverbot module activated with mention
 	- [x] Set playing status
 	- [ ] Info commands
 		- [ ] Server info
 		- [ ] User info
-	- [ ] Ask if anyone wants to play a game
+			- [ ] Get past usernames from log
+	- [x] Ask if anyone wants to play a game
 	- [ ] Announce
 		- [ ] To users
 		- [ ] To servers
-	- [ ] Dice roll
+	- [x] Dice roll
 	- [ ] 8ball
 	- [ ] Choose for me
 	- [x] Clean bot messages
 	- [ ] Fancy quote a message
+- [ ] Logging
+	- [ ] Event logs
+	- [ ] Chat logs
+	- [ ] Console output log

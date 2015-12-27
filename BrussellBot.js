@@ -13,7 +13,9 @@ var perms = require("./bot/permissions.json");
 
 var bot = new discord.Client();
 bot.on('warn', (m) => console.log('[warn]', m));
-bot.on('debug', (m) => console.log('[debug]', m));
+bot.on('debug', function(m){
+	if (config.debug == 1) { console.log('[debug]', m) }
+});
 
 bot.on("ready", function(message) {
 	bot.setPlayingGame(games[Math.floor(Math.random() * (games.length - 1))]);
@@ -34,7 +36,18 @@ bot.on("message", function(message) {
 	var suffix = message.content.substring( cmd.length + 2 );
 	var permLvl = 0;
 	if (perms.hasOwnProperty(message.author.id)) { permLvl = perms[message.author.id].level; }
-	if (commands.commands.hasOwnProperty(cmd)) { commands.commands[cmd].process(bot, message, suffix, permLvl); }
+	if (commands.commands.hasOwnProperty(cmd)) {
+		try {
+			if (commands.commands[cmd].permLevel <= permLvl) { commands.commands[cmd].process(bot, message, suffix); }
+			else {
+				bot.sendMessage(message, "You need permission level " + commands.commands[cmd].permLevel + " to do that.");
+				console.log('[info]', "Insufficient permissions");
+			}
+		} catch(err) {
+			console.log('[warn]', "This command lacks a permLevel property");
+			commands.commands[cmd].process(bot, message, suffix);
+		}
+	}
 });
 
 //event listeners
