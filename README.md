@@ -3,6 +3,7 @@
 A ping-pong and music bot for Discord using the [Discord.js](https://github.com/hydrabolt/discord.js/) unoffficial API.
 
 [Wiki](https://github.com/brussell98/BrussellBot/wiki)
+
 [Discord.js Documentation](http://discordjs.readthedocs.org/en/latest/)
 
 ---

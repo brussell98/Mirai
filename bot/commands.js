@@ -139,7 +139,7 @@ var commands = {
 		desc: "Set what the bot is playing. Leave empty for random.",
 		permLevel: 1,
 		usage: "[game]",
-		process: function (bot, msg, suffix, pL) {
+		process: function (bot, msg, suffix) {
 			!suffix ? bot.setPlayingGame(games[Math.floor(Math.random() * (games.length - 1))]) : bot.setPlayingGame(suffix);
 			console.log('[info]', "" + msg.author.username + " set the playing status to: " + bot.user.game);
 		}
