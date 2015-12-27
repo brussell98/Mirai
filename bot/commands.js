@@ -1,7 +1,7 @@
 var config = require("./config.json");
 var games = require("./games.json").games;
-var perms = require("./permissions");
-var version = require("./package.json").version;
+var perms = require("./permissions.json");
+var version = require("../package.json").version;
 
 /*
 ====================
@@ -16,7 +16,7 @@ function correctUsage(cmd) {
 
 /*
 ====================
-Commands (Each one REQUIRES a desc property)
+Commands (Check https://github.com/brussell98/BrussellBot/wiki/New-Command-Guide for how to make new ones)
 ====================
 */
 
@@ -33,18 +33,16 @@ var commands = {
 				msgArray.push("");
 				msgArray.push("**Commands: **");
 				msgArray.push("```");
-				Object.keys(commands).forEach(function(cmd){ msgArray.push("" + config.command_prefix + "" + cmd + ": *" + commands[cmd].desc + "*"); });
+				Object.keys(commands).forEach(function(cmd){ msgArray.push("" + config.command_prefix + "" + cmd + ": " + commands[cmd].desc + ""); });
 				msgArray.push("```");
 				bot.sendMessage(msg.author, msgArray);
 			}
 			if (suffix){
 				if (commands.hasOwnProperty(suffix)){
 					var msgArray = [];
-					Object.keys(commands).forEach(function(cmd){
-						msgArray.push("**" + config.command_prefix + "" + cmd + ": **" + commands[cmd].desc);
-						if (commands[cmd].hasOwnProperty("usage")) { msgArray.push("**Usage: **`" + config.command_prefix + "" + cmd + " " + commands[cmd].usage + "`"); }
-						if (commands[cmd].hasOwnProperty("permLevel")) { msgArray.push("**Permission level: **" + commands[cmd].permLevel); }
-					});
+					msgArray.push("**" + config.command_prefix + "" + suffix + ": **" + commands[suffix].desc);
+					if (commands[suffix].hasOwnProperty("usage")) { msgArray.push("**Usage: **`" + config.command_prefix + "" + suffix + " " + commands[suffix].usage + "`"); }
+					if (commands[suffix].hasOwnProperty("permLevel")) { msgArray.push("**Permission level: **" + commands[suffix].permLevel); }
 					bot.sendMessage(msg.author, msgArray);
 				} else { bot.sendMessage(msg.author, "Command `" + suffix + "` not found."); }
 			}
@@ -121,12 +119,12 @@ var commands = {
 		process: function (bot, msg, suffix) {
 			var args = suffix.split(" ");
 			var msgArray = [];
-			if (!args.indexOf("-t") != -1) {
+			if (args.indexOf("-t") == -1) {
 				msgArray.push("Uptime: **" + (Math.round(bot.uptime / (1000 * 60 * 60))) + "** hours, **" + (Math.round(bot.uptime / (1000 * 60)) % 60) + "** minutes, and **" + (Math.round(bot.uptime / 1000) % 60) + "** seconds.");
 			}
-			if (!args.indexOf("-c") != -1) { msgArray.push("Connected to **" + bot.servers.length + "** servers and **" + bot.channels.length + "** channels."); }
-			if (!args.indexOf("-u") != -1) { msgArray.push("Serving **" + bot.users.length + "** users."); }
-			if (!args.indexOf("-v") != -1) { msgArray.push("I'm known as " + bot.user.username + " and I'm running BrussellBot v" + version); }
+			if (args.indexOf("-c") == -1) { msgArray.push("Connected to **" + bot.servers.length + "** servers and **" + bot.channels.length + "** channels."); }
+			if (args.indexOf("-u") == -1) { msgArray.push("Serving **" + bot.users.length + "** users."); }
+			if (args.indexOf("-v") == -1) { msgArray.push("I'm known as " + bot.user.username + " and I'm running BrussellBot v" + version); }
 			bot.sendMessage(msg, msgArray);
 			if (args.indexOf("-ls") != -1) { bot.sendMessage(msg, bot.servers); }
 			if (args.indexOf("-lc") != -1) { bot.sendMessage(msg, bot.channels); }
@@ -138,7 +136,7 @@ var commands = {
 		usage: "[game]",
 		process: function (bot, msg, suffix, pL) {
 			if (pL >= this.permLevel) {
-				suffix ? bot.setPlayingGame(games[Math.floor(Math.random() * (games.length - 1))]) : bot.setPlayingGame(suffix);
+				!suffix ? bot.setPlayingGame(games[Math.floor(Math.random() * (games.length - 1))]) : bot.setPlayingGame(suffix);
 				console.log('[info]', "" + msg.author.username + " set the playing status to: " + bot.user.game);
 			} else { bot.sendMessage(msg, "Permission level " + this.permLevel + " required."); }
 		}
@@ -175,4 +173,6 @@ var commands = {
 			} else { bot.sendMessage(msg, "Permission level " + this.permLevel + " required."); }
 		}
 	}
-}
+};
+
+exports.commands = commands;

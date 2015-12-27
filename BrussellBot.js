@@ -6,10 +6,10 @@ Run this with node to run the bot.
 */
 
 var discord = require("discord.js");
-var commands = require("./bot/commands");
+var commands = require("./bot/commands.js");
 var config = require("./bot/config.json");
 var games = require("./bot/games.json").games;
-var perms = require("./bot/permissions");
+var perms = require("./bot/permissions.json");
 
 var bot = new discord.Client();
 bot.on('warn', (m) => console.log('[warn]', m));
@@ -27,13 +27,13 @@ bot.on("disconnected", function () {
 });
 
 bot.on("message", function(message) {
-	if (!message.startsWith(config.command_prefix)) { return; }
+	if (!message.content.startsWith(config.command_prefix)) { return; }
 	if (message.author.id == bot.user.id) { return; }
-	console.log("" + message.author.username + " executed: " + msg.content);
+	console.log('[info]', "" + message.author.username + " executed: " + message.content);
 	var cmd = message.content.split(" ")[0].substring(1).toLowerCase();
 	var suffix = message.content.substring( cmd.length + 2 );
 	var permLvl = 0;
-	if (perms.hasOwnProperty(msg.author.id)) { permLvl = perms(msg.author.id); }
+	if (perms.hasOwnProperty(message.author.id)) { permLvl = perms[message.author.id].level; }
 	if (commands.commands.hasOwnProperty(cmd)) { commands.commands[cmd].process(bot, message, suffix, permLvl); }
 });
 
@@ -94,5 +94,5 @@ bot.on('userUpdated', function(objUser, objNewUser) {
 });
 
 //login
-bot.login(congif.email, config.password);
+bot.login(config.email, config.password);
 console.log("Logging in...");

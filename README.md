@@ -28,7 +28,7 @@ A ping-pong and music bot for Discord using the [Discord.js](https://github.com/
 
 ### TODO
 
-- [ ] Test current version
+- [x] Test current version
 - [ ] Timeout for commands
 - [ ] Option to disable non-essential event listeners
 - [ ] Wiki page for adding commands

@@ -1,6 +1,6 @@
 {
 	"name": "brussellbot",
-	"version": "0.2.1",
+	"version": "0.2.2",
 	"description": "A Discord ping pong and music bot using discord.js",
 	"author": "brussell98",
 	"main": "BrussellBot.js",
@@ -20,6 +20,6 @@
 		"url": "*",
 		"feedparser": "*",
 		"path": "*",
-		"request": "*",
+		"request": "*"
 	}
 }

@@ -4,5 +4,6 @@
 	"command_prefix": "/",
 	"log_messages": true,
 	"log_events": false,
-	"non_essential_event_listeners": true
+	"non_essential_event_listeners": true,
+	"debug": 0
 }
