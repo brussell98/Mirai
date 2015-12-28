@@ -4,12 +4,16 @@ A ping-pong and music bot for Discord using the [Discord.js](https://github.com/
 
 [Wiki](https://github.com/brussell98/BrussellBot/wiki)
 
+[Setup Guide](https://github.com/brussell98/BrussellBot/wiki/Setup-Guide)
+
+[Making new commands](https://github.com/brussell98/BrussellBot/wiki/New-Command-Guide)
+
 [Discord.js Documentation](http://discordjs.readthedocs.org/en/latest/)
 
 ---
 
 ### Features
-*Comming soon!*
+*Coming soon!*
 
 ---
 
@@ -34,11 +38,13 @@ A ping-pong and music bot for Discord using the [Discord.js](https://github.com/
 
 - [x] Test current version
 - [ ] Cooldown for commands
-- [ ] Option to disable non-essential event listeners
-	- [ ] per server
+- [x] Per-server settings JSON
+	- [x] Add new servers to JSON on join / startup
+	- [ ] Server settings commands
 - [x] Wiki page for adding commands
 - [ ] Add more dank memes to `games.json`
 - [ ] Semi-idiot-proof the code
+	- [ ] And add comments so people can understand what this stuff does
 - [x] Fully check if user has permission to execute a command in the message interpreter
 - [x] Debug messages toggle
 - [ ] Commands
@@ -65,18 +71,23 @@ A ping-pong and music bot for Discord using the [Discord.js](https://github.com/
 		- [x] Server info
 		- [x] User info
 			- [ ] Get past usernames from log
+			- [x] Get joinedAt from detailsOfUser
 	- [x] Ask if anyone wants to play a game
 	- [x] Announce
 		- [x] To users in the server
 		- [x] To servers
 	- [x] Dice roll
-	- [ ] 8ball
+	- [x] 8ball
 	- [x] Choose for me
 	- [x] Clean bot messages
 	- [ ] Fancy quote a message
-	- [ ] Vote
-- [ ] Logging
+	- [x] Vote (Credit: [BlackHayate](https://github.com/BlackHayate))
+- [ ] Logging (w/ Winston because I really liked DougleyBot's log)
 	- [ ] Event logs
 	- [ ] Chat logs
 	- [ ] Console output log
-- [ ] Fix `info`'s roles and playing game reporting
+	- [ ] Presence changes
+	- [ ] Commands processed
+- [ ] Fix `info`'s playing game reporting
+- [ ] Version checker
+- [ ] Optimize code

@@ -10,6 +10,9 @@ var commands = require("./bot/commands.js");
 var config = require("./bot/config.json");
 var games = require("./bot/games.json").games;
 var perms = require("./bot/permissions.json");
+var fs = require("fs");
+
+var servers = getServers();
 
 var bot = new discord.Client();
 bot.on('warn', (m) => console.log('[warn]', m));
@@ -17,7 +20,8 @@ bot.on('debug', function(m){
 	if (config.debug == 1) { console.log('[debug]', m) }
 });
 
-bot.on("ready", function(message) {
+bot.on("ready", function (message) {
+	checkServers();
 	bot.setPlayingGame(games[Math.floor(Math.random() * (games.length))]);
 	//check to see if there is a new version of BrussellBot
 	console.log("BrussellBot is ready! Listening to " + bot.channels.length + " channels on " + bot.servers.length + " servers");
@@ -51,61 +55,125 @@ bot.on("message", function(message) {
 });
 
 //event listeners
-bot.on('serverNewMember', function(objServer, objUser) {
-    consolelog('[info]', "New member on " + objServer.name + ": " + objUser.username);
-	bot.sendMessage(objServer.defaultChannel, "Welcome to " + objServer.name + " " + objUser.username);
-});
-
-bot.on('serverUpdated', function(objServer, objNewServer) {
-    console.log('[info]', "" + objServer.name + " is now " + objNewServer.name);
-});
-
-bot.on('channelCreated', function(objChannel) {
-	if (!objChannel.isPrivate){
-		console.log('[info]', "New channel created. Type: " + objChannel.type + ". Name: " + objChannel.name + ". Server: " + objChannel.server.name);
+bot.on('serverNewMember', function (objServer, objUser) {
+	if (servers[objServer.id].username_change == 1) {
+		consolelog('[info]', "New member on " + objServer.name + ": " + objUser.username);
+		bot.sendMessage(objServer.defaultChannel, "Welcome to " + objServer.name + " " + objUser.username);
 	}
 });
 
-bot.on('channelDeleted', function(objChannel) {
-    if (!objChannel.isPrivate){
-		console.log('[info]', "Channel deleted. Type: " + objChannel.type + ". Name: " + objChannel.name + ". Server: " + objChannel.server.name);
+bot.on('serverUpdated', function (objServer, objNewServer) {
+	if (config.non_essential_event_listeners) {
+		console.log('[info]', "" + objServer.name + " is now " + objNewServer.name);
 	}
 });
 
-bot.on('channelUpdated', function(objChannel) { //You could make this find the new channel by id to get new info
-    if (!objChannel.isPrivate){
-		if (objChannel.type == "text"){
-			console.log('[info]', "Channel updated. Was: Type: Text. Name: " + objChannel.name + ". Topic: " + objChannel.topic);
-		} else {
-			console.log('[info]', "Channel updated. Was: Type: Voice. Name: " + objChannel.name + ".");
+bot.on('channelCreated', function (objChannel) {
+	if (config.non_essential_event_listeners) {
+		if (!objChannel.isPrivate){
+			console.log('[info]', "New channel created. Type: " + objChannel.type + ". Name: " + objChannel.name + ". Server: " + objChannel.server.name);
 		}
 	}
 });
 
-bot.on('userBanned', function(objUser, objServer) {
-    console.log('[info]', "" + objUser.username + " banned on " + objServer.name);
-	bot.sendMessage(objServer.defaultChannel, "" + objUser.username + " was banned");
-	bot.sendMessage(objUser, "You were banned from " + objServer.name);
+bot.on('channelDeleted', function (objChannel) {
+	if (config.non_essential_event_listeners) {
+		if (!objChannel.isPrivate) {
+			console.log('[info]', "Channel deleted. Type: " + objChannel.type + ". Name: " + objChannel.name + ". Server: " + objChannel.server.name);
+		}
+	}
 });
 
-bot.on('userUnbanned', function(objServer, objUser) {
-    console.log('[info]', "" + objUser.username + " unbanned on " + objServer.name);
+bot.on('channelUpdated', function (objChannel) { //You could make this find the new channel by id to get new info
+	if (config.non_essential_event_listeners) {
+		if (!objChannel.isPrivate) {
+			if (objChannel.type == "text") {
+				console.log('[info]', "Channel updated. Was: Type: Text. Name: " + objChannel.name + ". Topic: " + objChannel.topic);
+			} else {
+				console.log('[info]', "Channel updated. Was: Type: Voice. Name: " + objChannel.name + ".");
+			}
+		}
+	}
 });
 
-bot.on('userUpdated', function(objUser, objNewUser) {
+bot.on('userBanned', function (objUser, objServer) {
+	if (servers[objServer.id].ban_message == 1) {
+		console.log('[info]', "" + objUser.username + " banned on " + objServer.name);
+		bot.sendMessage(objServer.defaultChannel, "" + objUser.username + " was banned");
+		bot.sendMessage(objUser, "You were banned from " + objServer.name);
+	}
+});
+
+bot.on('userUnbanned', function (objServer, objUser) {
+	if (config.non_essential_event_listeners) {
+		console.log('[info]', "" + objUser.username + " unbanned on " + objServer.name);
+	}
+});
+
+bot.on('userUpdated', function (objUser, objNewUser) {
     if (objUser.username != objNewUser.username){
 		console.log('[info]', "" + objUser.username + " changed their name to " + objNewUser.username);
 		bot.servers.forEach(function(ser){
-			if (ser.members.get('id', objUser.id) != null){
+			if (ser.members.get('id', objUser.id) != null && servers[ser.id].username_change == 1){
 				bot.sendMessage(ser, "User in this server: `" + objUser.username + "`. changed their name to: `" + objNewUser.username + "`.");
 			}
 		});
+    }
+    if (config.non_essential_event_listeners) {
+    	if (objUser.avatar != objNewUser.avatar) {
+    		console.log('[info]', "" + objNewUser.username + " changed their avatar to: " + objNewUser.avatarUrl);
+    	}
+    }
+});
+
+bot.on('presence', function(user, status, game) {
+	if (config.log_presence) {
+		console.log('[info]', "Presence: " + user.username + " is now " + status + " playing " + game);
 	}
-	if (objUser.avatar != objNewUser.avatar){
-		console.log('[info]', "" + objNewUser.username + " changed their avatar to: " + objNewUser.avatarUrl);
-	}
+});
+
+bot.on('serverCreated', function (objServer) {
+	addServer(objServer);
 });
 
 //login
 bot.login(config.email, config.password);
 console.log("Logging in...");
+
+function updateServers() {
+	fs.writeFile("./bot/servers.json", JSON.stringify(servers, null, '\t'), null);
+	servers = getServers();
+	console.log('[info]', "Updated servers.json");
+}
+
+function getServers() {
+	var svrs = require("./bot/servers.json");
+	return svrs;
+}
+
+function addServer(svr) {
+	var log_m = 1;
+	if (svr.members.length < 101) { var user_c = 1; var s_g = 1; }
+	else { var user_c = 0; var s_g = 0; }
+	if (svr.members.length < 301) { var ban_m = 1; }
+	else { var ban_m = 0; }
+	var setngs = {
+		"log_messages": log_m,
+		"username_change": user_c,
+		"server_greeting": s_g,
+		"ban_message": ban_m
+	}
+	servers[svr.id] = setngs;
+	updateServers();
+}
+
+function checkServers() {
+	bot.servers.forEach(function (ser) {
+		if (servers.hasOwnProperty(ser.id)) {
+			//found server in config
+		} else {
+			console.log('[info]', "Found new server");
+			addServer(ser);
+		}
+	});
+}

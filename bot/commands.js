@@ -5,6 +5,13 @@ var version = require("../package.json").version;
 
 var request = require('request');
 
+//voting vars
+var topicstring = "";
+var voter = [];
+var upvote = 0;
+var downvote = 0;
+var votebool = false;
+
 /*
 ====================
 Functions
@@ -92,7 +99,7 @@ var commands = {
 	},
 	"leaves": {
 		desc: "Leaves the server.",
-		permLevel: 2,
+		permLevel: 0,
 		process: function(bot, msg, suffix) {
 			if (msg.channel.server) {
 				if (msg.channel.permissionsOf(msg.author).hasPermission("kickMembers")) {
@@ -231,6 +238,8 @@ var commands = {
 					msgArray.push("User ID: `" + usr.id + "`");
 					if (usr.gameID != null) { msgArray.push("Staus: `" + usr.status + "` playing `" + usr.gameID + "`"); }
 					else { msgArray.push("Staus: `" + usr.status + "`"); }
+					var myDate = new Date(msg.channel.server.detailsOfUser(usr).joinedAt);
+					msgArray.push("Joined this server on: " + myDate.toUTCString());
 					msgArray.push("Roles: " + msg.channel.server.rolesOfUser(usr));
 					if (usr.avatarURL != null) { msgArray.push("Avatar: " + usr.avatarURL); }
 					bot.sendMessage(msg, msgArray);
@@ -263,6 +272,59 @@ var commands = {
 				choice = Math.floor(Math.random() * (choices.length));
 				bot.sendMessage(msg, "I picked " + choices[choice]);
 			}
+		}
+	},
+	"newvote": {
+		desc: "Create a new vote.",
+		permLevel: 1,
+		usage: "<topic>",
+		process: function (bot, msg, suffix) {
+			if (!suffix) { bot.sendMessage(msg, correctUsage("newvote")); return; }
+			if (votebool == true) { bot.sendMessage(msg, "Theres already a vote pending!"); return; }
+			topicstring = suffix;
+			bot.sendMessage(msg, "New Vote started: `" + suffix + "`\nTo vote say `" + config.command_prefix + "vote +/-`");
+			votebool = true;
+		}
+	},
+	"vote": {
+		desc: "Vote.",
+		permLevel: 0,
+		usage: "<+/->",
+		process: function (bot, msg, suffix) {
+			if (!suffix) { bot.sendMessage(msg, correctUsage("vote")); return; }
+			if (votebool == false) { bot.sendMessage(msg, "There isn't a topic being voted on right now!"); return; }
+			if (voter.indexOf(msg.author) != -1) { return; }
+			voter.push(msg.author);
+			var vote = suffix.split(" ")[0]
+			if (vote == "+") { upvote += 1; }
+			if (vote == "-") { downvote += 1; }
+		}
+	},
+	"endvote": {
+		desc: "End current vote.",
+		permLevel: 1,
+		process: function (bot, msg, suffix) {
+			bot.sendMessage(msg, "**Results of last vote:**\nTopic: `" + topicstring + "`\nUpvotes: `" + upvote + "`\nDownvotes: `" + downvote + "`");
+			upvote = 0;
+			downvote = 0;
+			voter = [];
+			votebool = false;
+			topicstring = "";
+		}
+	},
+	"ask": {
+		desc: "Ask the bot a question (8ball).",
+		permLevel: 0,
+		usage: "",
+		process: function (bot, msg) {
+			request('https://8ball.delegator.com/magic/JSON/0', function (error, response, body) {
+				if (!error && response.statusCode == 200) {
+					var answr = JSON.parse(body);
+					bot.sendMessage(msg.channel, answr.magic.answer);
+				} else {
+					console.log('[warn]', "8ball error: ", error, ", status code: ", response.statusCode);
+				}
+			});
 		}
 	}
 };
