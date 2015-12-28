@@ -44,6 +44,7 @@ A ping-pong and music bot for Discord using the [Discord.js](https://github.com/
 - [ ] Commands
 	- [x] Join server
 		- [x] Have option for silent joining of servers
+		- [ ] Accept multiple invites seperated by a space
 	- [x] Leave Server
 		- [x] Leave server restricted by roles or perm level
 	- [x] Help
@@ -51,7 +52,7 @@ A ping-pong and music bot for Discord using the [Discord.js](https://github.com/
 	- [x] Stats
 		- [x] List servers or channels
 		- [x] Option to only show certain stats
-	- [ ] Music commands
+	- [ ] Music commands (Planned for v2.0)
 		- [ ] Queue song from youtube
 		- [ ] Skip
 		- [ ] Remove from playlist
@@ -60,20 +61,22 @@ A ping-pong and music bot for Discord using the [Discord.js](https://github.com/
 		- [ ] List of queues songs
 	- [ ] Cleverbot module activated with mention
 	- [x] Set playing status
-	- [ ] Info commands
-		- [ ] Server info
-		- [ ] User info
+	- [x] Info commands
+		- [x] Server info
+		- [x] User info
 			- [ ] Get past usernames from log
 	- [x] Ask if anyone wants to play a game
-	- [ ] Announce
-		- [ ] To users
-		- [ ] To servers
+	- [x] Announce
+		- [x] To users in the server
+		- [x] To servers
 	- [x] Dice roll
 	- [ ] 8ball
-	- [ ] Choose for me
+	- [x] Choose for me
 	- [x] Clean bot messages
 	- [ ] Fancy quote a message
+	- [ ] Vote
 - [ ] Logging
 	- [ ] Event logs
 	- [ ] Chat logs
 	- [ ] Console output log
+- [ ] Fix `info`'s roles and playing game reporting

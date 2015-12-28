@@ -18,7 +18,7 @@ bot.on('debug', function(m){
 });
 
 bot.on("ready", function(message) {
-	bot.setPlayingGame(games[Math.floor(Math.random() * (games.length - 1))]);
+	bot.setPlayingGame(games[Math.floor(Math.random() * (games.length))]);
 	//check to see if there is a new version of BrussellBot
 	console.log("BrussellBot is ready! Listening to " + bot.channels.length + " channels on " + bot.servers.length + " servers");
 });

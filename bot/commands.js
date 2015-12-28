@@ -140,7 +140,7 @@ var commands = {
 		permLevel: 1,
 		usage: "[game]",
 		process: function (bot, msg, suffix) {
-			!suffix ? bot.setPlayingGame(games[Math.floor(Math.random() * (games.length - 1))]) : bot.setPlayingGame(suffix);
+			!suffix ? bot.setPlayingGame(games[Math.floor(Math.random() * (games.length))]) : bot.setPlayingGame(suffix);
 			console.log('[info]', "" + msg.author.username + " set the playing status to: " + bot.user.game);
 		}
 	},
@@ -175,7 +175,7 @@ var commands = {
 		}
 	},
 	"letsplay": {
-		desc: "Ask if anyone wants to play a game",
+		desc: "Ask if anyone wants to play a game.",
 		permLevel: 0,
 		usage: "[game name]",
 		process: function(bot, msg, suffix) {
@@ -184,7 +184,7 @@ var commands = {
 		}
 	},
 	"roll": {
-		desc: "Rolls a die",
+		desc: "Rolls a die.",
 		permLevel: 0,
 		usage: "[(rolls)d(sides)]",
 		process: function(bot, msg, suffix) {
@@ -196,6 +196,73 @@ var commands = {
 					bot.sendMessage(msg, "Your " + roll.input + " resulted in " + roll.result + " " + roll.details);
 				} else { console.log('[warn]', "Got an error: ", error, ", status code: ", response.statusCode); }
 			});
+		}
+	},
+	"announce": {
+		desc: "Sends a message to all servers if in a DM. If in a server sends it to all users in that server.",
+		permLevel: 2,
+		usage: "<message>",
+		process: function (bot, msg, suffix) {
+			if (suffix) {
+				if (!msg.channel.isPrivate) {
+					msg.channel.server.members.forEach(function (usr) {
+						bot.sendMessage(usr, suffix + " - " + msg.author);
+					});
+					console.log('[info]', "Announced \"" + suffix + "\" to members");
+				} else if (msg.channel.isPrivate) {
+					bot.servers.forEach(function (ser) {
+						bot.sendMessage(ser.defaultChannel, suffix + " - " + msg.author);
+					});
+					console.log('[info]', "Announced \"" + suffix + "\" to servers");
+				}
+			}
+		}
+	},
+	"info": {
+		desc: "Gets info on the server or a user if specified.",
+		permLevel: 0,
+		usage: "[@username]",
+		process: function (bot, msg, suffix) {
+			if (suffix) {
+				if (msg.mentions.length == 0) { bot.sendMessage(msg, correctUsage("info")); return; }
+				msg.mentions.map(function (usr) {
+					var msgArray = [];
+					msgArray.push("You requested info on **" + usr.username + "**");
+					msgArray.push("User ID: `" + usr.id + "`");
+					if (usr.gameID != null) { msgArray.push("Staus: `" + usr.status + "` playing `" + usr.gameID + "`"); }
+					else { msgArray.push("Staus: `" + usr.status + "`"); }
+					msgArray.push("Roles: " + msg.channel.server.rolesOfUser(usr));
+					if (usr.avatarURL != null) { msgArray.push("Avatar: " + usr.avatarURL); }
+					bot.sendMessage(msg, msgArray);
+					console.log('[info]', "Got info on " + usr.username);
+				});
+			} else {
+				if (msg.channel.server) {
+					var msgArray = [];
+					msgArray.push("You requested info on **" + msg.channel.server.name + "**");
+					msgArray.push("Server ID: `" + msg.channel.server.id + "`");
+					msgArray.push("Owner: " + msg.channel.server.owner + " (id: `" + msg.channel.server.owner.id + "`)");
+					msgArray.push("Region: `" + msg.channel.server.region + "`");
+					msgArray.push("Icon: " + msg.channel.server.iconURL);
+					bot.sendMessage(msg, msgArray);
+					console.log('[info]', "Got info on " + msg.channel.server.name);
+				} else { bot.sendMessage(msg, "Can't do that in a DM."); }
+			}	
+		}
+	},
+	"choose": {
+		desc: "Makes a choice for you.",
+		permLevel: 0,
+		usage: "<option 1>, <option 2>, [option], [option]",
+		process: function (bot, msg, suffix) {
+			if (!suffix) { bot.sendMessage(msg, correctUsage("choose")); return;}
+			var choices = suffix.split(", ");
+			if (choices.length < 2) {
+				bot.sendMessage(msg, correctUsage("choose"));
+			} else {
+				choice = Math.floor(Math.random() * (choices.length));
+				bot.sendMessage(msg, "I picked " + choices[choice]);
+			}
 		}
 	}
 };
