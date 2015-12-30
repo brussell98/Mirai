@@ -2,8 +2,11 @@ var config = require("./config.json");
 var games = require("./games.json").games;
 var perms = require("./permissions.json");
 var version = require("../package.json").version;
+var chatlog = require("./logger.js").ChatLog;
+var logger = require("./logger.js").Logger;
 
 var request = require('request');
+var xml2js = require('xml2js');
 
 //voting vars
 var topicstring = "";
@@ -66,7 +69,7 @@ var commands = {
 	},
 	"joins": {
 		desc: "Accepts the invite sent to it.",
-		usage: "<invite link> [-s (silent join)]",
+		usage: "<invite link> [-a (announce presence)]",
 		permLevel: 0,
 		process: function (bot, msg, suffix) {
 			if (suffix) {
@@ -74,26 +77,20 @@ var commands = {
 				bot.joinServer(invite, function (err, server) {
 					if (err) {
 						bot.sendMessage(msg, "Failed to join: " + err);
-						console.log('[warn]', err);
+						logger.warn(err);
 					} else {
-						console.log('[info]', "Joined server: " + server);
+						logger.info("Joined server: " + server);
 						bot.sendMessage(msg, "Successfully joined ***" + server + "***");
-						if (suffix.split(" ")[1] != "-s") {
+						if (suffix.split(" ")[1] == "-a") {
 							var msgArray = [];
 							msgArray.push("Hi! I'm **" + bot.user.username + "** and I was invited to this server by " + msg.author + ".");
 							msgArray.push("You can use `" + config.command_prefix + "help` to see what I can do.");
 							msgArray.push("If I shouldn't be here someone with the `Kick Members` permission can use `" + config.command_prefix + "leaves` to make me leave");
 							bot.sendMessage(server.defaultChannel, msgArray);
-							msgArray = [];
-							msgArray.push("Hey " + server.owner.username + ", I've joined a server that you own.");
-							msgArray.push("I'm " + bot.user.username + " by the way, a \"ping-pong\" bot / music bot designed to make your life easier.");
-							msgArray.push("If you don't want me in your server, you may use `" + ConfigFile.command_prefix + "leaves` in the server I'm not welcome in.");
-							msgArray.push("If you do want me, use `" + ConfigFile.command_prefix + "help` to see what I can do.");
-							bot.sendMessage(server.owner, msgArray);
 						}
 					}
 				});
-			} else { bot.sendMessage(msg, correctUsage("help")); }
+			} else { bot.sendMessage(msg, correctUsage("joins")); }
 				
 		}
 	},
@@ -105,10 +102,10 @@ var commands = {
 				if (msg.channel.permissionsOf(msg.author).hasPermission("kickMembers")) {
 					bot.sendMessage(msg, "Alright, see ya!");
 					bot.leaveServer(msg.channel.server);
-					console.log('[info]', "I've left a server on request of " + msg.sender.username + ". I'm only in " + bot.servers.length + " servers now.");
+					logger.info("I've left a server on request of " + msg.sender.username + ". I'm only in " + bot.servers.length + " servers now.");
 				} else {
 					bot.sendMessage(msg, "You can't tell me what to do! (You need permission to kick users in this channel)");
-					console.log('[info]', "A non-privileged user (" + msg.sender.username + ") tried to make me leave a server.");
+					logger.info("A non-privileged user (" + msg.sender.username + ") tried to make me leave a server.");
 				}
 			} else { bot.sendMessage(msg, "I can't leave a DM."); }
 		}
@@ -148,7 +145,7 @@ var commands = {
 		usage: "[game]",
 		process: function (bot, msg, suffix) {
 			!suffix ? bot.setPlayingGame(games[Math.floor(Math.random() * (games.length))]) : bot.setPlayingGame(suffix);
-			console.log('[info]', "" + msg.author.username + " set the playing status to: " + bot.user.game);
+			logger.info("" + msg.author.username + " set the playing status to: " + bot.user.gameID);
 		}
 	},
 	"clean": {
@@ -159,10 +156,11 @@ var commands = {
 			if (suffix) {
 				bot.getChannelLogs(msg.channel, 100, function (error, messages) {
 					if (error) {
-						console.log('[warn]', "Something went wrong while fetching logs.");
+						logger.warn("Something went wrong while fetching logs.");
 						return;
 					} else {
-						console.log("Cleaning bot messages...");
+						bot.startTyping(msg.channel);
+						logger.debug("Cleaning bot messages...");
 						var todo = suffix,
 						delcount = 0;
 						for (msg1 of messages) {
@@ -172,10 +170,12 @@ var commands = {
 								todo--;
 							}
 							if (todo == 0) {
-								console.log("Done! Deleted " + delcount + " messages.");
+								logger.debug("Done! Deleted " + delcount + " messages.");
+								bot.stopTyping(msg.channel);
 								return;
 							}
 						}
+						bot.stopTyping(msg.channel);
 					}
 				});
 			} else { bot.sendMessage(msg, correctUsage("clean")); }
@@ -197,12 +197,14 @@ var commands = {
 		process: function(bot, msg, suffix) {
 			var dice = "1d6";
 			if (suffix) { dice = suffix; }
+			bot.startTyping(msg.channel);
 			request('https://rolz.org/api/?' + dice + '.json', function(err, response, body) {
 				if (!err && response.statusCode == 200) {
 					var roll = JSON.parse(body);
 					bot.sendMessage(msg, "Your " + roll.input + " resulted in " + roll.result + " " + roll.details);
-				} else { console.log('[warn]', "Got an error: ", error, ", status code: ", response.statusCode); }
+				} else { logger.warn("Got an error: ", error, ", status code: ", response.statusCode); }
 			});
+			bot.stopTyping(msg.channel);
 		}
 	},
 	"announce": {
@@ -212,15 +214,19 @@ var commands = {
 		process: function (bot, msg, suffix) {
 			if (suffix) {
 				if (!msg.channel.isPrivate) {
-					msg.channel.server.members.forEach(function (usr) {
-						bot.sendMessage(usr, suffix + " - " + msg.author);
-					});
-					console.log('[info]', "Announced \"" + suffix + "\" to members");
+					if (msg.channel.server.members < 101) {
+						msg.channel.server.members.forEach(function (usr) {
+							bot.sendMessage(usr, suffix + " - " + msg.author);
+						});
+						logger.info("Announced \"" + suffix + "\" to members");
+					}
 				} else if (msg.channel.isPrivate) {
 					bot.servers.forEach(function (ser) {
-						bot.sendMessage(ser.defaultChannel, suffix + " - " + msg.author);
+						if (ser.members < 101) {
+							bot.sendMessage(ser.defaultChannel, suffix + " - " + msg.author);
+						}
 					});
-					console.log('[info]', "Announced \"" + suffix + "\" to servers");
+					logger.info("Announced \"" + suffix + "\" to servers");
 				}
 			}
 		}
@@ -232,6 +238,7 @@ var commands = {
 		process: function (bot, msg, suffix) {
 			if (suffix) {
 				if (msg.mentions.length == 0) { bot.sendMessage(msg, correctUsage("info")); return; }
+				bot.startTyping(msg.channel);
 				msg.mentions.map(function (usr) {
 					var msgArray = [];
 					msgArray.push("You requested info on **" + usr.username + "**");
@@ -243,10 +250,11 @@ var commands = {
 					msgArray.push("Roles: " + msg.channel.server.rolesOfUser(usr));
 					if (usr.avatarURL != null) { msgArray.push("Avatar: " + usr.avatarURL); }
 					bot.sendMessage(msg, msgArray);
-					console.log('[info]', "Got info on " + usr.username);
+					logger.info("Got info on " + usr.username);
 				});
 			} else {
 				if (msg.channel.server) {
+					bot.startTyping(msg.channel);
 					var msgArray = [];
 					msgArray.push("You requested info on **" + msg.channel.server.name + "**");
 					msgArray.push("Server ID: `" + msg.channel.server.id + "`");
@@ -254,9 +262,10 @@ var commands = {
 					msgArray.push("Region: `" + msg.channel.server.region + "`");
 					msgArray.push("Icon: " + msg.channel.server.iconURL);
 					bot.sendMessage(msg, msgArray);
-					console.log('[info]', "Got info on " + msg.channel.server.name);
+					logger.info("Got info on " + msg.channel.server.name);
 				} else { bot.sendMessage(msg, "Can't do that in a DM."); }
-			}	
+			}
+			bot.stopTyping(msg.channel);
 		}
 	},
 	"choose": {
@@ -317,14 +326,50 @@ var commands = {
 		permLevel: 0,
 		usage: "",
 		process: function (bot, msg) {
+			bot.startTyping(msg.channel);
 			request('https://8ball.delegator.com/magic/JSON/0', function (error, response, body) {
 				if (!error && response.statusCode == 200) {
 					var answr = JSON.parse(body);
 					bot.sendMessage(msg.channel, answr.magic.answer);
 				} else {
-					console.log('[warn]', "8ball error: ", error, ", status code: ", response.statusCode);
+					logger.warn("8ball error: ", error, ", status code: ", response.statusCode);
 				}
 			});
+			bot.stopTyping(msg.channel);
+		}
+	},
+	"anime": {
+		desc: "Gets the details on an anime from MAL.",
+		permLevel: 0,
+		usage: "<anime name>",
+		process: function (bot, msg, suffix) {
+			if (suffix) {
+				bot.startTyping(msg.channel);
+				var tags = suffix.split(" ").join("+");
+				var rUrl = "http://myanimelist.net/api/anime/search.xml?q=" + tags;
+				request(rUrl, {"auth": {"user": config.mal_user, "pass": config.mal_pass, "sendImmediately": false}}, function (error, response, body) {
+					if (error) { logger.info(error); }
+					if (!error && response.statusCode == 200) {
+						xml2js.parseString(body, function (err, result){
+							var title = result.anime.entry[0].title;
+							var english = result.anime.entry[0].english;
+							var ep = result.anime.entry[0].episodes;
+							var score = result.anime.entry[0].score;
+							var type = result.anime.entry[0].type;
+							var status = result.anime.entry[0].status;
+							var synopsis = result.anime.entry[0].synopsis.toString();
+							synopsis = synopsis.replace(/&mdash;/g, "—");
+							synopsis = synopsis.replace(/<br \/>/g, " ");
+							synopsis = synopsis.replace(/&quot;/g, "\"");
+							synopsis = synopsis.substring(0, 300);
+							bot.sendMessage(msg, "**" + title + " / " + english+"**\n**Type:** "+ type +", **Episodes:** "+ep+", **Status:** "+status+", **Score:** "+score+"\n"+synopsis);
+						});
+					}
+				});
+				bot.stopTyping(msg.channel);
+			} else {
+				bot.sendMessage(msg, correctUsage("anime"));
+			}
 		}
 	}
 };

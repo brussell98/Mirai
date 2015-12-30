@@ -1,6 +1,6 @@
 # BrussellBot
 
-A ping-pong and music bot for Discord using the [Discord.js](https://github.com/hydrabolt/discord.js/) unoffficial API.
+An all-in-one bot for Discord using the [Discord.js](https://github.com/hydrabolt/discord.js/) unoffficial API.
 
 [Get the lastest version here](https://github.com/brussell98/BrussellBot/releases/latest)
 
@@ -42,16 +42,18 @@ A ping-pong and music bot for Discord using the [Discord.js](https://github.com/
 - [ ] Cooldown for commands
 - [x] Per-server settings JSON
 	- [x] Add new servers to JSON on join / startup
-	- [ ] Server settings commands
+	- [ ] Server settings/mod commands
+		- [ ] Stop user from sending messages user for a certain time 
+		- [ ] Blacklist/whitelist channel
+		- [ ] Per-server ban message?
 - [x] Wiki page for adding commands
-- [ ] Add more dank memes to `games.json`
 - [ ] Semi-idiot-proof the code
 	- [ ] And add comments so people can understand what this stuff does
 - [x] Fully check if user has permission to execute a command in the message interpreter
 - [x] Debug messages toggle
 - [ ] Commands
 	- [x] Join server
-		- [x] Have option for silent joining of servers
+		- [x] Silent join by default
 		- [ ] Accept multiple invites seperated by a space
 	- [x] Leave Server
 		- [x] Leave server restricted by roles or perm level
@@ -67,6 +69,7 @@ A ping-pong and music bot for Discord using the [Discord.js](https://github.com/
 		- [ ] Queue from a playlist
 		- [ ] Bind music messages to a channel
 		- [ ] List of queues songs
+		- [ ] Set playing to song name
 	- [ ] Cleverbot module activated with mention
 	- [x] Set playing status
 	- [x] Info commands
@@ -78,18 +81,22 @@ A ping-pong and music bot for Discord using the [Discord.js](https://github.com/
 	- [x] Announce
 		- [x] To users in the server
 		- [x] To servers
+		- [x] But not if server.members > 100
 	- [x] Dice roll
 	- [x] 8ball
 	- [x] Choose for me
 	- [x] Clean bot messages
-	- [ ] Fancy quote a message
+	- [ ] Store a message with a tag
 	- [x] Vote (Credit: [BlackHayate](https://github.com/BlackHayate))
-- [ ] Logging (w/ Winston because I really liked DougleyBot's log)
-	- [ ] Event logs
-	- [ ] Chat logs
-	- [ ] Console output log
-	- [ ] Presence changes
+	- [ ] Check logs (get stuff like commands processed, messeges recieved, ect.)
+		- [ ] Query messages from chat log
+	- [x] Anime Lookup
+- [x] Logging (w/ Winston because I really liked DougleyBot's log)
+	- [x] Event logs
+	- [x] Chat logs
+	- [x] Presence changes
 	- [ ] Commands processed
 - [ ] Fix `info`'s playing game reporting
 - [ ] Version checker
 - [ ] Optimize code
+- [ ] Reload modules command
