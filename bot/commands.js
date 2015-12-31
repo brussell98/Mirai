@@ -174,7 +174,7 @@ var commands = {
 					var msgArray = [];
 					msgArray.push("You requested info on **" + usr.username + "**");
 					msgArray.push("User ID: `" + usr.id + "`");
-					if (usr.gameID != null) { msgArray.push("Staus: `" + usr.status + "` playing `" + usr.gameID + "`"); }
+					if (usr.gameID != null) { msgArray.push("Staus: `" + usr.status + "` playing `" + usr.gameID + "`"); } //waiting for lib fix
 					else { msgArray.push("Staus: `" + usr.status + "`"); }
 					var myDate = new Date(msg.channel.server.detailsOfUser(usr).joinedAt);
 					msgArray.push("Joined this server on: `" + myDate.toUTCString() + "`");

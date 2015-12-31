@@ -1,6 +1,6 @@
 var winston = require('winston');
 
-winston.emitErrs = true;
+winston.emitErrs = false;
 
 exports.ChatLog = new winston.Logger({
 	transports: [
@@ -44,6 +44,14 @@ exports.Logger = new winston.Logger({
 		}),
 		new winston.transports.File({
     		handleExceptions: false,
+    		name: 'file:warn',
+    		filename: __dirname + '/../logs/warnings.txt',
+    		level: 'warn',
+			colorize: false,
+    		json: false
+		}),
+		new winston.transports.File({
+    		handleExceptions: false,
     		name: 'file:debug',
     		filename: __dirname + '/../logs/debug.txt',
     		level: 'debug',
@@ -51,7 +59,7 @@ exports.Logger = new winston.Logger({
     		json: false
 		}),
 		new winston.transports.Console({
-			handleExceptions: false,
+			handleExceptions: true,
 			level: 'verbose',
 			colorize: true,
 			json: false

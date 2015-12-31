@@ -5,7 +5,7 @@ var logger = require("./logger.js").Logger;
 exports.checkForUpdate = function (callback) {
 	request("https://raw.githubusercontent.com/brussell98/BrussellBot/master/package.json", function (err, response, body) {
 		if (err) {
-			logger.warn("Version check error: " + err);
+			logger.log("warn", "Version check error: " + err);
 			return callback(null);
 		}
 		if (response.statusCode == 200) {

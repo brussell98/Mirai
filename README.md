@@ -99,7 +99,8 @@ An all-in-one bot for Discord using the [Discord.js](https://github.com/hydrabol
 		- [x] Remove newlines
 	- [x] Presence changes
 	- [x] Commands processed
-- [ ] Fix `info`'s playing game reporting
+- [ ] Friends list?
+- [ ] Subscribe to games and get notified when people are playing them?
 - [x] Version checker
 - [ ] Optimize code
 - [x] Reload modules command

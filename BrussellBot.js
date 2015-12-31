@@ -238,16 +238,18 @@ function checkServers() {
 }
 
 function reload() {
-	delete require.cache[require.resolve('./bot/commands.js')];
-	commands = require("./bot/commands.js").commands;
-	delete require.cache[require.resolve('./bot/mod.js')];
-	mod = require("./bot/mod.js").commands;
-	delete require.cache[require.resolve('./bot/config.json')];
 	config = require("./bot/config.json");
 	delete require.cache[require.resolve('./bot/games.json')];
 	games = require("./bot/games.json").games;
 	delete require.cache[require.resolve('./bot/permissions.json')];
 	perms = require("./bot/permissions.json");
+	delete require.cache[require.resolve('./bot/commands.js')];
+	try { commands = require("./bot/commands.js").commands;
+	} catch(err) { bot.sendMessage(msg.author, "You broke it: " + err); }
+	delete require.cache[require.resolve('./bot/mod.js')];
+	try {mod = require("./bot/mod.js").commands;
+	} catch(err) { bot.sendMessage(msg.author, "You broke it: " + err); }
+	delete require.cache[require.resolve('./bot/config.json')];
 	delete require.cache[require.resolve('./bot/versioncheck.js')];
 	versioncheck = require("./bot/versioncheck.js");
 	delete require.cache[require.resolve('./bot/logger.js')];
