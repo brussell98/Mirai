@@ -15,7 +15,7 @@ An all-in-one bot for Discord using the [Discord.js](https://github.com/hydrabol
 ---
 
 ### Features
-*Coming soon!*
+*Coming in the next commit!*
 
 ---
 
@@ -39,7 +39,7 @@ An all-in-one bot for Discord using the [Discord.js](https://github.com/hydrabol
 ### TODO
 
 - [x] Test current version
-- [ ] Cooldown for commands
+- [x] Cooldown for commands
 - [x] Per-server settings JSON
 	- [x] Add new servers to JSON on join / startup
 	- [ ] Server settings/mod commands
@@ -58,10 +58,12 @@ An all-in-one bot for Discord using the [Discord.js](https://github.com/hydrabol
 	- [x] Leave Server
 		- [x] Leave server restricted by roles or perm level
 	- [x] Help
+		- [ ] List mod commands
 	- [x] About
 	- [x] Stats
 		- [x] List servers or channels
 		- [x] Option to only show certain stats
+		- [x] Commands process and messages logged
 	- [ ] Music commands (Planned for v2.0)
 		- [ ] Queue song from youtube
 		- [ ] Skip
@@ -88,15 +90,20 @@ An all-in-one bot for Discord using the [Discord.js](https://github.com/hydrabol
 	- [x] Clean bot messages
 	- [ ] Store a message with a tag
 	- [x] Vote (Credit: [BlackHayate](https://github.com/BlackHayate))
-	- [ ] Check logs (get stuff like commands processed, messeges recieved, ect.)
-		- [ ] Query messages from chat log
+	- [x] Check logs (get stuff like commands processed, messeges recieved, ect.)
+		- [x] Query messages from chat log
 	- [x] Anime Lookup
 - [x] Logging (w/ Winston because I really liked DougleyBot's log)
 	- [x] Event logs
 	- [x] Chat logs
+		- [x] Remove newlines
 	- [x] Presence changes
-	- [ ] Commands processed
+	- [x] Commands processed
 - [ ] Fix `info`'s playing game reporting
-- [ ] Version checker
+- [x] Version checker
 - [ ] Optimize code
-- [ ] Reload modules command
+- [x] Reload modules command
+- [ ] I tried to make a restart command but it didn't work right. If you know how tell me.
+- [x] Standardize msg variables
+- [ ] Could do stuff with checking how long a user has been on the server for perms
+- [ ] Update Wiki

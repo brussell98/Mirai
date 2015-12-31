@@ -10,6 +10,7 @@ exports.ChatLog = new winston.Logger({
 			filename: __dirname + '/../logs/messages.txt',
 			formatter: function (args) { return args.message; },
 			level: 'info',
+			colorize: false,
 			json: false
 		})
 	]
@@ -30,6 +31,7 @@ exports.Logger = new winston.Logger({
 			name: 'file:exceptions',
 			filename: __dirname + '/../logs/exceptions.txt',
 			level: 'exception',
+			colorize: false,
 			json: false
 		}),
 		new winston.transports.File({
@@ -37,6 +39,7 @@ exports.Logger = new winston.Logger({
     		name: 'file:error',
     		filename: __dirname + '/../logs/errors.txt',
     		level: 'error',
+			colorize: false,
     		json: false
 		}),
 		new winston.transports.File({
@@ -44,14 +47,15 @@ exports.Logger = new winston.Logger({
     		name: 'file:debug',
     		filename: __dirname + '/../logs/debug.txt',
     		level: 'debug',
+			colorize: false,
     		json: false
 		}),
 		new winston.transports.Console({
-			handleExceptions: true,
+			handleExceptions: false,
 			level: 'verbose',
 			colorize: true,
 			json: false
 		})
 	],
-	exitOnError: true
+	exitOnError: false
 });

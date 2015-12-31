@@ -7,6 +7,7 @@ var logger = require("./logger.js").Logger;
 
 var request = require('request');
 var xml2js = require('xml2js');
+var fs = require('fs');
 
 //voting vars
 var topicstring = "";
@@ -55,6 +56,7 @@ var commands = {
 					msgArray.push("**" + config.command_prefix + "" + suffix + ": **" + commands[suffix].desc);
 					if (commands[suffix].hasOwnProperty("usage")) { msgArray.push("**Usage: **`" + config.command_prefix + "" + suffix + " " + commands[suffix].usage + "`"); }
 					if (commands[suffix].hasOwnProperty("permLevel")) { msgArray.push("**Permission level: **" + commands[suffix].permLevel); }
+					if (commands[suffix].hasOwnProperty("cooldown")) { msgArray.push("**Cooldown: **" + commands[suffix].cooldown + " seconds"); }
 					bot.sendMessage(msg.author, msgArray);
 				} else { bot.sendMessage(msg.author, "Command `" + suffix + "` not found."); }
 			}
@@ -64,7 +66,10 @@ var commands = {
 		desc: "Replies with pong.",
 		permLevel: 0,
 		process: function(bot, msg) {
-			bot.sendMessage(msg, "pong");
+			var n = Math.floor(Math.random() * 3)
+			if (n == 0) { bot.sendMessage(msg, "pong");} 
+			if (n == 1) { bot.sendMessage(msg, "pongu");} 
+			if (n == 2) { bot.sendMessage(msg, "pong!");} 
 		}
 	},
 	"joins": {
@@ -77,9 +82,9 @@ var commands = {
 				bot.joinServer(invite, function (err, server) {
 					if (err) {
 						bot.sendMessage(msg, "Failed to join: " + err);
-						logger.warn(err);
+						logger.log("warn", err);
 					} else {
-						logger.info("Joined server: " + server);
+						logger.log("info", "Joined server: " + server);
 						bot.sendMessage(msg, "Successfully joined ***" + server + "***");
 						if (suffix.split(" ")[1] == "-a") {
 							var msgArray = [];
@@ -94,22 +99,6 @@ var commands = {
 				
 		}
 	},
-	"leaves": {
-		desc: "Leaves the server.",
-		permLevel: 0,
-		process: function(bot, msg, suffix) {
-			if (msg.channel.server) {
-				if (msg.channel.permissionsOf(msg.author).hasPermission("kickMembers")) {
-					bot.sendMessage(msg, "Alright, see ya!");
-					bot.leaveServer(msg.channel.server);
-					logger.info("I've left a server on request of " + msg.sender.username + ". I'm only in " + bot.servers.length + " servers now.");
-				} else {
-					bot.sendMessage(msg, "You can't tell me what to do! (You need permission to kick users in this channel)");
-					logger.info("A non-privileged user (" + msg.sender.username + ") tried to make me leave a server.");
-				}
-			} else { bot.sendMessage(msg, "I can't leave a DM."); }
-		}
-	},
 	"about": {
 		desc: "Info about the bot.",
 		permLevel: 0,
@@ -121,70 +110,11 @@ var commands = {
 			bot.sendMessage(msg, msgArray);
 		}
 	},
-	"stats": {
-		desc: "Displays current stats for the bot.",
-		permLevel: 0,
-		usage: "[-t (exclude uptime)] [-c (exclude connected to)] [-u (exclude users)] [-v (exclude name & version)] [-ls (list servers)] [-lc (list channels)]",
-		process: function (bot, msg, suffix) {
-			var args = suffix.split(" ");
-			var msgArray = [];
-			if (args.indexOf("-t") == -1) {
-				msgArray.push("Uptime: **" + (Math.round(bot.uptime / (1000 * 60 * 60))) + "** hours, **" + (Math.round(bot.uptime / (1000 * 60)) % 60) + "** minutes, and **" + (Math.round(bot.uptime / 1000) % 60) + "** seconds.");
-			}
-			if (args.indexOf("-c") == -1) { msgArray.push("Connected to **" + bot.servers.length + "** servers and **" + bot.channels.length + "** channels."); }
-			if (args.indexOf("-u") == -1) { msgArray.push("Serving **" + bot.users.length + "** users."); }
-			if (args.indexOf("-v") == -1) { msgArray.push("I'm known as " + bot.user.username + " and I'm running BrussellBot v" + version); }
-			bot.sendMessage(msg, msgArray);
-			if (args.indexOf("-ls") != -1) { bot.sendMessage(msg, bot.servers); }
-			if (args.indexOf("-lc") != -1) { bot.sendMessage(msg, bot.channels); }
-		}
-	},
-	"playing": {
-		desc: "Set what the bot is playing. Leave empty for random.",
-		permLevel: 1,
-		usage: "[game]",
-		process: function (bot, msg, suffix) {
-			!suffix ? bot.setPlayingGame(games[Math.floor(Math.random() * (games.length))]) : bot.setPlayingGame(suffix);
-			logger.info("" + msg.author.username + " set the playing status to: " + bot.user.gameID);
-		}
-	},
-	"clean": {
-		desc: "Cleans the specified number of bot messages from the channel.",
-		permLevel: 1,
-		usage: "<number of bot messages>",
-		process: function (bot, msg, suffix) {
-			if (suffix) {
-				bot.getChannelLogs(msg.channel, 100, function (error, messages) {
-					if (error) {
-						logger.warn("Something went wrong while fetching logs.");
-						return;
-					} else {
-						bot.startTyping(msg.channel);
-						logger.debug("Cleaning bot messages...");
-						var todo = suffix,
-						delcount = 0;
-						for (msg1 of messages) {
-							if (msg1.author === bot.user) {
-								bot.deleteMessage(msg1);
-								delcount++;
-								todo--;
-							}
-							if (todo == 0) {
-								logger.debug("Done! Deleted " + delcount + " messages.");
-								bot.stopTyping(msg.channel);
-								return;
-							}
-						}
-						bot.stopTyping(msg.channel);
-					}
-				});
-			} else { bot.sendMessage(msg, correctUsage("clean")); }
-		}
-	},
 	"letsplay": {
 		desc: "Ask if anyone wants to play a game.",
 		permLevel: 0,
 		usage: "[game name]",
+		cooldown: 10,
 		process: function(bot, msg, suffix) {
 			if (suffix) { bot.sendMessage(msg, "@everyone, " + msg.author + " would like to know if anyone wants to play **" + suffix + "**."); }
 			else { bot.sendMessage(msg, "@everyone, " + msg.author + " would like to know if anyone wants to play a game"); }
@@ -202,7 +132,7 @@ var commands = {
 				if (!err && response.statusCode == 200) {
 					var roll = JSON.parse(body);
 					bot.sendMessage(msg, "Your " + roll.input + " resulted in " + roll.result + " " + roll.details);
-				} else { logger.warn("Got an error: ", error, ", status code: ", response.statusCode); }
+				} else { logger.log("warn", "Got an error: ", error, ", status code: ", response.statusCode); }
 			});
 			bot.stopTyping(msg.channel);
 		}
@@ -211,6 +141,7 @@ var commands = {
 		desc: "Sends a message to all servers if in a DM. If in a server sends it to all users in that server.",
 		permLevel: 2,
 		usage: "<message>",
+		cooldown: 30,
 		process: function (bot, msg, suffix) {
 			if (suffix) {
 				if (!msg.channel.isPrivate) {
@@ -218,7 +149,7 @@ var commands = {
 						msg.channel.server.members.forEach(function (usr) {
 							bot.sendMessage(usr, suffix + " - " + msg.author);
 						});
-						logger.info("Announced \"" + suffix + "\" to members");
+						logger.log("info", "Announced \"" + suffix + "\" to members");
 					}
 				} else if (msg.channel.isPrivate) {
 					bot.servers.forEach(function (ser) {
@@ -226,7 +157,7 @@ var commands = {
 							bot.sendMessage(ser.defaultChannel, suffix + " - " + msg.author);
 						}
 					});
-					logger.info("Announced \"" + suffix + "\" to servers");
+					logger.log("info", "Announced \"" + suffix + "\" to servers");
 				}
 			}
 		}
@@ -235,10 +166,10 @@ var commands = {
 		desc: "Gets info on the server or a user if specified.",
 		permLevel: 0,
 		usage: "[@username]",
+		cooldown: 5,
 		process: function (bot, msg, suffix) {
 			if (suffix) {
 				if (msg.mentions.length == 0) { bot.sendMessage(msg, correctUsage("info")); return; }
-				bot.startTyping(msg.channel);
 				msg.mentions.map(function (usr) {
 					var msgArray = [];
 					msgArray.push("You requested info on **" + usr.username + "**");
@@ -246,26 +177,33 @@ var commands = {
 					if (usr.gameID != null) { msgArray.push("Staus: `" + usr.status + "` playing `" + usr.gameID + "`"); }
 					else { msgArray.push("Staus: `" + usr.status + "`"); }
 					var myDate = new Date(msg.channel.server.detailsOfUser(usr).joinedAt);
-					msgArray.push("Joined this server on: " + myDate.toUTCString());
-					msgArray.push("Roles: " + msg.channel.server.rolesOfUser(usr));
-					if (usr.avatarURL != null) { msgArray.push("Avatar: " + usr.avatarURL); }
+					msgArray.push("Joined this server on: `" + myDate.toUTCString() + "`");
+					var rsO = msg.channel.server.rolesOfUser(usr.id)
+					var rols = "undefined@everyone, ";
+					for (rO of rsO) { rols += (rO.name + ", "); }
+					msgArray.push("Roles: `" + rols.substring(9, rols.length - 2) + "`");
+					if (usr.avatarURL != null) { msgArray.push("Avatar: `" + usr.avatarURL + "`"); }
 					bot.sendMessage(msg, msgArray);
-					logger.info("Got info on " + usr.username);
+					logger.log("info", "Got info on " + usr.username);
 				});
 			} else {
 				if (msg.channel.server) {
-					bot.startTyping(msg.channel);
 					var msgArray = [];
 					msgArray.push("You requested info on **" + msg.channel.server.name + "**");
 					msgArray.push("Server ID: `" + msg.channel.server.id + "`");
 					msgArray.push("Owner: " + msg.channel.server.owner + " (id: `" + msg.channel.server.owner.id + "`)");
 					msgArray.push("Region: `" + msg.channel.server.region + "`");
-					msgArray.push("Icon: " + msg.channel.server.iconURL);
+					var rsO = msg.channel.server.roles;
+					var rols = "undefined@everyone, ";
+					for (rO of rsO) { rols += (rO.name + ", "); }
+					msgArray.push("Roles: `" + rols.substring(9, rols.length -2) + "`");
+					msgArray.push("Default channel: #" + msg.channel.server.defaultChannel.name + "");
+					msgArray.push("This channel's id: `" + msg.channel.id + "`");
+					msgArray.push("Icon URL: `" + msg.channel.server.iconURL + "`");
 					bot.sendMessage(msg, msgArray);
-					logger.info("Got info on " + msg.channel.server.name);
+					logger.log("info", "Got info on " + msg.channel.server.name);
 				} else { bot.sendMessage(msg, "Can't do that in a DM."); }
 			}
-			bot.stopTyping(msg.channel);
 		}
 	},
 	"choose": {
@@ -332,7 +270,7 @@ var commands = {
 					var answr = JSON.parse(body);
 					bot.sendMessage(msg.channel, answr.magic.answer);
 				} else {
-					logger.warn("8ball error: ", error, ", status code: ", response.statusCode);
+					logger.log("warn", "8ball error: ", error, ", status code: ", response.statusCode);
 				}
 			});
 			bot.stopTyping(msg.channel);
@@ -348,7 +286,7 @@ var commands = {
 				var tags = suffix.split(" ").join("+");
 				var rUrl = "http://myanimelist.net/api/anime/search.xml?q=" + tags;
 				request(rUrl, {"auth": {"user": config.mal_user, "pass": config.mal_pass, "sendImmediately": false}}, function (error, response, body) {
-					if (error) { logger.info(error); }
+					if (error) { logger.log("info", error); }
 					if (!error && response.statusCode == 200) {
 						xml2js.parseString(body, function (err, result){
 							var title = result.anime.entry[0].title;
@@ -370,6 +308,55 @@ var commands = {
 			} else {
 				bot.sendMessage(msg, correctUsage("anime"));
 			}
+		}
+	},
+	"db-query": {
+		desc: "Query the message database",
+		permLevel: 0,
+		usage: "<count/print/author/server/channel> <term>",
+		cooldown: 10,
+		process: function(bot, msg, suffix) {
+			fs.readFile("./logs/messages.txt", 'utf8', function (err, data) {
+				if (err) { logger.log("warn", "Error getting chat logs: " + err); }
+				logger.log("debug", "Fetched chat logs");
+				data = data.split(/\r?\n/);
+				type = suffix.split(" ")[0];
+				term = suffix.substring(type.length + 1);
+				if (type == "count") {
+					var count = 0;
+					for (line of data) {
+						line = line.replace(/(.*) -> (.*) said /, "");
+						if (line.indexOf(term) != -1) { count += 1; }
+					}
+					bot.sendMessage(msg, "Found **" + count + "** messages with *" + term + "* in the logs.");
+				} else if (type == "print") {
+					//TODO
+				} else if (type == "author") {
+					count = 0;
+					for (line of data) {
+						line = line.replace(/(.*): (.*) --> (.*) -> /, "");
+						line = line.replace(/ said (.*)/, "");
+						if (line.indexOf(term) != -1) { count += 1; }
+					}
+					bot.sendMessage(msg, "I have **" + count + "** messages from " + term + " in the logs.");
+				} else if (type == "server") {
+					var count = 0;
+					for (line of data) {
+						line = line.replace(/(.*): /, "");
+						line = line.replace(/ --> (.*) -> (.*)/, "");
+						if (line.indexOf(term) != -1) { count += 1; }
+					}
+					bot.sendMessage(msg, "I have **" + count + "** messages from " + term + " in the logs.");
+				} else if (type == "channel") {
+					var count = 0;
+					for (line of data) {
+						line = line.replace(/(.*): (.*) --> /, "");
+						line = line.replace(/ ->(.*)/, "");
+						if (line.indexOf(term) != -1) { count += 1; }
+					}
+					bot.sendMessage(msg, "I have **" + count + "** messages from " + term + " in the logs.");
+				} else { bot.sendMessage(msg, correctUsage("db-query")); }
+			});
 		}
 	}
 };

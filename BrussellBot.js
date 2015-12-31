@@ -6,7 +6,8 @@ Run this with node to run the bot.
 */
 
 var discord = require("discord.js");
-var commands = require("./bot/commands.js");
+var commands = require("./bot/commands.js").commands;
+var mod = require("./bot/mod.js").commands;
 var config = require("./bot/config.json");
 var games = require("./bot/games.json").games;
 var perms = require("./bot/permissions.json");
@@ -16,54 +17,98 @@ var chatlog = require("./bot/logger.js").ChatLog;
 var logger = require("./bot/logger.js").Logger;
 
 var servers = getServers();
+var lastExecTime = {};
 
 var bot = new discord.Client();
-bot.on('warn', (m) => logger.warn(m));
-bot.on('debug', function(m){
-	if (config.debug == 1) { logger.debug(m) }
-});
+bot.on('warn', (m) => logger.log("warn", m));
+bot.on('debug', (m) => logger.log("debug", m));
 
-bot.on("ready", function (message) {
+bot.on("ready", function () {
 	checkServers();
 	bot.setPlayingGame(games[Math.floor(Math.random() * (games.length))]);
-	//check to see if there is a new version of BrussellBot
-	logger.info("BrussellBot is ready! Listening to " + bot.channels.length + " channels on " + bot.servers.length + " servers");
+	logger.log("info", "BrussellBot is ready! Listening to " + bot.channels.length + " channels on " + bot.servers.length + " servers");
 	versioncheck.checkForUpdate(function (resp) {
 		if (resp != null) {
-			logger.info(resp);
+			logger.log("info", resp);
 		}
 	});
 });
 
 bot.on("disconnected", function () {
-	logger.info("Disconnected");
+	logger.log("info", "Disconnected");
 	process.exit(1);
 });
 
-bot.on("message", function (message) {
-	if (!message.channel.isPrivate) {
-		if (config.log_messages && servers[message.channel.server.id].log_messages == 1) {
+bot.on("message", function (msg) {
+	if (!msg.channel.isPrivate) {
+		if (config.log_messages && servers[msg.channel.server.id].log_messages == 1) {
 			var d = new Date();
-			chatlog.info(d.toUTCString() + ": " + message.channel.server.name + " -> " + message.channel.name + " -> " + message.author.username + " said " + message.content);
+			var mtext = msg.content.replace(/\r?\n|\r/g, " ");
+			chatlog.info(d.toUTCString() + ": " + msg.channel.server.name + " --> " + msg.channel.name + " -> " + msg.author.username + " said " + mtext);
 		}
 	}
-	if (!message.content.startsWith(config.command_prefix)) { return; }
-	if (message.author.id == bot.user.id) { return; }
-	logger.info("" + message.author.username + " executed: " + message.content);
-	var cmd = message.content.split(" ")[0].substring(1).toLowerCase();
-	var suffix = message.content.substring( cmd.length + 2 );
-	var permLvl = 0;
-	if (perms.hasOwnProperty(message.author.id)) { permLvl = perms[message.author.id].level; }
-	if (commands.commands.hasOwnProperty(cmd)) {
-		try {
-			if (commands.commands[cmd].permLevel <= permLvl) { commands.commands[cmd].process(bot, message, suffix); logger.debug("Command processed: " + cmd);}
-			else {
-				bot.sendMessage(message, "You need permission level " + commands.commands[cmd].permLevel + " to do that.");
-				logger.info("Insufficient permissions");
+	var isCmd = false; //temp fix
+	if (msg.content[0] == config.command_prefix) { isCmd = true; }
+	if (msg.content[0] == config.mod_command_prefix) { isCmd = true; }
+	if (isCmd == false) { return; }
+	logger.log("info", "" + msg.author.username + " executed: " + msg.content);
+	if (msg.author.id == bot.user.id) { return; }
+	var cmd = msg.content.split(" ")[0].substring(1).toLowerCase();
+	var suffix = msg.content.substring( cmd.length + 2 );
+	if (msg.content.startsWith(config.command_prefix)) {
+		var permLvl = 0;
+		if (perms.hasOwnProperty(msg.author.id)) { permLvl = perms[msg.author.id].level; }
+		if (commands.hasOwnProperty(cmd)) {
+			try {
+				if (commands[cmd].hasOwnProperty("cooldown")) {
+					if (lastExecTime.hasOwnProperty(cmd)) {
+						var cTime = new Date();
+						var leTime = new Date(lastExecTime[cmd]);
+						leTime.setSeconds(leTime.getSeconds() + commands[cmd].cooldown);
+						if (cTime < leTime) {
+							var left = (leTime - cTime) / 1000;
+							bot.sendMessage(msg, "This command is on cooldown with " + Math.round(left) + " seconds remaining");
+							return;
+						} else { lastExecTime[cmd] = cTime; }
+					} else { lastExecTime[cmd] = new Date(); }
+				}
+				if (commands[cmd].hasOwnProperty("permLevel")) {
+					if (commands[cmd].permLevel <= permLvl) { commands[cmd].process(bot, msg, suffix); logger.log("debug", "Command processed: " + cmd); }
+					else {
+						bot.sendMessage(msg, "You need permission level " + commands[cmd].permLevel + " to do that.");
+						logger.log("info", "Insufficient permissions");
+					}
+				} else { commands[cmd].process(bot, msg, suffix); logger.log("debug", "Command processed: " + cmd); }
+			} catch (err) {
+				logger.log("error", err);
 			}
-		} catch(err) {
-			logger.warn("This command lacks a permLevel property");
-			commands.commands[cmd].process(bot, message, suffix);
+		}
+	} else if (msg.content.startsWith(config.mod_command_prefix)) {
+		if (cmd == "reload") {
+			if (perms.hasOwnProperty(msg.author.id)) {
+				if (perms[msg.author.id].level >= 1) { reload(); }
+			}
+		}
+		if (mod.hasOwnProperty(cmd)) {
+			try {
+				if (mod[cmd].hasOwnProperty("cooldown")) {
+					if (lastExecTime.hasOwnProperty(cmd)) {
+						var cTime = new Date();
+						var leTime = new Date(lastExecTime[cmd]);
+						leTime.setSeconds(leTime.getSeconds() + mod[cmd].cooldown);
+						if (cTime < leTime) {
+							var left = (leTime - cTime) / 1000;
+							bot.sendMessage(msg, "This command is on cooldown with " + Math.round(left) + " seconds remaining");
+							return;
+						} else { lastExecTime[cmd] = cTime; }
+					} else { lastExecTime[cmd] = new Date(); }
+				}
+				mod[cmd].process(bot, msg, suffix);
+				logger.log("debug", "Command processed: " + cmd);
+			} catch (err) {
+				logger.log("error", err);
+				mod[cmd].process(bot, msg, suffix); //might be a bad idea
+			}
 		}
 	}
 });
@@ -71,21 +116,21 @@ bot.on("message", function (message) {
 //event listeners
 bot.on('serverNewMember', function (objServer, objUser) {
 	if (servers[objServer.id].username_change == 1) {
-		logger.info("New member on " + objServer.name + ": " + objUser.username);
+		logger.log("info", "New member on " + objServer.name + ": " + objUser.username);
 		bot.sendMessage(objServer.defaultChannel, "Welcome to " + objServer.name + " " + objUser.username);
 	}
 });
 
 bot.on('serverUpdated', function (objServer, objNewServer) {
 	if (config.non_essential_event_listeners) {
-		logger.debug("" + objServer.name + " is now " + objNewServer.name);
+		logger.log("debug", "" + objServer.name + " is now " + objNewServer.name);
 	}
 });
 
 bot.on('channelCreated', function (objChannel) {
 	if (config.non_essential_event_listeners) {
 		if (!objChannel.isPrivate){
-			logger.debug("New channel created. Type: " + objChannel.type + ". Name: " + objChannel.name + ". Server: " + objChannel.server.name);
+			logger.log("debug", "New channel created. Type: " + objChannel.type + ". Name: " + objChannel.name + ". Server: " + objChannel.server.name);
 		}
 	}
 });
@@ -93,7 +138,7 @@ bot.on('channelCreated', function (objChannel) {
 bot.on('channelDeleted', function (objChannel) {
 	if (config.non_essential_event_listeners) {
 		if (!objChannel.isPrivate) {
-			logger.debug("Channel deleted. Type: " + objChannel.type + ". Name: " + objChannel.name + ". Server: " + objChannel.server.name);
+			logger.log("debug", "Channel deleted. Type: " + objChannel.type + ". Name: " + objChannel.name + ". Server: " + objChannel.server.name);
 		}
 	}
 });
@@ -102,9 +147,9 @@ bot.on('channelUpdated', function (objChannel) { //You could make this find the 
 	if (config.non_essential_event_listeners) {
 		if (!objChannel.isPrivate) {
 			if (objChannel.type == "text") {
-				logger.debug("Channel updated. Was: Type: Text. Name: " + objChannel.name + ". Topic: " + objChannel.topic);
+				logger.log("debug", "Channel updated. Was: Type: Text. Name: " + objChannel.name + ". Topic: " + objChannel.topic);
 			} else {
-				logger.debug("Channel updated. Was: Type: Voice. Name: " + objChannel.name + ".");
+				logger.log("debug", "Channel updated. Was: Type: Voice. Name: " + objChannel.name + ".");
 			}
 		}
 	}
@@ -112,21 +157,21 @@ bot.on('channelUpdated', function (objChannel) { //You could make this find the 
 
 bot.on('userBanned', function (objUser, objServer) {
 	if (servers[objServer.id].ban_message == 1) {
-		logger.info("" + objUser.username + " banned on " + objServer.name);
+		logger.log("info", "" + objUser.username + " banned on " + objServer.name);
 		bot.sendMessage(objServer.defaultChannel, "" + objUser.username + " was banned");
 		bot.sendMessage(objUser, "You were banned from " + objServer.name);
 	}
 });
 
-bot.on('userUnbanned', function (objServer, objUser) {
+bot.on('userUnbanned', function (objUser, objServer) {
 	if (config.non_essential_event_listeners) {
-		logger.info("" + objUser.username + " unbanned on " + objServer.name);
+		logger.log("info", "" + objUser.username + " unbanned on " + objServer.name);
 	}
 });
 
 bot.on('userUpdated', function (objUser, objNewUser) {
     if (objUser.username != objNewUser.username){
-		logger.info("" + objUser.username + " changed their name to " + objNewUser.username);
+		logger.log("info", "" + objUser.username + " changed their name to " + objNewUser.username);
 		bot.servers.forEach(function(ser){
 			if (ser.members.get('id', objUser.id) != null && servers[ser.id].username_change == 1){
 				bot.sendMessage(ser, "User in this server: `" + objUser.username + "`. changed their name to: `" + objNewUser.username + "`.");
@@ -135,14 +180,14 @@ bot.on('userUpdated', function (objUser, objNewUser) {
     }
     //if (config.non_essential_event_listeners) {
     //	if (objUser.avatarURL != objNewUser.avatarURL) {
-    //		logger.info("" + objNewUser.username + " changed their avatar to: " + objNewUser.avatarUrl);
+    //		logger.log("info", "" + objNewUser.username + " changed their avatar to: " + objNewUser.avatarUrl);
     //	}
     //}
 });
 
 bot.on('presence', function(user, status, game) {
 	if (config.log_presence) {
-		logger.debug("Presence: " + user.username + " is now " + status + " playing " + game);
+		logger.log("debug", "Presence: " + user.username + " is now " + status + " playing " + game);
 	}
 });
 
@@ -152,12 +197,12 @@ bot.on('serverCreated', function (objServer) {
 
 //login
 bot.login(config.email, config.password);
-logger.info("Logging in...");
+logger.log("info", "Logging in...");
 
 function updateServers() {
 	fs.writeFile("./bot/servers.json", JSON.stringify(servers, null, '\t'), null);
 	servers = getServers();
-	logger.info("Updated servers.json");
+	logger.log("info", "Updated servers.json");
 }
 
 function getServers() {
@@ -186,8 +231,28 @@ function checkServers() {
 		if (servers.hasOwnProperty(ser.id)) {
 			//found server in config
 		} else {
-			logger.debug("Found new server");
+			logger.log("debug", "Found new server");
 			addServer(ser);
 		}
 	});
+}
+
+function reload() {
+	delete require.cache[require.resolve('./bot/commands.js')];
+	commands = require("./bot/commands.js").commands;
+	delete require.cache[require.resolve('./bot/mod.js')];
+	mod = require("./bot/mod.js").commands;
+	delete require.cache[require.resolve('./bot/config.json')];
+	config = require("./bot/config.json");
+	delete require.cache[require.resolve('./bot/games.json')];
+	games = require("./bot/games.json").games;
+	delete require.cache[require.resolve('./bot/permissions.json')];
+	perms = require("./bot/permissions.json");
+	delete require.cache[require.resolve('./bot/versioncheck.js')];
+	versioncheck = require("./bot/versioncheck.js");
+	delete require.cache[require.resolve('./bot/logger.js')];
+	chatlog = require("./bot/logger.js").ChatLog;
+	logger = require("./bot/logger.js").Logger;
+	servers = getServers();
+	logger.debug("Reloaded modules");
 }

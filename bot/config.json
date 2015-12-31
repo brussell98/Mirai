@@ -2,12 +2,11 @@
 	"email": "",
 	"password": "",
 	"command_prefix": "/",
-	"settings_command_prefix": "_",
-	"log_messages": false,
+	"mod_command_prefix": "_",
+	"log_messages": true,
 	"log_events": false,
-	"non_essential_event_listeners": false,
+	"non_essential_event_listeners": true,
 	"log_presence": false,
-	"debug": 0,
 	"mal_user": "",
 	"mal_pass": ""
 }

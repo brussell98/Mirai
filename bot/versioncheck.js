@@ -11,8 +11,8 @@ exports.checkForUpdate = function (callback) {
 		if (response.statusCode == 200) {
 			var latest = JSON.parse(body).version;
 			if ((version.split(".").join("")) < (latest.split(".").join(""))) { return callback("Bot is out of date! (current v" + version + ") (latest v" + latest + ")"); }
-			if ((version.split(".").join("")) > (latest.split(".").join(""))) { return callback("Somehow bot is ahead of release"); }
-			return "BrussellBot is up-to-date (v" + version + ")";
+			if ((version.split(".").join("")) > (latest.split(".").join(""))) { return callback("Bot is a development version (v" + version + ")"); }
+			return callback("BrussellBot is up-to-date (v" + version + ")");
 		} else {
 			logger.warn("Failed to check for new version: " + response.statusCode);
 			return callback(null);

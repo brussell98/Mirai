@@ -1,6 +1,6 @@
 {
 	"name": "brussellbot",
-	"version": "0.6.0",
+	"version": "0.7.0",
 	"description": "A Discord all-in-one bot using discord.js",
 	"author": "brussell98",
 	"main": "BrussellBot.js",
