@@ -40,11 +40,16 @@ bot.on("disconnected", function () {
 });
 
 bot.on("message", function (msg) {
-	if (!msg.channel.isPrivate) {
+	if (!msg.channel.isPrivate && msg.author.id != bot.user.id) {
 		if (config.log_messages && servers[msg.channel.server.id].log_messages == 1) {
-			var d = new Date();
-			var mtext = msg.content.replace(/\r?\n|\r/g, " ");
-			chatlog.info(d.toUTCString() + ": " + msg.channel.server.name + " --> " + msg.channel.name + " -> " + msg.author.username + " said " + mtext);
+			var shouldLog = true;
+			if (msg.content[0] == config.command_prefix) { shouldLog = false; }
+			if (msg.content[0] == config.mod_command_prefix) { shouldLog = false; }
+			if (shouldLog = true) {
+				var d = new Date();
+				var mtext = msg.content.replace(/\r?\n|\r/g, " ");
+				chatlog.info(d.toUTCString() + ": " + msg.channel.server.name + " --> " + msg.channel.name + " -> " + msg.author.username + " said " + mtext);
+			}
 		}
 	}
 	var isCmd = false; //temp fix
@@ -195,6 +200,10 @@ bot.on('serverCreated', function (objServer) {
 	addServer(objServer);
 });
 
+bot.on('serverDeleted', function (objServer) {
+	removeServer(objServer);
+});
+
 //login
 bot.login(config.email, config.password);
 logger.log("info", "Logging in...");
@@ -223,6 +232,11 @@ function addServer(svr) {
 		"ban_message": ban_m
 	}
 	servers[svr.id] = setngs;
+	updateServers();
+}
+
+function removeServer(svr) {
+	delete servers[svr.id];
 	updateServers();
 }
 
@@ -256,5 +270,5 @@ function reload() {
 	chatlog = require("./bot/logger.js").ChatLog;
 	logger = require("./bot/logger.js").Logger;
 	servers = getServers();
-	logger.debug("Reloaded modules");
+	logger.info("Reloaded modules with no errors");
 }

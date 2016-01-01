@@ -145,9 +145,9 @@ var commands = {
 		process: function (bot, msg, suffix) {
 			if (suffix) {
 				if (!msg.channel.isPrivate) {
-					if (msg.channel.server.members < 101) {
+					if (msg.channel.server.members < 151) {
 						msg.channel.server.members.forEach(function (usr) {
-							bot.sendMessage(usr, suffix + " - " + msg.author);
+							setTimeout(bot.sendMessage(usr, suffix + " - " + msg.author), 1000);
 						});
 						logger.log("info", "Announced \"" + suffix + "\" to members");
 					}
@@ -329,33 +329,46 @@ var commands = {
 						if (line.indexOf(term) != -1) { count += 1; }
 					}
 					bot.sendMessage(msg, "Found **" + count + "** messages with *" + term + "* in the logs.");
+					delete data;
 				} else if (type == "print") {
-					//TODO
+					var amount = 10;
+					var count = 0;
+					var msgArray = [];
+					for (var i = data.length - 1; i >= 0; i--) {
+						if (count > amount) { bot.sendMessage(msg, "Printing **" + amount + "** messages with *" + term + "* from the logs.\n"+msgArray); return; }
+						data[i] = data[i].replace(/(.*) -> (.*) said /, "");
+						if (data[i].indexOf(term) != -1) { msgArray.push(data[i]+"\n"); count += 1; }
+						if (i == 0) { bot.sendMessage(msg, "Printing **" + amount + "** messages with *" + term + "* from the logs.\n"+msgArray); }
+					}
+					delete data;
 				} else if (type == "author") {
 					count = 0;
 					for (line of data) {
 						line = line.replace(/(.*): (.*) --> (.*) -> /, "");
 						line = line.replace(/ said (.*)/, "");
-						if (line.indexOf(term) != -1) { count += 1; }
+						if (line.equals(term)) { count += 1; }
 					}
 					bot.sendMessage(msg, "I have **" + count + "** messages from " + term + " in the logs.");
+					delete data;
 				} else if (type == "server") {
 					var count = 0;
 					for (line of data) {
 						line = line.replace(/(.*): /, "");
 						line = line.replace(/ --> (.*) -> (.*)/, "");
-						if (line.indexOf(term) != -1) { count += 1; }
+						if (line.equals(term)) { count += 1; }
 					}
 					bot.sendMessage(msg, "I have **" + count + "** messages from " + term + " in the logs.");
+					delete data;
 				} else if (type == "channel") {
 					var count = 0;
 					for (line of data) {
 						line = line.replace(/(.*): (.*) --> /, "");
 						line = line.replace(/ ->(.*)/, "");
-						if (line.indexOf(term) != -1) { count += 1; }
+						if (line.equals(term)) { count += 1; }
 					}
 					bot.sendMessage(msg, "I have **" + count + "** messages from " + term + " in the logs.");
-				} else { bot.sendMessage(msg, correctUsage("db-query")); }
+					delete data;
+				} else { bot.sendMessage(msg, correctUsage("db-query")); delete data; }
 			});
 		}
 	}

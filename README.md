@@ -101,6 +101,7 @@ An all-in-one bot for Discord using the [Discord.js](https://github.com/hydrabol
 	- [x] Commands processed
 - [ ] Friends list?
 - [ ] Subscribe to games and get notified when people are playing them?
+- [ ] User regex to verify commands
 - [x] Version checker
 - [ ] Optimize code
 - [x] Reload modules command
