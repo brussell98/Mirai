@@ -61,7 +61,7 @@ exports.Logger = new winston.Logger({
 		new winston.transports.Console({
 			handleExceptions: true,
 			level: 'verbose',
-			colorize: true,
+			colorize: false,
 			json: false
 		})
 	],

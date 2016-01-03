@@ -1,6 +1,6 @@
 # BrussellBot
 
-An all-in-one bot for Discord using the [Discord.js](https://github.com/hydrabolt/discord.js/) unoffficial API.
+An multipurpose bot for Discord using the [Discord.js](https://github.com/hydrabolt/discord.js/) unoffficial API.
 
 [Get the lastest version here](https://github.com/brussell98/BrussellBot/releases/latest)
 
@@ -32,21 +32,25 @@ An all-in-one bot for Discord using the [Discord.js](https://github.com/hydrabol
 2. Open a command promt in the folder (shift+right click in the folder).
 3. Run `npm install`.
 4. Setup `config.json`.
-5. Add user ids to `permissions.json`. By default all users are `0`. Mods should have `1`. You should have `2`.
+5. Add user ids to `permissions.json`. By default all users are `0`. Trusted should have `1`, server owners `2`, you `3`.
 
 ---
 
 ### TODO
 
+- [ ] Stop relying on permission levels and use server roles
 - [x] Test current version
 - [x] Cooldown for commands
 - [x] Per-server settings JSON
 	- [x] Add new servers to JSON on join / startup
 	- [ ] Server settings/mod commands
-		- [ ] Stop user from sending messages user for a certain time 
+		- [ ] Stop user from sending messages for a certain time 
 		- [ ] Blacklist/whitelist channel
-		- [ ] Per-server ban message?
+		- [x] Give user permissions
+		- [x] Remove user perms
 - [x] Wiki page for adding commands
+- [x] Give server owner perm level 2 on join
+	- [x] Set to 1 on leave
 - [ ] Semi-idiot-proof the code
 	- [ ] And add comments so people can understand what this stuff does
 - [x] Fully check if user has permission to execute a command in the message interpreter
@@ -58,7 +62,7 @@ An all-in-one bot for Discord using the [Discord.js](https://github.com/hydrabol
 	- [x] Leave Server
 		- [x] Leave server restricted by roles or perm level
 	- [x] Help
-		- [ ] List mod commands
+		- [x] List mod commands
 	- [x] About
 	- [x] Stats
 		- [x] List servers or channels
@@ -77,7 +81,7 @@ An all-in-one bot for Discord using the [Discord.js](https://github.com/hydrabol
 	- [x] Info commands
 		- [x] Server info
 		- [x] User info
-			- [ ] Get past usernames from log
+			- [ ] Get past usernames from log (requires new info log format)
 			- [x] Get joinedAt from detailsOfUser
 	- [x] Ask if anyone wants to play a game
 	- [x] Announce
@@ -85,7 +89,9 @@ An all-in-one bot for Discord using the [Discord.js](https://github.com/hydrabol
 		- [x] To servers
 		- [x] But not if server.members > 100
 	- [x] Dice roll
+	- [x] Coin flip
 	- [x] 8ball
+		- [x] Store respones locally
 	- [x] Choose for me
 	- [x] Clean bot messages
 	- [ ] Store a message with a tag
@@ -93,10 +99,12 @@ An all-in-one bot for Discord using the [Discord.js](https://github.com/hydrabol
 	- [x] Check logs (get stuff like commands processed, messeges recieved, ect.)
 		- [x] Query messages from chat log
 	- [x] Anime Lookup
+	- [ ] Dictionary
 - [x] Logging (w/ Winston because I really liked DougleyBot's log)
 	- [x] Event logs
 	- [x] Chat logs
 		- [x] Remove newlines
+		- [ ] Remove chat logs. They waste recources?
 	- [x] Presence changes
 	- [x] Commands processed
 - [ ] Friends list?
@@ -109,3 +117,4 @@ An all-in-one bot for Discord using the [Discord.js](https://github.com/hydrabol
 - [x] Standardize msg variables
 - [ ] Could do stuff with checking how long a user has been on the server for perms
 - [ ] Update Wiki
+- [x] Handle links from Carbon

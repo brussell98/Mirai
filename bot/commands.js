@@ -23,8 +23,25 @@ Functions
 */
 
 function correctUsage(cmd) {
-	var msg = "Usage: " + config.command_prefix + "" + cmd + " " + commands[cmd].usage;
+	var msg = "Usage: `" + config.command_prefix + "" + cmd + " " + commands[cmd].usage+"`";
 	return msg;
+}
+
+function givePerm(lvl, usr, msg) {
+	if (!perms.hasOwnProperty(usr.id)) {
+		permst = perms;
+		var value = {
+			"level": parseInt(lvl)
+		}
+		permst[usr.id] = value;
+		fs.writeFile("./bot/permissions.json", JSON.stringify(permst, null, '\t'), null);
+	} else {
+		if (perms[usr.id].level != 3) {
+			permst = perms;
+			permst[usr.id].level = parseInt(lvl);
+			fs.writeFile("./bot/permissions.json", JSON.stringify(permst, null, '\t'), null);
+		}
+	}
 }
 
 /*
@@ -43,7 +60,8 @@ var commands = {
 			if (!suffix){
 				var msgArray = [];
 				msgArray.push("This is a list of commands. Use `" + config.command_prefix + "help <command name>` to get info on a specific command.");
-				msgArray.push("");
+				msgArray.push("Moderation related commands can be found with " + config.mod_command_prefix + "help [command].");
+				msgArray.push("You can also find command info at https:/\/github.com/brussell98/BrussellBot/wiki/Commands");
 				msgArray.push("**Commands: **");
 				msgArray.push("```");
 				Object.keys(commands).forEach(function(cmd){ msgArray.push("" + config.command_prefix + "" + cmd + ": " + commands[cmd].desc + ""); });
@@ -85,18 +103,19 @@ var commands = {
 						logger.log("warn", err);
 					} else {
 						logger.log("info", "Joined server: " + server);
-						bot.sendMessage(msg, "Successfully joined ***" + server + "***");
+						bot.sendMessage(msg, "Successfully joined ***" + server + "***. Please use `"+config.mod_command_prefix+"reload`");
+						givePerm("2", server.owner);
+						logger.log("info", "Updated " + usr.username + "s perm level to 2");
 						if (suffix.split(" ")[1] == "-a") {
 							var msgArray = [];
 							msgArray.push("Hi! I'm **" + bot.user.username + "** and I was invited to this server by " + msg.author + ".");
-							msgArray.push("You can use `" + config.command_prefix + "help` to see what I can do.");
-							msgArray.push("If I shouldn't be here someone with the `Kick Members` permission can use `" + config.command_prefix + "leaves` to make me leave");
+							msgArray.push("You can use `" + config.command_prefix + "help` to see what I can do. Mods can use "+config.mod_command_prefix+"help for mod commands.");
+							msgArray.push("If I shouldn't be here someone with the `Kick Members` permission can use `" + config.mod_command_prefix + "leaves` to make me leave");
 							bot.sendMessage(server.defaultChannel, msgArray);
 						}
 					}
 				});
 			} else { bot.sendMessage(msg, correctUsage("joins")); }
-				
 		}
 	},
 	"about": {
@@ -106,7 +125,7 @@ var commands = {
 			var msgArray = [];
 			msgArray.push("I'm " + bot.user.username + " and I was made by brussell98.");
 			msgArray.push("I run on the unofficial Discord API `Discord.js`");
-			msgArray.push("My GitHub page is https://github.com/brussell98/BrussellBot");
+			msgArray.push("My website is http://brussell98.github.io/bot.html");
 			bot.sendMessage(msg, msgArray);
 		}
 	},
@@ -138,26 +157,28 @@ var commands = {
 		}
 	},
 	"announce": {
-		desc: "Sends a message to all servers if in a DM. If in a server sends it to all users in that server.",
-		permLevel: 2,
+		desc: "Sends a message to all users in the server. (1 message per second)",
+		permLevel: 0,
 		usage: "<message>",
 		cooldown: 30,
 		process: function (bot, msg, suffix) {
 			if (suffix) {
-				if (!msg.channel.isPrivate) {
+				if (!msg.channel.isPrivate && msg.author.id == msg.channel.server.owner.id) {
 					if (msg.channel.server.members < 151) {
 						msg.channel.server.members.forEach(function (usr) {
 							setTimeout(bot.sendMessage(usr, suffix + " - " + msg.author), 1000);
 						});
 						logger.log("info", "Announced \"" + suffix + "\" to members");
 					}
-				} else if (msg.channel.isPrivate) {
-					bot.servers.forEach(function (ser) {
-						if (ser.members < 101) {
-							bot.sendMessage(ser.defaultChannel, suffix + " - " + msg.author);
-						}
-					});
-					logger.log("info", "Announced \"" + suffix + "\" to servers");
+				} else if (msg.channel.isPrivate && perms.hasOwnProperty(msg.author.id)) {
+					if (perms[msg.author.id].level == 3) {
+						bot.servers.forEach(function (ser) {
+							if (ser.members < 101) {
+								bot.sendMessage(ser.defaultChannel, suffix + " - " + msg.author);
+							}
+						});
+						logger.log("info", "Announced \"" + suffix + "\" to servers");
+					} else { bot.sendMessage(msg, "Need perm level 3"); }
 				}
 			}
 		}
@@ -174,6 +195,7 @@ var commands = {
 					var msgArray = [];
 					msgArray.push("You requested info on **" + usr.username + "**");
 					msgArray.push("User ID: `" + usr.id + "`");
+					if (perms.hasOwnProperty(usr.id)) { msgArray.push("Permission Level: `" + perms[usr.id].level + "`"); }
 					if (usr.gameID != null) { msgArray.push("Staus: `" + usr.status + "` playing `" + usr.gameID + "`"); } //waiting for lib fix
 					else { msgArray.push("Staus: `" + usr.status + "`"); }
 					var myDate = new Date(msg.channel.server.detailsOfUser(usr).joinedAt);
@@ -223,7 +245,7 @@ var commands = {
 	},
 	"newvote": {
 		desc: "Create a new vote.",
-		permLevel: 1,
+		permLevel: 0,
 		usage: "<topic>",
 		process: function (bot, msg, suffix) {
 			if (!suffix) { bot.sendMessage(msg, correctUsage("newvote")); return; }
@@ -239,7 +261,7 @@ var commands = {
 		usage: "<+/->",
 		process: function (bot, msg, suffix) {
 			if (!suffix) { bot.sendMessage(msg, correctUsage("vote")); return; }
-			if (votebool == false) { bot.sendMessage(msg, "There isn't a topic being voted on right now!"); return; }
+			if (votebool == false) { bot.sendMessage(msg, "There isn't a topic being voted on right now! Use "+config.command_prefix+"newvote <topic>"); return; }
 			if (voter.indexOf(msg.author) != -1) { return; }
 			voter.push(msg.author);
 			var vote = suffix.split(" ")[0]
@@ -249,9 +271,9 @@ var commands = {
 	},
 	"endvote": {
 		desc: "End current vote.",
-		permLevel: 1,
-		process: function (bot, msg, suffix) {
-			bot.sendMessage(msg, "**Results of last vote:**\nTopic: `" + topicstring + "`\nUpvotes: `" + upvote + "`\nDownvotes: `" + downvote + "`");
+		permLevel: 0,
+		process: function (bot, msg, suffix) {//get percents
+			bot.sendMessage(msg, "**Results of last vote:**\nTopic: `" + topicstring + "`\nUpvotes: `" + upvote + " " + (upvote/(upvote+downvote))*100 + "%`\nDownvotes: `" + downvote + " " + (downvote/(upvote+downvote))*100 + "%`");
 			upvote = 0;
 			downvote = 0;
 			voter = [];
@@ -264,16 +286,9 @@ var commands = {
 		permLevel: 0,
 		usage: "",
 		process: function (bot, msg) {
-			bot.startTyping(msg.channel);
-			request('https://8ball.delegator.com/magic/JSON/0', function (error, response, body) {
-				if (!error && response.statusCode == 200) {
-					var answr = JSON.parse(body);
-					bot.sendMessage(msg.channel, answr.magic.answer);
-				} else {
-					logger.log("warn", "8ball error: ", error, ", status code: ", response.statusCode);
-				}
-			});
-			bot.stopTyping(msg.channel);
+			var responses = ["It is certain", "It is decidedly so", "Without a doubt", "Yes, definitely", "You may rely on it", "As I see it, yes", "Most likely", "Outlook good", "Yes", "Signs point to yes", "Reply hazy try again", "Ask again later", "Better not tell you now", "Cannot predict now", "Concentrate and ask again", "Don't count on it", "My reply is no", "My sources say no", "Outlook not so good", "Very doubtful"];
+			var choice = Math.floor(Math.random() * (responses.length));
+			bot.sendMessage(msg, responses[choice]);
 		}
 	},
 	"anime": {
@@ -285,7 +300,7 @@ var commands = {
 				bot.startTyping(msg.channel);
 				var tags = suffix.split(" ").join("+");
 				var rUrl = "http://myanimelist.net/api/anime/search.xml?q=" + tags;
-				request(rUrl, {"auth": {"user": config.mal_user, "pass": config.mal_pass, "sendImmediately": false}}, function (error, response, body) {
+				request(rUrl, {"auth": {"user": process.env.mal_user, "pass": process.env.mal_pass, "sendImmediately": false}}, function (error, response, body) {
 					if (error) { logger.log("info", error); }
 					if (!error && response.statusCode == 200) {
 						xml2js.parseString(body, function (err, result){
@@ -297,8 +312,13 @@ var commands = {
 							var status = result.anime.entry[0].status;
 							var synopsis = result.anime.entry[0].synopsis.toString();
 							synopsis = synopsis.replace(/&mdash;/g, "—");
+							synopsis = synopsis.replace(/&hellip;/g, "...");
 							synopsis = synopsis.replace(/<br \/>/g, " ");
 							synopsis = synopsis.replace(/&quot;/g, "\"");
+							synopsis = synopsis.replace(/\r?\n|\r/g, " ");
+							synopsis = synopsis.replace(/\[(i|\/i)\]/g, "*");
+							synopsis = synopsis.replace(/\[(b|\/b)\]/g, "**");
+							synopsis = synopsis.replace(/\[(.{1,10})\]/g, "");
 							synopsis = synopsis.substring(0, 300);
 							bot.sendMessage(msg, "**" + title + " / " + english+"**\n**Type:** "+ type +", **Episodes:** "+ep+", **Status:** "+status+", **Score:** "+score+"\n"+synopsis);
 						});
@@ -310,12 +330,13 @@ var commands = {
 			}
 		}
 	},
-	"db-query": {
-		desc: "Query the message database",
-		permLevel: 0,
+	/*"db-query": {
+		desc: "Query the message database [EXPERIMENTAL]",
+		permLevel: 1,
 		usage: "<count/print/author/server/channel> <term>",
 		cooldown: 10,
 		process: function(bot, msg, suffix) {
+			if (config.log_messages) {
 			fs.readFile("./logs/messages.txt", 'utf8', function (err, data) {
 				if (err) { logger.log("warn", "Error getting chat logs: " + err); }
 				logger.log("debug", "Fetched chat logs");
@@ -335,12 +356,11 @@ var commands = {
 					var count = 0;
 					var msgArray = [];
 					for (var i = data.length - 1; i >= 0; i--) {
-						if (count > amount) { bot.sendMessage(msg, "Printing **" + amount + "** messages with *" + term + "* from the logs.\n"+msgArray); return; }
 						data[i] = data[i].replace(/(.*) -> (.*) said /, "");
 						if (data[i].indexOf(term) != -1) { msgArray.push(data[i]+"\n"); count += 1; }
 						if (i == 0) { bot.sendMessage(msg, "Printing **" + amount + "** messages with *" + term + "* from the logs.\n"+msgArray); }
+						if (count >= amount) { bot.sendMessage(msg, "Printing **" + amount + "** messages with *" + term + "* from the logs.\n"+msgArray); return; }
 					}
-					delete data;
 				} else if (type == "author") {
 					count = 0;
 					for (line of data) {
@@ -349,7 +369,6 @@ var commands = {
 						if (line.equals(term)) { count += 1; }
 					}
 					bot.sendMessage(msg, "I have **" + count + "** messages from " + term + " in the logs.");
-					delete data;
 				} else if (type == "server") {
 					var count = 0;
 					for (line of data) {
@@ -358,7 +377,6 @@ var commands = {
 						if (line.equals(term)) { count += 1; }
 					}
 					bot.sendMessage(msg, "I have **" + count + "** messages from " + term + " in the logs.");
-					delete data;
 				} else if (type == "channel") {
 					var count = 0;
 					for (line of data) {
@@ -367,9 +385,22 @@ var commands = {
 						if (line.equals(term)) { count += 1; }
 					}
 					bot.sendMessage(msg, "I have **" + count + "** messages from " + term + " in the logs.");
-					delete data;
 				} else { bot.sendMessage(msg, correctUsage("db-query")); delete data; }
 			});
+			} else { bot.sendMessage(msg, "Message logging is currently disabled"); }
+		}
+	},*/
+	"coinflip": {
+		desc: "Flips a coin",
+		permLevel: 0,
+		usage: "",
+		process: function(bot, msg, suffix) {
+			var side = Math.floor(Math.random() * (2));
+			if (side == 0) {
+				bot.sendMessage(msg, "Heads");
+			} else {
+				bot.sendMessage(msg, "Tails");
+			}
 		}
 	}
 };

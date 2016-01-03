@@ -1,12 +1,7 @@
 {
-	"email": "",
-	"password": "",
-	"command_prefix": "/",
+	"command_prefix": "]",
 	"mod_command_prefix": "_",
-	"log_messages": true,
-	"log_events": false,
+	"log_messages": false,
 	"non_essential_event_listeners": true,
-	"log_presence": false,
-	"mal_user": "",
-	"mal_pass": ""
+	"log_presence": false
 }

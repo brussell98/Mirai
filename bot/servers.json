@@ -1,3 +1,44 @@
 {
-	
+	"95288381684068352": {
+		"log_messages": 1,
+		"username_change": 1,
+		"server_greeting": 1,
+		"ban_message": 1
+	},
+	"125117236745732096": {
+		"log_messages": 1,
+		"username_change": 1,
+		"server_greeting": 1,
+		"ban_message": 1
+	},
+	"95288189362634752": {
+		"log_messages": 1,
+		"username_change": 1,
+		"server_greeting": 1,
+		"ban_message": 1
+	},
+	"99202287158702080": {
+		"log_messages": 1,
+		"username_change": 0,
+		"server_greeting": 0,
+		"ban_message": 0
+	},
+	"98226572468690944": {
+		"log_messages": 1,
+		"username_change": 0,
+		"server_greeting": 0,
+		"ban_message": 0
+	},
+	"110373943822540800": {
+		"log_messages": 1,
+		"username_change": 0,
+		"server_greeting": 0,
+		"ban_message": 0
+	},
+	"81384788765712384": {
+		"log_messages": 1,
+		"username_change": 0,
+		"server_greeting": 0,
+		"ban_message": 0
+	}
 }

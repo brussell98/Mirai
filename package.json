@@ -1,6 +1,6 @@
 {
 	"name": "brussellbot",
-	"version": "0.7.2",
+	"version": "1.0.0",
 	"description": "A Discord all-in-one bot using discord.js",
 	"author": "brussell98",
 	"main": "BrussellBot.js",
@@ -10,6 +10,12 @@
 	},
 	"bugs": {
 		"url": "https://github.com/brussell98/BrussellBot/issues"
+	},
+	"engines": {
+		"node": "4.2.4"
+	},
+	"scripts": {
+		"start": "node BrussellBot.js --harmony"
 	},
 	"license": "MIT",
 	"dependencies": {
@@ -22,6 +28,8 @@
 		"path": "*",
 		"request": "*",
 		"winston": "*",
-		"xml2js": "*"
+		"xml2js": "*",
+		"express": "*",
+		"cleverbot-node": "*"
 	}
 }

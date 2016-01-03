@@ -4,6 +4,19 @@ This is a "ping-pong bot" / music bot.
 Run this with node to run the bot.
 ==========
 */
+// invite regex: /https?:\/\/discord\.gg\/[A-Za-z0-9]+/
+
+var express = require('express');
+var app     = express();
+//For avoidong Heroku $PORT error
+app.set('port', (process.env.PORT || 5000));
+app.get('/', function(request, response) {
+	var result = 'Bot is running'
+	response.send(result);
+}).listen(app.get('port'), function() {
+	console.log('Bot is running, server is listening on port', app.get('port'));
+});
+//===================================================
 
 var discord = require("discord.js");
 var commands = require("./bot/commands.js").commands;
@@ -15,17 +28,21 @@ var versioncheck = require("./bot/versioncheck.js");
 var fs = require("fs");
 var chatlog = require("./bot/logger.js").ChatLog;
 var logger = require("./bot/logger.js").Logger;
+var cleverbot = require("./bot/cleverbot").cleverbot;
 
 var servers = getServers();
 var lastExecTime = {};
 
 var bot = new discord.Client();
-bot.on('warn', (m) => logger.log("warn", m));
+bot.on('warn', function (m) {
+	try { logger.log("warn", m) }
+	catch(err) { logger.log("error", err) }});
 bot.on('debug', (m) => logger.log("debug", m));
 
 bot.on("ready", function () {
 	checkServers();
-	bot.setPlayingGame(games[Math.floor(Math.random() * (games.length))]);
+	//bot.setPlayingGame(games[Math.floor(Math.random() * (games.length))]);
+	bot.setPlayingGame("]help [command]");
 	logger.log("info", "BrussellBot is ready! Listening to " + bot.channels.length + " channels on " + bot.servers.length + " servers");
 	versioncheck.checkForUpdate(function (resp) {
 		if (resp != null) {
@@ -36,26 +53,28 @@ bot.on("ready", function () {
 
 bot.on("disconnected", function () {
 	logger.log("info", "Disconnected");
-	process.exit(1);
+	process.exit(0);
 });
 
 bot.on("message", function (msg) {
+	if (msg.channel.isPrivate && msg.author.id == 109338686889476096) { carbonInvite(msg.content); }
 	if (!msg.channel.isPrivate && msg.author.id != bot.user.id) {
 		if (config.log_messages && servers[msg.channel.server.id].log_messages == 1) {
-			var shouldLog = true;
-			if (msg.content[0] == config.command_prefix) { shouldLog = false; }
-			if (msg.content[0] == config.mod_command_prefix) { shouldLog = false; }
-			if (shouldLog = true) {
+			if (msg.content[0] != config.command_prefix && msg.content[0] != config.mod_command_prefix) {
 				var d = new Date();
 				var mtext = msg.content.replace(/\r?\n|\r/g, " ");
 				chatlog.info(d.toUTCString() + ": " + msg.channel.server.name + " --> " + msg.channel.name + " -> " + msg.author.username + " said " + mtext);
 			}
 		}
 	}
-	var isCmd = false; //temp fix
-	if (msg.content[0] == config.command_prefix) { isCmd = true; }
-	if (msg.content[0] == config.mod_command_prefix) { isCmd = true; }
-	if (isCmd == false) { return; }
+	if (msg.mentions.length != 0) {
+		var count = 1;
+		msg.mentions.map(function(usr) { 
+			if (usr.id == bot.user.id && count == 1) { cleverbot(bot, msg); logger.log("info", msg.author.username+" asked cleverbot "+msg.content) }
+			else { count += 1; }
+		});
+	}
+	if (msg.content[0] != config.command_prefix && msg.content[0] != config.mod_command_prefix) { return; }
 	logger.log("info", "" + msg.author.username + " executed: " + msg.content);
 	if (msg.author.id == bot.user.id) { return; }
 	var cmd = msg.content.split(" ")[0].substring(1).toLowerCase();
@@ -89,12 +108,10 @@ bot.on("message", function (msg) {
 			}
 		}
 	} else if (msg.content.startsWith(config.mod_command_prefix)) {
-		if (cmd == "reload") {
-			if (perms.hasOwnProperty(msg.author.id)) {
-				if (perms[msg.author.id].level >= 1) { reload(); }
-			}
-		}
+		if (cmd == "reload") { reload(); }
 		if (mod.hasOwnProperty(cmd)) {
+			var permLvl = 0;
+			if (perms.hasOwnProperty(msg.author.id)) { permLvl = perms[msg.author.id].level; }
 			try {
 				if (mod[cmd].hasOwnProperty("cooldown")) {
 					if (lastExecTime.hasOwnProperty(cmd)) {
@@ -108,11 +125,12 @@ bot.on("message", function (msg) {
 						} else { lastExecTime[cmd] = cTime; }
 					} else { lastExecTime[cmd] = new Date(); }
 				}
-				mod[cmd].process(bot, msg, suffix);
-				logger.log("debug", "Command processed: " + cmd);
+				if (mod[cmd].hasOwnProperty("permLevel")) {
+					if (mod[cmd].permLevel <= permLvl) { var hp = true; mod[cmd].process(bot, msg, suffix, hp); logger.log("debug", "Command processed: " + cmd); }
+					else { var hp = false; mod[cmd].process(bot, msg, suffix, hp); logger.log("debug", "Command processed: " + cmd); }
+				} else { mod[cmd].process(bot, msg, suffix); logger.log("debug", "Command processed: " + cmd); }
 			} catch (err) {
 				logger.log("error", err);
-				mod[cmd].process(bot, msg, suffix); //might be a bad idea
 			}
 		}
 	}
@@ -175,19 +193,19 @@ bot.on('userUnbanned', function (objUser, objServer) {
 });
 
 bot.on('userUpdated', function (objUser, objNewUser) {
-    if (objUser.username != objNewUser.username){
-		logger.log("info", "" + objUser.username + " changed their name to " + objNewUser.username);
-		bot.servers.forEach(function(ser){
-			if (ser.members.get('id', objUser.id) != null && servers[ser.id].username_change == 1){
-				bot.sendMessage(ser, "User in this server: `" + objUser.username + "`. changed their name to: `" + objNewUser.username + "`.");
-			}
-		});
-    }
-    //if (config.non_essential_event_listeners) {
+	if (config.non_essential_event_listeners) {
+		if (objUser.username != objNewUser.username){
+			//logger.log("info", "" + objUser.username + " changed their name to " + objNewUser.username);
+			bot.servers.forEach(function(ser){
+				if (ser.members.get('id', objUser.id) != null && servers[ser.id].username_change == 1){
+					bot.sendMessage(ser, "User in this server: `" + objUser.username + "`. changed their name to: `" + objNewUser.username + "`.");
+				}
+			});
+		}
     //	if (objUser.avatarURL != objNewUser.avatarURL) {
     //		logger.log("info", "" + objNewUser.username + " changed their avatar to: " + objNewUser.avatarUrl);
     //	}
-    //}
+	}
 });
 
 bot.on('presence', function(user, status, game) {
@@ -198,6 +216,8 @@ bot.on('presence', function(user, status, game) {
 
 bot.on('serverCreated', function (objServer) {
 	addServer(objServer);
+	setTimeout(reload(), 3000)
+	
 });
 
 bot.on('serverDeleted', function (objServer) {
@@ -205,12 +225,12 @@ bot.on('serverDeleted', function (objServer) {
 });
 
 //login
-bot.login(config.email, config.password);
-logger.log("info", "Logging in...");
+try {
+	logger.log("info", "Logging in...");
+	bot.login(process.env.email, process.env.password);
+} catch(err) { logger.log("error", err); process.exit(0); }
 
 function updateServers() {
-	fs.writeFile("./bot/servers.json", JSON.stringify(servers, null, '\t'), null);
-	servers = getServers();
 	logger.log("info", "Updated servers.json");
 }
 
@@ -230,6 +250,16 @@ function addServer(svr) {
 		"username_change": user_c,
 		"server_greeting": s_g,
 		"ban_message": ban_m
+	}
+	if (!perms.hasOwnProperty(svr.owner.id)) {
+		var value = {
+			"level": 2
+		}
+		perms[svr.owner.id] = value;
+	} else {
+		if (perms[svr.owner.id].level != 3) {
+			perms[svr.owner.id].level = 2;
+		}
 	}
 	servers[svr.id] = setngs;
 	updateServers();
@@ -251,24 +281,49 @@ function checkServers() {
 	});
 }
 
+function carbonInvite(msg){
+	if (msg) {
+		var shouldCarbonAnnounce = true;
+		bot.joinServer(msg.content, function (err, server) {
+			if (err) {
+				bot.sendMessage(msg, "Failed to join: " + err);
+				logger.log("warn", err);
+			} else {
+				logger.log("info", "Joined server: " + server);
+				bot.sendMessage(msg, "Successfully joined ***" + server + "***");
+				if (shouldCarbonAnnounce) {
+					var msgArray = [];
+					msgArray.push("Hi! I'm **" + bot.user.username + "** and I was invited to this server by " + msg.author + ".");
+					msgArray.push("You can use `" + config.command_prefix + "help` to see what I can do. Mods can use "+config.mod_command_prefix+"help for mod commands.");
+					msgArray.push("If I shouldn't be here someone with the `Kick Members` permission can use `" + config.mod_command_prefix + "leaves` to make me leave");
+					bot.sendMessage(server.defaultChannel, msgArray);
+				}
+			}
+		});
+	}
+}
+
 function reload() {
+	delete require.cache[require.resolve('./bot/config.json')];
 	config = require("./bot/config.json");
 	delete require.cache[require.resolve('./bot/games.json')];
 	games = require("./bot/games.json").games;
-	delete require.cache[require.resolve('./bot/permissions.json')];
-	perms = require("./bot/permissions.json");
 	delete require.cache[require.resolve('./bot/commands.js')];
 	try { commands = require("./bot/commands.js").commands;
-	} catch(err) { bot.sendMessage(msg.author, "You broke it: " + err); }
+	} catch(err) {  }
 	delete require.cache[require.resolve('./bot/mod.js')];
 	try {mod = require("./bot/mod.js").commands;
-	} catch(err) { bot.sendMessage(msg.author, "You broke it: " + err); }
+	} catch(err) {  }
 	delete require.cache[require.resolve('./bot/config.json')];
 	delete require.cache[require.resolve('./bot/versioncheck.js')];
 	versioncheck = require("./bot/versioncheck.js");
 	delete require.cache[require.resolve('./bot/logger.js')];
 	chatlog = require("./bot/logger.js").ChatLog;
 	logger = require("./bot/logger.js").Logger;
-	servers = getServers();
 	logger.info("Reloaded modules with no errors");
 }
+
+var http = require("http");
+setInterval(function() {
+    http.get("http://sheltered-river-1376.herokuapp.com");
+}, 1200000);
