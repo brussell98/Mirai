@@ -157,30 +157,6 @@ var commands = {
 			bot.stopTyping(msg.channel);
 		}
 	},
-	"announce": {
-		desc: "Sends a message to all users in the server. (1 message per second)",
-		permLevel: 0,
-		usage: "<message>",
-		cooldown: 30,
-		process: function (bot, msg, suffix) {
-			if (suffix) {
-				if (!msg.channel.isPrivate && msg.author.id == msg.channel.server.owner.id) {
-					bot.sendMessage(msg, "Announcing (may take a bit)");
-					msg.channel.server.members.forEach(function (usr) {
-						setTimeout(bot.sendMessage(usr, suffix + " - " + msg.author), 1000);
-					});
-					logger.log("info", "Announced \"" + suffix + "\" to members");
-				} else if (msg.channel.isPrivate && perms.hasOwnProperty(msg.author.id)) {
-					if (perms[msg.author.id].level == 3) {
-						bot.servers.forEach(function (ser) {
-							bot.sendMessage(ser.defaultChannel, suffix + " - " + msg.author);
-						});
-						logger.log("info", "Announced \"" + suffix + "\" to servers");
-					} else { bot.sendMessage(msg, "Need perm level 3"); }
-				}
-			}
-		}
-	},
 	"info": {
 		desc: "Gets info on the server or a user if specified.",
 		permLevel: 0,

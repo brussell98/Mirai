@@ -166,6 +166,24 @@ var commands = {
 				}
 			} else { bot.sendMessage(msg, "I can't leave a DM."); }
 		}
+	},
+	"announce": {
+		desc: "Bot owner only",
+		permLevel: 0,
+		usage: "<message>",
+		cooldown: 30,
+		process: function (bot, msg, suffix) {
+			if (suffix) {
+				if (msg.channel.isPrivate && perms.hasOwnProperty(msg.author.id)) {
+					if (perms[msg.author.id].level == 3) {
+						bot.servers.forEach(function (ser) {
+							bot.sendMessage(ser.defaultChannel, suffix + " - " + msg.author);
+						});
+						logger.log("info", "Announced \"" + suffix + "\" to servers");
+					} else { bot.sendMessage(msg, "Need perm level 3"); }
+				}
+			}
+		}
 	}/*,
 	"giveperm": {
 		desc: "Give the user the permission level specified",
