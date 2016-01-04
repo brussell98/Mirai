@@ -343,14 +343,14 @@ var commands = {
 					if (error) { logger.log("info", error); }
 					if (!error && response.statusCode == 200) {
 						xml2js.parseString(body, function (err, result){
-							var title = result.anime.entry[0].title;
-							var english = result.anime.entry[0].english;
-							var chapters = result.anime.entry[0].chapters;
-							var volumes = result.anime.entry[0].volumes;
-							var score = result.anime.entry[0].score;
-							var type = result.anime.entry[0].type;
-							var status = result.anime.entry[0].status;
-							var synopsis = result.anime.entry[0].synopsis.toString();
+							var title = result.manga.entry[0].title;
+							var english = result.manga.entry[0].english;
+							var chapters = result.manga.entry[0].chapters;
+							var volumes = result.manga.entry[0].volumes;
+							var score = result.manga.entry[0].score;
+							var type = result.manga.entry[0].type;
+							var status = result.manga.entry[0].status;
+							var synopsis = result.manga.entry[0].synopsis.toString();
 							synopsis = synopsis.replace(/&mdash;/g, "—");
 							synopsis = synopsis.replace(/&hellip;/g, "...");
 							synopsis = synopsis.replace(/<br \/>/g, " ");
