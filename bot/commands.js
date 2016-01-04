@@ -339,7 +339,7 @@ var commands = {
 				bot.startTyping(msg.channel);
 				var tags = suffix.split(" ").join("+");
 				var rUrl = "http://myanimelist.net/api/manga/search.xml?q=" + tags;
-				request(rUrl, {"auth": {"user": config.mal_user, "pass": config.mal_pass, "sendImmediately": false}}, function (error, response, body) {
+				request(rUrl, {"auth": {"user": process.env.mal_user, "pass": process.env.mal_pass, "sendImmediately": false}}, function (error, response, body) {
 					if (error) { logger.log("info", error); }
 					if (!error && response.statusCode == 200) {
 						xml2js.parseString(body, function (err, result){
