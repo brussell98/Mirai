@@ -319,7 +319,9 @@ var commands = {
 							synopsis = synopsis.replace(/\[(i|\/i)\]/g, "*");
 							synopsis = synopsis.replace(/\[(b|\/b)\]/g, "**");
 							synopsis = synopsis.replace(/\[(.{1,10})\]/g, "");
-							synopsis = synopsis.substring(0, 300);
+							if (!msg.channel.isPrivate) {
+								if (synopsis.length > 400) { synopsis = synopsis.substring(0, 400); }
+							}
 							bot.sendMessage(msg, "**" + title + " / " + english+"**\n**Type:** "+ type +", **Episodes:** "+ep+", **Status:** "+status+", **Score:** "+score+"\n"+synopsis);
 						});
 					}
@@ -359,7 +361,9 @@ var commands = {
 							synopsis = synopsis.replace(/\[(i|\/i)\]/g, "*");
 							synopsis = synopsis.replace(/\[(b|\/b)\]/g, "**");
 							synopsis = synopsis.replace(/\[(.{1,10})\]/g, "");
-							synopsis = synopsis.substring(0, 300);
+							if (!msg.channel.isPrivate) {
+								if (synopsis.length > 400) { synopsis = synopsis.substring(0, 400); }
+							}
 							bot.sendMessage(msg, "**" + title + " / " + english+"**\n**Type:** "+ type +", **Chapters:** "+chapters+", **Volumes: **"+volumes+", **Status:** "+status+", **Score:** "+score+"\n"+synopsis);
 						});
 					}
