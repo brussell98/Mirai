@@ -68,10 +68,8 @@ bot.on("message", function (msg) {
 		}
 	}
 	if (msg.mentions.length != 0) {
-		var count = 1;
-		msg.mentions.map(function(usr) { 
-			if (usr.id == bot.user.id && count == 1) { cleverbot(bot, msg); logger.log("info", msg.author.username+" asked cleverbot "+msg.content) }
-			else { count += 1; }
+		msg.mentions.forEach(function(usr) { 
+			if (usr.id == bot.user.id && msg.content.startsWith("<@125367104336691200>")) { cleverbot(bot, msg); logger.log("info", msg.author.username+" asked cleverbot "+msg.content) }
 		});
 	}
 	if (msg.content[0] != config.command_prefix && msg.content[0] != config.mod_command_prefix) { return; }

@@ -74,8 +74,9 @@ var commands = {
 		desc: "Get the stats of the bot",
 		usage: "[-ls (list servers)] [-lc (list channels)]",
 		cooldown: 60,
-		permLevel: 1,
-		process: function(bot, msg, suffix) {
+		permLevel: 2,
+		process: function(bot, msg, suffix, hp) {
+			if (hp) {
 			var msgArray = [];
 			msgArray.push("```");
 			msgArray.push("Uptime: " + (Math.round(bot.uptime / (1000 * 60 * 60))) + " hours, " + (Math.round(bot.uptime / (1000 * 60)) % 60) + " minutes, and " + (Math.round(bot.uptime / 1000) % 60) + " seconds.");
@@ -94,17 +95,11 @@ var commands = {
 				for (line of data) {
 					if (line.indexOf(" - debug: Command processed: ") != -1) { count += 1; }
 				}
-				bot.sendMessage(msg, "`Commands processed: " + count + "`");
-			});
-
-			fs.readFile("./logs/messages.txt", 'utf8', function (err, data) {
-				if (err) { logger.log("warn", "Error getting chat logs: " + err); }
-				logger.log("debug", "Fetched chat logs");
-				bot.sendMessage(msg, "`Messages logged: " + data.split(/\r?\n/).length + "`");
+				bot.sendMessage(msg, "`Commands processed this session: " + count + "`");
 			});
 
 			if (suffix.indexOf("-ls") != -1) { bot.sendMessage(msg, "```\n" + bot.servers.join(", ") + "\n```"); }
-			if (suffix.indexOf("-lc") != -1) { bot.sendMessage(msg, "```\n" + bot.channels.join(", ") + "\n```"); }
+			} else { bot.sendMessage(msg, "Only server owners can do this."); }
 		}
 	},
 	"playing": {

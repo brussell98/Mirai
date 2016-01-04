@@ -150,7 +150,8 @@ var commands = {
 			request('https://rolz.org/api/?' + dice + '.json', function(err, response, body) {
 				if (!err && response.statusCode == 200) {
 					var roll = JSON.parse(body);
-					bot.sendMessage(msg, "Your " + roll.input + " resulted in " + roll.result + " " + roll.details);
+					if (roll.details.length <= 100) { bot.sendMessage(msg, "Your " + roll.input + " resulted in " + roll.result + " " + roll.details); }
+					else { bot.sendMessage(msg, "Your " + roll.input + " resulted in " + roll.result); }
 				} else { logger.log("warn", "Got an error: ", error, ", status code: ", response.statusCode); }
 			});
 			bot.stopTyping(msg.channel);
@@ -196,7 +197,7 @@ var commands = {
 					msgArray.push("You requested info on **" + usr.username + "**");
 					msgArray.push("User ID: `" + usr.id + "`");
 					if (perms.hasOwnProperty(usr.id)) { msgArray.push("Permission Level: `" + perms[usr.id].level + "`"); }
-					if (usr.gameID != null) { msgArray.push("Staus: `" + usr.status + "` playing `" + usr.gameID + "`"); } //waiting for lib fix
+					if (usr.game != null) { msgArray.push("Staus: `" + usr.status + "` playing `" + usr.game.name + "`"); } //broken
 					else { msgArray.push("Staus: `" + usr.status + "`"); }
 					var myDate = new Date(msg.channel.server.detailsOfUser(usr).joinedAt);
 					msgArray.push("Joined this server on: `" + myDate.toUTCString() + "`");
@@ -285,6 +286,14 @@ var commands = {
 		desc: "Ask the bot a question (8ball).",
 		permLevel: 0,
 		usage: "",
+		process: function (bot, msg) {
+			bot.sendMessage(msg, "Moved to `]8ball` to avoid confusion. *-Bot Creator-senpai*");
+		}
+	},
+	"8ball": {
+		desc: "Ask the bot a question (8ball).",
+		permLevel: 0,
+		usage: "[question]",
 		process: function (bot, msg) {
 			var responses = ["It is certain", "It is decidedly so", "Without a doubt", "Yes, definitely", "You may rely on it", "As I see it, yes", "Most likely", "Outlook good", "Yes", "Signs point to yes", "Reply hazy try again", "Ask again later", "Better not tell you now", "Cannot predict now", "Concentrate and ask again", "Don't count on it", "My reply is no", "My sources say no", "Outlook not so good", "Very doubtful"];
 			var choice = Math.floor(Math.random() * (responses.length));
