@@ -165,18 +165,15 @@ var commands = {
 		process: function (bot, msg, suffix) {
 			if (suffix) {
 				if (!msg.channel.isPrivate && msg.author.id == msg.channel.server.owner.id) {
-					if (msg.channel.server.members < 151) {
-						msg.channel.server.members.forEach(function (usr) {
-							setTimeout(bot.sendMessage(usr, suffix + " - " + msg.author), 1000);
-						});
-						logger.log("info", "Announced \"" + suffix + "\" to members");
-					}
+					bot.sendMessage(msg, "Announcing (may take a bit)");
+					msg.channel.server.members.forEach(function (usr) {
+						setTimeout(bot.sendMessage(usr, suffix + " - " + msg.author), 1000);
+					});
+					logger.log("info", "Announced \"" + suffix + "\" to members");
 				} else if (msg.channel.isPrivate && perms.hasOwnProperty(msg.author.id)) {
 					if (perms[msg.author.id].level == 3) {
 						bot.servers.forEach(function (ser) {
-							if (ser.members < 101) {
-								bot.sendMessage(ser.defaultChannel, suffix + " - " + msg.author);
-							}
+							bot.sendMessage(ser.defaultChannel, suffix + " - " + msg.author);
 						});
 						logger.log("info", "Announced \"" + suffix + "\" to servers");
 					} else { bot.sendMessage(msg, "Need perm level 3"); }
@@ -283,7 +280,7 @@ var commands = {
 		}
 	},
 	"ask": {
-		desc: "Ask the bot a question (8ball).",
+		desc: "Moved to 8ball.",
 		permLevel: 0,
 		usage: "",
 		process: function (bot, msg) {
@@ -295,7 +292,7 @@ var commands = {
 		permLevel: 0,
 		usage: "[question]",
 		process: function (bot, msg) {
-			var responses = ["It is certain", "It is decidedly so", "Without a doubt", "Yes, definitely", "You may rely on it", "As I see it, yes", "Most likely", "Outlook good", "Yes", "Signs point to yes", "Reply hazy try again", "Ask again later", "Better not tell you now", "Cannot predict now", "Concentrate and ask again", "Don't count on it", "My reply is no", "My sources say no", "Outlook not so good", "Very doubtful"];
+			var responses = ["It is certain", "It is decidedly so", "Without a doubt", "Yes, definitely", "You may rely on it", "As I see it, yes", "Most likely", "Outlook good", "Yes", "Signs point to yes", "Ask again later", "Better not tell you now", "Cannot predict now", "Don't count on it", "My reply is no", "My sources say no", "Outlook not so good", "Very doubtful"];
 			var choice = Math.floor(Math.random() * (responses.length));
 			bot.sendMessage(msg, responses[choice]);
 		}
