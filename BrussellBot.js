@@ -57,7 +57,7 @@ bot.on("disconnected", function () {
 });
 
 bot.on("message", function (msg) {
-	if (msg.channel.isPrivate && msg.author.id == 109338686889476096) { carbonInvite(msg.content); }
+	if (msg.channel.isPrivate && msg.author.id == 109338686889476096) { carbonInvite(msg); }
 	if (!msg.channel.isPrivate && msg.author.id != bot.user.id) {
 		if (config.log_messages && servers[msg.channel.server.id].log_messages == 1) {
 			if (msg.content[0] != config.command_prefix && msg.content[0] != config.mod_command_prefix) {
