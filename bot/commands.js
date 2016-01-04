@@ -330,6 +330,46 @@ var commands = {
 			}
 		}
 	},
+	"manga": {
+		desc: "Gets the details on an manga from MAL.",
+		permLevel: 0,
+		usage: "<manga/novel name>",
+		process: function (bot, msg, suffix) {
+			if (suffix) {
+				bot.startTyping(msg.channel);
+				var tags = suffix.split(" ").join("+");
+				var rUrl = "http://myanimelist.net/api/manga/search.xml?q=" + tags;
+				request(rUrl, {"auth": {"user": config.mal_user, "pass": config.mal_pass, "sendImmediately": false}}, function (error, response, body) {
+					if (error) { logger.log("info", error); }
+					if (!error && response.statusCode == 200) {
+						xml2js.parseString(body, function (err, result){
+							var title = result.anime.entry[0].title;
+							var english = result.anime.entry[0].english;
+							var chapters = result.anime.entry[0].chapters;
+							var volumes = result.anime.entry[0].volumes;
+							var score = result.anime.entry[0].score;
+							var type = result.anime.entry[0].type;
+							var status = result.anime.entry[0].status;
+							var synopsis = result.anime.entry[0].synopsis.toString();
+							synopsis = synopsis.replace(/&mdash;/g, "—");
+							synopsis = synopsis.replace(/&hellip;/g, "...");
+							synopsis = synopsis.replace(/<br \/>/g, " ");
+							synopsis = synopsis.replace(/&quot;/g, "\"");
+							synopsis = synopsis.replace(/\r?\n|\r/g, " ");
+							synopsis = synopsis.replace(/\[(i|\/i)\]/g, "*");
+							synopsis = synopsis.replace(/\[(b|\/b)\]/g, "**");
+							synopsis = synopsis.replace(/\[(.{1,10})\]/g, "");
+							synopsis = synopsis.substring(0, 300);
+							bot.sendMessage(msg, "**" + title + " / " + english+"**\n**Type:** "+ type +", **Chapters:** "+chapters+", **Volumes: **"+volumes+", **Status:** "+status+", **Score:** "+score+"\n"+synopsis);
+						});
+					}
+				});
+				bot.stopTyping(msg.channel);
+			} else {
+				bot.sendMessage(msg, correctUsage("manga"));
+			}
+		}
+	},
 	/*"db-query": {
 		desc: "Query the message database [EXPERIMENTAL]",
 		permLevel: 1,

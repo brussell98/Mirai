@@ -20,7 +20,6 @@
 	"license": "MIT",
 	"dependencies": {
 		"discord.js": "*",
-		"node-opus": "*",
 		"ytdl-core": "*",
 		"fs": "*",
 		"url": "*",
