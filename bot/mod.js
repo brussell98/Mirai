@@ -1,8 +1,6 @@
 var config = require("./config.json");
 var games = require("./games.json").games;
-var perms = require("./permissions.json");
 var version = require("../package.json").version;
-var chatlog = require("./logger.js").ChatLog;
 var logger = require("./logger.js").Logger;
 
 var fs = require('fs');
@@ -18,23 +16,6 @@ function correctUsage(cmd) {
 	return msg;
 }
 
-function givePerm(lvl, usr) {
-	if (!perms.hasOwnProperty(usr.id)) {
-		permst = perms;
-		var value = {
-			"level": parseInt(lvl)
-		}
-		permst[usr.id] = value;
-		fs.writeFile("./bot/permissions.json", JSON.stringify(permst, null, '\t'), null);
-	} else {
-		if (perms[usr.id].level != 3) {
-			permst = perms;
-			permst[usr.id].level = parseInt(lvl);
-			fs.writeFile("./bot/permissions.json", JSON.stringify(permst, null, '\t'), null);
-		}
-	}
-}
-
 /*
 =====================
 Commands
@@ -45,7 +26,6 @@ var commands = {
 	"help": {
 		desc: "Sends a DM containing all of the commands. If a command is specified gives info on that command.",
 		usage: "[command]",
-		permLevel: 0,
 		process: function(bot, msg, suffix) {
 			var msgArray = [];
 			if (!suffix){
@@ -57,13 +37,11 @@ var commands = {
 				Object.keys(commands).forEach(function(cmd){ msgArray.push("" + config.mod_command_prefix + "" + cmd + ": " + commands[cmd].desc + ""); });
 				msgArray.push("```");
 				bot.sendMessage(msg.author, msgArray);
-			}
-			if (suffix){
+			} else {
 				if (commands.hasOwnProperty(suffix)){
 					var msgArray = [];
 					msgArray.push("**" + config.mod_command_prefix + "" + suffix + ": **" + commands[suffix].desc);
 					if (commands[suffix].hasOwnProperty("usage")) { msgArray.push("**Usage: **`" + config.mod_command_prefix + "" + suffix + " " + commands[suffix].usage + "`"); }
-					if (commands[suffix].hasOwnProperty("permLevel")) { msgArray.push("**Permission level** (not required for some): " + commands[suffix].permLevel); }
 					if (commands[suffix].hasOwnProperty("cooldown")) { msgArray.push("**Cooldown: **" + commands[suffix].cooldown + " seconds"); }
 					bot.sendMessage(msg.author, msgArray);
 				} else { bot.sendMessage(msg.author, "Command `" + suffix + "` not found."); }
@@ -72,11 +50,10 @@ var commands = {
 	},
 	"stats": {
 		desc: "Get the stats of the bot",
-		usage: "[-ls (list servers)] [-lc (list channels)]",
+		usage: "[-ls (list servers)] ",
 		cooldown: 60,
-		permLevel: 2,
-		process: function(bot, msg, suffix, hp) {
-			if (hp) {
+		process: function(bot, msg, suffix) {
+			if (msg.author.id == config.admin_id || msg.author.id == msg.channel.server.owner.id) {
 			var msgArray = [];
 			msgArray.push("```");
 			msgArray.push("Uptime: " + (Math.round(bot.uptime / (1000 * 60 * 60))) + " hours, " + (Math.round(bot.uptime / (1000 * 60)) % 60) + " minutes, and " + (Math.round(bot.uptime / 1000) % 60) + " seconds.");
@@ -106,22 +83,22 @@ var commands = {
 		desc: "Set what the bot is playing. Leave empty for random.",
 		usage: "[game]",
 		cooldown: 5,
-		permLevel: 1,
-		process: function (bot, msg, suffix, hp) {
-			if (hp) {
+		process: function (bot, msg, suffix) {
+			if (!msg.channel.isPrivate) {
+			if (msg.channel.server.owner.id == msg.author.id) {
 				!suffix ? bot.setPlayingGame(games[Math.floor(Math.random() * (games.length))]) : bot.setPlayingGame(suffix);
 				logger.log("info", "" + msg.author.username + " set the playing status to: " + suffix);
-			} else { console.log("info", "User has insufficient perms"); }
+			} else { console.log("info", "Server owners only"); }
+			}
 		}
 	},
 	"clean": {
 		desc: "Cleans the specified number of bot messages from the channel.",
 		usage: "<number of bot messages>",
 		cooldown: 10,
-		permLevel: 1,
-		process: function (bot, msg, suffix, hp) {
+		process: function (bot, msg, suffix) {
 			if (suffix) {
-				if (hp || msg.channel.isPrivate || msg.channel.permissionsOf(msg.author).hasPermission("manageMessages")) {
+				if (msg.channel.isPrivate || msg.channel.permissionsOf(msg.author).hasPermission("manageMessages") || msg.author.id == config.admin_id) {
 					bot.getChannelLogs(msg.channel, 100, function (error, messages) {
 						if (error) {
 							logger.log("warn", "Something went wrong while fetching logs.");
@@ -146,19 +123,17 @@ var commands = {
 							bot.stopTyping(msg.channel);
 						}
 					});
-				} else { bot.sendMessage(msg, "*Invalid permissions*"); }
+				} else { bot.sendMessage(msg, "You must have permission to manage messages in this channel"); }
 			} else { bot.sendMessage(msg, correctUsage("clean")); }
 		}
 	},
 	"leaves": {
 		desc: "Leaves the server.",
-		permLevel: 3,
-		process: function(bot, msg, suffix, hp) {
+		process: function(bot, msg, suffix) {
 			if (msg.channel.server) {
-				if (hp || msg.channel.permissionsOf(msg.author).hasPermission("kickMembers")) {
-					bot.sendMessage(msg, "Alright, I'll leave :(");
-					givePerm("1", msg.channel.server.owner);
-					bot.leaveServer(msg.channel.server);
+				if (msg.channel.permissionsOf(msg.author).hasPermission("kickMembers") || msg.author.id == config.admin_id) {
+					bot.sendMessage(msg, "It's not like I want to be here or anything, baka").then(
+					bot.leaveServer(msg.channel.server));
 					logger.log("info", "I've left a server on request of " + msg.sender.username + ". I'm only in " + bot.servers.length + " servers now.");
 				} else {
 					bot.sendMessage(msg, "You can't tell me what to do! (You need permission to kick users in this channel)");
@@ -169,48 +144,19 @@ var commands = {
 	},
 	"announce": {
 		desc: "Bot owner only",
-		permLevel: 0,
 		usage: "<message>",
 		cooldown: 30,
 		process: function (bot, msg, suffix) {
 			if (suffix) {
-				if (msg.channel.isPrivate && perms.hasOwnProperty(msg.author.id)) {
-					if (perms[msg.author.id].level == 3) {
-						bot.servers.forEach(function (ser) {
-							bot.sendMessage(ser.defaultChannel, suffix + " - " + msg.author);
-						});
-						logger.log("info", "Announced \"" + suffix + "\" to servers");
-					} else { bot.sendMessage(msg, "Need perm level 3"); }
-				}
-			}
-		}
-	}/*,
-	"giveperm": {
-		desc: "Give the user the permission level specified",
-		permLevel: 2,
-		usage: "<level below yours> <mention user>",
-		process: function(bot, msg, suffix, hp) {
-			if (hp || msg.author.id == msg.channel.server.owner.id) {
-			if (suffix && suffix.split(" ")[1].indexOf("@") != -1 && suffix.split(" ")[0].length == 1) {
-				//if (suffix.split(" ")[0] < perms[msg.author.id].level) {
-					msg.mentions.map(function (usr) {
-						if (perms.hasOwnProperty(usr.id)) {
-							if (perms[msg.author.id].level > perms[usr.id]) {
-								givePerm(suffix.split(" ")[0], usr);
-								logger.log("info", "Updated " + usr.username + "s perm level to " + suffix.split(" ")[0]);
-								bot.sendMessage(msg, "Updated, use "+config.mod_command_prefix+"reload for this change to take effect");
-							}
-						} else {
-							givePerm(suffix.split(" ")[0], usr);
-							logger.log("info", "Updated " + usr.username + "s perm level to " + suffix.split(" ")[0]);
-							bot.sendMessage(msg, "Updated, use "+config.mod_command_prefix+"reload for this change to take effect");
-						}
+				if (msg.author.id == config.admin_id) {
+					bot.servers.forEach(function (ser) {
+						bot.sendMessage(ser.defaultChannel, suffix + " - " + msg.author);
 					});
-				//} else { bot.sendMessage(msg, "You can only give a user a perm level below yours"); }
-			} else { bot.sendMessage(msg, correctUsage("giveperm")); }
+					logger.log("info", "Announced \"" + suffix + "\" to servers");
+				} else { bot.sendMessage(msg, "Bot owner only!"); }
 			}
 		}
-	}*/
+	}
 }
 
 exports.commands = commands;

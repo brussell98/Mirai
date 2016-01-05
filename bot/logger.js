@@ -2,20 +2,6 @@ var winston = require('winston');
 
 winston.emitErrs = false;
 
-exports.ChatLog = new winston.Logger({
-	transports: [
-		new winston.transports.File({
-			handleExceptions: false,
-			name: 'file:messages',
-			filename: __dirname + '/../logs/messages.txt',
-			formatter: function (args) { return args.message; },
-			level: 'info',
-			colorize: false,
-			json: false
-		})
-	]
-});
-
 exports.Logger = new winston.Logger({
 	colors: {
 		verbose: 'yellow',
