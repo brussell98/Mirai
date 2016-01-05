@@ -191,9 +191,9 @@ bot.on('presence', function(user, status, game) {
 	}
 });
 
-bot.on('serverDeleted', objServer) {
+bot.on('serverDeleted', function(objServer) {
 	logger.log("info", "Left server "+objServer.name)
-}
+});
 
 //login
 try {
