@@ -5,18 +5,6 @@ Run this with node to run the bot.
 ==========
 */
 // invite regex: /https?:\/\/discord\.gg\/[A-Za-z0-9]+/
-if (config.is_heroku_version) {
-	var express = require('express');
-	var app = express();
-	//For avoidong Heroku $PORT error
-	app.set('port', (process.env.PORT || 5000));
-	app.get('/', function(request, response) {
-		var result = 'Bot is running'
-		response.send(result);
-	}).listen(app.get('port'), function() {
-		console.log('Bot is running, server is listening on port', app.get('port'));
-	});
-}
 //===================================================
 
 var discord = require("discord.js");
@@ -29,6 +17,19 @@ var fs = require("fs");
 var chatlog = require("./bot/logger.js").ChatLog;
 var logger = require("./bot/logger.js").Logger;
 var cleverbot = require("./bot/cleverbot").cleverbot;
+
+if (config.is_heroku_version) {
+	var express = require('express');
+	var app = express();
+	//For avoidong Heroku $PORT error
+	app.set('port', (process.env.PORT || 5000));
+	app.get('/', function(request, response) {
+		var result = 'Bot is running'
+		response.send(result);
+	}).listen(app.get('port'), function() {
+		console.log('Bot is running, server is listening on port', app.get('port'));
+	});
+}
 
 var lastExecTime = {};
 var shouldCarbonAnnounce = true;
