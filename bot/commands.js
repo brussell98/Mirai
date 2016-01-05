@@ -149,6 +149,7 @@ var commands = {
 						var rsO = msg.channel.server.rolesOfUser(usr.id)
 						var rols = "eveyone, "
 						for (rO of rsO) { rols += (rO.name + ", "); }
+						rols = rols.replace("@", "");
 						msgArray.push("Roles: `" + rols.substring(0, rols.length - 2) + "`");
 						if (usr.avatarURL != null) { msgArray.push("Avatar URL: `" + usr.avatarURL + "`"); }
 						bot.sendMessage(msg, msgArray);

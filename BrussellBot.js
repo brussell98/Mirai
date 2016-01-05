@@ -120,7 +120,9 @@ bot.on("message", function (msg) {
 bot.on('serverNewMember', function (objServer, objUser) {
 	if (objServer.members.length < 71 && config.non_essential_event_listeners) {
 		logger.log("info", "New member on " + objServer.name + ": " + objUser.username);
-		bot.sendMessage(objServer.defaultChannel, "Welcome to " + objServer.name + " " + objUser.username);
+		if (config.greet_new_memebrs) {
+			bot.sendMessage(objServer.defaultChannel, "Welcome to " + objServer.name + " " + objUser.username);
+		}
 	}
 });
 

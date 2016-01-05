@@ -67,14 +67,13 @@ This is the branch that my bot runs on
 	- [x] Vote (Credit: [BlackHayate](https://github.com/BlackHayate))
 	- [x] Anime/Manga Lookup
 		- [ ] More regex replaces
-	- [ ] Dictionary
+	- [ ] Avatar
 	- [ ] Stop user from sending messages for a certain time 
 - [x] Logging (w/ Winston because I really liked DougleyBot's log)
 	- [x] Event logs
 	- [x] Presence changes
 	- [x] Commands processed
-- [ ] Friends list? - Non-heroku branch
-- [ ] User regex to verify commands
+- [ ] Use regex to verify commands
 - [x] Version checker
 - [ ] Optimize code
 - [x] Reload modules command
