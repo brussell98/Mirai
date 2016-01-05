@@ -5,17 +5,18 @@ Run this with node to run the bot.
 ==========
 */
 // invite regex: /https?:\/\/discord\.gg\/[A-Za-z0-9]+/
-
-var express = require('express');
-var app = express();
-//For avoidong Heroku $PORT error
-app.set('port', (process.env.PORT || 5000));
-app.get('/', function(request, response) {
-	var result = 'Bot is running'
-	response.send(result);
-}).listen(app.get('port'), function() {
-	console.log('Bot is running, server is listening on port', app.get('port'));
-});
+if (config.is_heroku_version) {
+	var express = require('express');
+	var app = express();
+	//For avoidong Heroku $PORT error
+	app.set('port', (process.env.PORT || 5000));
+	app.get('/', function(request, response) {
+		var result = 'Bot is running'
+		response.send(result);
+	}).listen(app.get('port'), function() {
+		console.log('Bot is running, server is listening on port', app.get('port'));
+	});
+}
 //===================================================
 
 var discord = require("discord.js");
@@ -51,7 +52,7 @@ bot.on("ready", function () {
 
 bot.on("disconnected", function () {
 	logger.log("info", "Disconnected");
-	process.exit(0); //change to 1 for master branch
+	(config.is_heroku_version) ? process.exit(0) : process.exit(1);
 });
 
 bot.on("message", function (msg) {
@@ -84,6 +85,9 @@ bot.on("message", function (msg) {
 					} else { lastExecTime[cmd] = new Date(); }
 				}
 				commands[cmd].process(bot, msg, suffix);
+				if (commands[cmd].hasOwnProperty("deleteCommand")) {
+					if (commands[cmd].deleteCommand == true) { bot.deleteMessage(msg); }
+				}
 				logger.log("debug", "Command processed: " + cmd);
 			} catch (err) {
 				logger.log("error", err);
@@ -108,6 +112,9 @@ bot.on("message", function (msg) {
 					} else { lastExecTime[cmd] = new Date(); }
 				}
 				mod[cmd].process(bot, msg, suffix);
+				if (mod[cmd].hasOwnProperty("deleteCommand")) {
+					if (mod[cmd].deleteCommand == true) { bot.deleteMessage(msg); }
+				}
 				logger.log("debug", "Command processed: " + cmd);
 			} catch (err) {
 				logger.log("error", err);
@@ -200,8 +207,8 @@ bot.on('serverDeleted', function(objServer) {
 //login
 try {
 	logger.log("info", "Logging in...");
-	bot.login(process.env.email, process.env.password);
-} catch(err) { logger.log("error", err); process.exit(0); }
+	if (config.is_heroku_version) { bot.login(process.env.email, process.env.password); } else { bot.login(config.email, config.password); }
+} catch(err) { if (config.is_heroku_version) { logger.log("error", err); process.exit(0); } else { logger.log("error", err); process.exit(1); }}
 
 function carbonInvite(msg){
 	if (msg) {
@@ -243,7 +250,9 @@ function reload() {
 	logger.info("Reloaded modules with no errors");
 }
 
-var http = require("http");
-setInterval(function() {
-    http.get("http://sheltered-river-1376.herokuapp.com");
-}, 1200000);
+if (config.is_heroku_version) {
+	var http = require("http");
+	setInterval(function() {
+		http.get("http://sheltered-river-1376.herokuapp.com");
+	}, 1200000);
+}
