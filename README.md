@@ -14,47 +14,17 @@ An multipurpose bot for Discord using the [Discord.js](https://github.com/hydrab
 
 ---
 
-### Features
-*Coming in the next commit!*
-
----
-
-### Requirements
-- Python 2.7.x (added to path)
-- Node (added to path)
-- Visual Studio (**with C++ compiler**)
-- ffmpeg (added to path)
-
----
-
-### Installation (Windows)
-1. Download BrussellBot and put it in a folder.
-2. Open a command promt in the folder (shift+right click in the folder).
-3. Run `npm install`.
-4. Setup `config.json`.
-5. Add user ids to `permissions.json`. By default all users are `0`. Trusted should have `1`, server owners `2`, you `3`.
+This is the branch that my bot runs on
 
 ---
 
 ### TODO
 
-- [ ] Stop relying on permission levels and use server roles
-- [x] Test current version
-- [x] Cooldown for commands
-- [x] Per-server settings JSON
-	- [x] Add new servers to JSON on join / startup
-	- [ ] Server settings/mod commands
-		- [ ] Stop user from sending messages for a certain time 
-		- [ ] Blacklist/whitelist channel
-		- [x] Give user permissions
-		- [x] Remove user perms
-- [x] Wiki page for adding commands
-- [x] Give server owner perm level 2 on join
-	- [x] Set to 1 on leave
+- [x] Stop relying on permission levels and use server roles - PRIORITY
+- [x] Phase out Per-server settings JSON - PRIORITY
+- [ ] Option to delete command message
 - [ ] Semi-idiot-proof the code
 	- [ ] And add comments so people can understand what this stuff does
-- [x] Fully check if user has permission to execute a command in the message interpreter
-- [x] Debug messages toggle
 - [ ] Commands
 	- [x] Join server
 		- [x] Silent join by default
@@ -67,54 +37,45 @@ An multipurpose bot for Discord using the [Discord.js](https://github.com/hydrab
 	- [x] Stats
 		- [x] List servers or channels
 		- [x] Option to only show certain stats
-		- [x] Commands process and messages logged
-	- [ ] Music commands (Planned for v2.0)
+		- [x] Commands process
+	- [ ] Music commands (Planned for v2.0) - PRIORITY
+		- [ ] Audio help
 		- [ ] Queue song from youtube
 		- [ ] Skip
-		- [ ] Remove from playlist
-		- [ ] Queue from a playlist
+		- [ ] Have pre-made playlists avalible
+		- [ ] Queue a playlist
 		- [ ] Bind music messages to a channel
 		- [ ] List of queues songs
 		- [ ] Set playing to song name
-	- [ ] Cleverbot module activated with mention
+		- [ ] Bot owner gets priority
+	- [x] Cleverbot module activated with mention
 	- [x] Set playing status
 	- [x] Info commands
 		- [x] Server info
 		- [x] User info
-			- [ ] Get past usernames from log (requires new info log format)
 			- [x] Get joinedAt from detailsOfUser
 	- [x] Ask if anyone wants to play a game
-	- [x] Announce
-		- [x] To users in the server
-		- [x] To servers
-		- [x] But not if server.members > 100
+	- [x] Announce to servers (for bot owner)
 	- [x] Dice roll
 	- [x] Coin flip
 	- [x] 8ball
 		- [x] Store respones locally
+	- [ ] Rock paper scissors
 	- [x] Choose for me
 	- [x] Clean bot messages
-	- [ ] Store a message with a tag
+	- [ ] Store a message or link with a tag (non-heroku branch)
 	- [x] Vote (Credit: [BlackHayate](https://github.com/BlackHayate))
-	- [x] Check logs (get stuff like commands processed, messeges recieved, ect.)
-		- [x] Query messages from chat log
-	- [x] Anime Lookup
+	- [x] Anime/Manga Lookup
+		- [ ] More regex replaces
 	- [ ] Dictionary
+	- [ ] Stop user from sending messages for a certain time 
 - [x] Logging (w/ Winston because I really liked DougleyBot's log)
 	- [x] Event logs
-	- [x] Chat logs
-		- [x] Remove newlines
-		- [ ] Remove chat logs. They waste recources?
 	- [x] Presence changes
 	- [x] Commands processed
-- [ ] Friends list?
-- [ ] Subscribe to games and get notified when people are playing them?
+- [ ] Friends list? - Non-heroku branch
 - [ ] User regex to verify commands
 - [x] Version checker
 - [ ] Optimize code
 - [x] Reload modules command
-- [ ] I tried to make a restart command but it didn't work right. If you know how tell me.
-- [x] Standardize msg variables
 - [ ] Could do stuff with checking how long a user has been on the server for perms
-- [ ] Update Wiki
-- [x] Handle links from Carbon
