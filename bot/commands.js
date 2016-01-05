@@ -40,7 +40,7 @@ var commands = {
 			if (!suffix){
 				var msgArray = [];
 				msgArray.push("This is a list of commands. Use `" + config.command_prefix + "help <command name>` to get info on a specific command.");
-				msgArray.push("Moderation related commands can be found with " + config.mod_command_prefix + "help [command].");
+				msgArray.push("Moderation related commands can be found with `" + config.mod_command_prefix + "help [command]`.");
 				msgArray.push("You can also find command info at github.com/brussell98/BrussellBot/wiki/Commands");
 				msgArray.push("**Commands: **");
 				msgArray.push("```");
@@ -65,7 +65,7 @@ var commands = {
 			if (n == 0) { bot.sendMessage(msg, "pong");} 
 			else if (n == 1) { bot.sendMessage(msg, "pongu");} 
 			else if (n == 2) { bot.sendMessage(msg, "pong!");} 
-			else if (n == 2) { bot.sendMessage(msg, "Yeah, I'm still here");} 
+			else if (n == 3) { bot.sendMessage(msg, "Yeah, I'm still here");} 
 		}
 	},
 	"joins": {
@@ -140,7 +140,7 @@ var commands = {
 					msg.mentions.map(function (usr) {
 						var msgArray = [];
 						if (usr.id != config.admin_id) { msgArray.push("You requested info on **" + usr.username + "**"); }
-						else { msgArray.push("You requested info on **Bot Creator-snepai**"); }
+						else { msgArray.push("You requested info on **Bot Creator-senpai**"); }
 						msgArray.push("User ID: `" + usr.id + "`");
 						if (usr.game != null) { msgArray.push("Staus: `" + usr.status + "` playing `" + usr.game.name + "`"); } //broken
 						else { msgArray.push("Staus: `" + usr.status + "`"); }
@@ -204,7 +204,7 @@ var commands = {
 		usage: "<+/->",
 		process: function (bot, msg, suffix) {
 			if (!suffix) { bot.sendMessage(msg, correctUsage("vote")); return; }
-			if (votebool == false) { bot.sendMessage(msg, "There isn't a topic being voted on right now! Use "+config.command_prefix+"newvote <topic>"); return; }
+			if (votebool == false) { bot.sendMessage(msg, "There isn't a topic being voted on right now! Use `"+config.command_prefix+"newvote <topic>`"); return; }
 			if (voter.indexOf(msg.author) != -1) { return; }
 			voter.push(msg.author);
 			var vote = suffix.split(" ")[0]
