@@ -118,7 +118,7 @@ bot.on("message", function (msg) {
 
 //event listeners
 bot.on('serverNewMember', function (objServer, objUser) {
-	if (objServer.members.length < 151 && config.non_essential_event_listeners) {
+	if (objServer.members.length < 71 && config.non_essential_event_listeners) {
 		logger.log("info", "New member on " + objServer.name + ": " + objUser.username);
 		bot.sendMessage(objServer.defaultChannel, "Welcome to " + objServer.name + " " + objUser.username);
 	}
@@ -190,6 +190,10 @@ bot.on('presence', function(user, status, game) {
 		logger.log("debug", "Presence: " + user.username + " is now " + status + " playing " + game);
 	}
 });
+
+bot.on('serverDeleted', objServer) {
+	logger.log("info", "Left server "+objServer.name)
+}
 
 //login
 try {
