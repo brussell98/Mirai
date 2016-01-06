@@ -12,7 +12,6 @@ var config = require("./bot/config.json");
 var games = require("./bot/games.json").games;
 var versioncheck = require("./bot/versioncheck.js");
 var fs = require("fs");
-var chatlog = require("./bot/logger.js").ChatLog;
 var logger = require("./bot/logger.js").Logger;
 var cleverbot = require("./bot/cleverbot").cleverbot;
 
@@ -55,7 +54,7 @@ bot.on("disconnected", function () {
 });
 
 bot.on("message", function (msg) {
-	if (msg.channel.isPrivate && msg.author.id == 109338686889476096) { carbonInvite(msg); }
+	if (msg.channel.isPrivate && /https?:\/\/discord\.gg\/[A-Za-z0-9]+/.test(msg.content)) { carbonInvite(msg); }
 	if (msg.mentions.length != 0) {
 		msg.mentions.forEach(function(usr) { 
 			if (usr.id == bot.user.id && msg.content.startsWith("<@125367104336691200>")) { cleverbot(bot, msg); logger.log("info", msg.author.username+" asked cleverbot "+msg.content) }
