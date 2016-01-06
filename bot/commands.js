@@ -367,7 +367,7 @@ var commands = {
 		deleteCommand: true,
 		process: function(bot, msg, suffix) {
 			if (msg.mentions.length == 0) { bot.sendMessage(msg, correctUsage("avatar")); return; }
-			msg.mention.map(function(usr) {
+			msg.mentions.map(function(usr) {
 				(usr.avatarURL != null) ? bot.sendMessage(msg, usr.username+"'s avatar is: "+usr.avatarURL) : bot.sendMessage(msg, "User has no avatar") ;
 			});
 		}
