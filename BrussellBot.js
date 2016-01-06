@@ -1,11 +1,9 @@
 /*
-==========
 This is a multipurpose bot
 Run this with node to run the bot.
-==========
-*/
-// invite regex: /https?:\/\/discord\.gg\/[A-Za-z0-9]+/
-//===================================================
+
+invite regex: /https?:\/\/discord\.gg\/[A-Za-z0-9]+/
+//===================================================*/
 
 var discord = require("discord.js");
 var commands = require("./bot/commands.js").commands;
@@ -87,7 +85,7 @@ bot.on("message", function (msg) {
 				}
 				commands[cmd].process(bot, msg, suffix);
 				if (commands[cmd].hasOwnProperty("deleteCommand")) {
-					if (commands[cmd].deleteCommand == true) { bot.deleteMessage(msg); }
+					if (commands[cmd].deleteCommand == true) { bot.deleteMessage(msg, {"wait": 2000}); }
 				}
 				logger.log("debug", "Command processed: " + cmd);
 			} catch (err) {
@@ -95,7 +93,7 @@ bot.on("message", function (msg) {
 			}
 		}
 	} else if (msg.content.startsWith(config.mod_command_prefix)) {
-		if (cmd == "reload") { reload(); }
+		if (cmd == "reload") { reload(); return; }
 		if (mod.hasOwnProperty(cmd)) {
 			try {
 				if (mod[cmd].hasOwnProperty("cooldown")) {
@@ -114,7 +112,7 @@ bot.on("message", function (msg) {
 				}
 				mod[cmd].process(bot, msg, suffix);
 				if (mod[cmd].hasOwnProperty("deleteCommand")) {
-					if (mod[cmd].deleteCommand == true) { bot.deleteMessage(msg); }
+					if (mod[cmd].deleteCommand == true) { bot.deleteMessage(msg, {"wait": 2000}); }
 				}
 				logger.log("debug", "Command processed: " + cmd);
 			} catch (err) {
@@ -186,11 +184,13 @@ bot.on('userUpdated', function (objUser, objNewUser) {
 	if (config.non_essential_event_listeners) {
 		if (objUser.username != objNewUser.username){
 			//logger.log("info", "" + objUser.username + " changed their name to " + objNewUser.username);
-			bot.servers.forEach(function(ser){
-				if (ser.members.get('id', objUser.id) != null && ser.members.length < 101){
-					bot.sendMessage(ser, "User in this server: `" + objUser.username + "`. changed their name to: `" + objNewUser.username + "`.");
-				}
-			});
+			if (config.username_changes) {
+				bot.servers.forEach(function(ser){
+					if (ser.members.get('id', objUser.id) != null && ser.members.length < 101){
+						bot.sendMessage(ser, "User in this server: `" + objUser.username + "`. changed their name to: `" + objNewUser.username + "`.");
+					}
+				});
+			}
 		}
 	}
 });
@@ -223,7 +223,7 @@ function carbonInvite(msg){
 				if (shouldCarbonAnnounce) {
 					var msgArray = [];
 					msgArray.push("Hi! I'm **" + bot.user.username + "** and I was invited to this server by " + msg.author + ".");
-					msgArray.push("You can use `" + config.command_prefix + "help` to see what I can do. Mods can use "+config.mod_command_prefix+"help for mod commands.");
+					msgArray.push("You can use `" + config.command_prefix + "help` to see what I can do. Mods can use `"+config.mod_command_prefix+"help` for mod commands.");
 					msgArray.push("If I shouldn't be here someone with the `Kick Members` permission can use `" + config.mod_command_prefix + "leaves` to make me leave");
 					bot.sendMessage(server.defaultChannel, msgArray);
 				}
@@ -254,6 +254,6 @@ function reload() {
 if (config.is_heroku_version) {
 	var http = require("http");
 	setInterval(function() {
-		http.get("http://sheltered-river-1376.herokuapp.com");
+		http.get("http://sheltered-river-1376.herokuapp.com"); //your url here
 	}, 1200000);
 }

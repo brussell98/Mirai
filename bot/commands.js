@@ -35,6 +35,7 @@ var commands = {
 	"help": {
 		desc: "Sends a DM containing all of the commands. If a command is specified gives info on that command.",
 		usage: "[command]",
+		deleteCommand: true,
 		process: function(bot, msg, suffix) {
 			var msgArray = [];
 			if (!suffix){
@@ -53,6 +54,7 @@ var commands = {
 					msgArray.push("**" + config.command_prefix + "" + suffix + ": **" + commands[suffix].desc);
 					if (commands[suffix].hasOwnProperty("usage")) { msgArray.push("**Usage: **`" + config.command_prefix + "" + suffix + " " + commands[suffix].usage + "`"); }
 					if (commands[suffix].hasOwnProperty("cooldown")) { msgArray.push("**Cooldown: **" + commands[suffix].cooldown + " seconds"); }
+					if (commands[suffix].hasOwnProperty("deleteCommand")) { msgArray.push("This command will delete the message that activates it"); }
 					bot.sendMessage(msg.author, msgArray);
 				} else { bot.sendMessage(msg.author, "Command `" + suffix + "` not found."); }
 			}
@@ -71,6 +73,7 @@ var commands = {
 	"joins": {
 		desc: "Accepts the invite sent to it.",
 		usage: "<invite link> [-a (announce presence)]",
+		deleteCommand: true,
 		process: function (bot, msg, suffix) {
 			if (suffix) {
 				var invite = suffix.split(" ")[0];
@@ -80,7 +83,7 @@ var commands = {
 						logger.log("warn", err);
 					} else {
 						logger.log("info", "Joined server: " + server);
-						bot.sendMessage(msg, "Successfully joined ***" + server + "***. Please use `"+config.mod_command_prefix+"reload`");
+						bot.sendMessage(msg, "Successfully joined ***" + server + "***");
 						if (suffix.split(" ")[1] == "-a") {
 							var msgArray = [];
 							msgArray.push("Hi! I'm **" + bot.user.username + "** and I was invited to this server by " + msg.author + ".");
@@ -95,6 +98,7 @@ var commands = {
 	},
 	"about": {
 		desc: "Info about the bot.",
+		deleteCommand: true,
 		process: function(bot, msg, suffix) {
 			var msgArray = [];
 			msgArray.push("I'm " + bot.user.username + " and I was made by brussell98.");
@@ -105,6 +109,7 @@ var commands = {
 	},
 	"letsplay": {
 		desc: "Ask if anyone wants to play a game.",
+		deleteCommand: true,
 		usage: "[game name]",
 		cooldown: 10,
 		process: function(bot, msg, suffix) {
@@ -114,6 +119,7 @@ var commands = {
 	},
 	"roll": {
 		desc: "Rolls a die.",
+		deleteCommand: true,
 		usage: "[(rolls)d(sides)]",
 		process: function(bot, msg, suffix) {
 			var dice = "1d6";
@@ -132,6 +138,7 @@ var commands = {
 	"info": {
 		desc: "Gets info on the server or a user if specified.",
 		usage: "[@username]",
+		deleteCommand: true,
 		cooldown: 5,
 		process: function (bot, msg, suffix) {
 			if (!msg.channel.isPrivate) {
@@ -192,6 +199,7 @@ var commands = {
 	"newvote": {
 		desc: "Create a new vote.",
 		usage: "<topic>",
+		deleteCommand: true,
 		process: function (bot, msg, suffix) {
 			if (!suffix) { bot.sendMessage(msg, correctUsage("newvote")); return; }
 			if (votebool == true) { bot.sendMessage(msg, "Theres already a vote pending!"); return; }
@@ -203,6 +211,7 @@ var commands = {
 	"vote": {
 		desc: "Vote.",
 		usage: "<+/->",
+		deleteCommand: true,
 		process: function (bot, msg, suffix) {
 			if (!suffix) { bot.sendMessage(msg, correctUsage("vote")); return; }
 			if (votebool == false) { bot.sendMessage(msg, "There isn't a topic being voted on right now! Use `"+config.command_prefix+"newvote <topic>`"); return; }
@@ -215,6 +224,7 @@ var commands = {
 	},
 	"endvote": {
 		desc: "End current vote.",
+		deleteCommand: true,
 		process: function (bot, msg, suffix) {
 			bot.sendMessage(msg, "**Results of last vote:**\nTopic: `" + topicstring + "`\nUpvotes: `" + upvote + " " + (upvote/(upvote+downvote))*100 + "%`\nDownvotes: `" + downvote + " " + (downvote/(upvote+downvote))*100 + "%`");
 			upvote = 0;
@@ -236,6 +246,7 @@ var commands = {
 	"anime": {
 		desc: "Gets the details on an anime from MAL.",
 		usage: "<anime name>",
+		deleteCommand: true,
 		process: function (bot, msg, suffix) {
 			if (suffix) {
 				bot.startTyping(msg.channel);
@@ -276,6 +287,7 @@ var commands = {
 	"manga": {
 		desc: "Gets the details on an manga from MAL.",
 		usage: "<manga/novel name>",
+		deleteCommand: true,
 		process: function (bot, msg, suffix) {
 			if (suffix) {
 				bot.startTyping(msg.channel);
@@ -317,13 +329,37 @@ var commands = {
 	"coinflip": {
 		desc: "Flips a coin",
 		usage: "",
+		deleteCommand: true,
 		process: function(bot, msg, suffix) {
 			var side = Math.floor(Math.random() * (2));
 			if (side == 0) {
-				bot.sendMessage(msg, "Heads");
+				bot.sendMessage(msg, msg.author.username+" flipped a coin and got Heads");
 			} else {
-				bot.sendMessage(msg, "Tails");
+				bot.sendMessage(msg, msg.author.username+" flipped a coin and got Tails");
 			}
+		}
+	},
+	"osusig": {
+		desc: "Gets a osu! signature",
+		usage: "<username> [color in hex]",
+		deleteCommand: true,
+		process: function(bot, msg, suffix) {
+			if (suffix) {
+				var username = suffix.split(" ")[0];
+				var color = "ff66aa";
+				if (/(.*) [A-Fa-f0-9]/.test(suffix)){
+					if (suffix.split(" ")[1].length == 6) { color = suffix.split(" ")[1] }
+				}
+				request.head('https://lemmmy.pw/osusig/sig.php?colour=hex'+color+'&uname='+username+'&pp=2&flagshadow&xpbar&xpbarhex&darktriangles', function(err, res, body) {
+					if (!err) {
+						var r = request('https://lemmmy.pw/osusig/sig.php?colour=hex'+color+'&uname='+username+'&pp=2&flagshadow&xpbar&xpbarhex&darktriangles').pipe(fs.createWriteStream("./osusigs/"+username+".png"));
+						r.on('close', function(){
+							bot.sendMessage(msg, "Here's your osu signature! Get a live version at `lemmmy.pw/osusig/`");
+							bot.sendFile(msg, './osusigs/'+username+'.png', username+".png").then();
+						});
+					}
+				});
+			} else { bot.sendMessage(msg, correctUsage("osusig")); }
 		}
 	}
 };

@@ -22,7 +22,7 @@ This is the branch that my bot runs on
 
 - [x] Stop relying on permission levels and use server roles - PRIORITY
 - [x] Phase out Per-server settings JSON - PRIORITY
-- [ ] Option to delete command message
+- [x] Option to delete command message
 - [ ] Semi-idiot-proof the code
 	- [ ] And add comments so people can understand what this stuff does
 - [ ] Commands
@@ -36,7 +36,7 @@ This is the branch that my bot runs on
 	- [x] About
 	- [x] Stats
 		- [x] List servers or channels
-		- [x] Option to only show certain stats
+		- [x] List ammount of channels and members each server has
 		- [x] Commands process
 	- [ ] Music commands (Planned for v2.0) - PRIORITY
 		- [ ] Audio help
@@ -63,12 +63,15 @@ This is the branch that my bot runs on
 	- [ ] Rock paper scissors
 	- [x] Choose for me
 	- [x] Clean bot messages
+	- [ ] Prune chat
 	- [ ] Store a message or link with a tag (non-heroku branch)
 	- [x] Vote (Credit: [BlackHayate](https://github.com/BlackHayate))
 	- [x] Anime/Manga Lookup
 		- [ ] More regex replaces
 	- [ ] Avatar
-	- [ ] Stop user from sending messages for a certain time 
+	- [ ] Stop user from sending messages for a certain time
+	- [ ] osu!
+		- [x] Sig generator (https://lemmmy.pw/osusig/sig.php?colour=hex36b8f9&uname=brussell98&pp=2&flagshadow&xpbar&xpbarhex&darktriangles)
 - [x] Logging (w/ Winston because I really liked DougleyBot's log)
 	- [x] Event logs
 	- [x] Presence changes

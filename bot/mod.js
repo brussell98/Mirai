@@ -26,6 +26,7 @@ var commands = {
 	"help": {
 		desc: "Sends a DM containing all of the commands. If a command is specified gives info on that command.",
 		usage: "[command]",
+		deleteCommand: true,
 		process: function(bot, msg, suffix) {
 			var msgArray = [];
 			if (!suffix){
@@ -43,6 +44,7 @@ var commands = {
 					msgArray.push("**" + config.mod_command_prefix + "" + suffix + ": **" + commands[suffix].desc);
 					if (commands[suffix].hasOwnProperty("usage")) { msgArray.push("**Usage: **`" + config.mod_command_prefix + "" + suffix + " " + commands[suffix].usage + "`"); }
 					if (commands[suffix].hasOwnProperty("cooldown")) { msgArray.push("**Cooldown: **" + commands[suffix].cooldown + " seconds"); }
+					if (commands[suffix].hasOwnProperty("deleteCommand")) { msgArray.push("This command will delete the message that activates it"); }
 					bot.sendMessage(msg.author, msgArray);
 				} else { bot.sendMessage(msg.author, "Command `" + suffix + "` not found."); }
 			}
@@ -52,6 +54,7 @@ var commands = {
 		desc: "Get the stats of the bot",
 		usage: "[-ls (list servers)] ",
 		cooldown: 60,
+		deleteCommand: true,
 		process: function(bot, msg, suffix) {
 			if (msg.author.id == config.admin_id || msg.author.id == msg.channel.server.owner.id) {
 			var msgArray = [];
@@ -75,7 +78,11 @@ var commands = {
 				bot.sendMessage(msg, "`Commands processed this session: " + count + "`");
 			});
 
-			if (suffix.indexOf("-ls") != -1) { bot.sendMessage(msg, "```\n" + bot.servers.join(", ") + "\n```"); }
+			if (suffix.indexOf("-ls") != -1) {
+				var svrArray = [];
+				for (svrObj of bot.servers) { svrArray.push(svrObj.name+": `Channels: "+svrObj.channels.length+", Users: "+svrObj.members.length+"`"); }
+				bot.sendMessage(msg, svrArray);
+			}
 			} else { bot.sendMessage(msg, "Only server owners can do this."); }
 		}
 	},
@@ -83,6 +90,7 @@ var commands = {
 		desc: "Set what the bot is playing. Leave empty for random.",
 		usage: "[game]",
 		cooldown: 5,
+		deleteCommand: true,
 		process: function (bot, msg, suffix) {
 			if (!msg.channel.isPrivate) {
 			if (msg.channel.server.owner.id == msg.author.id) {
@@ -96,6 +104,7 @@ var commands = {
 		desc: "Cleans the specified number of bot messages from the channel.",
 		usage: "<number of bot messages>",
 		cooldown: 10,
+		deleteCommand: true,
 		process: function (bot, msg, suffix) {
 			if (suffix) {
 				if (msg.channel.isPrivate || msg.channel.permissionsOf(msg.author).hasPermission("manageMessages") || msg.author.id == config.admin_id) {
@@ -129,6 +138,7 @@ var commands = {
 	},
 	"leaves": {
 		desc: "Leaves the server.",
+		deleteCommand: true,
 		process: function(bot, msg, suffix) {
 			if (msg.channel.server) {
 				if (msg.channel.permissionsOf(msg.author).hasPermission("kickMembers") || msg.author.id == config.admin_id) {
@@ -144,6 +154,7 @@ var commands = {
 	},
 	"announce": {
 		desc: "Bot owner only",
+		deleteCommand: true,
 		usage: "<message>",
 		cooldown: 30,
 		process: function (bot, msg, suffix) {
