@@ -360,6 +360,28 @@ var commands = {
 				});
 			} else { bot.sendMessage(msg, correctUsage("osusig")); }
 		}
+	},
+	"avatar": {
+		desc: "Get a link to a user's avatar",
+		usage: "<@mention>",
+		deleteCommand: true,
+		process: function(bot, msg, suffix) {
+			if (msg.mentions.length == 0) { bot.sendMessage(msg, correctUsage("avatar")); return; }
+			msg.mention.map(function(usr) {
+				(usr.avatarURL != null) ? bot.sendMessage(msg, usr.username+"'s avatar is: "+usr.avatarURL) : bot.sendMessage(msg, "User has no avatar") ;
+			});
+		}
+	},
+	"rps": {
+		desc: "Play Rock Paper Scissors",
+		usage: "<rock/paper/scissors>",
+		process: function(bot, msg, suffix) {
+			if (!suffix) { bot.sendMessage(msg, correctUsage("rps")); return; }
+			var choice = Math.floor(Math.random() * 3);
+			if (choice == 0) { bot.sendMessage(msg, "I picked rock"); }
+			else if (choice == 1) { bot.sendMessage(msg, "I picked paper"); }
+			else if (choice == 2) { bot.sendMessage(msg, "I picked scissors"); }
+		}
 	}
 };
 
