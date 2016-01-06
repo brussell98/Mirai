@@ -352,10 +352,9 @@ var commands = {
 				}
 				request.head('https://lemmmy.pw/osusig/sig.php?colour=hex'+color+'&uname='+username+'&pp=2&flagshadow&xpbar&xpbarhex&darktriangles', function(err, res, body) {
 					if (!err) {
-						var r = request('https://lemmmy.pw/osusig/sig.php?colour=hex'+color+'&uname='+username+'&pp=2&flagshadow&xpbar&xpbarhex&darktriangles').pipe(fs.createWriteStream("./osusigs/"+username+".png"));
-						r.on('close', function(){
+						var r = request({url: 'https://lemmmy.pw/osusig/sig.php?colour=hex'+color+'&uname='+username+'&pp=2&flagshadow&xpbar&xpbarhex&darktriangles', encoding: null}, function(error, response, body){
 							bot.sendMessage(msg, "Here's your osu signature! Get a live version at `lemmmy.pw/osusig/`");
-							bot.sendFile(msg, './osusigs/'+username+'.png', username+".png").then();
+							bot.sendFile(msg, body, 'sig.png');
 						});
 					}
 				});
