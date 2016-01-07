@@ -2,9 +2,13 @@
 
 An multipurpose bot for Discord using the [Discord.js](https://github.com/hydrabolt/discord.js/) unoffficial API.
 
+[Website](brussell98.github.io/bot.html)
+
 [Get the lastest version here](https://github.com/brussell98/BrussellBot/releases/latest)
 
 [Wiki](https://github.com/brussell98/BrussellBot/wiki)
+
+[](https://github.com/brussell98/BrussellBot/wiki/Commands)
 
 [Setup Guide](https://github.com/brussell98/BrussellBot/wiki/Setup-Guide)
 
@@ -14,21 +18,16 @@ An multipurpose bot for Discord using the [Discord.js](https://github.com/hydrab
 
 ---
 
-This is the branch that my bot runs on
-
----
-
 ### TODO
 
 - [x] Stop relying on permission levels and use server roles
 - [x] Phase out Per-server settings JSON
 - [x] Option to delete command message
-- [ ] Semi-idiot-proof the code
-	- [ ] And add comments so people can understand what this stuff does
+- [ ] And add comments so people can understand what this stuff does
 - [ ] Commands
 	- [x] Join server
 		- [x] Silent join by default
-		- [ ] Accept multiple invites seperated by a space
+		- [x] Accept multiple invites seperated by a space
 	- [x] Leave Server
 		- [x] Leave server restricted by roles or perm level
 	- [x] Help
@@ -38,13 +37,13 @@ This is the branch that my bot runs on
 		- [x] List servers or channels
 		- [x] List ammount of channels and members each server has
 		- [x] Commands process
-	- [ ] Music commands
+	- [ ] Music commands - First feature after v1
 		- [ ] Audio help
 		- [ ] Queue song from youtube
 		- [ ] Skip
 		- [ ] Have pre-made playlists avalible
 		- [ ] Queue a playlist
-		- [ ] Bind music messages to a channel
+		- [ ] Bind music messages to a channel and show what is playing. Plus delete old messages.
 		- [ ] List of queues songs
 		- [ ] Set playing to song name
 		- [ ] Bot owner gets priority
@@ -63,23 +62,26 @@ This is the branch that my bot runs on
 	- [x] Rock paper scissors
 	- [x] Choose for me
 	- [x] Clean bot messages
-	- [ ] Prune chat
-	- [ ] Store a message or link with a tag (non-heroku branch)
+	- [x] Prune chat
+	- [ ] Store a message or link with a tag (non-heroku)
 	- [x] Vote (Credit: [BlackHayate](https://github.com/BlackHayate))
 	- [x] Anime/Manga Lookup
 		- [ ] More regex replaces
 	- [x] Avatar
 	- [ ] Stop user from sending messages for a certain time
-	- [ ] osu!
+	- [ ] osu! - Need to apply for an API key for this
 		- [x] Sig generator
+		- [ ] User and best scores
+		- [ ] Top scores for a beatmap
+		- [ ] Live match details?
 	- [ ] Changelog
 - [x] Logging (w/ Winston because I really liked DougleyBot's log)
 	- [x] Event logs
 	- [x] Presence changes
 	- [x] Commands processed
-- [ ] Use regex to verify commands
+- [x] Use regex to verify some commands
 - [x] Version checker
 - [x] Check for proper config file and tell user if they screwed it up
-- [ ] Optimize code
+- [ ] Optimize code - v1
 - [x] Reload modules command
 - [ ] Could do stuff with checking how long a user has been on the server for perms

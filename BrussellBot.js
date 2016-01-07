@@ -39,9 +39,10 @@ bot.on('warn', function (m) {
 bot.on('debug', (m) => logger.log("debug", m));
 
 bot.on("ready", function () {
-	//bot.setPlayingGame(games[Math.floor(Math.random() * (games.length))]);
-	bot.setPlayingGame("]help [command]");
+	bot.setPlayingGame(games[Math.floor(Math.random() * (games.length))]);
+	//bot.setPlayingGame("]help [command]");
 	logger.log("info", "BrussellBot is ready! Listening to " + bot.channels.length + " channels on " + bot.servers.length + " servers");
+	logger.log("info", "Username: "+bot.user.username);
 	versioncheck.checkForUpdate(function (resp) {
 		if (resp != null) {
 			logger.log("info", resp);
@@ -58,7 +59,7 @@ bot.on("message", function (msg) {
 	if (msg.channel.isPrivate && /https?:\/\/discord\.gg\/[A-Za-z0-9]+/.test(msg.content)) { carbonInvite(msg); }
 	if (msg.mentions.length != 0) {
 		msg.mentions.forEach(function(usr) { 
-			if (usr.id == bot.user.id && msg.content.startsWith("<@125367104336691200>")) { cleverbot(bot, msg); logger.log("info", msg.author.username+" asked cleverbot "+msg.content) }
+			if (usr.id == bot.user.id && msg.content.startsWith("<@125367104336691200>")) { cleverbot(bot, msg); logger.log("info", msg.author.username+" asked the bot "+msg.content.substring(22)); }
 		});
 	}
 	if (msg.content[0] != config.command_prefix && msg.content[0] != config.mod_command_prefix) { return; }
@@ -249,6 +250,8 @@ function reload() {
 	versioncheck = require("./bot/versioncheck.js");
 	delete require.cache[require.resolve('./bot/logger.js')];
 	logger = require("./bot/logger.js").Logger;
+	delete require.cache[require.resolve('./bot/cleverbot.js')];
+	cleverbot = require("./bot/cleverbot").cleverbot;
 	logger.info("Reloaded modules with no errors");
 }
 

@@ -72,27 +72,31 @@ var commands = {
 	},
 	"joins": {
 		desc: "Accepts the invite sent to it.",
-		usage: "<invite link> [-a (announce presence)]",
+		usage: "<invite link> [invite link] [-a (announce presence)]",
 		deleteCommand: true,
 		process: function (bot, msg, suffix) {
 			if (suffix) {
-				var invite = suffix.split(" ")[0];
-				bot.joinServer(invite, function (err, server) {
-					if (err) {
-						bot.sendMessage(msg, "Failed to join: " + err);
-						logger.log("warn", err);
-					} else {
-						logger.log("info", "Joined server: " + server);
-						bot.sendMessage(msg, "Successfully joined ***" + server + "***");
-						if (suffix.split(" ")[1] == "-a") {
-							var msgArray = [];
-							msgArray.push("Hi! I'm **" + bot.user.username + "** and I was invited to this server by " + msg.author + ".");
-							msgArray.push("You can use `" + config.command_prefix + "help` to see what I can do. Mods can use "+config.mod_command_prefix+"help for mod commands.");
-							msgArray.push("If I shouldn't be here someone with the `Kick Members` permission can use `" + config.mod_command_prefix + "leaves` to make me leave");
-							bot.sendMessage(server.defaultChannel, msgArray);
-						}
+				var invites = suffix.split(" ");
+				for (invite of invites) {
+					if (/https?:\/\/discord\.gg\/[A-Za-z0-9]+/.test(invite)) {
+						bot.joinServer(invite, function (err, server) {
+							if (err) {
+								bot.sendMessage(msg, "Failed to join: " + err);
+								logger.log("warn", err);
+							} else {
+								logger.log("info", "Joined server: " + server);
+								bot.sendMessage(msg, "Successfully joined ***" + server + "***");
+								if (suffix.indexOf("-a") != 1) {
+									var msgArray = [];
+									msgArray.push("Hi! I'm **" + bot.user.username + "** and I was invited to this server by " + msg.author + ".");
+									msgArray.push("You can use `" + config.command_prefix + "help` to see what I can do. Mods can use "+config.mod_command_prefix+"help for mod commands.");
+									msgArray.push("If I shouldn't be here someone with the `Kick Members` permission can use `" + config.mod_command_prefix + "leaves` to make me leave");
+									bot.sendMessage(server.defaultChannel, msgArray);
+								}
+							}
+						});
 					}
-				});
+				}
 			} else { bot.sendMessage(msg, correctUsage("joins")); }
 		}
 	},
@@ -123,7 +127,7 @@ var commands = {
 		usage: "[(rolls)d(sides)]",
 		process: function(bot, msg, suffix) {
 			var dice = "1d6";
-			if (suffix) { dice = suffix; }
+			if (suffix && /\d+d\d+/.test(suffix)) { dice = suffix; }
 			bot.startTyping(msg.channel);
 			request('https://rolz.org/api/?' + dice + '.json', function(err, response, body) {
 				if (!err && response.statusCode == 200) {
@@ -166,8 +170,9 @@ var commands = {
 					var msgArray = [];
 					msgArray.push("You requested info on **" + msg.channel.server.name + "**");
 					msgArray.push("Server ID: `" + msg.channel.server.id + "`");
-					msgArray.push("Owner: `" + msg.channel.server.owner + "` (id: `" + msg.channel.server.owner.id + "`)");
+					msgArray.push("Owner: `" + msg.channel.server.owner.username + "` (id: `" + msg.channel.server.owner.id + "`)");
 					msgArray.push("Region: `" + msg.channel.server.region + "`");
+					msgArray.push("Members: `" + msg.channel.server.members.length + "`");
 					var rsO = msg.channel.server.roles;
 					var rols = "everyone, ";
 					for (rO of rsO) { rols += (rO.name + ", "); }
@@ -186,7 +191,7 @@ var commands = {
 		desc: "Makes a choice for you.",
 		usage: "<option 1>, <option 2>, [option], [option]",
 		process: function (bot, msg, suffix) {
-			if (!suffix) { bot.sendMessage(msg, correctUsage("choose")); return;}
+			if (!suffix || /(.*), (.*)/.test(suffix) == false) { bot.sendMessage(msg, correctUsage("choose")); return;}
 			var choices = suffix.split(", ");
 			if (choices.length < 2) {
 				bot.sendMessage(msg, correctUsage("choose"));
