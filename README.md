@@ -20,8 +20,8 @@ This is the branch that my bot runs on
 
 ### TODO
 
-- [x] Stop relying on permission levels and use server roles - PRIORITY
-- [x] Phase out Per-server settings JSON - PRIORITY
+- [x] Stop relying on permission levels and use server roles
+- [x] Phase out Per-server settings JSON
 - [x] Option to delete command message
 - [ ] Semi-idiot-proof the code
 	- [ ] And add comments so people can understand what this stuff does
@@ -38,7 +38,7 @@ This is the branch that my bot runs on
 		- [x] List servers or channels
 		- [x] List ammount of channels and members each server has
 		- [x] Commands process
-	- [ ] Music commands (Planned for v2.0) - PRIORITY
+	- [ ] Music commands
 		- [ ] Audio help
 		- [ ] Queue song from youtube
 		- [ ] Skip
@@ -60,7 +60,7 @@ This is the branch that my bot runs on
 	- [x] Coin flip
 	- [x] 8ball
 		- [x] Store respones locally
-	- [ ] Rock paper scissors
+	- [x] Rock paper scissors
 	- [x] Choose for me
 	- [x] Clean bot messages
 	- [ ] Prune chat
@@ -68,16 +68,18 @@ This is the branch that my bot runs on
 	- [x] Vote (Credit: [BlackHayate](https://github.com/BlackHayate))
 	- [x] Anime/Manga Lookup
 		- [ ] More regex replaces
-	- [ ] Avatar
+	- [x] Avatar
 	- [ ] Stop user from sending messages for a certain time
 	- [ ] osu!
-		- [x] Sig generator (https://lemmmy.pw/osusig/sig.php?colour=hex36b8f9&uname=brussell98&pp=2&flagshadow&xpbar&xpbarhex&darktriangles)
+		- [x] Sig generator
+	- [ ] Changelog
 - [x] Logging (w/ Winston because I really liked DougleyBot's log)
 	- [x] Event logs
 	- [x] Presence changes
 	- [x] Commands processed
 - [ ] Use regex to verify commands
 - [x] Version checker
+- [x] Check for proper config file and tell user if they screwed it up
 - [ ] Optimize code
 - [x] Reload modules command
 - [ ] Could do stuff with checking how long a user has been on the server for perms

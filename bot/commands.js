@@ -340,7 +340,7 @@ var commands = {
 		}
 	},
 	"osusig": {
-		desc: "Gets a osu! signature",
+		desc: "Gets an osu! signature",
 		usage: "<username> [color in hex]",
 		deleteCommand: true,
 		process: function(bot, msg, suffix) {
@@ -348,7 +348,8 @@ var commands = {
 				var username = suffix.split(" ")[0];
 				var color = "ff66aa";
 				if (/(.*) [A-Fa-f0-9]/.test(suffix)){
-					if (suffix.split(" ")[1].length == 6) { color = suffix.split(" ")[1] }
+					if (suffix.split(" ")[1].length == 6) { color = suffix.split(" ")[1]; }
+					if (suffix.split(" ")[1].length == 7) { color = suffix.split(" #")[1]; }
 				}
 				request.head('https://lemmmy.pw/osusig/sig.php?colour=hex'+color+'&uname='+username+'&pp=2&flagshadow&xpbar&xpbarhex&darktriangles', function(err, res, body) {
 					if (!err) {
@@ -381,6 +382,40 @@ var commands = {
 			if (choice == 0) { bot.sendMessage(msg, "I picked rock"); }
 			else if (choice == 1) { bot.sendMessage(msg, "I picked paper"); }
 			else if (choice == 2) { bot.sendMessage(msg, "I picked scissors"); }
+		}
+	},
+	"weather": {
+		desc: "Get the weather for a location",
+		usage: "<City/City,Us> or <zip/zip,us>     example: ]weather 12345,us",
+		deleteCommand: true,
+		process: function(bot, msg, suffix) {
+			if (suffix) { suffix = suffix.replace(" ", ""); }
+			if (!suffix) { bot.sendMessage(msg, correctUsage("weather")); return; }
+			if (config.is_heroku_version) { var APIKEY = process.env.weather_api_key; } else { var APIKEY = config.weather_api_key; }
+			if (/\d/.test(suffix) == false) { var rURL = "http://api.openweathermap.org/data/2.5/weather?q="+suffix+"&APPID="+APIKEY; }
+			else { var rURL = "http://api.openweathermap.org/data/2.5/weather?zip="+suffix+"&APPID="+APIKEY; }
+			request(rURL, function(error, response, body){
+				if (!error && response.statusCode == 200) {
+					body = JSON.parse(body);
+					if (!body.hasOwnProperty("weather")) { return; }
+					var temp = Math.round(parseInt(body.main.temp)*(9/5)-459.67);
+					var windspeed = Math.round(parseInt(body.wind.speed)*2.23694);
+					bot.sendMessage(msg, "Weather for **"+body.name+"**:\n**Conditions:** "+body.weather[0].description+", **Temp:** "+temp+"F\n**Humidity:** "+body.main.humidity+"%**Wind:** "+body.wind.speed+"mph, **Cloudiness:** "+body.clouds.all+"%");
+				} else {
+					logger.error("error: "+error);
+				}
+			});
+		}
+	},
+	"google": {
+		desc: "Let me Google that for you",
+		deleteCommand: true,
+		usage: "<search>",
+		process: function(bot, msg, suffix) {
+			if (!suffix) { bot.sendMessage(msg, "http://www.lmgtfy.com/?q=brussellbot+commands"); return; }
+			if (/[^a-zA-Z0-9 ]/.test(suffix)) { bot.sendMessage(msg, "Special chacters not allowed"); return; }
+			suffix = suffix.replace(/ /g, "+");
+			bot.sendMessage(msg, "http://www.lmgtfy.com/?q="+suffix);
 		}
 	}
 };

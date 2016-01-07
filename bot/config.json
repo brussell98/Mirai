@@ -8,5 +8,8 @@
 	"admin_id": 95286900801146880,
 	"greet_new_members": false,
 	"username_changes": false,
-	"is_heroku_version": true
+	"mal_user": "",
+	"mal_pass": "",
+	"is_heroku_version": true,
+	"weather_api_key": ""
 }
