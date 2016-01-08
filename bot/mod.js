@@ -105,7 +105,7 @@ var commands = {
 		cooldown: 10,
 		deleteCommand: true,
 		process: function (bot, msg, suffix) {
-			if (suffix && /[0-9]+/.test(suffix)) {
+			if (suffix && /[^0-9]/.test(suffix) == false) {
 				if (msg.channel.isPrivate || msg.channel.permissionsOf(msg.author).hasPermission("manageMessages") || msg.author.id == config.admin_id) {
 					bot.getChannelLogs(msg.channel, 100, function (error, messages) {
 						if (error) {
@@ -141,7 +141,7 @@ var commands = {
 		cooldown: 10,
 		deleteCommand: true,
 		process: function (bot, msg, suffix) {
-			if (suffix && /[0-9]+/.test(suffix)) {
+			if (suffix && /[^0-9]/.test(suffix) == false) {
 				if (msg.channel.permissionsOf(msg.author).hasPermission("manageMessages")) {
 					if (msg.channel.permissionsOf(bot.user).hasPermission("manageMessages")) {
 						bot.getChannelLogs(msg.channel, 100, function (error, messages) {

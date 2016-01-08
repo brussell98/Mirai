@@ -2,13 +2,13 @@
 
 An multipurpose bot for Discord using the [Discord.js](https://github.com/hydrabolt/discord.js/) unoffficial API.
 
-[Website](brussell98.github.io/bot.html)
+[Website](https://brussell98.github.io/bot.html)
 
 [Get the lastest version here](https://github.com/brussell98/BrussellBot/releases/latest)
 
 [Wiki](https://github.com/brussell98/BrussellBot/wiki)
 
-[](https://github.com/brussell98/BrussellBot/wiki/Commands)
+[Commands](https://github.com/brussell98/BrussellBot/wiki/Commands)
 
 [Setup Guide](https://github.com/brussell98/BrussellBot/wiki/Setup-Guide)
 
