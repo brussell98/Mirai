@@ -81,7 +81,7 @@ var commands = {
 					if (/https?:\/\/discord\.gg\/[A-Za-z0-9]+/.test(invite)) {
 						bot.joinServer(invite, function (err, server) {
 							if (err) {
-								bot.sendMessage(msg, "Failed to join: " + err);
+								bot.sendMessage(msg, ":warning: Failed to join: " + err);
 								logger.log("warn", err);
 							} else {
 								logger.log("info", "Joined server: " + server);
@@ -132,8 +132,8 @@ var commands = {
 			request('https://rolz.org/api/?' + dice + '.json', function(err, response, body) {
 				if (!err && response.statusCode == 200) {
 					var roll = JSON.parse(body);
-					if (roll.details.length <= 100) { bot.sendMessage(msg, "Your " + roll.input + " resulted in " + roll.result + " " + roll.details); }
-					else { bot.sendMessage(msg, "Your " + roll.input + " resulted in " + roll.result); }
+					if (roll.details.length <= 100) { bot.sendMessage(msg, ":game_die: Your " + roll.input + " resulted in " + roll.result + " " + roll.details); }
+					else { bot.sendMessage(msg, ":game_die: Your " + roll.input + " resulted in " + roll.result); }
 				} else { logger.log("warn", "Got an error: ", error, ", status code: ", response.statusCode); }
 			});
 			bot.stopTyping(msg.channel);
@@ -150,8 +150,8 @@ var commands = {
 					if (msg.mentions.length == 0) { bot.sendMessage(msg, correctUsage("info")); return; }
 					msg.mentions.map(function (usr) {
 						var msgArray = [];
-						if (usr.id != config.admin_id) { msgArray.push("You requested info on **" + usr.username + "**"); }
-						else { msgArray.push("You requested info on **Bot Creator-senpai**"); }
+						if (usr.id != config.admin_id) { msgArray.push(":information_source: You requested info on **" + usr.username + "**"); }
+						else { msgArray.push(":information_source: You requested info on **Bot Creator-senpai**"); }
 						msgArray.push("User ID: `" + usr.id + "`");
 						if (usr.game != null) { msgArray.push("Staus: `" + usr.status + "` playing `" + usr.game.name + "`"); } //broken
 						else { msgArray.push("Staus: `" + usr.status + "`"); }
@@ -168,7 +168,7 @@ var commands = {
 					});
 				} else {
 					var msgArray = [];
-					msgArray.push("You requested info on **" + msg.channel.server.name + "**");
+					msgArray.push(":information_source: You requested info on **" + msg.channel.server.name + "**");
 					msgArray.push("Server ID: `" + msg.channel.server.id + "`");
 					msgArray.push("Owner: `" + msg.channel.server.owner.username + "` (id: `" + msg.channel.server.owner.id + "`)");
 					msgArray.push("Region: `" + msg.channel.server.region + "`");
@@ -221,17 +221,16 @@ var commands = {
 			if (!suffix) { bot.sendMessage(msg, correctUsage("vote")); return; }
 			if (votebool == false) { bot.sendMessage(msg, ":warning: There isn't a topic being voted on right now! Use `"+config.command_prefix+"newvote <topic>`"); return; }
 			if (voter.indexOf(msg.author) != -1) { return; }
-			voter.push(msg.author);
 			var vote = suffix.split(" ")[0]
-			if (vote == "+") { upvote += 1; }
-			if (vote == "-") { downvote += 1; }
+			if (vote == "+") { upvote += 1; voter.push(msg.author); }
+			if (vote == "-") { downvote += 1; voter.push(msg.author); }
 		}
 	},
 	"endvote": {
 		desc: "End current vote.",
 		deleteCommand: true,
 		process: function (bot, msg, suffix) {
-			bot.sendMessage(msg, "**Results of last vote:**\nTopic: `" + topicstring + "`\nUpvotes: `" + upvote + " " + (upvote/(upvote+downvote))*100 + "%`\nDownvotes: `" + downvote + " " + (downvote/(upvote+downvote))*100 + "%`");
+			bot.sendMessage(msg, "**Results of last vote:**\nTopic: `" + topicstring + "`\n:thumbsup: Upvotes: `" + upvote + " " + (upvote/(upvote+downvote))*100 + "%`\n:thumbsdown: Downvotes: `" + downvote + " " + (downvote/(upvote+downvote))*100 + "%`");
 			upvote = 0;
 			downvote = 0;
 			voter = [];
@@ -245,7 +244,7 @@ var commands = {
 		process: function (bot, msg) {
 			var responses = ["It is certain", "It is decidedly so", "Without a doubt", "Yes, definitely", "You may rely on it", "As I see it, yes", "Most likely", "Outlook good", "Yes", "Signs point to yes", "Ask again later", "Better not tell you now", "Cannot predict now", "Don't count on it", "My reply is no", "My sources say no", "Outlook not so good", "Very doubtful"];
 			var choice = Math.floor(Math.random() * (responses.length));
-			bot.sendMessage(msg, responses[choice]);
+			bot.sendMessage(msg, ":8ball: "+responses[choice]);
 		}
 	},
 	"anime": {
@@ -405,7 +404,7 @@ var commands = {
 					if (!body.hasOwnProperty("weather")) { return; }
 					var temp = Math.round(parseInt(body.main.temp)*(9/5)-459.67);
 					var windspeed = Math.round(parseInt(body.wind.speed)*2.23694);
-					bot.sendMessage(msg, "Weather for **"+body.name+"**:\n**Conditions:** "+body.weather[0].description+", **Temp:** "+temp+"F\n**Humidity:** "+body.main.humidity+"%**Wind:** "+body.wind.speed+"mph, **Cloudiness:** "+body.clouds.all+"%");
+					bot.sendMessage(msg, ":sunny: Weather for **"+body.name+"**:\n**Conditions:** "+body.weather[0].description+", **Temp:** "+temp+"F\n**Humidity:** "+body.main.humidity+"%**Wind:** "+body.wind.speed+"mph, **Cloudiness:** "+body.clouds.all+"%");
 				} else {
 					logger.error("error: "+error);
 				}
@@ -420,7 +419,7 @@ var commands = {
 			if (!suffix) { bot.sendMessage(msg, "http://www.lmgtfy.com/?q=brussellbot+commands"); return; }
 			if (/[^a-zA-Z0-9 ]/.test(suffix)) { bot.sendMessage(msg, ":warning: Special chacters not allowed"); return; }
 			suffix = suffix.replace(/ /g, "+");
-			bot.sendMessage(msg, "http://www.lmgtfy.com/?q="+suffix);
+			bot.sendMessage(msg, ":mag: http://www.lmgtfy.com/?q="+suffix);
 		}
 	}
 };

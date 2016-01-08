@@ -63,8 +63,8 @@ bot.on("message", function (msg) {
 		});
 	}
 	if (msg.content[0] != config.command_prefix && msg.content[0] != config.mod_command_prefix) { return; }
-	logger.log("info", "" + msg.author.username + " executed: " + msg.content);
 	if (msg.author.id == bot.user.id) { return; }
+	logger.log("info", "" + msg.author.username + " executed: " + msg.content);
 	var cmd = msg.content.split(" ")[0].substring(1).toLowerCase();
 	var suffix = msg.content.substring( cmd.length + 2 );
 	if (msg.content.startsWith(config.command_prefix)) {
@@ -216,7 +216,7 @@ function carbonInvite(msg){
 	if (msg) {
 		bot.joinServer(msg.content, function (err, server) {
 			if (err) {
-				bot.sendMessage(msg, "Failed to join: " + err);
+				bot.sendMessage(msg, ":warning: Failed to join: " + err);
 				logger.log("warn", err);
 			} else {
 				logger.log("info", "Joined server: " + server);
