@@ -281,7 +281,7 @@ var commands = {
 							}
 							bot.sendMessage(msg, "**" + title + " / " + english+"**\n**Type:** "+ type +", **Episodes:** "+ep+", **Status:** "+status+", **Score:** "+score+"\n"+synopsis);
 						});
-					}
+					} else { bot.sendMessage(msg, "Not found"); }
 				});
 				bot.stopTyping(msg.channel);
 			} else {
@@ -324,7 +324,7 @@ var commands = {
 							}
 							bot.sendMessage(msg, "**" + title + " / " + english+"**\n**Type:** "+ type +", **Chapters:** "+chapters+", **Volumes: **"+volumes+", **Status:** "+status+", **Score:** "+score+"\n"+synopsis);
 						});
-					}
+					} else { bot.sendMessage(msg, "Not found"); }
 				});
 				bot.stopTyping(msg.channel);
 			} else {

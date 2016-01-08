@@ -20,9 +20,6 @@ An multipurpose bot for Discord using the [Discord.js](https://github.com/hydrab
 
 ### TODO
 
-- [x] Stop relying on permission levels and use server roles
-- [x] Phase out Per-server settings JSON
-- [x] Option to delete command message
 - [ ] And add comments so people can understand what this stuff does
 - [ ] Commands
 	- [x] Join server
@@ -76,13 +73,5 @@ An multipurpose bot for Discord using the [Discord.js](https://github.com/hydrab
 		- [ ] Top scores for a beatmap
 		- [ ] Live match details?
 	- [ ] Changelog
-- [x] Logging (w/ Winston because I really liked DougleyBot's log)
-	- [x] Event logs
-	- [x] Presence changes
-	- [x] Commands processed
-- [x] Use regex to verify some commands
-- [x] Version checker
-- [x] Check for proper config file and tell user if they screwed it up
 - [ ] Optimize code - v1
-- [x] Reload modules command
 - [ ] Could do stuff with checking how long a user has been on the server for perms
