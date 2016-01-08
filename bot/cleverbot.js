@@ -8,7 +8,7 @@ exports.cleverbot = function(bot, msg) {
 		bot.startTyping(msg.channel);
 		Cleverbot.prepare(function() {
 			Slave.write(suffix, function(resp) {
-				bot.sendMessage(msg, resp.message);
+				bot.sendMessage(msg, ":speech_balloon: "+resp.message);
 			});
 		});
 		bot.stopTyping(msg.channel);

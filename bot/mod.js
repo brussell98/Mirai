@@ -2,8 +2,10 @@ var config = require("./config.json");
 var games = require("./games.json").games;
 var version = require("../package.json").version;
 var logger = require("./logger.js").Logger;
-
 var fs = require('fs');
+
+var confirmCodes = [];
+var announceMessages = [];
 
 /*
 =====================
@@ -105,13 +107,11 @@ var commands = {
 		cooldown: 10,
 		deleteCommand: true,
 		process: function (bot, msg, suffix) {
-			if (suffix && /[^0-9]/.test(suffix) == false) {
+			if (suffix && /^\d+$/.test(suffix)) {
 				if (msg.channel.isPrivate || msg.channel.permissionsOf(msg.author).hasPermission("manageMessages") || msg.author.id == config.admin_id) {
 					bot.getChannelLogs(msg.channel, 100, function (error, messages) {
-						if (error) {
-							logger.log("warn", "Something went wrong while fetching logs.");
-							return;
-						} else {
+						if (error) { logger.log("warn", "Something went wrong while fetching logs."); return; }
+						else {
 							bot.startTyping(msg.channel);
 							logger.log("debug", "Cleaning bot messages...");
 							var todo = suffix,
@@ -141,33 +141,33 @@ var commands = {
 		cooldown: 15,
 		deleteCommand: true,
 		process: function (bot, msg, suffix) {
-			if (suffix && /[^0-9]/.test(suffix) == false) {
-				if (msg.channel.permissionsOf(msg.author).hasPermission("manageMessages")) {
-					if (msg.channel.permissionsOf(bot.user).hasPermission("manageMessages")) {
-						bot.getChannelLogs(msg.channel, 100, function (error, messages) {
-							if (error) {
-								logger.log("warn", "Something went wrong while fetching logs.");
-								return;
-							} else {
-								bot.startTyping(msg.channel);
-								logger.log("debug", "Pruning messages...");
-								var todo = parseInt(suffix);
-								var delcount = 0;
-								for (cMsg of messages) {
-									bot.deleteMessage(cMsg);
-									delcount++;
-									todo--;
-									if (todo == 0) {
-										logger.log("debug", "Done! Deleted " + delcount + " messages.");
-										bot.stopTyping(msg.channel);
-										return;
+			if (suffix && /^\d+$/.test(suffix)) {
+				if (!msg.channel.isPrivate) {
+					if (msg.channel.permissionsOf(msg.author).hasPermission("manageMessages")) {
+						if (msg.channel.permissionsOf(bot.user).hasPermission("manageMessages")) {
+							bot.getChannelLogs(msg.channel, 100, function (error, messages) {
+								if (error) { logger.log("warn", "Something went wrong while fetching logs."); return; }
+								else {
+									bot.startTyping(msg.channel);
+									logger.log("debug", "Pruning messages...");
+									var todo = parseInt(suffix);
+									var delcount = 0;
+									for (cMsg of messages) {
+										bot.deleteMessage(cMsg);
+										delcount++;
+										todo--;
+										if (todo == 0) {
+											logger.log("debug", "Done! Deleted " + delcount + " messages.");
+											bot.stopTyping(msg.channel);
+											return;
+										}
 									}
+									bot.stopTyping(msg.channel);
 								}
-								bot.stopTyping(msg.channel);
-							}
-						});
-					} else { bot.sendMessage(msg, ":warning: I don't have permission to delete messages."); }
-				} else { bot.sendMessage(msg, ":warning: You must have permission to manage messages in this channel"); }
+							});
+						} else { bot.sendMessage(msg, ":warning: I don't have permission to delete messages."); }
+					} else { bot.sendMessage(msg, ":warning: You must have permission to manage messages in this channel"); }
+				} else { bot.sendMessage(msg, ":warning: Can't do that in a DM"); }
 			} else { bot.sendMessage(msg, correctUsage("prune")); }
 		}
 	},
@@ -188,19 +188,44 @@ var commands = {
 		}
 	},
 	"announce": {
-		desc: "Bot owner only",
+		desc: "Expiremental - Send a DM to all users in the server. Admin's only.",
 		deleteCommand: true,
 		usage: "<message>",
 		cooldown: 30,
 		process: function (bot, msg, suffix) {
 			if (suffix) {
-				if (msg.author.id == config.admin_id) {
-					bot.servers.forEach(function (ser) {
-						bot.sendMessage(ser.defaultChannel, suffix + " - " + msg.author);
-					});
-					logger.log("info", "Announced \"" + suffix + "\" to servers");
-				} else { bot.sendMessage(msg, ":warning: Bot owner only! I can't get around the rate limits :("); }
-			}
+				if (msg.author.id == config.admin_id && msg.channel.isPrivate) {
+					if (/^\d+$/.test(suffix)) {
+						bot.sendMessage(msg, "Announcing to all servers...");
+						bot.servers.forEach(function (ser) {
+							setTimeout(function () {
+								bot.sendMessage(ser.defaultChannel, ":mega: " + suffix + " - " + msg.author.username + " *(bot owner)*");
+							}, 1000);
+						});
+						logger.log("info", "Announced \"" + suffix + "\" to servers");
+					} else {
+						announceMessages.push(suffix);
+						var code = Math.floor(Math.random() * 999999999);
+						confirmCodes.push(Math.floor(code));
+						bot.sendMessage(msg, ":warning: This will send a private message to **all** of the servers I'm in. If you're sure you want to do this say `"+config.mod_command_prefix+"announce "+code+"`");
+					}
+				} else if (msg.channel.permissionsOf(msg.author).hasPermission("manageServer")) {
+					if (/^\d+$/.test(suffix)) {
+						bot.sendMessage(msg, "Announcing to all uers, this may take a while...");
+						msg.channel.server.members.forEach(function (usr) {
+							setTimeout(function () {
+								bot.sendMessage(usr, ":mega: " + suffix + " - " + msg.author);
+							}, 1000);
+						});
+						logger.log("info", "Announced \"" + suffix + "\" to members of "+msg.channel.server.name);
+					} else {
+						announceMessages.push(suffix);
+						var code = Math.floor(Math.random() * 999999999);
+						confirmCodes.push(Math.floor(code));
+						bot.sendMessage(msg, ":warning: This will send a private message to **all** members of this server. If you're sure you want to do this say `"+config.mod_command_prefix+"announce "+code+"`");
+					}
+				} else { bot.sendMessage(msg, ":warning: Server admins only"); }
+			} else { bot.sendMessage(msg, ":warning: You must specify a message to annonce"); }
 		}
 	}
 }

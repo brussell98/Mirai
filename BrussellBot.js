@@ -44,9 +44,7 @@ bot.on("ready", function () {
 	logger.log("info", "BrussellBot is ready! Listening to " + bot.channels.length + " channels on " + bot.servers.length + " servers");
 	logger.log("info", "Username: "+bot.user.username);
 	versioncheck.checkForUpdate(function (resp) {
-		if (resp != null) {
-			logger.log("info", resp);
-		}
+		if (resp != null) { logger.log("info", resp); }
 	});
 });
 
@@ -59,7 +57,7 @@ bot.on("message", function (msg) {
 	if (msg.channel.isPrivate && /https?:\/\/discord\.gg\/[A-Za-z0-9]+/.test(msg.content)) { carbonInvite(msg); }
 	if (msg.mentions.length != 0) {
 		msg.mentions.forEach(function(usr) { 
-			if (usr.id == bot.user.id && msg.content.startsWith("<@125367104336691200>")) { cleverbot(bot, msg); logger.log("info", msg.author.username+" asked the bot: "+msg.content.substring(22)); }
+			if (usr.id == bot.user.id && msg.content.startsWith("<@125367104336691200>")) { cleverbot(bot, msg); logger.log("info", msg.author.username+" asked the bot: "+msg.content.substring(22).replace(/\n/g, " ")); }
 		});
 	}
 	if (msg.content[0] != config.command_prefix && msg.content[0] != config.mod_command_prefix) { return; }
@@ -89,9 +87,7 @@ bot.on("message", function (msg) {
 					if (commands[cmd].deleteCommand == true) { bot.deleteMessage(msg, {"wait": 2000}); }
 				}
 				logger.log("debug", "Command processed: " + cmd);
-			} catch (err) {
-				logger.log("error", err);
-			}
+			} catch (err) { logger.log("error", err); }
 		}
 	} else if (msg.content.startsWith(config.mod_command_prefix)) {
 		if (cmd == "reload") { reload(); return; }
@@ -116,9 +112,7 @@ bot.on("message", function (msg) {
 					if (mod[cmd].deleteCommand == true) { bot.deleteMessage(msg, {"wait": 2000}); }
 				}
 				logger.log("debug", "Command processed: " + cmd);
-			} catch (err) {
-				logger.log("error", err);
-			}
+			} catch (err) { logger.log("error", err); }
 		}
 	}
 });
@@ -127,42 +121,31 @@ bot.on("message", function (msg) {
 bot.on('serverNewMember', function (objServer, objUser) {
 	if (objServer.members.length < 71 && config.non_essential_event_listeners) {
 		logger.log("info", "New member on " + objServer.name + ": " + objUser.username);
-		if (config.greet_new_memebrs) {
-			bot.sendMessage(objServer.defaultChannel, "Welcome to " + objServer.name + " " + objUser.username);
-		}
+		if (config.greet_new_memebrs) { bot.sendMessage(objServer.defaultChannel, "Welcome to " + objServer.name + " " + objUser.username); }
 	}
 });
 
 bot.on('serverUpdated', function (objServer, objNewServer) {
-	if (config.non_essential_event_listeners) {
-		logger.log("debug", "" + objServer.name + " is now " + objNewServer.name);
-	}
+	if (config.non_essential_event_listeners) { logger.log("debug", "" + objServer.name + " is now " + objNewServer.name); }
 });
 
 bot.on('channelCreated', function (objChannel) {
 	if (config.non_essential_event_listeners) {
-		if (!objChannel.isPrivate){
-			logger.log("debug", "New channel created. Type: " + objChannel.type + ". Name: " + objChannel.name + ". Server: " + objChannel.server.name);
-		}
+		if (!objChannel.isPrivate){ logger.log("debug", "New channel created. Type: " + objChannel.type + ". Name: " + objChannel.name + ". Server: " + objChannel.server.name); }
 	}
 });
 
 bot.on('channelDeleted', function (objChannel) {
 	if (config.non_essential_event_listeners) {
-		if (!objChannel.isPrivate) {
-			logger.log("debug", "Channel deleted. Type: " + objChannel.type + ". Name: " + objChannel.name + ". Server: " + objChannel.server.name);
-		}
+		if (!objChannel.isPrivate) { logger.log("debug", "Channel deleted. Type: " + objChannel.type + ". Name: " + objChannel.name + ". Server: " + objChannel.server.name); }
 	}
 });
 
 bot.on('channelUpdated', function (objChannel) { //You could make this find the new channel by id to get new info
 	if (config.non_essential_event_listeners) {
 		if (!objChannel.isPrivate) {
-			if (objChannel.type == "text") {
-				logger.log("debug", "Channel updated. Was: Type: Text. Name: " + objChannel.name + ". Topic: " + objChannel.topic);
-			} else {
-				logger.log("debug", "Channel updated. Was: Type: Voice. Name: " + objChannel.name + ".");
-			}
+			if (objChannel.type == "text") { logger.log("debug", "Channel updated. Was: Type: Text. Name: " + objChannel.name + ". Topic: " + objChannel.topic); }
+			else { logger.log("debug", "Channel updated. Was: Type: Voice. Name: " + objChannel.name + "."); }
 		}
 	}
 });
@@ -176,9 +159,7 @@ bot.on('userBanned', function (objUser, objServer) {
 });
 
 bot.on('userUnbanned', function (objUser, objServer) {
-	if (objServer.members.length < 301 && config.non_essential_event_listeners) {
-		logger.log("info", ":warning: " + objUser.username + " unbanned on " + objServer.name);
-	}
+	if (objServer.members.length < 301 && config.non_essential_event_listeners) { logger.log("info", ":warning: " + objUser.username + " unbanned on " + objServer.name); }
 });
 
 bot.on('userUpdated', function (objUser, objNewUser) {
@@ -187,9 +168,7 @@ bot.on('userUpdated', function (objUser, objNewUser) {
 			//logger.log("info", "" + objUser.username + " changed their name to " + objNewUser.username);
 			if (config.username_changes) {
 				bot.servers.forEach(function(ser){
-					if (ser.members.get('id', objUser.id) != null && ser.members.length < 101){
-						bot.sendMessage(ser, ":warning: User in this server: `" + objUser.username + "`. changed their name to: `" + objNewUser.username + "`.");
-					}
+					if (ser.members.get('id', objUser.id) != null && ser.members.length < 101){ bot.sendMessage(ser, ":warning: User in this server: `" + objUser.username + "`. changed their name to: `" + objNewUser.username + "`."); }
 				});
 			}
 		}
@@ -197,9 +176,7 @@ bot.on('userUpdated', function (objUser, objNewUser) {
 });
 
 bot.on('presence', function(user, status, game) {
-	if (config.log_presence) {
-		logger.log("debug", "Presence: " + user.username + " is now " + status + " playing " + game);
-	}
+	if (config.log_presence) { logger.log("debug", "Presence: " + user.username + " is now " + status + " playing " + game); }
 });
 
 bot.on('serverDeleted', function(objServer) {
@@ -219,8 +196,8 @@ function carbonInvite(msg){
 				bot.sendMessage(msg, ":warning: Failed to join: " + err);
 				logger.log("warn", err);
 			} else {
-				logger.log("info", "Joined server: " + server);
-				bot.sendMessage(msg, "Successfully joined ***" + server + "***");
+				logger.log("info", "Joined server: " + server.name);
+				bot.sendMessage(msg, ":white_check_mark: Successfully joined ***" + server.name + "***");
 				if (msg.author.id != 109338686889476096) { bot.sendMessage(msg, "It's not like I wanted you to use the correct command or anything, b-baka!"); }
 				if (shouldCarbonAnnounce) {
 					var msgArray = [];

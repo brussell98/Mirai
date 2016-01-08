@@ -20,7 +20,7 @@ An multipurpose bot for Discord using the [Discord.js](https://github.com/hydrab
 
 ### TODO
 
-- [ ] And add comments so people can understand what this stuff does
+- [ ] Add comments so people can understand what this stuff does
 - [ ] Commands
 	- [x] Join server
 		- [x] Silent join by default
@@ -50,13 +50,11 @@ An multipurpose bot for Discord using the [Discord.js](https://github.com/hydrab
 	- [x] Info commands
 		- [x] Server info
 		- [x] User info
-			- [x] Get joinedAt from detailsOfUser
 	- [x] Ask if anyone wants to play a game
 	- [x] Announce to servers (for bot owner)
 	- [x] Dice roll
 	- [x] Coin flip
 	- [x] 8ball
-		- [x] Store respones locally
 	- [x] Rock paper scissors
 	- [x] Choose for me
 	- [x] Clean bot messages
@@ -64,7 +62,6 @@ An multipurpose bot for Discord using the [Discord.js](https://github.com/hydrab
 	- [ ] Store a message or link with a tag (non-heroku)
 	- [x] Vote (Credit: [BlackHayate](https://github.com/BlackHayate))
 	- [x] Anime/Manga Lookup
-		- [ ] More regex replaces
 	- [x] Avatar
 	- [ ] Stop user from sending messages for a certain time
 	- [ ] osu! - Need to apply for an API key for this
@@ -72,6 +69,5 @@ An multipurpose bot for Discord using the [Discord.js](https://github.com/hydrab
 		- [ ] User and best scores
 		- [ ] Top scores for a beatmap
 		- [ ] Live match details?
-	- [ ] Changelog
-- [ ] Optimize code - v1
+	- [ ] Get a link to the help server
 - [ ] Could do stuff with checking how long a user has been on the server for perms

@@ -85,7 +85,7 @@ var commands = {
 								logger.log("warn", err);
 							} else {
 								logger.log("info", "Joined server: " + server);
-								bot.sendMessage(msg, "Successfully joined ***" + server + "***");
+								bot.sendMessage(msg, ":white_check_mark: Successfully joined ***" + server + "***");
 								if (suffix.indexOf("-a") != 1) {
 									var msgArray = [];
 									msgArray.push("Hi! I'm **" + bot.user.username + "** and I was invited to this server by " + msg.author + ".");
@@ -112,13 +112,13 @@ var commands = {
 		}
 	},
 	"letsplay": {
-		desc: "Ask if anyone wants to play a game.",
+		desc: "Ask if anyone wants to play a game. WARNING: uses @eveyone.",
 		deleteCommand: true,
 		usage: "[game name]",
 		cooldown: 10,
 		process: function(bot, msg, suffix) {
-			if (suffix) { bot.sendMessage(msg, "@everyone, " + msg.author + " would like to know if anyone wants to play **" + suffix + "**."); }
-			else { bot.sendMessage(msg, "@everyone, " + msg.author + " would like to know if anyone wants to play a game"); }
+			if (suffix) { bot.sendMessage(msg, ":video_game: @everyone, " + msg.author + " would like to know if anyone wants to play **" + suffix + "**."); }
+			else { bot.sendMessage(msg, ":video_game: @everyone, " + msg.author + " would like to know if anyone wants to play a game"); }
 		}
 	},
 	"roll": {
@@ -191,12 +191,13 @@ var commands = {
 		desc: "Makes a choice for you.",
 		usage: "<option 1>, <option 2>, [option], [option]",
 		process: function (bot, msg, suffix) {
-			if (!suffix || /(.*), (.*)/.test(suffix) == false) { bot.sendMessage(msg, correctUsage("choose")); return;}
-			var choices = suffix.split(", ");
+			if (!suffix || /(.*), ?(.*)/.test(suffix) == false) { bot.sendMessage(msg, correctUsage("choose")); return;}
+			var choices = suffix.split(",");
 			if (choices.length < 2) {
 				bot.sendMessage(msg, correctUsage("choose"));
 			} else {
 				choice = Math.floor(Math.random() * (choices.length));
+				if (choices[choice].startsWith(" ")) { choices[choice] = choices[choice].substring(1); }
 				bot.sendMessage(msg, "I picked " + choices[choice]);
 			}
 		}
@@ -267,26 +268,20 @@ var commands = {
 							var type = result.anime.entry[0].type;
 							var status = result.anime.entry[0].status;
 							var synopsis = result.anime.entry[0].synopsis.toString();
-							if (title == null || title == "") { bot.sendMessage(msg, "Not found"); return; }
-							synopsis = synopsis.replace(/&mdash;/g, "—");
-							synopsis = synopsis.replace(/&hellip;/g, "...");
-							synopsis = synopsis.replace(/<br \/>/g, " ");
-							synopsis = synopsis.replace(/&quot;/g, "\"");
-							synopsis = synopsis.replace(/\r?\n|\r/g, " ");
-							synopsis = synopsis.replace(/\[(i|\/i)\]/g, "*");
-							synopsis = synopsis.replace(/\[(b|\/b)\]/g, "**");
-							synopsis = synopsis.replace(/\[(.{1,10})\]/g, "");
+							synopsis = synopsis.replace(/&mdash;/g, "—"); synopsis = synopsis.replace(/&copy;/g, "©");
+							synopsis = synopsis.replace(/&hellip;/g, "..."); synopsis = synopsis.replace(/<br \/>/g, "");
+							synopsis = synopsis.replace(/&quot;/g, "\""); synopsis = synopsis.replace(/\r?\n|\r/g, "");
+							synopsis = synopsis.replace(/\[(i|\/i)\]/g, "*"); synopsis = synopsis.replace(/\[(b|\/b)\]/g, "**");
+							synopsis = synopsis.replace(/\[(.{1,10})\]/g, ""); synopsis = synopsis.replace(/&amp;/g, "&");
 							if (!msg.channel.isPrivate) {
 								if (synopsis.length > 400) { synopsis = synopsis.substring(0, 400); }
 							}
-							bot.sendMessage(msg, "**" + title + " / " + english+"**\n**Type:** "+ type +", **Episodes:** "+ep+", **Status:** "+status+", **Score:** "+score+"\n"+synopsis);
+						bot.sendMessage(msg, "**" + title + " / " + english+"**\n**Type:** "+ type +" **| Episodes:** "+ep+" **| Status:** "+status+" **| Score:** "+score+"\n"+synopsis);
 						});
 					} else { bot.sendMessage(msg, "Not found"); }
 				});
 				bot.stopTyping(msg.channel);
-			} else {
-				bot.sendMessage(msg, correctUsage("anime"));
-			}
+			} else { bot.sendMessage(msg, correctUsage("anime")); }
 		}
 	},
 	"manga": {
@@ -310,26 +305,20 @@ var commands = {
 							var type = result.manga.entry[0].type;
 							var status = result.manga.entry[0].status;
 							var synopsis = result.manga.entry[0].synopsis.toString();
-							if (title == null || title == "") { bot.sendMessage(msg, "Not found"); return; }
-							synopsis = synopsis.replace(/&mdash;/g, "—");
-							synopsis = synopsis.replace(/&hellip;/g, "...");
-							synopsis = synopsis.replace(/<br \/>/g, " ");
-							synopsis = synopsis.replace(/&quot;/g, "\"");
-							synopsis = synopsis.replace(/\r?\n|\r/g, " ");
-							synopsis = synopsis.replace(/\[(i|\/i)\]/g, "*");
-							synopsis = synopsis.replace(/\[(b|\/b)\]/g, "**");
-							synopsis = synopsis.replace(/\[(.{1,10})\]/g, "");
+							synopsis = synopsis.replace(/&mdash;/g, "—"); synopsis = synopsis.replace(/&copy;/g, "©");
+							synopsis = synopsis.replace(/&hellip;/g, "..."); synopsis = synopsis.replace(/<br \/>/g, "");
+							synopsis = synopsis.replace(/&quot;/g, "\""); synopsis = synopsis.replace(/\r?\n|\r/g, "");
+							synopsis = synopsis.replace(/\[(i|\/i)\]/g, "*"); synopsis = synopsis.replace(/\[(b|\/b)\]/g, "**");
+							synopsis = synopsis.replace(/\[(.{1,10})\]/g, ""); synopsis = synopsis.replace(/&amp;/g, "&");
 							if (!msg.channel.isPrivate) {
 								if (synopsis.length > 400) { synopsis = synopsis.substring(0, 400); }
 							}
-							bot.sendMessage(msg, "**" + title + " / " + english+"**\n**Type:** "+ type +", **Chapters:** "+chapters+", **Volumes: **"+volumes+", **Status:** "+status+", **Score:** "+score+"\n"+synopsis);
+							bot.sendMessage(msg, "**" + title + " / " + english+"**\n**Type:** "+ type +" **| Chapters:** "+chapters+" **| Volumes: **"+volumes+" **| Status:** "+status+" **| Score:** "+score+"\n"+synopsis);
 						});
 					} else { bot.sendMessage(msg, "Not found"); }
 				});
 				bot.stopTyping(msg.channel);
-			} else {
-				bot.sendMessage(msg, correctUsage("manga"));
-			}
+			} else { bot.sendMessage(msg, correctUsage("manga")); }
 		}
 	},
 	"coinflip": {
@@ -338,11 +327,8 @@ var commands = {
 		deleteCommand: true,
 		process: function(bot, msg, suffix) {
 			var side = Math.floor(Math.random() * (2));
-			if (side == 0) {
-				bot.sendMessage(msg, msg.author.username+" flipped a coin and got Heads");
-			} else {
-				bot.sendMessage(msg, msg.author.username+" flipped a coin and got Tails");
-			}
+			if (side == 0) { bot.sendMessage(msg, msg.author.username+" flipped a coin and got Heads"); }
+			else { bot.sendMessage(msg, msg.author.username+" flipped a coin and got Tails"); }
 		}
 	},
 	"osusig": {
@@ -383,7 +369,7 @@ var commands = {
 		desc: "Play Rock Paper Scissors",
 		usage: "<rock/paper/scissors>",
 		process: function(bot, msg, suffix) {
-			if (!suffix) { bot.sendMessage(msg, correctUsage("rps")); return; }
+			//if (!suffix) { bot.sendMessage(msg, correctUsage("rps")); return; }
 			var choice = Math.floor(Math.random() * 3);
 			if (choice == 0) { bot.sendMessage(msg, "I picked rock"); }
 			else if (choice == 1) { bot.sendMessage(msg, "I picked paper"); }
@@ -407,9 +393,7 @@ var commands = {
 					var temp = Math.round(parseInt(body.main.temp)*(9/5)-459.67);
 					var windspeed = Math.round(parseInt(body.wind.speed)*2.23694);
 					bot.sendMessage(msg, ":sunny: Weather for **"+body.name+"**:\n**Conditions:** "+body.weather[0].description+", **Temp:** "+temp+"F\n**Humidity:** "+body.main.humidity+"%**Wind:** "+body.wind.speed+"mph, **Cloudiness:** "+body.clouds.all+"%");
-				} else {
-					logger.error("error: "+error);
-				}
+				} else { logger.error("error: "+error); }
 			});
 		}
 	},
