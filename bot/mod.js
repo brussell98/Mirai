@@ -31,7 +31,7 @@ var commands = {
 			var msgArray = [];
 			if (!suffix){
 				var msgArray = [];
-				msgArray.push("This is a list of commands. Use `" + config.mod_command_prefix + "help <command name>` to get info on a specific command.");
+				msgArray.push(":information_source: This is a list of commands. Use `" + config.mod_command_prefix + "help <command name>` to get info on a specific command.");
 				msgArray.push("");
 				msgArray.push("**Commands: **");
 				msgArray.push("```");
@@ -41,7 +41,7 @@ var commands = {
 			} else {
 				if (commands.hasOwnProperty(suffix)){
 					var msgArray = [];
-					msgArray.push("**" + config.mod_command_prefix + "" + suffix + ": **" + commands[suffix].desc);
+					msgArray.push(":information_source: **" + config.mod_command_prefix + "" + suffix + ": **" + commands[suffix].desc);
 					if (commands[suffix].hasOwnProperty("usage")) { msgArray.push("**Usage: **`" + config.mod_command_prefix + "" + suffix + " " + commands[suffix].usage + "`"); }
 					if (commands[suffix].hasOwnProperty("cooldown")) { msgArray.push("**Cooldown: **" + commands[suffix].cooldown + " seconds"); }
 					if (commands[suffix].hasOwnProperty("deleteCommand")) { msgArray.push("This command will delete the message that activates it"); }
@@ -138,7 +138,7 @@ var commands = {
 	"prune": {
 		desc: "Cleans the specified number of messages from the channel.",
 		usage: "<number of messages 1-100>",
-		cooldown: 10,
+		cooldown: 15,
 		deleteCommand: true,
 		process: function (bot, msg, suffix) {
 			if (suffix && /[^0-9]/.test(suffix) == false) {
@@ -199,7 +199,7 @@ var commands = {
 						bot.sendMessage(ser.defaultChannel, suffix + " - " + msg.author);
 					});
 					logger.log("info", "Announced \"" + suffix + "\" to servers");
-				} else { bot.sendMessage(msg, ":warning: Bot owner only!"); }
+				} else { bot.sendMessage(msg, ":warning: Bot owner only! I can't get around the rate limits :("); }
 			}
 		}
 	}

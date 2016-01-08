@@ -48,6 +48,7 @@ An multipurpose bot for Discord using the [Discord.js](https://github.com/hydrab
 		- [ ] Set playing to song name
 		- [ ] Bot owner gets priority
 	- [x] Cleverbot module activated with mention
+		- [ ] I wonder if I can fix other language's characters not working?
 	- [x] Set playing status
 	- [x] Info commands
 		- [x] Server info

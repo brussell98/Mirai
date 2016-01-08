@@ -40,7 +40,7 @@ var commands = {
 			var msgArray = [];
 			if (!suffix){
 				var msgArray = [];
-				msgArray.push("This is a list of commands. Use `" + config.command_prefix + "help <command name>` to get info on a specific command.");
+				msgArray.push(":information_source: This is a list of commands. Use `" + config.command_prefix + "help <command name>` to get info on a specific command.");
 				msgArray.push("Moderation related commands can be found with `" + config.mod_command_prefix + "help [command]`.");
 				msgArray.push("You can also find command info at github.com/brussell98/BrussellBot/wiki/Commands");
 				msgArray.push("**Commands: **");
@@ -51,7 +51,7 @@ var commands = {
 			} else {
 				if (commands.hasOwnProperty(suffix)){
 					var msgArray = [];
-					msgArray.push("**" + config.command_prefix + "" + suffix + ": **" + commands[suffix].desc);
+					msgArray.push(":information_source: **" + config.command_prefix + "" + suffix + ": **" + commands[suffix].desc);
 					if (commands[suffix].hasOwnProperty("usage")) { msgArray.push("**Usage: **`" + config.command_prefix + "" + suffix + " " + commands[suffix].usage + "`"); }
 					if (commands[suffix].hasOwnProperty("cooldown")) { msgArray.push("**Cooldown: **" + commands[suffix].cooldown + " seconds"); }
 					if (commands[suffix].hasOwnProperty("deleteCommand")) { msgArray.push("This command will delete the message that activates it"); }
@@ -65,7 +65,7 @@ var commands = {
 		process: function(bot, msg) {
 			var n = Math.floor(Math.random() * 4)
 			if (n == 0) { bot.sendMessage(msg, "pong");} 
-			else if (n == 1) { bot.sendMessage(msg, "pongu");} 
+			else if (n == 1) { bot.sendMessage(msg, "You though I would say pong, didn't you?");} 
 			else if (n == 2) { bot.sendMessage(msg, "pong!");} 
 			else if (n == 3) { bot.sendMessage(msg, "Yeah, I'm still here");} 
 		}
@@ -267,6 +267,7 @@ var commands = {
 							var type = result.anime.entry[0].type;
 							var status = result.anime.entry[0].status;
 							var synopsis = result.anime.entry[0].synopsis.toString();
+							if (title == null || title == "") { bot.sendMessage(msg, "Not found"); return; }
 							synopsis = synopsis.replace(/&mdash;/g, "—");
 							synopsis = synopsis.replace(/&hellip;/g, "...");
 							synopsis = synopsis.replace(/<br \/>/g, " ");
@@ -309,6 +310,7 @@ var commands = {
 							var type = result.manga.entry[0].type;
 							var status = result.manga.entry[0].status;
 							var synopsis = result.manga.entry[0].synopsis.toString();
+							if (title == null || title == "") { bot.sendMessage(msg, "Not found"); return; }
 							synopsis = synopsis.replace(/&mdash;/g, "—");
 							synopsis = synopsis.replace(/&hellip;/g, "...");
 							synopsis = synopsis.replace(/<br \/>/g, " ");
