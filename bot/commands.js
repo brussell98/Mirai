@@ -56,7 +56,7 @@ var commands = {
 					if (commands[suffix].hasOwnProperty("cooldown")) { msgArray.push("**Cooldown: **" + commands[suffix].cooldown + " seconds"); }
 					if (commands[suffix].hasOwnProperty("deleteCommand")) { msgArray.push("This command will delete the message that activates it"); }
 					bot.sendMessage(msg.author, msgArray);
-				} else { bot.sendMessage(msg.author, "Command `" + suffix + "` not found."); }
+				} else { bot.sendMessage(msg.author, ":warning: Command `" + suffix + "` not found."); }
 			}
 		}
 	},
@@ -184,7 +184,7 @@ var commands = {
 					bot.sendMessage(msg, msgArray);
 					logger.log("info", "Got info on " + msg.channel.server.name);
 				}
-			} else { bot.sendMessage(msg, "Can't do that in a DM."); }
+			} else { bot.sendMessage(msg, ":warning: Can't do that in a DM."); }
 		}
 	},
 	"choose": {
@@ -207,7 +207,7 @@ var commands = {
 		deleteCommand: true,
 		process: function (bot, msg, suffix) {
 			if (!suffix) { bot.sendMessage(msg, correctUsage("newvote")); return; }
-			if (votebool == true) { bot.sendMessage(msg, "Theres already a vote pending!"); return; }
+			if (votebool == true) { bot.sendMessage(msg, ":warning: Theres already a vote pending!"); return; }
 			topicstring = suffix;
 			bot.sendMessage(msg, "New Vote started: `" + suffix + "`\nTo vote say `" + config.command_prefix + "vote +/-`");
 			votebool = true;
@@ -219,7 +219,7 @@ var commands = {
 		deleteCommand: true,
 		process: function (bot, msg, suffix) {
 			if (!suffix) { bot.sendMessage(msg, correctUsage("vote")); return; }
-			if (votebool == false) { bot.sendMessage(msg, "There isn't a topic being voted on right now! Use `"+config.command_prefix+"newvote <topic>`"); return; }
+			if (votebool == false) { bot.sendMessage(msg, ":warning: There isn't a topic being voted on right now! Use `"+config.command_prefix+"newvote <topic>`"); return; }
 			if (voter.indexOf(msg.author) != -1) { return; }
 			voter.push(msg.author);
 			var vote = suffix.split(" ")[0]
@@ -418,7 +418,7 @@ var commands = {
 		usage: "<search>",
 		process: function(bot, msg, suffix) {
 			if (!suffix) { bot.sendMessage(msg, "http://www.lmgtfy.com/?q=brussellbot+commands"); return; }
-			if (/[^a-zA-Z0-9 ]/.test(suffix)) { bot.sendMessage(msg, "Special chacters not allowed"); return; }
+			if (/[^a-zA-Z0-9 ]/.test(suffix)) { bot.sendMessage(msg, ":warning: Special chacters not allowed"); return; }
 			suffix = suffix.replace(/ /g, "+");
 			bot.sendMessage(msg, "http://www.lmgtfy.com/?q="+suffix);
 		}

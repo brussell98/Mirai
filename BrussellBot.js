@@ -78,7 +78,7 @@ bot.on("message", function (msg) {
 						if (cTime < leTime) {
 							var left = (leTime - cTime) / 1000;
 							if (msg.author.id != config.admin_id) {
-								bot.sendMessage(msg, "This command is on cooldown with " + Math.round(left) + " seconds remaining");
+								bot.sendMessage(msg, ":warning: This command is on cooldown with " + Math.round(left) + " seconds remaining");
 								return;
 							}
 						} else { lastExecTime[cmd] = cTime; }
@@ -105,7 +105,7 @@ bot.on("message", function (msg) {
 						if (cTime < leTime) {
 							var left = (leTime - cTime) / 1000;
 							if (msg.author.id != config.admin_id) {
-								bot.sendMessage(msg, "This command is on cooldown with " + Math.round(left) + " seconds remaining");
+								bot.sendMessage(msg, ":warning: This command is on cooldown with " + Math.round(left) + " seconds remaining");
 								return;
 							}
 						} else { lastExecTime[cmd] = cTime; }
@@ -170,14 +170,14 @@ bot.on('channelUpdated', function (objChannel) { //You could make this find the 
 bot.on('userBanned', function (objUser, objServer) {
 	if (objServer.members.length < 301 && config.non_essential_event_listeners) {
 		logger.log("info", "" + objUser.username + " banned on " + objServer.name);
-		bot.sendMessage(objServer.defaultChannel, "" + objUser.username + " was banned");
-		bot.sendMessage(objUser, "You were banned from " + objServer.name);
+		bot.sendMessage(objServer.defaultChannel, ":warning: " + objUser.username + " was banned");
+		bot.sendMessage(objUser, ":warning: You were banned from " + objServer.name);
 	}
 });
 
 bot.on('userUnbanned', function (objUser, objServer) {
 	if (objServer.members.length < 301 && config.non_essential_event_listeners) {
-		logger.log("info", "" + objUser.username + " unbanned on " + objServer.name);
+		logger.log("info", ":warning: " + objUser.username + " unbanned on " + objServer.name);
 	}
 });
 
@@ -188,7 +188,7 @@ bot.on('userUpdated', function (objUser, objNewUser) {
 			if (config.username_changes) {
 				bot.servers.forEach(function(ser){
 					if (ser.members.get('id', objUser.id) != null && ser.members.length < 101){
-						bot.sendMessage(ser, "User in this server: `" + objUser.username + "`. changed their name to: `" + objNewUser.username + "`.");
+						bot.sendMessage(ser, ":warning: User in this server: `" + objUser.username + "`. changed their name to: `" + objNewUser.username + "`.");
 					}
 				});
 			}

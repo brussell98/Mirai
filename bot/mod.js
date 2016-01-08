@@ -46,7 +46,7 @@ var commands = {
 					if (commands[suffix].hasOwnProperty("cooldown")) { msgArray.push("**Cooldown: **" + commands[suffix].cooldown + " seconds"); }
 					if (commands[suffix].hasOwnProperty("deleteCommand")) { msgArray.push("This command will delete the message that activates it"); }
 					bot.sendMessage(msg.author, msgArray);
-				} else { bot.sendMessage(msg.author, "Command `" + suffix + "` not found."); }
+				} else { bot.sendMessage(msg.author, ":warning: Command `" + suffix + "` not found."); }
 			}
 		}
 	},
@@ -131,7 +131,7 @@ var commands = {
 							bot.stopTyping(msg.channel);
 						}
 					});
-				} else { bot.sendMessage(msg, "You must have permission to manage messages in this channel"); }
+				} else { bot.sendMessage(msg, ":warning: You must have permission to manage messages in this channel"); }
 			} else { bot.sendMessage(msg, correctUsage("clean")); }
 		}
 	},
@@ -166,8 +166,8 @@ var commands = {
 								bot.stopTyping(msg.channel);
 							}
 						});
-					} else { bot.sendMessage(msg, "I don't have permission to delete messages."); }
-				} else { bot.sendMessage(msg, "You must have permission to manage messages in this channel"); }
+					} else { bot.sendMessage(msg, ":warning: I don't have permission to delete messages."); }
+				} else { bot.sendMessage(msg, ":warning: You must have permission to manage messages in this channel"); }
 			} else { bot.sendMessage(msg, correctUsage("prune")); }
 		}
 	},
@@ -184,7 +184,7 @@ var commands = {
 					bot.sendMessage(msg, "You can't tell me what to do! (You need permission to kick users in this channel)");
 					logger.log("info", "A non-privileged user (" + msg.sender.username + ") tried to make me leave a server.");
 				}
-			} else { bot.sendMessage(msg, "I can't leave a DM."); }
+			} else { bot.sendMessage(msg, ":warning: I can't leave a DM."); }
 		}
 	},
 	"announce": {
@@ -199,7 +199,7 @@ var commands = {
 						bot.sendMessage(ser.defaultChannel, suffix + " - " + msg.author);
 					});
 					logger.log("info", "Announced \"" + suffix + "\" to servers");
-				} else { bot.sendMessage(msg, "Bot owner only!"); }
+				} else { bot.sendMessage(msg, ":warning: Bot owner only!"); }
 			}
 		}
 	}
