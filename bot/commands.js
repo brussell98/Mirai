@@ -390,9 +390,15 @@ var commands = {
 				if (!error && response.statusCode == 200) {
 					body = JSON.parse(body);
 					if (!body.hasOwnProperty("weather")) { return; }
-					var temp = Math.round(parseInt(body.main.temp)*(9/5)-459.67);
-					var windspeed = Math.round(parseInt(body.wind.speed)*2.23694);
-					bot.sendMessage(msg, ":sunny: Weather for **"+body.name+"**:\n**Conditions:** "+body.weather[0].description+", **Temp:** "+temp+"F\n**Humidity:** "+body.main.humidity+"%**Wind:** "+body.wind.speed+"mph, **Cloudiness:** "+body.clouds.all+"%");
+					if (body.sys.country == "US") { var temp = Math.round(parseInt(body.main.temp)*(9/5)-459.67) + " °F"; }
+					else { var temp = Math.round(parseInt(body.main.temp)-273.15) + " °C"; }
+					if (body.sys.country == "US") { var windspeed = Math.round(parseInt(body.wind.speed)*2.23694) + " mph"; }
+					else { var windspeed = body.wind.speed + " m/s"; }
+					var emoji = ":sunny:";
+					if (body.weather[0].description.indexOf("cloud") > -1) { emoji = ":cloud:"; }
+					if (body.weather[0].description.indexOf("snow") > -1) { emoji = ":snowflake:"; }
+					if (body.weather[0].description.indexOf("rain") > -1 || body.weather[0].description.indexOf("storm") > -1 || body.weather[0].description.indexOf("drizzle") > -1) { emoji = ":umbrella:"; }
+					bot.sendMessage(msg, emoji+" Weather for **"+body.name+"**:\n**Conditions:** "+body.weather[0].description+" **Temp:** "+temp+"\n**Humidity:** "+body.main.humidity+"% **Wind:** "+windspeed+" **Cloudiness:** "+body.clouds.all+"%");
 				} else { logger.error("error: "+error); }
 			});
 		}
