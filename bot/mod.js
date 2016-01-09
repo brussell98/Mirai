@@ -196,13 +196,17 @@ var commands = {
 			if (suffix) {
 				if (msg.author.id == config.admin_id && msg.channel.isPrivate) {
 					if (/^\d+$/.test(suffix)) {
-						bot.sendMessage(msg, "Announcing to all servers...");
-						bot.servers.forEach(function (ser) {
-							setTimeout(function () {
-								bot.sendMessage(ser.defaultChannel, ":mega: " + suffix + " - " + msg.author.username + " *(bot owner)*");
-							}, 1000);
-						});
-						logger.log("info", "Announced \"" + suffix + "\" to servers");
+						for (var i = 0; i < confirmCodes.length; i++) {
+							if (confirmCodes[i] != suffix) { continue; }
+							bot.sendMessage(msg, "Announcing to all servers...");
+							bot.servers.forEach(function (ser) {
+								setTimeout(function () {
+									bot.sendMessage(ser.defaultChannel, ":mega: " + announceMessages[i] + " - " + msg.author.username + " *(bot owner)*");
+								}, 1000);
+							});
+							logger.log("info", "Announced \"" + announceMessages[i] + "\" to servers");
+							return;
+						}
 					} else {
 						announceMessages.push(suffix);
 						var code = Math.floor(Math.random() * 999999999);
@@ -211,13 +215,17 @@ var commands = {
 					}
 				} else if (msg.channel.permissionsOf(msg.author).hasPermission("manageServer")) {
 					if (/^\d+$/.test(suffix)) {
-						bot.sendMessage(msg, "Announcing to all uers, this may take a while...");
-						msg.channel.server.members.forEach(function (usr) {
-							setTimeout(function () {
-								bot.sendMessage(usr, ":mega: " + suffix + " - " + msg.author);
-							}, 1000);
-						});
-						logger.log("info", "Announced \"" + suffix + "\" to members of "+msg.channel.server.name);
+						for (var i = 0; i < confirmCodes.length; i++) {
+							if (confirmCodes[i] != suffix) { continue; }
+							bot.sendMessage(msg, "Announcing to all uers, this may take a while...");
+							msg.channel.server.members.forEach(function (usr) {
+								setTimeout(function () {
+									bot.sendMessage(usr, ":mega: " + announceMessages[i] + " - " + msg.author);
+								}, 1000);
+							});
+							logger.log("info", "Announced \"" + announceMessages[i] + "\" to members of "+msg.channel.server.name);
+							return;
+						}
 					} else {
 						announceMessages.push(suffix);
 						var code = Math.floor(Math.random() * 999999999);
