@@ -112,13 +112,15 @@ var commands = {
 		}
 	},
 	"letsplay": {
-		desc: "Ask if anyone wants to play a game. WARNING: uses @eveyone.",
+		desc: "Ask if anyone wants to play a game. WARNING: uses @everyone.",
 		deleteCommand: true,
 		usage: "[game name]",
 		cooldown: 10,
 		process: function(bot, msg, suffix) {
-			if (suffix) { bot.sendMessage(msg, ":video_game: @everyone, " + msg.author + " would like to know if anyone wants to play **" + suffix + "**."); }
-			else { bot.sendMessage(msg, ":video_game: @everyone, " + msg.author + " would like to know if anyone wants to play a game"); }
+			if (msg.channel.permissionsOf(msg.author).hasPermission("mentionEveryone")) {
+				if (suffix) { bot.sendMessage(msg, ":video_game: @everyone, " + msg.author + " would like to know if anyone wants to play **" + suffix + "**."); }
+				else { bot.sendMessage(msg, ":video_game: @everyone, " + msg.author + " would like to know if anyone wants to play a game"); }
+			} else { bot.sendMessage(msg, ":warning: You don't have permission to mention everyone"); }
 		}
 	},
 	"roll": {
@@ -153,12 +155,12 @@ var commands = {
 						if (usr.id != config.admin_id) { msgArray.push(":information_source: You requested info on **" + usr.username + "**"); }
 						else { msgArray.push(":information_source: You requested info on **Bot Creator-senpai**"); }
 						msgArray.push("User ID: `" + usr.id + "`");
-						if (usr.game != null) { msgArray.push("Staus: `" + usr.status + "` playing `" + usr.game.name + "`"); } //broken
-						else { msgArray.push("Staus: `" + usr.status + "`"); }
+						if (usr.game != null) { msgArray.push("Status: `" + usr.status + "` playing `" + usr.game.name + "`"); } //broken
+						else { msgArray.push("Status: `" + usr.status + "`"); }
 						var jDate = new Date(msg.channel.server.detailsOfUser(usr).joinedAt);
 						msgArray.push("Joined this server on: `" + jDate.toUTCString() + "`");
 						var rsO = msg.channel.server.rolesOfUser(usr.id)
-						var rols = "eveyone, "
+						var rols = "everyone, "
 						for (rO of rsO) { rols += (rO.name + ", "); }
 						rols = rols.replace("@", "");
 						msgArray.push("Roles: `" + rols.substring(0, rols.length - 2) + "`");
@@ -346,10 +348,10 @@ var commands = {
 				request.head('https://lemmmy.pw/osusig/sig.php?colour=hex'+color+'&uname='+username+'&pp=2&flagshadow&xpbar&xpbarhex&darktriangles', function(err, res, body) {
 					if (!err) {
 						var r = request({url: 'https://lemmmy.pw/osusig/sig.php?colour=hex'+color+'&uname='+username+'&pp=2&flagshadow&xpbar&xpbarhex&darktriangles', encoding: null}, function(error, response, body){
-							bot.sendMessage(msg, "Here's your osu signature! Get a live version at `lemmmy.pw/osusig/`");
+							bot.sendMessage(msg, "Here's your osu signature "+msg.author.username+"! Get a live version at `lemmmy.pw/osusig/`");
 							bot.sendFile(msg, body, 'sig.png');
 						});
-					}
+					} else { bot.sendMessage(msg, ":warning: Error, did you use the command correctly?"); }
 				});
 			} else { bot.sendMessage(msg, correctUsage("osusig")); }
 		}
@@ -409,7 +411,7 @@ var commands = {
 		usage: "<search>",
 		process: function(bot, msg, suffix) {
 			if (!suffix) { bot.sendMessage(msg, "http://www.lmgtfy.com/?q=brussellbot+commands"); return; }
-			if (/[^a-zA-Z0-9 ]/.test(suffix)) { bot.sendMessage(msg, ":warning: Special chacters not allowed"); return; }
+			if (/[^a-zA-Z0-9 ]/.test(suffix)) { bot.sendMessage(msg, ":warning: Special characters not allowed"); return; }
 			suffix = suffix.replace(/ /g, "+");
 			bot.sendMessage(msg, ":mag: http://www.lmgtfy.com/?q="+suffix);
 		}

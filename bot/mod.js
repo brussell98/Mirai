@@ -79,7 +79,7 @@ var commands = {
 					bot.sendMessage(msg, msgArray);
 				});
 
-				if (suffix.indexOf("-ls") != -1) {
+				if (suffix.indexOf("-ls") != -1 && msg.channel.isPrivate) {
 					var svrArray = [];
 					for (svrObj of bot.servers) { svrArray.push("`"+svrObj.name+": Channels: "+svrObj.channels.length+", Users: "+svrObj.members.length+"`"); }
 					bot.sendMessage(msg, svrArray);
@@ -94,10 +94,10 @@ var commands = {
 		deleteCommand: true,
 		process: function (bot, msg, suffix) {
 			if (!msg.channel.isPrivate) {
-			if (msg.channel.server.owner.id == msg.author.id) {
-				!suffix ? bot.setPlayingGame(games[Math.floor(Math.random() * (games.length))]) : bot.setPlayingGame(suffix);
-				logger.log("info", "" + msg.author.username + " set the playing status to: " + suffix);
-			} else { console.log("info", "Server owners only"); }
+				if (msg.channel.server.owner.id == msg.author.id) {
+					!suffix ? bot.setPlayingGame(games[Math.floor(Math.random() * (games.length))]) : bot.setPlayingGame(suffix);
+					logger.log("info", "" + msg.author.username + " set the playing status to: " + suffix);
+				} else { console.log("info", "Server owners only"); }
 			}
 		}
 	},
@@ -114,7 +114,7 @@ var commands = {
 						else {
 							bot.startTyping(msg.channel);
 							logger.log("debug", "Cleaning bot messages...");
-							var todo = suffix,
+							var todo = parseInt(suffix) + 1,
 							delcount = 0;
 							for (msg1 of messages) {
 								if (msg1.author === bot.user) {
@@ -150,13 +150,13 @@ var commands = {
 								else {
 									bot.startTyping(msg.channel);
 									logger.log("debug", "Pruning messages...");
-									var todo = parseInt(suffix);
+									var todo = parseInt(suffix) + 1;
 									var delcount = 0;
 									for (cMsg of messages) {
 										bot.deleteMessage(cMsg);
 										delcount++;
 										todo--;
-										if (todo == 0) {
+										if (todo == 0 || delcount == 100) {
 											logger.log("debug", "Done! Deleted " + delcount + " messages.");
 											bot.stopTyping(msg.channel);
 											return;
@@ -188,8 +188,8 @@ var commands = {
 		}
 	},
 	"announce": {
-		desc: "Expiremental - Send a DM to all users in the server. Admin's only.",
-		deleteCommand: true,
+		desc: "Expiremental - Send a DM to all users in the server. Admins only.",
+		deleteCommand: false,
 		usage: "<message>",
 		cooldown: 30,
 		process: function (bot, msg, suffix) {
@@ -197,12 +197,17 @@ var commands = {
 				if (msg.author.id == config.admin_id && msg.channel.isPrivate) {
 					if (/^\d+$/.test(suffix)) {
 						for (var i = 0; i < confirmCodes.length; i++) {
-							if (confirmCodes[i] != suffix) { continue; }
+							if (confirmCodes[i] != suffix) {
+								if (i == confirmCodes.length - 1) { bot.sendMessage(msg, "Confirmation code not found"); continue; }
+								else { continue; }
+							}
 							bot.sendMessage(msg, "Announcing to all servers...");
 							bot.servers.forEach(function (ser) {
-								setTimeout(function () {
-									bot.sendMessage(ser.defaultChannel, ":mega: " + announceMessages[i] + " - " + msg.author.username + " *(bot owner)*");
-								}, 1000);
+								if (ser.members.length < 500) {
+									setTimeout(function () {
+										bot.sendMessage(ser.defaultChannel, ":mega: " + announceMessages[i] + " - " + msg.author.username + " *(bot owner)*");
+									}, 1000);
+								}
 							});
 							logger.log("info", "Announced \"" + announceMessages[i] + "\" to servers");
 							return;
@@ -216,8 +221,11 @@ var commands = {
 				} else if (msg.channel.permissionsOf(msg.author).hasPermission("manageServer")) {
 					if (/^\d+$/.test(suffix)) {
 						for (var i = 0; i < confirmCodes.length; i++) {
-							if (confirmCodes[i] != suffix) { continue; }
-							bot.sendMessage(msg, "Announcing to all uers, this may take a while...");
+							if (confirmCodes[i] != suffix) {
+								if (i == confirmCodes.length - 1) { bot.sendMessage(msg, "Confirmation code not found"); continue; }
+								else { continue; }
+							}
+							bot.sendMessage(msg, "Announcing to all users, this may take a while...");
 							msg.channel.server.members.forEach(function (usr) {
 								setTimeout(function () {
 									bot.sendMessage(usr, ":mega: " + announceMessages[i] + " - " + msg.author);
@@ -233,7 +241,7 @@ var commands = {
 						bot.sendMessage(msg, ":warning: This will send a private message to **all** members of this server. If you're sure you want to do this say `"+config.mod_command_prefix+"announce "+code+"`");
 					}
 				} else { bot.sendMessage(msg, ":warning: Server admins only"); }
-			} else { bot.sendMessage(msg, ":warning: You must specify a message to annonce"); }
+			} else { bot.sendMessage(msg, ":warning: You must specify a message to announce"); }
 		}
 	}
 }

@@ -19,7 +19,7 @@ checkConfig();
 if (config.is_heroku_version) {
 	var express = require('express');
 	var app = express();
-	//For avoidong Heroku $PORT error
+	//For avoiding Heroku $PORT error
 	app.set('port', (process.env.PORT || 5000));
 	app.get('/', function(request, response) {
 		var result = 'Bot is running'
@@ -84,7 +84,7 @@ bot.on("message", function (msg) {
 				}
 				commands[cmd].process(bot, msg, suffix);
 				if (commands[cmd].hasOwnProperty("deleteCommand")) {
-					if (commands[cmd].deleteCommand == true) { bot.deleteMessage(msg, {"wait": 2000}); }
+					if (commands[cmd].deleteCommand == true) { bot.deleteMessage(msg, {"wait": 3500}); }
 				}
 				logger.log("debug", "Command processed: " + cmd);
 			} catch (err) { logger.log("error", err); }
@@ -109,7 +109,7 @@ bot.on("message", function (msg) {
 				}
 				mod[cmd].process(bot, msg, suffix);
 				if (mod[cmd].hasOwnProperty("deleteCommand")) {
-					if (mod[cmd].deleteCommand == true) { bot.deleteMessage(msg, {"wait": 2000}); }
+					if (mod[cmd].deleteCommand == true) { bot.deleteMessage(msg, {"wait": 3500}); }
 				}
 				logger.log("debug", "Command processed: " + cmd);
 			} catch (err) { logger.log("error", err); }
@@ -191,23 +191,25 @@ try {
 
 function carbonInvite(msg){
 	if (msg) {
-		bot.joinServer(msg.content, function (err, server) {
-			if (err) {
-				bot.sendMessage(msg, ":warning: Failed to join: " + err);
-				logger.log("warn", err);
-			} else {
-				logger.log("info", "Joined server: " + server.name);
-				bot.sendMessage(msg, ":white_check_mark: Successfully joined ***" + server.name + "***");
-				if (msg.author.id != 109338686889476096) { bot.sendMessage(msg, "It's not like I wanted you to use the correct command or anything, b-baka!"); }
-				if (shouldCarbonAnnounce) {
-					var msgArray = [];
-					msgArray.push("Hi! I'm **" + bot.user.username + "** and I was invited to this server by " + msg.author + ".");
-					msgArray.push("You can use `" + config.command_prefix + "help` to see what I can do. Mods can use `"+config.mod_command_prefix+"help` for mod commands.");
-					msgArray.push("If I shouldn't be here someone with the `Kick Members` permission can use `" + config.mod_command_prefix + "leaves` to make me leave");
-					bot.sendMessage(server.defaultChannel, msgArray);
+		try {
+			bot.joinServer(msg.content, function (err, server) {
+				if (err) {
+					bot.sendMessage(msg, ":warning: Failed to join: " + err);
+					logger.log("warn", err);
+				} else {
+					logger.log("info", "Joined server: " + server.name);
+					bot.sendMessage(msg, ":white_check_mark: Successfully joined ***" + server.name + "***");
+					if (msg.author.id != 109338686889476096) { bot.sendMessage(msg, "It's not like I wanted you to use the correct command or anything, b-baka!"); }
+					if (shouldCarbonAnnounce) {
+						var msgArray = [];
+						msgArray.push("Hi! I'm **" + bot.user.username + "** and I was invited to this server by " + msg.author + ".");
+						msgArray.push("You can use `" + config.command_prefix + "help` to see what I can do. Mods can use `"+config.mod_command_prefix+"help` for mod commands.");
+						msgArray.push("If I shouldn't be here someone with the `Kick Members` permission can use `" + config.mod_command_prefix + "leaves` to make me leave");
+						bot.sendMessage(server.defaultChannel, msgArray);
+					}
 				}
-			}
-		});
+			});
+		} catch(err) { bot.sendMessage(msg, ":heavy_exclamation_mark: Bot encountered an error while joining"); logger.log("error", err); }
 	}
 }
 
@@ -257,6 +259,6 @@ function checkConfig() {
 if (config.is_heroku_version) {
 	var http = require("http");
 	setInterval(function() {
-		http.get("http://sheltered-river-1376.herokuapp.com"); //your url here
+		http.get("http://sheltered-river-1376.herokuapp.com"); //your URL here
 	}, 1200000);
 }

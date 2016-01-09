@@ -31,9 +31,7 @@ An multipurpose bot for Discord using the [Discord.js](https://github.com/hydrab
 		- [x] List mod commands
 	- [x] About
 	- [x] Stats
-		- [x] List servers or channels
-		- [x] List ammount of channels and members each server has
-		- [x] Commands process
+		- [ ] List servers in private only and serperate into seperate messages so it fits
 	- [ ] Music commands - First feature after v1
 		- [ ] Audio help
 		- [ ] Queue song from youtube
