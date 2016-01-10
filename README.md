@@ -1,10 +1,10 @@
 # BrussellBot
 
-An multipurpose bot for Discord using the [Discord.js](https://github.com/hydrabolt/discord.js/) unoffficial API.
+An multipurpose bot for Discord using the [Discord.js](https://github.com/hydrabolt/discord.js/) unofficial API.
 
-[Website](https://brussell98.github.io/bot.html)
+[Website](http://brussell98.github.io/BrussellBot)
 
-[Get the lastest version here](https://github.com/brussell98/BrussellBot/releases/latest)
+[Get the latests version here](https://github.com/brussell98/BrussellBot/releases/latest)
 
 [Wiki](https://github.com/brussell98/BrussellBot/wiki)
 
@@ -24,19 +24,19 @@ An multipurpose bot for Discord using the [Discord.js](https://github.com/hydrab
 - [ ] Commands
 	- [x] Join server
 		- [x] Silent join by default
-		- [x] Accept multiple invites seperated by a space
+		- [x] Accept multiple invites separated by a space
 	- [x] Leave Server
 		- [x] Leave server restricted by roles or perm level
 	- [x] Help
 		- [x] List mod commands
 	- [x] About
 	- [x] Stats
-		- [ ] List servers in private only and serperate into seperate messages so it fits
+		- [ ] List servers in private only and separate into separate messages so it fits
 	- [ ] Music commands - First feature after v1
 		- [ ] Audio help
 		- [ ] Queue song from youtube
 		- [ ] Skip
-		- [ ] Have pre-made playlists avalible
+		- [ ] Have pre-made playlists available
 		- [ ] Queue a playlist
 		- [ ] Bind music messages to a channel and show what is playing. Plus delete old messages.
 		- [ ] List of queues songs

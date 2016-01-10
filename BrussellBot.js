@@ -62,7 +62,7 @@ bot.on("message", function (msg) {
 	}
 	if (msg.content[0] != config.command_prefix && msg.content[0] != config.mod_command_prefix) { return; }
 	if (msg.author.id == bot.user.id) { return; }
-	logger.log("info", "" + msg.author.username + " executed: " + msg.content);
+	logger.log("info", "" + msg.author.username + " executed: " + msg.content.replace(/\n/g, " "));
 	var cmd = msg.content.split(" ")[0].substring(1).toLowerCase();
 	var suffix = msg.content.substring( cmd.length + 2 );
 	if (msg.content.startsWith(config.command_prefix)) {

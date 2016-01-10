@@ -203,7 +203,7 @@ var commands = {
 							}
 							bot.sendMessage(msg, "Announcing to all servers...");
 							bot.servers.forEach(function (ser) {
-								if (ser.members.length < 500) {
+								if (ser.members.length <= 500) {
 									setTimeout(function () {
 										bot.sendMessage(ser.defaultChannel, ":mega: " + announceMessages[i] + " - " + msg.author.username + " *(bot owner)*");
 									}, 1000);

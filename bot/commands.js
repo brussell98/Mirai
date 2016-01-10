@@ -60,6 +60,12 @@ var commands = {
 			}
 		}
 	},
+	"botserver": {
+		desc: "Get a link to the BrussellBot / Bot-chan server.",
+		process: function(bot, msg, suffix) {
+			bot.sendMessage(msg, "Here's an invite to my server: https://discord.gg/0kvLlwb7slG3XCCQ");
+		}
+	}
 	"ping": {
 		desc: "Replies with pong.",
 		process: function(bot, msg) {
@@ -86,7 +92,7 @@ var commands = {
 							} else {
 								logger.log("info", "Joined server: " + server);
 								bot.sendMessage(msg, ":white_check_mark: Successfully joined ***" + server + "***");
-								if (suffix.indexOf("-a") != 1) {
+								if (suffix.indexOf("-a") != -1) {
 									var msgArray = [];
 									msgArray.push("Hi! I'm **" + bot.user.username + "** and I was invited to this server by " + msg.author + ".");
 									msgArray.push("You can use `" + config.command_prefix + "help` to see what I can do. Mods can use "+config.mod_command_prefix+"help for mod commands.");
@@ -107,20 +113,23 @@ var commands = {
 			var msgArray = [];
 			msgArray.push("I'm " + bot.user.username + " and I was made by brussell98.");
 			msgArray.push("I run on the unofficial Discord API `Discord.js`");
-			msgArray.push("My website is brussell98.github.io/bot.html");
+			msgArray.push("My website is brussell98.github.io/BrussellBot/");
 			bot.sendMessage(msg, msgArray);
 		}
 	},
 	"letsplay": {
-		desc: "Ask if anyone wants to play a game. WARNING: uses @everyone.",
+		desc: "Ask if anyone wants to play a game. Uses @everyone if the executer can and if the server has <= 30 members.",
 		deleteCommand: true,
 		usage: "[game name]",
 		cooldown: 10,
 		process: function(bot, msg, suffix) {
-			if (msg.channel.permissionsOf(msg.author).hasPermission("mentionEveryone")) {
+			if (msg.channel.permissionsOf(msg.author).hasPermission("mentionEveryone") && msg.channel.server.members.length <= 30) {
 				if (suffix) { bot.sendMessage(msg, ":video_game: @everyone, " + msg.author + " would like to know if anyone wants to play **" + suffix + "**."); }
 				else { bot.sendMessage(msg, ":video_game: @everyone, " + msg.author + " would like to know if anyone wants to play a game"); }
-			} else { bot.sendMessage(msg, ":warning: You don't have permission to mention everyone"); }
+			} else {
+				if (suffix) { bot.sendMessage(msg, ":video_game: " + msg.author + " would like to know if anyone wants to play **" + suffix + "**."); }
+				else { bot.sendMessage(msg, ":video_game: " + msg.author + " would like to know if anyone wants to play a game"); }
+			}
 		}
 	},
 	"roll": {
