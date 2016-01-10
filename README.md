@@ -27,7 +27,7 @@ An multipurpose bot for Discord using the [Discord.js](https://github.com/hydrab
 		- [x] List mod commands
 	- [x] About
 	- [x] Stats
-	- [ ] Music commands - First feature after v1
+	- [ ] Music commands - After discord.js gets patched for volume
 		- [ ] Audio help
 		- [ ] Queue song from youtube
 		- [ ] Skip
@@ -57,9 +57,11 @@ An multipurpose bot for Discord using the [Discord.js](https://github.com/hydrab
 	- [x] Anime/Manga Lookup
 	- [x] Avatar
 	- [ ] osu! - Need to apply for an API key for this
+		- [ ] Username defaults to `msg.author.username`
 		- [x] Sig generator
-		- [ ] User and best scores
-		- [ ] Top scores for a beatmap
-		- [ ] Live match details?
+		- [x] User details
+		- [ ] User best
+		- [ ] User recent
+		- [ ] Match details
 	- [x] Get a link to the help server
 - [ ] Could do stuff with checking how long a user has been on the server for perms

@@ -58,7 +58,7 @@ var commands = {
 		cooldown: 60,
 		deleteCommand: true,
 		process: function(bot, msg, suffix) {
-			if (msg.author.id == config.admin_id || msg.author.id == msg.channel.server.owner.id) {
+			if (msg.author.id == config.admin_id || msg.channel.isPrivate || msg.author.id == msg.channel.server.owner.id) {
 				fs.readFile("./logs/debug.txt", 'utf8', function (err, data) {
 					if (err) { logger.log("warn", "Error getting debug logs: " + err); }
 					logger.log("debug", "Fetched debug logs");
@@ -99,7 +99,7 @@ var commands = {
 					!suffix ? bot.setPlayingGame(games[Math.floor(Math.random() * (games.length))]) : bot.setPlayingGame(suffix);
 					logger.log("info", "" + msg.author.username + " set the playing status to: " + suffix);
 				} else { bot.sendMessage(msg, "Server owners only"); }
-			}
+			} else { bot.sendMessage(msg, "Must be done in a server"); }
 		}
 	},
 	"clean": {
@@ -189,7 +189,7 @@ var commands = {
 		}
 	},
 	"announce": {
-		desc: "Expiremental - Send a DM to all users in the server. Admins only.",
+		desc: "Send a DM to all users in the server. Admins only.",
 		deleteCommand: false,
 		usage: "<message>",
 		process: function (bot, msg, suffix) {

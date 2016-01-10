@@ -14,6 +14,8 @@ var upvote = 0;
 var downvote = 0;
 var votebool = false;
 
+var osuapi = require('osu-api');
+
 /*
 ====================
 Functions
@@ -245,16 +247,15 @@ var commands = {
 			if (!suffix) { bot.sendMessage(msg, correctUsage("vote")); return; }
 			if (votebool == false) { bot.sendMessage(msg, ":warning: There isn't a topic being voted on right now! Use `"+config.command_prefix+"newvote <topic>`"); return; }
 			if (voter.indexOf(msg.author) != -1) { return; }
-			var vote = suffix.split(" ")[0]
-			if (vote == "+") { upvote += 1; voter.push(msg.author); }
-			if (vote == "-") { downvote += 1; voter.push(msg.author); }
+			if (suffix.indexOf("+" > -1)) { upvote += 1; voter.push(msg.author); }
+			else if (suffix.indexOf("-") > -1) { downvote += 1; voter.push(msg.author); }
 		}
 	},
 	"endvote": {
 		desc: "End current vote.",
 		deleteCommand: true,
 		process: function (bot, msg, suffix) {
-			bot.sendMessage(msg, "**Results of last vote:**\nTopic: `" + topicstring + "`\n:thumbsup: Upvotes: `" + upvote + " " + (upvote/(upvote+downvote))*100 + "%`\n:thumbsdown: Downvotes: `" + downvote + " " + (downvote/(upvote+downvote))*100 + "%`");
+			bot.sendMessage(msg, "**Results of last vote:**\nTopic: `" + topicstring + "`\nUpvotes: `" + upvote + " " + (upvote/(upvote+downvote))*100 + "%`\nDownvotes: `" + downvote + " " + (downvote/(upvote+downvote))*100 + "%`");
 			upvote = 0;
 			downvote = 0;
 			voter = [];
@@ -277,10 +278,13 @@ var commands = {
 		deleteCommand: true,
 		process: function (bot, msg, suffix) {
 			if (suffix) {
+				if (config.is_heroku_version) { var USER = process.env.mal_user; } else { var USER = config.mal_user; }
+				if (config.is_heroku_version) { var PASS = process.env.mal_pass; } else { var PASS = config.mal_pass; }
+				if (USER == null | USER == "" | PASS == null | PASS == "") { bot.sendMessage(msg, "MAL login not configured by bot owner"); return; }
 				bot.startTyping(msg.channel);
 				var tags = suffix.split(" ").join("+");
 				var rUrl = "http://myanimelist.net/api/anime/search.xml?q=" + tags;
-				request(rUrl, {"auth": {"user": process.env.mal_user, "pass": process.env.mal_pass, "sendImmediately": false}}, function (error, response, body) {
+				request(rUrl, {"auth": {"user": USER, "pass": PASS, "sendImmediately": false}}, function (error, response, body) {
 					if (error) { logger.log("info", error); }
 					if (!error && response.statusCode == 200) {
 						xml2js.parseString(body, function (err, result){
@@ -292,8 +296,8 @@ var commands = {
 							var status = result.anime.entry[0].status;
 							var synopsis = result.anime.entry[0].synopsis.toString();
 							synopsis = synopsis.replace(/&mdash;/g, "—"); synopsis = synopsis.replace(/&copy;/g, "©");
-							synopsis = synopsis.replace(/&hellip;/g, "..."); synopsis = synopsis.replace(/<br \/>/g, "");
-							synopsis = synopsis.replace(/&quot;/g, "\""); synopsis = synopsis.replace(/\r?\n|\r/g, "");
+							synopsis = synopsis.replace(/&hellip;/g, "..."); synopsis = synopsis.replace(/<br \/>/g, " ");
+							synopsis = synopsis.replace(/&quot;/g, "\""); synopsis = synopsis.replace(/\r?\n|\r/g, " ");
 							synopsis = synopsis.replace(/\[(i|\/i)\]/g, "*"); synopsis = synopsis.replace(/\[(b|\/b)\]/g, "**");
 							synopsis = synopsis.replace(/\[(.{1,10})\]/g, ""); synopsis = synopsis.replace(/&amp;/g, "&");
 							synopsis = synopsis.replace(/&#039;/g, "'");
@@ -314,10 +318,13 @@ var commands = {
 		deleteCommand: true,
 		process: function (bot, msg, suffix) {
 			if (suffix) {
+				if (config.is_heroku_version) { var USER = process.env.mal_user; } else { var USER = config.mal_user; }
+				if (config.is_heroku_version) { var PASS = process.env.mal_pass; } else { var PASS = config.mal_pass; }
+				if (USER == null | USER == "" | PASS == null | PASS == "") { bot.sendMessage(msg, "MAL login not configured by bot owner"); return; }
 				bot.startTyping(msg.channel);
 				var tags = suffix.split(" ").join("+");
 				var rUrl = "http://myanimelist.net/api/manga/search.xml?q=" + tags;
-				request(rUrl, {"auth": {"user": process.env.mal_user, "pass": process.env.mal_pass, "sendImmediately": false}}, function (error, response, body) {
+				request(rUrl, {"auth": {"user": USER, "pass": PASS, "sendImmediately": false}}, function (error, response, body) {
 					if (error) { logger.log("info", error); }
 					if (!error && response.statusCode == 200) {
 						xml2js.parseString(body, function (err, result){
@@ -330,8 +337,8 @@ var commands = {
 							var status = result.manga.entry[0].status;
 							var synopsis = result.manga.entry[0].synopsis.toString();
 							synopsis = synopsis.replace(/&mdash;/g, "—"); synopsis = synopsis.replace(/&copy;/g, "©");
-							synopsis = synopsis.replace(/&hellip;/g, "..."); synopsis = synopsis.replace(/<br \/>/g, "");
-							synopsis = synopsis.replace(/&quot;/g, "\""); synopsis = synopsis.replace(/\r?\n|\r/g, "");
+							synopsis = synopsis.replace(/&hellip;/g, "..."); synopsis = synopsis.replace(/<br \/>/g, " ");
+							synopsis = synopsis.replace(/&quot;/g, "\""); synopsis = synopsis.replace(/\r?\n|\r/g, " ");
 							synopsis = synopsis.replace(/\[(i|\/i)\]/g, "*"); synopsis = synopsis.replace(/\[(b|\/b)\]/g, "**");
 							synopsis = synopsis.replace(/\[(.{1,10})\]/g, ""); synopsis = synopsis.replace(/&amp;/g, "&");
 							synopsis = synopsis.replace(/&#039;/g, "'");
@@ -356,17 +363,20 @@ var commands = {
 			else { bot.sendMessage(msg, msg.author.username+" flipped a coin and got Tails"); }
 		}
 	},
-	"osusig": {
-		desc: "Gets an osu! signature",
-		usage: "<username> [color in hex]",
+	"osu": {
+		desc: "Osu! commands. Use "+config.command_prefix+"help osu",
+		usage: "<sig/user/best/recent> <username>",
 		deleteCommand: true,
 		process: function(bot, msg, suffix) {
 			if (suffix) {
-				var username = suffix.split(" ")[0];
+			if (suffix.split(" ")[0] == "sig") {
+
+				if (suffix.split(" ").length < 2) { bot.sendMessage(msg, "Correct usage: "+config.command_prefix+"osu sig <username> [color in hex]"); return; }
+				var username = suffix.split(" ")[1];
 				var color = "ff66aa";
-				if (/(.*) [A-Fa-f0-9]/.test(suffix)){
-					if (suffix.split(" ")[1].length == 6) { color = suffix.split(" ")[1]; }
-					if (suffix.split(" ")[1].length == 7) { color = suffix.split(" ")[1].substring(1); }
+				if (/sig (.*) #?[A-Fa-f0-9]{6}/.test(suffix)){
+					if (suffix.split(" ")[2].length == 6) { color = suffix.split(" ")[1]; }
+					if (suffix.split(" ")[2].length == 7) { color = suffix.split(" ")[1].substring(1); }
 				}
 				request.head('https://lemmmy.pw/osusig/sig.php?colour=hex'+color+'&uname='+username+'&pp=2&flagshadow&xpbar&xpbarhex&darktriangles', function(err, res, body) {
 					if (!err) {
@@ -374,8 +384,36 @@ var commands = {
 							bot.sendMessage(msg, "Here's your osu signature "+msg.author.username+"! Get a live version at `lemmmy.pw/osusig/`");
 							bot.sendFile(msg, body, 'sig.png');
 						});
-					} else { bot.sendMessage(msg, ":warning: Error, did you use the command correctly?"); }
+					} else { bot.sendMessage(msg, ":warning: Error: "+err); }
 				});
+
+			} else if (suffix.split(" ")[0] == "user") {
+
+				if (suffix.split(" ").length != 2) { bot.sendMessage(msg, "Correct usage: "+config.command_prefix+"osu user <username>"); return; }
+				if (config.is_heroku_version) { var APIKEY = process.env.osu_api_key; } else { var APIKEY = config.osu_api_key; }
+				if (APIKEY == null | APIKEY == "") { bot.sendMessage(msg, "Osu API key not configured by bot owner"); return; }
+				var osu = new osuapi.Api(APIKEY);
+				osu.getUser(suffix.split(" ")[1], function(err, data){
+					if (err) { bot.sendMessage(msg, ":warning: Error: "+err); return; }
+					if (!data) { bot.sendMessage(msg, ":warning: User not found"); return; }
+					var msgArray = [];
+					msgArray.push("Osu stats for: **"+data.username+"**:");
+					msgArray.push("----------------------------------");
+					msgArray.push("**Play Count**: "+data.playcount+" | **Ranked Score**: "+data.ranked_score+" | **Total Score**: "+data.total_score+" | **Level**: "+data.level.substring(0, data.level.split(".")[0].length+3));
+					msgArray.push("**PP**: "+data.pp_raw.split(".")[0]+" | **Rank**: #"+data.pp_rank+" | **Country Rank**: #"+data.pp_country_rank+" | **Accuracy**: "+data.accuracy.substring(0, data.accuracy.split(".")[0].length+3)+"%");
+					msgArray.push("**300**: "+data.count300+" | **100**: "+data.count100+" | **50**: "+data.count50+" | **SS**: "+data.count_rank_ss+" | **S**: "+data.count_rank_s+" | **A**: "+data.count_rank_a);
+					bot.sendMessage(msg, msgArray);
+				});
+
+			} else if (suffix.split(" ")[0] == "best") {
+
+				bot.sendMessage(msg, "Indev");
+
+			} else if (suffix.split(" ")[0] == "recent") {
+
+				bot.sendMessage(msg, "Indev");
+
+			} else { bot.sendMessage(msg, correctUsage("osusig")); }
 			} else { bot.sendMessage(msg, correctUsage("osusig")); }
 		}
 	},
@@ -406,9 +444,10 @@ var commands = {
 		usage: "<City/City,Us> or <zip/zip,us>     example: ]weather 12345,us",
 		deleteCommand: true,
 		process: function(bot, msg, suffix) {
+			if (config.is_heroku_version) { var APIKEY = process.env.weather_api_key; } else { var APIKEY = config.weather_api_key; }
+			if (APIKEY == null || APIKEY == "") { bot.sendMessage(msg, ":warning: No API key defined by bot owner"); return; }
 			if (suffix) { suffix = suffix.replace(" ", ""); }
 			if (!suffix) { bot.sendMessage(msg, correctUsage("weather")); return; }
-			if (config.is_heroku_version) { var APIKEY = process.env.weather_api_key; } else { var APIKEY = config.weather_api_key; }
 			if (/\d/.test(suffix) == false) { var rURL = "http://api.openweathermap.org/data/2.5/weather?q="+suffix+"&APPID="+APIKEY; }
 			else { var rURL = "http://api.openweathermap.org/data/2.5/weather?zip="+suffix+"&APPID="+APIKEY; }
 			request(rURL, function(error, response, body){

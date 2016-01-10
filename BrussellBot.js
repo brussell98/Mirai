@@ -235,23 +235,25 @@ function reload() {
 
 function checkConfig() {
 	if (config.is_heroku_version) {
-		if (process.env.email == null) { logger.log("info", "Email not defined"); }
-		if (process.env.password == null) { logger.log("info", "Password not defined"); }
-		if (config.command_prefix == null || config.command_prefix.length != 1) { logger.log("info", "Prefix either not defined or more than one character"); }
-		if (config.mod_command_prefix == null || config.mod_command_prefix.length != 1) { logger.log("info", "Mod prefix either not defined or more than one character"); }
+		if (process.env.email == null) { logger.log("warn", "Email not defined"); }
+		if (process.env.password == null) { logger.log("warn", "Password not defined"); }
+		if (config.command_prefix == null || config.command_prefix.length != 1) { logger.log("warn", "Prefix either not defined or more than one character"); }
+		if (config.mod_command_prefix == null || config.mod_command_prefix.length != 1) { logger.log("warn", "Mod prefix either not defined or more than one character"); }
 		if (config.admin_id == null) { logger.log("info", "Admin user's id not defined"); }
 		if (process.env.mal_user == null) { logger.log("info", "MAL username not defined"); }
 		if (process.env.mal_pass == null) { logger.log("info", "MAL password not defined"); }
 		if (process.env.weather_api_key == null) { logger.log("info", "OpenWeatherMap API key not defined"); }
+		if (process.env.osu_api_key == null) { logger.log("info", "Osu API key not defined"); }
 	} else {
-		if (config.email == null) { logger.log("info", "Email not defined"); }
-		if (config.password == null) { logger.log("info", "Password not defined"); }
-		if (config.command_prefix == null || config.command_prefix.length != 1) { logger.log("info", "Prefix either not defined or more than one character"); }
-		if (config.mod_command_prefix == null || config.mod_command_prefix.length != 1) { logger.log("info", "Mod prefix either not defined or more than one character"); }
+		if (config.email == null) { logger.log("warn", "Email not defined"); }
+		if (config.password == null) { logger.log("warn", "Password not defined"); }
+		if (config.command_prefix == null || config.command_prefix.length != 1) { logger.log("warn", "Prefix either not defined or more than one character"); }
+		if (config.mod_command_prefix == null || config.mod_command_prefix.length != 1) { logger.log("warn", "Mod prefix either not defined or more than one character"); }
 		if (config.admin_id == null) { logger.log("info", "Admin user's id not defined"); }
 		if (config.mal_user == null) { logger.log("info", "MAL username not defined"); }
 		if (config.mal_pass == null) { logger.log("info", "MAL password not defined"); }
 		if (config.weather_api_key == null) { logger.log("info", "OpenWeatherMap API key not defined"); }
+		if (config.osu_api_key == null) { logger.log("info", "Osu API key not defined"); }
 	}
 }
 

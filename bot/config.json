@@ -11,5 +11,6 @@
 	"mal_user": "",
 	"mal_pass": "",
 	"is_heroku_version": true,
-	"weather_api_key": ""
+	"weather_api_key": "",
+	"osu_api_key": ""
 }

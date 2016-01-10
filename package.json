@@ -29,6 +29,7 @@
 		"winston": "*",
 		"xml2js": "*",
 		"express": "*",
-		"cleverbot-node": "*"
+		"cleverbot-node": "*",
+		"osu-api": "*"
 	}
 }
