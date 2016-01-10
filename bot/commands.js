@@ -13,6 +13,7 @@ var voter = [];
 var upvote = 0;
 var downvote = 0;
 var votebool = false;
+var voteChannel = {};
 
 var osuapi = require('osu-api');
 
@@ -25,6 +26,12 @@ Functions
 function correctUsage(cmd) {
 	var msg = "Usage: `" + config.command_prefix + "" + cmd + " " + commands[cmd].usage+"`";
 	return msg;
+}
+
+function autoEndVote(bot, msg, suffix) {
+	setTimeout(function() {
+		commands["endvote"].process(bot, msg, suffix);
+	}, 300000);
 }
 
 /*
@@ -235,8 +242,10 @@ var commands = {
 			if (!suffix) { bot.sendMessage(msg, correctUsage("newvote")); return; }
 			if (votebool == true) { bot.sendMessage(msg, ":warning: Theres already a vote pending!"); return; }
 			topicstring = suffix;
-			bot.sendMessage(msg, "New Vote started: `" + suffix + "`\nTo vote say `" + config.command_prefix + "vote +/-`");
+			bot.sendMessage(msg, "New Vote started: `" + suffix + "`\nTo vote say `" + config.command_prefix + "vote +/-`\nIf the vote isn't ended manually it will end after 5 minutes");
 			votebool = true;
+			voteChannel = msg.channel;
+			autoEndVote(bot, msg, suffix);
 		}
 	},
 	"vote": {
@@ -247,7 +256,8 @@ var commands = {
 			if (!suffix) { bot.sendMessage(msg, correctUsage("vote")); return; }
 			if (votebool == false) { bot.sendMessage(msg, ":warning: There isn't a topic being voted on right now! Use `"+config.command_prefix+"newvote <topic>`"); return; }
 			if (voter.indexOf(msg.author) != -1) { return; }
-			if (suffix.indexOf("+" > -1)) { upvote += 1; voter.push(msg.author); }
+			if (msg.channel != voteChannel) { bot.sendMessage(msg, ":warning: You must vote in the channel where the vote was started"); return; }
+			if (suffix.indexOf("+") > -1) { upvote += 1; voter.push(msg.author); }
 			else if (suffix.indexOf("-") > -1) { downvote += 1; voter.push(msg.author); }
 		}
 	},
@@ -255,12 +265,17 @@ var commands = {
 		desc: "End current vote.",
 		deleteCommand: true,
 		process: function (bot, msg, suffix) {
-			bot.sendMessage(msg, "**Results of last vote:**\nTopic: `" + topicstring + "`\nUpvotes: `" + upvote + " " + (upvote/(upvote+downvote))*100 + "%`\nDownvotes: `" + downvote + " " + (downvote/(upvote+downvote))*100 + "%`");
+			try {
+				bot.sendMessage(voteChannel, "**Results of last vote:**\nTopic: `" + topicstring + "`\nUpvotes: `" + upvote + " " + (upvote/(upvote+downvote))*100 + "%`\nDownvotes: `" + downvote + " " + (downvote/(upvote+downvote))*100 + "%`");
+			} catch(err) {
+				logger.log("error", "Error sending vote results: " + err)
+			}
 			upvote = 0;
 			downvote = 0;
 			voter = [];
 			votebool = false;
 			topicstring = "";
+			voteChannel = {};
 		}
 	},
 	"8ball": {

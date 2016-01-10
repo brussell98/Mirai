@@ -54,6 +54,7 @@ An multipurpose bot for Discord using the [Discord.js](https://github.com/hydrab
 	- [x] Clean bot messages
 	- [x] Prune chat
 	- [x] Vote (Credit: [BlackHayate](https://github.com/BlackHayate))
+		- [x] Find a way to end votes after a time limit
 	- [x] Anime/Manga Lookup
 	- [x] Avatar
 	- [ ] osu! - Need to apply for an API key for this
