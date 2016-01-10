@@ -81,8 +81,9 @@ var commands = {
 
 				if (suffix.indexOf("-ls") != -1 && msg.channel.isPrivate) {
 					var svrArray = [];
-					for (svrObj of bot.servers) { svrArray.push("`"+svrObj.name+": Channels: "+svrObj.channels.length+", Users: "+svrObj.members.length+"`"); }
+					for (svrObj of bot.servers) { svrArray.push("`"+svrObj.name+": C: "+svrObj.channels.length+", U: "+svrObj.members.length+"`"); }
 					bot.sendMessage(msg, svrArray);
+
 				}
 			} else { bot.sendMessage(msg, "Only server owners can do this."); }
 		}
@@ -97,7 +98,7 @@ var commands = {
 				if (msg.channel.server.owner.id == msg.author.id) {
 					!suffix ? bot.setPlayingGame(games[Math.floor(Math.random() * (games.length))]) : bot.setPlayingGame(suffix);
 					logger.log("info", "" + msg.author.username + " set the playing status to: " + suffix);
-				} else { console.log("info", "Server owners only"); }
+				} else { bot.sendMessage(msg, "Server owners only"); }
 			}
 		}
 	},
@@ -191,7 +192,6 @@ var commands = {
 		desc: "Expiremental - Send a DM to all users in the server. Admins only.",
 		deleteCommand: false,
 		usage: "<message>",
-		cooldown: 30,
 		process: function (bot, msg, suffix) {
 			if (suffix) {
 				if (msg.author.id == config.admin_id && msg.channel.isPrivate) {

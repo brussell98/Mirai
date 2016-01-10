@@ -132,8 +132,8 @@ var commands = {
 			}
 		}
 	},
-	"roll": {
-		desc: "Rolls a die.",
+	"dice": {
+		desc: "Roll some dice. (1d6 by default)",
 		deleteCommand: true,
 		usage: "[(rolls)d(sides)]",
 		process: function(bot, msg, suffix) {
@@ -148,6 +148,18 @@ var commands = {
 				} else { logger.log("warn", "Got an error: ", error, ", status code: ", response.statusCode); }
 			});
 			bot.stopTyping(msg.channel);
+		}
+	},
+	"roll": {
+		desc: "Pick a random number",
+		deleteCommand: true,
+		usage: "[range]   Example: roll 100",
+		process: function(bot, msg, suffix) {
+			var roll = 100;
+			try {
+				if (suffix && /\d+/.test(suffix)) { roll = parseInt(suffix.replace(/[^\d]/g, "")); }
+			} catch(err) { logger.log("error", err); bot.sendMessage(msg, ":warning: Error parsing suffix into int"); }
+			bot.sendMessage(msg, msg.author.username + " rolled 1-" + roll + " and got " + Math.floor(Math.random() * (roll + 1)));
 		}
 	},
 	"info": {
