@@ -8,6 +8,12 @@ exports.cleverbot = function(bot, msg) {
 		bot.startTyping(msg.channel);
 		Cleverbot.prepare(function() {
 			Slave.write(suffix, function(resp) {
+				if (/\|/g.test(resp.message)) {
+					resp.message = resp.message.replace(/\|/g, "\\u");
+					resp.message = resp.message.replace(/\\u([\d\w]{4})/gi, function (match, grp) {
+					    return String.fromCharCode(parseInt(grp, 16));
+					});
+				}
 				bot.sendMessage(msg, ":speech_balloon: "+resp.message);
 			});
 		});

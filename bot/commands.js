@@ -296,6 +296,7 @@ var commands = {
 							synopsis = synopsis.replace(/&quot;/g, "\""); synopsis = synopsis.replace(/\r?\n|\r/g, "");
 							synopsis = synopsis.replace(/\[(i|\/i)\]/g, "*"); synopsis = synopsis.replace(/\[(b|\/b)\]/g, "**");
 							synopsis = synopsis.replace(/\[(.{1,10})\]/g, ""); synopsis = synopsis.replace(/&amp;/g, "&");
+							synopsis = synopsis.replace(/&#039;/g, "'");
 							if (!msg.channel.isPrivate) {
 								if (synopsis.length > 400) { synopsis = synopsis.substring(0, 400); }
 							}
@@ -333,6 +334,7 @@ var commands = {
 							synopsis = synopsis.replace(/&quot;/g, "\""); synopsis = synopsis.replace(/\r?\n|\r/g, "");
 							synopsis = synopsis.replace(/\[(i|\/i)\]/g, "*"); synopsis = synopsis.replace(/\[(b|\/b)\]/g, "**");
 							synopsis = synopsis.replace(/\[(.{1,10})\]/g, ""); synopsis = synopsis.replace(/&amp;/g, "&");
+							synopsis = synopsis.replace(/&#039;/g, "'");
 							if (!msg.channel.isPrivate) {
 								if (synopsis.length > 400) { synopsis = synopsis.substring(0, 400); }
 							}

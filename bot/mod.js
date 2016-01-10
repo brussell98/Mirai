@@ -33,7 +33,7 @@ var commands = {
 			var msgArray = [];
 			if (!suffix){
 				var msgArray = [];
-				msgArray.push(":information_source: This is a list of commands. Use `" + config.mod_command_prefix + "help <command name>` to get info on a specific command.");
+				msgArray.push(":information_source: This is a list of mod commands. Use `" + config.mod_command_prefix + "help <command name>` to get info on a specific command.");
 				msgArray.push("");
 				msgArray.push("**Commands: **");
 				msgArray.push("```");

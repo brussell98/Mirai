@@ -38,7 +38,7 @@ An multipurpose bot for Discord using the [Discord.js](https://github.com/hydrab
 		- [ ] Set playing to song name
 		- [ ] Bot owner gets priority
 	- [x] Cleverbot module activated with mention
-		- [ ] I wonder if I can fix other language's characters not working?
+		- [x] I wonder if I can fix other language's characters not working? - I can
 	- [x] Set playing status
 	- [x] Info commands
 		- [x] Server info
@@ -56,7 +56,6 @@ An multipurpose bot for Discord using the [Discord.js](https://github.com/hydrab
 	- [x] Vote (Credit: [BlackHayate](https://github.com/BlackHayate))
 	- [x] Anime/Manga Lookup
 	- [x] Avatar
-	- [ ] Stop user from sending messages for a certain time
 	- [ ] osu! - Need to apply for an API key for this
 		- [x] Sig generator
 		- [ ] User and best scores

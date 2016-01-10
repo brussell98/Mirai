@@ -54,7 +54,7 @@ bot.on("disconnected", function () {
 });
 
 bot.on("message", function (msg) {
-	if (msg.channel.isPrivate && /https?:\/\/discord\.gg\/[A-Za-z0-9]+/.test(msg.content)) { carbonInvite(msg); }
+	if (msg.channel.isPrivate && msg.author.id != bot.user.id && /(https?:\/\/discord\.gg\/[A-Za-z0-9]+|https?:\/\/discordapp\.com\/invite\/[A-Za-z0-9]+)/.test(msg.content)) { carbonInvite(msg); }
 	if (msg.mentions.length != 0) {
 		msg.mentions.forEach(function(usr) { 
 			if (usr.id == bot.user.id && msg.content.startsWith("<@125367104336691200>")) { cleverbot(bot, msg); logger.log("info", msg.author.username+" asked the bot: "+msg.content.substring(22).replace(/\n/g, " ")); }
