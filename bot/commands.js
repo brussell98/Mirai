@@ -65,7 +65,7 @@ var commands = {
 		process: function(bot, msg, suffix) {
 			bot.sendMessage(msg, "Here's an invite to my server: https://discord.gg/0kvLlwb7slG3XCCQ");
 		}
-	}
+	},
 	"ping": {
 		desc: "Replies with pong.",
 		process: function(bot, msg) {
