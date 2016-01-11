@@ -53,16 +53,17 @@ An multipurpose bot for Discord using the [Discord.js](https://github.com/hydrab
 	- [x] Choose for me
 	- [x] Clean bot messages
 	- [x] Prune chat
-	- [x] Vote (Credit: [BlackHayate](https://github.com/BlackHayate))
+	- [x] Vote ([BlackHayate](https://github.com/BlackHayate) helped with this)
 		- [x] Find a way to end votes after a time limit
+		- [ ] Custom votes
 	- [x] Anime/Manga Lookup
 	- [x] Avatar
 	- [ ] osu! - Need to apply for an API key for this
 		- [ ] Username defaults to `msg.author.username`
 		- [x] Sig generator
 		- [x] User details
-		- [ ] User best
-		- [ ] User recent
+		- [x] User best
+		- [x] User recent
 		- [ ] Match details
 	- [x] Get a link to the help server
 - [ ] Could do stuff with checking how long a user has been on the server for perms

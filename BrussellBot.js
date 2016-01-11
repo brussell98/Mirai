@@ -22,7 +22,7 @@ if (config.is_heroku_version) {
 	//For avoiding Heroku $PORT error
 	app.set('port', (process.env.PORT || 5000));
 	app.get('/', function(request, response) {
-		var result = 'Bot is running'
+		var result = 'Bot is running';
 		response.send(result);
 	}).listen(app.get('port'), function() {
 		console.log('Bot is running, server is listening on port', app.get('port'));
@@ -34,9 +34,9 @@ var shouldCarbonAnnounce = true;
 
 var bot = new discord.Client();
 bot.on('warn', function (m) {
-	try { logger.log("warn", m) }
-	catch(err) { logger.log("error", err) }});
-bot.on('debug', (m) => logger.log("debug", m));
+	try { logger.log("warn", m); }
+	catch(err) { logger.log("error", err); }});
+bot.on('debug', function(m) { logger.log("debug", m); });
 
 bot.on("ready", function () {
 	bot.setPlayingGame(games[Math.floor(Math.random() * (games.length))]);
@@ -44,7 +44,7 @@ bot.on("ready", function () {
 	logger.log("info", "BrussellBot is ready! Listening to " + bot.channels.length + " channels on " + bot.servers.length + " servers");
 	logger.log("info", "Username: "+bot.user.username);
 	versioncheck.checkForUpdate(function (resp) {
-		if (resp != null) { logger.log("info", resp); }
+		if (resp !== null) { logger.log("info", resp); }
 	});
 });
 
@@ -55,7 +55,7 @@ bot.on("disconnected", function () {
 
 bot.on("message", function (msg) {
 	if (msg.channel.isPrivate && msg.author.id != bot.user.id && /(https?:\/\/discord\.gg\/[A-Za-z0-9]+|https?:\/\/discordapp\.com\/invite\/[A-Za-z0-9]+)/.test(msg.content)) { carbonInvite(msg); }
-	if (msg.mentions.length != 0) {
+	if (msg.mentions.length !== 0) {
 		msg.mentions.forEach(function(usr) { 
 			if (usr.id == bot.user.id && msg.content.startsWith("<@125367104336691200>")) { cleverbot(bot, msg); logger.log("info", msg.author.username+" asked the bot: "+msg.content.substring(22).replace(/\n/g, " ")); }
 		});
@@ -84,7 +84,7 @@ bot.on("message", function (msg) {
 				}
 				commands[cmd].process(bot, msg, suffix);
 				if (commands[cmd].hasOwnProperty("deleteCommand")) {
-					if (commands[cmd].deleteCommand == true) { bot.deleteMessage(msg, {"wait": 3500}); }
+					if (commands[cmd].deleteCommand === true) { bot.deleteMessage(msg, {"wait": 3500}); }
 				}
 				logger.log("debug", "Command processed: " + cmd);
 			} catch (err) { logger.log("error", err); }
@@ -109,7 +109,7 @@ bot.on("message", function (msg) {
 				}
 				mod[cmd].process(bot, msg, suffix);
 				if (mod[cmd].hasOwnProperty("deleteCommand")) {
-					if (mod[cmd].deleteCommand == true) { bot.deleteMessage(msg, {"wait": 3500}); }
+					if (mod[cmd].deleteCommand === true) { bot.deleteMessage(msg, {"wait": 3500}); }
 				}
 				logger.log("debug", "Command processed: " + cmd);
 			} catch (err) { logger.log("error", err); }
@@ -167,7 +167,7 @@ bot.on('userUpdated', function (objUser, objNewUser) {
 			//logger.log("info", "" + objUser.username + " changed their name to " + objNewUser.username);
 			if (config.username_changes) {
 				bot.servers.forEach(function(ser){
-					if (ser.members.get('id', objUser.id) != null && ser.members.length < 101){ bot.sendMessage(ser, ":warning: User in this server: `" + objUser.username + "`. changed their name to: `" + objNewUser.username + "`."); }
+					if (ser.members.get('id', objUser.id) !== null && ser.members.length < 101){ bot.sendMessage(ser, ":warning: User in this server: `" + objUser.username + "`. changed their name to: `" + objNewUser.username + "`."); }
 				});
 			}
 		}
@@ -179,7 +179,7 @@ bot.on('presence', function(user, status, game) {
 });
 
 bot.on('serverDeleted', function(objServer) {
-	logger.log("info", "Left server "+objServer.name)
+	logger.log("info", "Left server "+objServer.name);
 });
 
 //login
@@ -235,25 +235,25 @@ function reload() {
 
 function checkConfig() {
 	if (config.is_heroku_version) {
-		if (process.env.email == null) { logger.log("warn", "Email not defined"); }
-		if (process.env.password == null) { logger.log("warn", "Password not defined"); }
-		if (config.command_prefix == null || config.command_prefix.length != 1) { logger.log("warn", "Prefix either not defined or more than one character"); }
-		if (config.mod_command_prefix == null || config.mod_command_prefix.length != 1) { logger.log("warn", "Mod prefix either not defined or more than one character"); }
-		if (config.admin_id == null) { logger.log("info", "Admin user's id not defined"); }
-		if (process.env.mal_user == null) { logger.log("info", "MAL username not defined"); }
-		if (process.env.mal_pass == null) { logger.log("info", "MAL password not defined"); }
-		if (process.env.weather_api_key == null) { logger.log("info", "OpenWeatherMap API key not defined"); }
-		if (process.env.osu_api_key == null) { logger.log("info", "Osu API key not defined"); }
+		if (process.env.email === null) { logger.log("warn", "Email not defined"); }
+		if (process.env.password === null) { logger.log("warn", "Password not defined"); }
+		if (config.command_prefix === null || config.command_prefix.length !== 1) { logger.log("warn", "Prefix either not defined or more than one character"); }
+		if (config.mod_command_prefix === null || config.mod_command_prefix.length !== 1) { logger.log("warn", "Mod prefix either not defined or more than one character"); }
+		if (config.admin_id === null) { logger.log("info", "Admin user's id not defined"); }
+		if (process.env.mal_user === null) { logger.log("info", "MAL username not defined"); }
+		if (process.env.mal_pass === null) { logger.log("info", "MAL password not defined"); }
+		if (process.env.weather_api_key === null) { logger.log("info", "OpenWeatherMap API key not defined"); }
+		if (process.env.osu_api_key === null) { logger.log("info", "Osu API key not defined"); }
 	} else {
-		if (config.email == null) { logger.log("warn", "Email not defined"); }
-		if (config.password == null) { logger.log("warn", "Password not defined"); }
-		if (config.command_prefix == null || config.command_prefix.length != 1) { logger.log("warn", "Prefix either not defined or more than one character"); }
-		if (config.mod_command_prefix == null || config.mod_command_prefix.length != 1) { logger.log("warn", "Mod prefix either not defined or more than one character"); }
-		if (config.admin_id == null) { logger.log("info", "Admin user's id not defined"); }
-		if (config.mal_user == null) { logger.log("info", "MAL username not defined"); }
-		if (config.mal_pass == null) { logger.log("info", "MAL password not defined"); }
-		if (config.weather_api_key == null) { logger.log("info", "OpenWeatherMap API key not defined"); }
-		if (config.osu_api_key == null) { logger.log("info", "Osu API key not defined"); }
+		if (config.email === null) { logger.log("warn", "Email not defined"); }
+		if (config.password === null) { logger.log("warn", "Password not defined"); }
+		if (config.command_prefix === null || config.command_prefix.length !== 1) { logger.log("warn", "Prefix either not defined or more than one character"); }
+		if (config.mod_command_prefix === null || config.mod_command_prefix.length !== 1) { logger.log("warn", "Mod prefix either not defined or more than one character"); }
+		if (config.admin_id === null) { logger.log("info", "Admin user's id not defined"); }
+		if (config.mal_user === null) { logger.log("info", "MAL username not defined"); }
+		if (config.mal_pass === null) { logger.log("info", "MAL password not defined"); }
+		if (config.weather_api_key === null) { logger.log("info", "OpenWeatherMap API key not defined"); }
+		if (config.osu_api_key === null) { logger.log("info", "Osu API key not defined"); }
 	}
 }
 

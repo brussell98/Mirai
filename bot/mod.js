@@ -32,7 +32,6 @@ var commands = {
 		process: function(bot, msg, suffix) {
 			var msgArray = [];
 			if (!suffix){
-				var msgArray = [];
 				msgArray.push(":information_source: This is a list of mod commands. Use `" + config.mod_command_prefix + "help <command name>` to get info on a specific command.");
 				msgArray.push("");
 				msgArray.push("**Commands: **");
@@ -42,7 +41,6 @@ var commands = {
 				bot.sendMessage(msg.author, msgArray);
 			} else {
 				if (commands.hasOwnProperty(suffix)){
-					var msgArray = [];
 					msgArray.push(":information_source: **" + config.mod_command_prefix + "" + suffix + ": **" + commands[suffix].desc);
 					if (commands[suffix].hasOwnProperty("usage")) { msgArray.push("**Usage: **`" + config.mod_command_prefix + "" + suffix + " " + commands[suffix].usage + "`"); }
 					if (commands[suffix].hasOwnProperty("cooldown")) { msgArray.push("**Cooldown: **" + commands[suffix].cooldown + " seconds"); }
@@ -63,9 +61,11 @@ var commands = {
 					if (err) { logger.log("warn", "Error getting debug logs: " + err); }
 					logger.log("debug", "Fetched debug logs");
 					data = data.split(/\r?\n/);
-					var count = 0;
+					var cmdCount = 0,
+						clevCount = 0;
 					for (line of data) {
-						if (line.indexOf(" - debug: Command processed: ") != -1) { count += 1; }
+						if (line.indexOf(" - debug: Command processed: ") > -1) { cmdCount += 1; }
+						else if (line.indexOf(" asked the bot: ") > -1) { clevCount += 1; }
 					}
 					var msgArray = [];
 					msgArray.push("```");
@@ -74,7 +74,8 @@ var commands = {
 					msgArray.push("Serving " + bot.users.length + " users.");
 					msgArray.push("Username: " + bot.user.username);
 					msgArray.push("Running BrussellBot v" + version);
-					msgArray.push("Commands processed this session: " + count);
+					msgArray.push("Commands processed this session: " + cmdCount);
+					msgArray.push("Users talked to "+bot.user.username+" "+clevCount+" times");
 					msgArray.push("```");
 					bot.sendMessage(msg, msgArray);
 				});
@@ -118,7 +119,7 @@ var commands = {
 							var todo = parseInt(suffix) + 1,
 							delcount = 0;
 							for (msg1 of messages) {
-								if (msg1.author === bot.user) {
+								if (msg1.author == bot.user) {
 									bot.deleteMessage(msg1);
 									delcount++;
 									todo--;

@@ -19,4 +19,4 @@ exports.cleverbot = function(bot, msg) {
 		});
 		bot.stopTyping(msg.channel);
 	} else { bot.sendMessage(msg, "What is it?"); }
-}
+};
