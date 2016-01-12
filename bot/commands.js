@@ -8,8 +8,7 @@ var xml2js = require('xml2js');
 var fs = require('fs');
 
 //voting vars
-var topicstring = "",
-    voter = [], upvote = 0, downvote = 0, votebool = false, voteChannel = {}, voteAnMsg = {};
+var topicstring = "", voter = [], upvote = 0, downvote = 0, votebool = false, voteChannel = {}, voteAnMsg = {};
 
 var osuapi = require('osu-api');
 
@@ -49,6 +48,7 @@ var commands = {
 				msgArray.push("You can also find command info at **github.com/brussell98/BrussellBot/wiki/Commands**");
 				msgArray.push("**Commands: **");
 				msgArray.push("```");
+				msgArray.push("@"+bot.user.username+" text: Talk to the bot (cleverbot)");
 				Object.keys(commands).forEach(function(cmd){ msgArray.push("" + config.command_prefix + "" + cmd + ": " + commands[cmd].desc + ""); });
 				msgArray.push("```");
 				bot.sendMessage(msg.author, msgArray);
@@ -269,9 +269,7 @@ var commands = {
 			try {//if this crashes try checking if bot.channels.get.id has it first
 				bot.sendMessage(voteChannel, "**Results of last vote:**\nTopic: `" + topicstring + "`\nUpvotes: `" + upvote + " " + (upvote/(upvote+downvote))*100 + "%`\nDownvotes: `" + downvote + " " + (downvote/(upvote+downvote))*100 + "%`");
 				bot.deleteMessage(voteAnMsg);
-			} catch(err) {
-				logger.log("error", "Error sending vote results: " + err)
-			}
+			} catch(err) { logger.log("error", "Error sending vote results: " + err) }
 			upvote = 0; downvote = 0; voter = []; votebool = false; topicstring = ""; voteChannel = {}; voteAnMsg = {};
 		}
 	},
@@ -292,7 +290,7 @@ var commands = {
 			if (suffix) {
 				if (config.is_heroku_version) { var USER = process.env.mal_user; } else { var USER = config.mal_user; }
 				if (config.is_heroku_version) { var PASS = process.env.mal_pass; } else { var PASS = config.mal_pass; }
-				if (USER == null | USER == "" | PASS == null | PASS == "") { bot.sendMessage(msg, "MAL login not configured by bot owner"); return; }
+				if (!USER || !PASS) { bot.sendMessage(msg, "MAL login not configured by bot owner"); return; }
 				bot.startTyping(msg.channel);
 				var tags = suffix.split(" ").join("+");
 				var rUrl = "http://myanimelist.net/api/anime/search.xml?q=" + tags;
@@ -332,7 +330,7 @@ var commands = {
 			if (suffix) {
 				if (config.is_heroku_version) { var USER = process.env.mal_user; } else { var USER = config.mal_user; }
 				if (config.is_heroku_version) { var PASS = process.env.mal_pass; } else { var PASS = config.mal_pass; }
-				if (USER == null | USER == "" | PASS == null | PASS == "") { bot.sendMessage(msg, "MAL login not configured by bot owner"); return; }
+				if (!USER || !PASS) { bot.sendMessage(msg, "MAL login not configured by bot owner"); return; }
 				bot.startTyping(msg.channel);
 				var tags = suffix.split(" ").join("+");
 				var rUrl = "http://myanimelist.net/api/manga/search.xml?q=" + tags;
@@ -404,7 +402,7 @@ var commands = {
 				if (suffix.split(" ").length < 2) { var username = msg.author.username; }
 				else { var username = suffix.split(" ")[1]; }
 				if (config.is_heroku_version) { var APIKEY = process.env.osu_api_key; } else { var APIKEY = config.osu_api_key; }
-				if (APIKEY === null | APIKEY === "") { bot.sendMessage(msg, "Osu API key not configured by bot owner"); return; }
+				if (!APIKEY) { bot.sendMessage(msg, "Osu API key not configured by bot owner"); return; }
 				var osu = new osuapi.Api(APIKEY);
 				osu.getUser(username, function(err, data){
 					if (err) { bot.sendMessage(msg, ":warning: Error: "+err); return; }
@@ -423,7 +421,7 @@ var commands = {
 				if (suffix.split(" ").length < 2) { var username = msg.author.username; }
 				else { var username = suffix.split(" ")[1]; }
 				if (config.is_heroku_version) { var APIKEY = process.env.osu_api_key; } else { var APIKEY = config.osu_api_key; }
-				if (APIKEY === null | APIKEY === "") { bot.sendMessage(msg, "Osu API key not configured by bot owner"); return; }
+				if (!APIKEY) { bot.sendMessage(msg, "Osu API key not configured by bot owner"); return; }
 				var osu = new osuapi.Api(APIKEY);
 				osu.getUserBest(username, function (err, data) {
 					if (err) { bot.sendMessage(msg, ":warning: Error: "+err); return; }
@@ -450,7 +448,7 @@ var commands = {
 				if (suffix.split(" ").length < 2) { var username = msg.author.username; }
 				else { var username = suffix.split(" ")[1]; }
 				if (config.is_heroku_version) { var APIKEY = process.env.osu_api_key; } else { var APIKEY = config.osu_api_key; }
-				if (APIKEY === null | APIKEY === "") { bot.sendMessage(msg, "Osu API key not configured by bot owner"); return; }
+				if (!APIKEY) { bot.sendMessage(msg, "Osu API key not configured by bot owner"); return; }
 				var osu = new osuapi.Api(APIKEY);
 				osu.getUserRecent(username, function (err, data) {
 					if (err) { bot.sendMessage(msg, ":warning: Error: "+err); return; }
@@ -483,7 +481,7 @@ var commands = {
 		process: function(bot, msg, suffix) {
 			if (msg.mentions.length == 0) { bot.sendMessage(msg, correctUsage("avatar")); return; }
 			msg.mentions.map(function(usr) {
-				(usr.avatarURL != null) ? bot.sendMessage(msg, usr.username+"'s avatar is: **"+usr.avatarURL+"**") : bot.sendMessage(msg, "User has no avatar") ;
+				(usr.avatarURL != null) ? bot.sendMessage(msg, usr.username+"'s avatar is: "+usr.avatarURL+"") : bot.sendMessage(msg, "User has no avatar") ;
 			});
 		}
 	},

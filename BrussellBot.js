@@ -52,18 +52,12 @@ bot.on("disconnected", function () {
 	logger.log("info", "Disconnected");
 	if (!config.is_heroku_version) { process.exit(0); }
 	else {
-		while (true) {
-			setTimeout(function(){
-				logger.log("info", "Attempting to log in...");
-				if (config.is_heroku_version) { bot.login(process.env.email, process.env.password, function (err, token) {
-					if (err) { if (config.is_heroku_version) { logger.log("error", err); process.exit(0); } else { logger.log("error", err); process.exit(1); } }
-					if (token !== null) { return; }
-				}); } else { bot.login(config.email, config.password, function (err, token) {
-					if (err) { if (config.is_heroku_version) { logger.log("error", err); process.exit(0); } else { logger.log("error", err); process.exit(1); } }
-					if (token !== null) { return; }
-				}); }
-			}, 15000);
-		}
+		setTimeout(function(){
+			logger.log("info", "Attempting to log in...");
+			bot.login(process.env.email, process.env.password, function (err, token) {
+				if (err) { logger.log("error", err); process.exit(0); }
+				if (!token) { logger.log("warn", "Failed to re-connect"); process.exit(0); }
+			});}, 20000);
 	}
 });
 
@@ -199,10 +193,19 @@ bot.on('serverDeleted', function(objServer) {
 });
 
 //login
-try {
-	logger.log("info", "Logging in...");
-	if (config.is_heroku_version) { bot.login(process.env.email, process.env.password); } else { bot.login(config.email, config.password); }
-} catch(err) { if (config.is_heroku_version) { logger.log("error", err); process.exit(0); } else { logger.log("error", err); process.exit(1); }}
+logger.log("info", "Logging in...");
+if (config.is_heroku_version) {
+	bot.login(process.env.email, process.env.password, function (err, token) {
+		if (err) { logger.log("error", err); setTimeout(function(){ process.exit(0); }, 2000); }
+		if (!token) { logger.log("warn", "failed to connect"); setTimeout(function(){ process.exit(0); }, 2000); }
+	});
+}
+else { 
+	bot.login(config.email, config.password, function (err, token) {
+		if (err) { logger.log("error", err); setTimeout(function(){ process.exit(1); }, 2000); }
+		if (!token) { logger.log("warn", "failed to connect"); setTimeout(function(){ process.exit(1); }, 2000); }
+	});
+}
 
 function carbonInvite(msg){
 	if (msg) {

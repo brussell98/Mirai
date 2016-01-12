@@ -52,7 +52,7 @@ An multipurpose bot for Discord using the [Discord.js](https://github.com/hydrab
 		- [x] Store the vote announcement and update it
 	- [x] Anime/Manga Lookup
 	- [x] Avatar
-	- [ ] osu! - Need to apply for an API key for this
+	- [ ] osu!
 		- [x] Username defaults to `msg.author.username`
 		- [x] Sig generator
 		- [x] User details
@@ -60,4 +60,5 @@ An multipurpose bot for Discord using the [Discord.js](https://github.com/hydrab
 		- [x] User recent
 		- [ ] Match details
 	- [x] Get a link to the help server
+	- [ ] Pull recent changelogs from the BrussellBot server
 - [ ] Could do stuff with checking how long a user has been on the server for perms
