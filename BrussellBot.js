@@ -77,7 +77,6 @@ bot.on("message", function (msg) {
 	}
 	if (msg.content[0] != config.command_prefix && msg.content[0] != config.mod_command_prefix) { return; }
 	if (msg.author.id == bot.user.id) { return; }
-	logger.log("info", "" + msg.author.username + " executed: " + msg.content.replace(/\n/g, " "));
 	var cmd = msg.content.split(" ")[0].replace(/\n/g, " ").substring(1).toLowerCase();
 	var suffix = msg.content.replace(/\n/g, " ").substring( cmd.length + 2 );
 	if (msg.content.startsWith(config.command_prefix)) {
@@ -283,7 +282,7 @@ if (config.is_heroku_version) {
 
 function evaluateString (msg) {
 	/*EXTREMELY DANGEROUS so lets check again*/if (msg.author.id != config.admin_id) { logger.log("warn", "Somehow an unauthorized user got into eval!"); return; }
-	logger.log("warn", "Running eval");
+	logger.log("info", "Running eval");
 	eval(msg.content.substring(9).replace(/\n/g, ""));
 }
 
