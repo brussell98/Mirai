@@ -96,7 +96,7 @@ var commands = {
 		deleteCommand: true,
 		process: function (bot, msg, suffix) {
 			if (!msg.channel.isPrivate) {
-				if (msg.channel.server.owner.id == msg.author.id) {
+				if (msg.channel.server.owner.id == msg.author.id || msg.author.id == config.admin_id) {
 					!suffix ? bot.setPlayingGame(games[Math.floor(Math.random() * (games.length))]) : bot.setPlayingGame(suffix);
 					logger.log("info", "" + msg.author.username + " set the playing status to: " + suffix);
 				} else { bot.sendMessage(msg, "Server owners only"); }

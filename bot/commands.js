@@ -46,7 +46,7 @@ var commands = {
 			if (!suffix){
 				msgArray.push(":information_source: This is a list of commands. Use `" + config.command_prefix + "help <command name>` to get info on a specific command.");
 				msgArray.push("Moderation related commands can be found with `" + config.mod_command_prefix + "help [command]`.");
-				msgArray.push("You can also find command info at github.com/brussell98/BrussellBot/wiki/Commands");
+				msgArray.push("You can also find command info at **github.com/brussell98/BrussellBot/wiki/Commands**");
 				msgArray.push("**Commands: **");
 				msgArray.push("```");
 				Object.keys(commands).forEach(function(cmd){ msgArray.push("" + config.command_prefix + "" + cmd + ": " + commands[cmd].desc + ""); });
@@ -66,7 +66,7 @@ var commands = {
 	"botserver": {
 		desc: "Get a link to the BrussellBot / Bot-chan server.",
 		process: function(bot, msg, suffix) {
-			bot.sendMessage(msg, "Here's an invite to my server: https://discord.gg/0kvLlwb7slG3XCCQ");
+			bot.sendMessage(msg, "Here's an invite to my server: **https://discord.gg/0kvLlwb7slG3XCCQ**");
 		}
 	},
 	"ping": {
@@ -116,7 +116,7 @@ var commands = {
 			var msgArray = [];
 			msgArray.push("I'm " + bot.user.username + " and I was made by brussell98.");
 			msgArray.push("I run on the unofficial Discord API `Discord.js`");
-			msgArray.push("My website is brussell98.github.io/BrussellBot/");
+			msgArray.push("My website is **brussell98.github.io/BrussellBot/**");
 			bot.sendMessage(msg, msgArray);
 		}
 	},
@@ -432,15 +432,15 @@ var commands = {
 					msgArray.push("Top 5 osu scores for: **"+username+"**:");
 					msgArray.push("----------------------------------");
 					osu.getBeatmap(data[0].beatmap_id, function (err, map1) {
-						msgArray.push("**1.** *"+map1.title+" (☆"+map1.difficultyrating.substring(0, map1.difficultyrating.split(".")[0].length+3)+")*: **Score:** "+data[0].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" **| Max Combo:** "+data[0].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" **| Misses:** "+data[0].countmiss+" **| Date:** "+data[0].date);
+						msgArray.push("**1.** *"+map1.title+" (☆"+map1.difficultyrating.substring(0, map1.difficultyrating.split(".")[0].length+3)+")*: **PP:** "+Math.round(data[0].pp.split(".")[0])+" **| Score:** "+data[0].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" **| Max Combo:** "+data[0].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" **| Misses:** "+data[0].countmiss+" **| Date:** "+data[0].date);
 						osu.getBeatmap(data[1].beatmap_id, function (err, map2) {
-							msgArray.push("**2.** *"+map2.title+" (☆"+map2.difficultyrating.substring(0, map2.difficultyrating.split(".")[0].length+3)+")*: **Score:** "+data[1].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" **| Max Combo:** "+data[1].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" **| Misses:** "+data[1].countmiss+" **| Date:** "+data[1].date);
+							msgArray.push("**2.** *"+map2.title+" (☆"+map2.difficultyrating.substring(0, map2.difficultyrating.split(".")[0].length+3)+")*: **PP:** "+Math.round(data[1].pp.split(".")[0])+" **| Score:** "+data[1].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" **| Max Combo:** "+data[1].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" **| Misses:** "+data[1].countmiss+" **| Date:** "+data[1].date);
 							osu.getBeatmap(data[2].beatmap_id, function (err, map3) {
-								msgArray.push("**3.** *"+map3.title+" (☆"+map3.difficultyrating.substring(0, map3.difficultyrating.split(".")[0].length+3)+")*: **Score:** "+data[2].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" **| Max Combo:** "+data[2].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" **| Misses:** "+data[2].countmiss+" **| Date:** "+data[2].date);
+								msgArray.push("**3.** *"+map3.title+" (☆"+map3.difficultyrating.substring(0, map3.difficultyrating.split(".")[0].length+3)+")*: **PP:** "+Math.round(data[2].pp.split(".")[0])+" **| Score:** "+data[2].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" **| Max Combo:** "+data[2].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" **| Misses:** "+data[2].countmiss+" **| Date:** "+data[2].date);
 								osu.getBeatmap(data[3].beatmap_id, function (err, map4) {
-									msgArray.push("**4.** *"+map4.title+" (☆"+map4.difficultyrating.substring(0, map4.difficultyrating.split(".")[0].length+3)+")*: **Score:** "+data[3].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" **| Max Combo:** "+data[3].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" **| Misses:** "+data[3].countmiss+" **| Date:** "+data[3].date);
+									msgArray.push("**4.** *"+map4.title+" (☆"+map4.difficultyrating.substring(0, map4.difficultyrating.split(".")[0].length+3)+")*: **PP:** "+Math.round(data[3].pp.split(".")[0])+" **| Score:** "+data[3].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" **| Max Combo:** "+data[3].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" **| Misses:** "+data[3].countmiss+" **| Date:** "+data[3].date);
 									osu.getBeatmap(data[4].beatmap_id, function (err, map5) {
-										msgArray.push("**5.** *"+map5.title+" (☆"+map5.difficultyrating.substring(0, map5.difficultyrating.split(".")[0].length+3)+")*: **Score:** "+data[4].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" **| Max Combo:** "+data[4].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" **| Misses:** "+data[4].countmiss+" **| Date:** "+data[4].date);
+										msgArray.push("**5.** *"+map5.title+" (☆"+map5.difficultyrating.substring(0, map5.difficultyrating.split(".")[0].length+3)+")*: **PP:** "+Math.round(data[4].pp.split(".")[0])+" **| Score:** "+data[4].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" **| Max Combo:** "+data[4].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" **| Misses:** "+data[4].countmiss+" **| Date:** "+data[4].date);
 										bot.sendMessage(msg, msgArray);
 					});});});});});
 				});
@@ -459,15 +459,15 @@ var commands = {
 					msgArray.push("5 most recent plays for: **"+username+"**:");
 					msgArray.push("----------------------------------");
 					osu.getBeatmap(data[0].beatmap_id, function (err, map1) {
-						msgArray.push("**1.** *"+map1.title+" (☆"+map1.difficultyrating.substring(0, map1.difficultyrating.split(".")[0].length+3)+")*: **Score:** "+data[0].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" **| Max Combo:** "+data[0].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" **| Misses:** "+data[0].countmiss+" **| Date:** "+data[0].date);
+						msgArray.push("**1.** *"+map1.title+" (☆"+map1.difficultyrating.substring(0, map1.difficultyrating.split(".")[0].length+3)+")*: **PP:** "+Math.round(data[0].pp.split(".")[0])+" **| Score:** "+data[0].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" **| Max Combo:** "+data[0].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" **| Misses:** "+data[0].countmiss+" **| Date:** "+data[0].date);
 						osu.getBeatmap(data[1].beatmap_id, function (err, map2) {
-							msgArray.push("**2.** *"+map2.title+" (☆"+map2.difficultyrating.substring(0, map2.difficultyrating.split(".")[0].length+3)+")*: **Score:** "+data[1].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" **| Max Combo:** "+data[1].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" **| Misses:** "+data[1].countmiss+" **| Date:** "+data[1].date);
+							msgArray.push("**2.** *"+map2.title+" (☆"+map2.difficultyrating.substring(0, map2.difficultyrating.split(".")[0].length+3)+")*: **PP:** "+Math.round(data[1].pp.split(".")[0])+" **| Score:** "+data[1].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" **| Max Combo:** "+data[1].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" **| Misses:** "+data[1].countmiss+" **| Date:** "+data[1].date);
 							osu.getBeatmap(data[2].beatmap_id, function (err, map3) {
-								msgArray.push("**3.** *"+map3.title+" (☆"+map3.difficultyrating.substring(0, map3.difficultyrating.split(".")[0].length+3)+")*: **Score:** "+data[2].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" **| Max Combo:** "+data[2].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" **| Misses:** "+data[2].countmiss+" **| Date:** "+data[2].date);
+								msgArray.push("**3.** *"+map3.title+" (☆"+map3.difficultyrating.substring(0, map3.difficultyrating.split(".")[0].length+3)+")*: **PP:** "+Math.round(data[2].pp.split(".")[0])+" **| Score:** "+data[2].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" **| Max Combo:** "+data[2].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" **| Misses:** "+data[2].countmiss+" **| Date:** "+data[2].date);
 								osu.getBeatmap(data[3].beatmap_id, function (err, map4) {
-									msgArray.push("**4.** *"+map4.title+" (☆"+map4.difficultyrating.substring(0, map4.difficultyrating.split(".")[0].length+3)+")*: **Score:** "+data[3].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" **| Max Combo:** "+data[3].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" **| Misses:** "+data[3].countmiss+" **| Date:** "+data[3].date);
+									msgArray.push("**4.** *"+map4.title+" (☆"+map4.difficultyrating.substring(0, map4.difficultyrating.split(".")[0].length+3)+")*: **PP:** "+Math.round(data[3].pp.split(".")[0])+" **| Score:** "+data[3].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" **| Max Combo:** "+data[3].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" **| Misses:** "+data[3].countmiss+" **| Date:** "+data[3].date);
 									osu.getBeatmap(data[4].beatmap_id, function (err, map5) {
-										msgArray.push("**5.** *"+map5.title+" (☆"+map5.difficultyrating.substring(0, map5.difficultyrating.split(".")[0].length+3)+")*: **Score:** "+data[4].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" **| Max Combo:** "+data[4].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" **| Misses:** "+data[4].countmiss+" **| Date:** "+data[4].date);
+										msgArray.push("**5.** *"+map5.title+" (☆"+map5.difficultyrating.substring(0, map5.difficultyrating.split(".")[0].length+3)+")*: **PP:** "+Math.round(data[4].pp.split(".")[0])+" **| Score:** "+data[4].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" **| Max Combo:** "+data[4].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" **| Misses:** "+data[4].countmiss+" **| Date:** "+data[4].date);
 										bot.sendMessage(msg, msgArray);
 					});});});});});
 				});
@@ -483,7 +483,7 @@ var commands = {
 		process: function(bot, msg, suffix) {
 			if (msg.mentions.length == 0) { bot.sendMessage(msg, correctUsage("avatar")); return; }
 			msg.mentions.map(function(usr) {
-				(usr.avatarURL != null) ? bot.sendMessage(msg, usr.username+"'s avatar is: "+usr.avatarURL) : bot.sendMessage(msg, "User has no avatar") ;
+				(usr.avatarURL != null) ? bot.sendMessage(msg, usr.username+"'s avatar is: **"+usr.avatarURL+"**") : bot.sendMessage(msg, "User has no avatar") ;
 			});
 		}
 	},
@@ -531,10 +531,10 @@ var commands = {
 		deleteCommand: true,
 		usage: "<search>",
 		process: function(bot, msg, suffix) {
-			if (!suffix) { bot.sendMessage(msg, "http://www.lmgtfy.com/?q=brussellbot+commands"); return; }
+			if (!suffix) { bot.sendMessage(msg, "**http://www.lmgtfy.com/?q=brussellbot+commands**"); return; }
 			if (/[^a-zA-Z0-9 ]/.test(suffix)) { bot.sendMessage(msg, ":warning: Special characters not allowed"); return; }
 			suffix = suffix.replace(/ /g, "+");
-			bot.sendMessage(msg, ":mag: http://www.lmgtfy.com/?q="+suffix);
+			bot.sendMessage(msg, ":mag: **http://www.lmgtfy.com/?q="+suffix+"**");
 		}
 	}
 };

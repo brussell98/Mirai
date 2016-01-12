@@ -50,7 +50,21 @@ bot.on("ready", function () {
 
 bot.on("disconnected", function () {
 	logger.log("info", "Disconnected");
-	(config.is_heroku_version) ? process.exit(0) : process.exit(1);
+	if (!config.is_heroku_version) { process.exit(0); }
+	else {
+		while (true) {
+			setTimeout(function(){
+				logger.log("info", "Attempting to log in...");
+				if (config.is_heroku_version) { bot.login(process.env.email, process.env.password, function (err, token) {
+					if (err) { if (config.is_heroku_version) { logger.log("error", err); process.exit(0); } else { logger.log("error", err); process.exit(1); } }
+					if (token !== null) { return; }
+				}); } else { bot.login(config.email, config.password, function (err, token) {
+					if (err) { if (config.is_heroku_version) { logger.log("error", err); process.exit(0); } else { logger.log("error", err); process.exit(1); } }
+					if (token !== null) { return; }
+				}); }
+			}, 15000);
+		}
+	}
 });
 
 bot.on("message", function (msg) {
@@ -64,11 +78,12 @@ bot.on("message", function (msg) {
 	if (msg.content[0] != config.command_prefix && msg.content[0] != config.mod_command_prefix) { return; }
 	if (msg.author.id == bot.user.id) { return; }
 	logger.log("info", "" + msg.author.username + " executed: " + msg.content.replace(/\n/g, " "));
-	var cmd = msg.content.split(" ")[0].substring(1).toLowerCase();
-	var suffix = msg.content.substring( cmd.length + 2 );
+	var cmd = msg.content.split(" ")[0].replace(/\n/g, " ").substring(1).toLowerCase();
+	var suffix = msg.content.replace(/\n/g, " ").substring( cmd.length + 2 );
 	if (msg.content.startsWith(config.command_prefix)) {
 		if (commands.hasOwnProperty(cmd)) {
 			try {
+				logger.log("info", "" + msg.author.username + " executed: " + msg.content.replace(/\n/g, " "));
 				if (commands[cmd].hasOwnProperty("cooldown")) {
 					if (lastExecTime.hasOwnProperty(cmd)) {
 						var cTime = new Date();
@@ -94,6 +109,7 @@ bot.on("message", function (msg) {
 		if (cmd == "reload") { reload(); bot.deleteMessage(msg); return; }
 		if (mod.hasOwnProperty(cmd)) {
 			try {
+				logger.log("info", "" + msg.author.username + " executed: " + msg.content.replace(/\n/g, " "));
 				if (mod[cmd].hasOwnProperty("cooldown")) {
 					if (lastExecTime.hasOwnProperty(cmd)) {
 						var cTime = new Date();
