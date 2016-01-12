@@ -60,7 +60,7 @@ An multipurpose bot for Discord using the [Discord.js](https://github.com/hydrab
 	- [x] Anime/Manga Lookup
 	- [x] Avatar
 	- [ ] osu! - Need to apply for an API key for this
-		- [ ] Username defaults to `msg.author.username`
+		- [x] Username defaults to `msg.author.username`
 		- [x] Sig generator
 		- [x] User details
 		- [x] User best

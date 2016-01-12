@@ -377,14 +377,14 @@ var commands = {
 	},
 	"osu": {
 		desc: "Osu! commands. Use "+config.command_prefix+"help osu",
-		usage: "<sig/user/best/recent> <username>",
+		usage: "<sig/user/best/recent> <username> [hex color for sig]",
 		deleteCommand: true,
 		process: function(bot, msg, suffix) {
 			if (suffix) {
 			if (suffix.split(" ")[0] === "sig") {
 
-				if (suffix.split(" ").length < 2) { bot.sendMessage(msg, "Correct usage: "+config.command_prefix+"osu sig <username> [color in hex]"); return; }
-				var username = suffix.split(" ")[1];
+				if (suffix.split(" ").length < 2) { var username = msg.author.username; }
+				else { var username = suffix.split(" ")[1]; }
 				var color = "ff66aa";
 				if (/sig (.*) #?[A-Fa-f0-9]{6}/.test(suffix)){
 					if (suffix.split(" ")[2].length == 6) { color = suffix.split(" ")[1]; }
@@ -401,11 +401,12 @@ var commands = {
 
 			} else if (suffix.split(" ")[0] == "user") {
 
-				if (suffix.split(" ").length !== 2) { bot.sendMessage(msg, "Correct usage: "+config.command_prefix+"osu user <username>"); return; }
+				if (suffix.split(" ").length < 2) { var username = msg.author.username; }
+				else { var username = suffix.split(" ")[1]; }
 				if (config.is_heroku_version) { var APIKEY = process.env.osu_api_key; } else { var APIKEY = config.osu_api_key; }
 				if (APIKEY === null | APIKEY === "") { bot.sendMessage(msg, "Osu API key not configured by bot owner"); return; }
 				var osu = new osuapi.Api(APIKEY);
-				osu.getUser(suffix.split(" ")[1], function(err, data){
+				osu.getUser(username, function(err, data){
 					if (err) { bot.sendMessage(msg, ":warning: Error: "+err); return; }
 					if (data[0] == null) { bot.sendMessage(msg, ":warning: User not found"); return; }
 					var msgArray = [];
@@ -419,52 +420,54 @@ var commands = {
 
 			} else if (suffix.split(" ")[0] === "best") {
 
-				if (suffix.split(" ").length !== 2) { bot.sendMessage(msg, "Correct usage: "+config.command_prefix+"osu best <username>"); return; }
+				if (suffix.split(" ").length < 2) { var username = msg.author.username; }
+				else { var username = suffix.split(" ")[1]; }
 				if (config.is_heroku_version) { var APIKEY = process.env.osu_api_key; } else { var APIKEY = config.osu_api_key; }
 				if (APIKEY === null | APIKEY === "") { bot.sendMessage(msg, "Osu API key not configured by bot owner"); return; }
 				var osu = new osuapi.Api(APIKEY);
-				osu.getUserBest(suffix.split(" ")[1], function (err, data) {
+				osu.getUserBest(username, function (err, data) {
 					if (err) { bot.sendMessage(msg, ":warning: Error: "+err); return; }
 					if (data[0] == null) { bot.sendMessage(msg, ":warning: User not found"); return; }
 					var msgArray = [];
-					msgArray.push("Top 5 osu scores for: **"+suffix.split(" ")[1]+"**:");
+					msgArray.push("Top 5 osu scores for: **"+username+"**:");
 					msgArray.push("----------------------------------");
 					osu.getBeatmap(data[0].beatmap_id, function (err, map1) {
-						msgArray.push("**1.** *"+map1.title+" (☆"+map1.difficultyrating.substring(0, map1.difficultyrating.split(".")[0].length+3)+")*: **Score:** "+data[0].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" | **Max Combo:** "+data[0].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" | **Misses:** "+data[0].countmiss+" | **Date:** "+data[0].date);
+						msgArray.push("**1.** *"+map1.title+" (☆"+map1.difficultyrating.substring(0, map1.difficultyrating.split(".")[0].length+3)+")*: **Score:** "+data[0].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" **| Max Combo:** "+data[0].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" **| Misses:** "+data[0].countmiss+" **| Date:** "+data[0].date);
 						osu.getBeatmap(data[1].beatmap_id, function (err, map2) {
-							msgArray.push("**2.** *"+map2.title+" (☆"+map2.difficultyrating.substring(0, map2.difficultyrating.split(".")[0].length+3)+")*: **Score:** "+data[1].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" | **Max Combo:** "+data[1].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" | **Misses:** "+data[1].countmiss+" | **Date:** "+data[1].date);
+							msgArray.push("**2.** *"+map2.title+" (☆"+map2.difficultyrating.substring(0, map2.difficultyrating.split(".")[0].length+3)+")*: **Score:** "+data[1].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" **| Max Combo:** "+data[1].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" **| Misses:** "+data[1].countmiss+" **| Date:** "+data[1].date);
 							osu.getBeatmap(data[2].beatmap_id, function (err, map3) {
-								msgArray.push("**3.** *"+map3.title+" (☆"+map3.difficultyrating.substring(0, map3.difficultyrating.split(".")[0].length+3)+")*: **Score:** "+data[2].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" | **Max Combo:** "+data[2].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" | **Misses:** "+data[2].countmiss+" | **Date:** "+data[2].date);
+								msgArray.push("**3.** *"+map3.title+" (☆"+map3.difficultyrating.substring(0, map3.difficultyrating.split(".")[0].length+3)+")*: **Score:** "+data[2].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" **| Max Combo:** "+data[2].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" **| Misses:** "+data[2].countmiss+" **| Date:** "+data[2].date);
 								osu.getBeatmap(data[3].beatmap_id, function (err, map4) {
-									msgArray.push("**4.** *"+map4.title+" (☆"+map4.difficultyrating.substring(0, map4.difficultyrating.split(".")[0].length+3)+")*: **Score:** "+data[3].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" | **Max Combo:** "+data[3].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" | **Misses:** "+data[3].countmiss+" | **Date:** "+data[3].date);
+									msgArray.push("**4.** *"+map4.title+" (☆"+map4.difficultyrating.substring(0, map4.difficultyrating.split(".")[0].length+3)+")*: **Score:** "+data[3].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" **| Max Combo:** "+data[3].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" **| Misses:** "+data[3].countmiss+" **| Date:** "+data[3].date);
 									osu.getBeatmap(data[4].beatmap_id, function (err, map5) {
-										msgArray.push("**5.** *"+map5.title+" (☆"+map5.difficultyrating.substring(0, map5.difficultyrating.split(".")[0].length+3)+")*: **Score:** "+data[4].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" | **Max Combo:** "+data[4].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" | **Misses:** "+data[4].countmiss+" | **Date:** "+data[4].date);
+										msgArray.push("**5.** *"+map5.title+" (☆"+map5.difficultyrating.substring(0, map5.difficultyrating.split(".")[0].length+3)+")*: **Score:** "+data[4].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" **| Max Combo:** "+data[4].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" **| Misses:** "+data[4].countmiss+" **| Date:** "+data[4].date);
 										bot.sendMessage(msg, msgArray);
 					});});});});});
 				});
 
 			} else if (suffix.split(" ")[0] === "recent") {
 
-				if (suffix.split(" ").length !== 2) { bot.sendMessage(msg, "Correct usage: "+config.command_prefix+"osu recent <username>"); return; }
+				if (suffix.split(" ").length < 2) { var username = msg.author.username; }
+				else { var username = suffix.split(" ")[1]; }
 				if (config.is_heroku_version) { var APIKEY = process.env.osu_api_key; } else { var APIKEY = config.osu_api_key; }
 				if (APIKEY === null | APIKEY === "") { bot.sendMessage(msg, "Osu API key not configured by bot owner"); return; }
 				var osu = new osuapi.Api(APIKEY);
-				osu.getUserRecent(suffix.split(" ")[1], function (err, data) {
+				osu.getUserRecent(username, function (err, data) {
 					if (err) { bot.sendMessage(msg, ":warning: Error: "+err); return; }
 					if (data[0] == null) { bot.sendMessage(msg, ":warning: User not found"); return; }
 					var msgArray = [];
-					msgArray.push("5 most recent plays for: **"+suffix.split(" ")[1]+"**:");
+					msgArray.push("5 most recent plays for: **"+username+"**:");
 					msgArray.push("----------------------------------");
 					osu.getBeatmap(data[0].beatmap_id, function (err, map1) {
-						msgArray.push("**1.** *"+map1.title+" (☆"+map1.difficultyrating.substring(0, map1.difficultyrating.split(".")[0].length+3)+")*: **Score:** "+data[0].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" | **Max Combo:** "+data[0].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" | **Misses:** "+data[0].countmiss+" | **Date:** "+data[0].date);
+						msgArray.push("**1.** *"+map1.title+" (☆"+map1.difficultyrating.substring(0, map1.difficultyrating.split(".")[0].length+3)+")*: **Score:** "+data[0].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" **| Max Combo:** "+data[0].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" **| Misses:** "+data[0].countmiss+" **| Date:** "+data[0].date);
 						osu.getBeatmap(data[1].beatmap_id, function (err, map2) {
-							msgArray.push("**2.** *"+map2.title+" (☆"+map2.difficultyrating.substring(0, map2.difficultyrating.split(".")[0].length+3)+")*: **Score:** "+data[1].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" | **Max Combo:** "+data[1].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" | **Misses:** "+data[1].countmiss+" | **Date:** "+data[1].date);
+							msgArray.push("**2.** *"+map2.title+" (☆"+map2.difficultyrating.substring(0, map2.difficultyrating.split(".")[0].length+3)+")*: **Score:** "+data[1].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" **| Max Combo:** "+data[1].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" **| Misses:** "+data[1].countmiss+" **| Date:** "+data[1].date);
 							osu.getBeatmap(data[2].beatmap_id, function (err, map3) {
-								msgArray.push("**3.** *"+map3.title+" (☆"+map3.difficultyrating.substring(0, map3.difficultyrating.split(".")[0].length+3)+")*: **Score:** "+data[2].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" | **Max Combo:** "+data[2].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" | **Misses:** "+data[2].countmiss+" | **Date:** "+data[2].date);
+								msgArray.push("**3.** *"+map3.title+" (☆"+map3.difficultyrating.substring(0, map3.difficultyrating.split(".")[0].length+3)+")*: **Score:** "+data[2].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" **| Max Combo:** "+data[2].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" **| Misses:** "+data[2].countmiss+" **| Date:** "+data[2].date);
 								osu.getBeatmap(data[3].beatmap_id, function (err, map4) {
-									msgArray.push("**4.** *"+map4.title+" (☆"+map4.difficultyrating.substring(0, map4.difficultyrating.split(".")[0].length+3)+")*: **Score:** "+data[3].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" | **Max Combo:** "+data[3].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" | **Misses:** "+data[3].countmiss+" | **Date:** "+data[3].date);
+									msgArray.push("**4.** *"+map4.title+" (☆"+map4.difficultyrating.substring(0, map4.difficultyrating.split(".")[0].length+3)+")*: **Score:** "+data[3].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" **| Max Combo:** "+data[3].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" **| Misses:** "+data[3].countmiss+" **| Date:** "+data[3].date);
 									osu.getBeatmap(data[4].beatmap_id, function (err, map5) {
-										msgArray.push("**5.** *"+map5.title+" (☆"+map5.difficultyrating.substring(0, map5.difficultyrating.split(".")[0].length+3)+")*: **Score:** "+data[4].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" | **Max Combo:** "+data[4].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" | **Misses:** "+data[4].countmiss+" | **Date:** "+data[4].date);
+										msgArray.push("**5.** *"+map5.title+" (☆"+map5.difficultyrating.substring(0, map5.difficultyrating.split(".")[0].length+3)+")*: **Score:** "+data[4].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" **| Max Combo:** "+data[4].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" **| Misses:** "+data[4].countmiss+" **| Date:** "+data[4].date);
 										bot.sendMessage(msg, msgArray);
 					});});});});});
 				});
