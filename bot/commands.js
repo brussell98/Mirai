@@ -8,12 +8,8 @@ var xml2js = require('xml2js');
 var fs = require('fs');
 
 //voting vars
-var topicstring = "";
-var voter = [];
-var upvote = 0;
-var downvote = 0;
-var votebool = false;
-var voteChannel = {};
+var topicstring = "",
+    voter = [], upvote = 0, downvote = 0, votebool = false, voteChannel = {}, voteAnMsg = {};
 
 var osuapi = require('osu-api');
 
@@ -170,7 +166,7 @@ var commands = {
 		}
 	},
 	"info": {
-		desc: "Gets info on the server or a user if specified.",
+		desc: "Gets info on the server or a user if mentioned.",
 		usage: "[@username]",
 		deleteCommand: true,
 		cooldown: 5,
@@ -240,9 +236,8 @@ var commands = {
 			if (!suffix) { bot.sendMessage(msg, correctUsage("newvote")); return; }
 			if (votebool == true) { bot.sendMessage(msg, ":warning: Theres already a vote pending!"); return; }
 			topicstring = suffix;
-			bot.sendMessage(msg, "New Vote started: `" + suffix + "`\nTo vote say `" + config.command_prefix + "vote +/-`\nIf the vote isn't ended manually it will end after 5 minutes");
-			votebool = true;
-			voteChannel = msg.channel;
+			bot.sendMessage(msg, "New Vote started: `" + suffix + "`. To vote say `" + config.command_prefix + "vote +/-`\nIf the vote isn't ended manually it will end after 5 minutes\nUpvotes: 0\nDownvotes: 0", function (err, message) { voteAnMsg = message; });
+			votebool = true; voteChannel = msg.channel;
 			autoEndVote(bot, msg, suffix);
 		}
 	},
@@ -255,8 +250,16 @@ var commands = {
 			if (votebool == false) { bot.sendMessage(msg, ":warning: There isn't a topic being voted on right now! Use `"+config.command_prefix+"newvote <topic>`"); return; }
 			if (voter.indexOf(msg.author) != -1) { return; }
 			if (msg.channel != voteChannel) { bot.sendMessage(msg, ":warning: You must vote in the channel where the vote was started"); return; }
-			if (suffix.indexOf("+") > -1) { upvote += 1; voter.push(msg.author); }
-			else if (suffix.indexOf("-") > -1) { downvote += 1; voter.push(msg.author); }
+			if (suffix.indexOf("+") > -1) {
+				upvote += 1;
+				voter.push(msg.author);
+				bot.updateMessage(voteAnMsg, voteAnMsg.content.replace(/Upvotes\: [\d]{1,2}/g, "Upvotes: "+upvote), function (err, message) { voteAnMsg = message; });
+			}
+			else if (suffix.indexOf("-") > -1) {
+				downvote += 1;
+				voter.push(msg.author);
+				bot.updateMessage(voteAnMsg, voteAnMsg.content.replace(/Downvotes\: [\d]{1,2}/g, "Downvotes: "+downvote), function (err, message) { voteAnMsg = message; });
+				}
 		}
 	},
 	"endvote": {
@@ -265,15 +268,11 @@ var commands = {
 		process: function (bot, msg, suffix) {
 			try {//if this crashes try checking if bot.channels.get.id has it first
 				bot.sendMessage(voteChannel, "**Results of last vote:**\nTopic: `" + topicstring + "`\nUpvotes: `" + upvote + " " + (upvote/(upvote+downvote))*100 + "%`\nDownvotes: `" + downvote + " " + (downvote/(upvote+downvote))*100 + "%`");
+				bot.deleteMessage(voteAnMsg);
 			} catch(err) {
 				logger.log("error", "Error sending vote results: " + err)
 			}
-			upvote = 0;
-			downvote = 0;
-			voter = [];
-			votebool = false;
-			topicstring = "";
-			voteChannel = {};
+			upvote = 0; downvote = 0; voter = []; votebool = false; topicstring = ""; voteChannel = {}; voteAnMsg = {};
 		}
 	},
 	"8ball": {

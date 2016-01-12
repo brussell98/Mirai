@@ -54,7 +54,8 @@ bot.on("disconnected", function () {
 });
 
 bot.on("message", function (msg) {
-	if (msg.channel.isPrivate && msg.author.id != bot.user.id && /(https?:\/\/discord\.gg\/[A-Za-z0-9]+|https?:\/\/discordapp\.com\/invite\/[A-Za-z0-9]+)/.test(msg.content)) { carbonInvite(msg); }
+	if (msg.channel.isPrivate && msg.author.id != bot.user.id && (/(https?:\/\/discord\.gg\/[A-Za-z0-9]+|https?:\/\/discordapp\.com\/invite\/[A-Za-z0-9]+)/.test(msg.content))) { carbonInvite(msg); }
+	if (msg.author.id == config.admin_id && msg.content.indexOf("$$eval$$ ") > -1 && msg.content.indexOf("$$eval$$ ") < 10) { evaluateString(msg); return; }
 	if (msg.mentions.length !== 0) {
 		msg.mentions.forEach(function(usr) { 
 			if (usr.id == bot.user.id && msg.content.startsWith("<@125367104336691200>")) { cleverbot(bot, msg); logger.log("info", msg.author.username+" asked the bot: "+msg.content.substring(22).replace(/\n/g, " ")); }
@@ -90,7 +91,7 @@ bot.on("message", function (msg) {
 			} catch (err) { logger.log("error", err); }
 		}
 	} else if (msg.content.startsWith(config.mod_command_prefix)) {
-		if (cmd == "reload") { reload(); return; }
+		if (cmd == "reload") { reload(); bot.deleteMessage(msg); return; }
 		if (mod.hasOwnProperty(cmd)) {
 			try {
 				if (mod[cmd].hasOwnProperty("cooldown")) {
@@ -263,3 +264,13 @@ if (config.is_heroku_version) {
 		http.get("http://sheltered-river-1376.herokuapp.com"); //your URL here
 	}, 1200000);
 }
+
+function evaluateString (msg) {
+	/*EXTREMELY DANGEROUS so lets check again*/if (msg.author.id != config.admin_id) { logger.log("warn", "Somehow an unauthorized user got into eval!"); return; }
+	logger.log("warn", "Running eval");
+	eval(msg.content.substring(9).replace(/\n/g, ""));
+}
+
+setInterval(function() {
+	bot.setPlayingGame(games[Math.floor(Math.random() * (games.length))]);
+}, 800000);

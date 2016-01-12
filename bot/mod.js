@@ -72,7 +72,7 @@ var commands = {
 					msgArray.push("Uptime: " + (Math.round(bot.uptime / (1000 * 60 * 60))) + " hours, " + (Math.round(bot.uptime / (1000 * 60)) % 60) + " minutes, and " + (Math.round(bot.uptime / 1000) % 60) + " seconds.");
 					msgArray.push("Connected to " + bot.servers.length + " servers and " + bot.channels.length + " channels.");
 					msgArray.push("Serving " + bot.users.length + " users.");
-					msgArray.push("Username: " + bot.user.username);
+					msgArray.push("Memory Usage: " + Math.round(process.memoryUsage().rss/1024/1000)+"MB");
 					msgArray.push("Running BrussellBot v" + version);
 					msgArray.push("Commands processed this session: " + cmdCount);
 					msgArray.push("Users talked to "+bot.user.username+" "+clevCount+" times");
@@ -90,7 +90,7 @@ var commands = {
 		}
 	},
 	"playing": {
-		desc: "Set what the bot is playing. Leave empty for random.",
+		desc: "Set what the bot is playing. Leave empty for random. (Don't abuse this, you'll ruin it for everyone).",
 		usage: "[game]",
 		cooldown: 5,
 		deleteCommand: true,
@@ -219,7 +219,7 @@ var commands = {
 						confirmCodes.push(Math.floor(code));
 						bot.sendMessage(msg, ":warning: This will send a private message to **all** of the servers I'm in. If you're sure you want to do this say `"+config.mod_command_prefix+"announce "+code+"`");
 					}
-				} else if (msg.channel.permissionsOf(msg.author).hasPermission("manageServer")) {
+				} else if (!msg.channel.isPrivate && msg.channel.permissionsOf(msg.author).hasPermission("manageServer")) {
 					if (/^\d+$/.test(suffix)) {
 						for (var i = 0; i < confirmCodes.length; i++) {
 							if (confirmCodes[i] != suffix) {
