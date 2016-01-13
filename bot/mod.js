@@ -4,7 +4,7 @@ var version = require("../package.json").version;
 var logger = require("./logger.js").Logger;
 var fs = require('fs');
 
-var confirmCodes = [];
+var confirmCodes = []; //stuff for announce
 var announceMessages = [];
 
 /*
@@ -39,7 +39,7 @@ var commands = {
 				Object.keys(commands).forEach(function(cmd){ msgArray.push("" + config.mod_command_prefix + "" + cmd + ": " + commands[cmd].desc + ""); });
 				msgArray.push("```");
 				bot.sendMessage(msg.author, msgArray);
-			} else {
+			} else { //if user wants info on a command
 				if (commands.hasOwnProperty(suffix)){
 					msgArray.push(":information_source: **" + config.mod_command_prefix + "" + suffix + ": **" + commands[suffix].desc);
 					if (commands[suffix].hasOwnProperty("usage")) { msgArray.push("**Usage: **`" + config.mod_command_prefix + "" + suffix + " " + commands[suffix].usage + "`"); }
@@ -56,11 +56,11 @@ var commands = {
 		cooldown: 60,
 		deleteCommand: true,
 		process: function(bot, msg, suffix) {
-			if (msg.author.id == config.admin_id || msg.channel.isPrivate || msg.author.id == msg.channel.server.owner.id) {
+			if (msg.author.id == config.admin_id || msg.channel.isPrivate || msg.author.id == msg.channel.server.owner.id) { //perm checks all over
 				fs.readFile("./logs/debug.txt", 'utf8', function (err, data) {
 					if (err) { logger.log("warn", "Error getting debug logs: " + err); }
 					logger.log("debug", "Fetched debug logs");
-					data = data.split(/\r?\n/);
+					data = data.split(/\r?\n/); //split by line
 					var cmdCount = 0,
 						clevCount = 0;
 					for (line of data) {
@@ -80,7 +80,7 @@ var commands = {
 					bot.sendMessage(msg, msgArray);
 				});
 
-				if (suffix.indexOf("-ls") != -1 && msg.channel.isPrivate) {
+				if (suffix.indexOf("-ls") != -1 && msg.channel.isPrivate) { //if user wants a list of servers
 					var svrArray = [];
 					for (svrObj of bot.servers) { svrArray.push("`"+svrObj.name+": C: "+svrObj.channels.length+", U: "+svrObj.members.length+"`"); }
 					bot.sendMessage(msg, svrArray);
@@ -109,14 +109,14 @@ var commands = {
 		cooldown: 10,
 		deleteCommand: true,
 		process: function (bot, msg, suffix) {
-			if (suffix && /^\d+$/.test(suffix)) {
+			if (suffix && /^\d+$/.test(suffix)) { //if suffix has digits
 				if (msg.channel.isPrivate || msg.channel.permissionsOf(msg.author).hasPermission("manageMessages") || msg.author.id == config.admin_id) {
 					bot.getChannelLogs(msg.channel, 100, function (error, messages) {
 						if (error) { logger.log("warn", "Something went wrong while fetching logs."); return; }
 						else {
 							bot.startTyping(msg.channel);
 							logger.log("debug", "Cleaning bot messages...");
-							var todo = parseInt(suffix) + 1,
+							var todo = parseInt(suffix),
 							delcount = 0;
 							for (msg1 of messages) {
 								if (msg1.author == bot.user) {
@@ -195,8 +195,8 @@ var commands = {
 		usage: "<message>",
 		process: function (bot, msg, suffix) {
 			if (suffix) {
-				if (msg.author.id == config.admin_id && msg.channel.isPrivate) {
-					if (/^\d+$/.test(suffix)) {
+				if (msg.author.id == config.admin_id && msg.channel.isPrivate) { //bot owner to all servers
+					if (/^\d+$/.test(suffix)) { //if confirm code
 						for (var i = 0; i < confirmCodes.length; i++) {
 							if (confirmCodes[i] != suffix) {
 								if (i == confirmCodes.length - 1) { bot.sendMessage(msg, "Confirmation code not found"); continue; }
@@ -204,10 +204,10 @@ var commands = {
 							}
 							bot.sendMessage(msg, "Announcing to all servers...");
 							bot.servers.forEach(function (ser) {
-								if (ser.members.length <= 500) {
+								if (ser.members.length <= 500) { //only if less than 501 members
 									setTimeout(function () {
 										bot.sendMessage(ser.defaultChannel, ":mega: " + announceMessages[i] + " - " + msg.author.username + " *(bot owner)*");
-									}, 1000);
+									}, 1000); //1 message per second
 								}
 							});
 							logger.log("info", "Announced \"" + announceMessages[i] + "\" to servers");

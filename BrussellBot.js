@@ -14,12 +14,11 @@ var versioncheck = require("./bot/versioncheck.js");
 var fs = require("fs");
 var logger = require("./bot/logger.js").Logger;
 var cleverbot = require("./bot/cleverbot").cleverbot;
-checkConfig();
+checkConfig(); //notify user if they are missing things in the config
 
-if (config.is_heroku_version) {
+if (config.is_heroku_version) { //For avoiding Heroku $PORT error
 	var express = require('express');
 	var app = express();
-	//For avoiding Heroku $PORT error
 	app.set('port', (process.env.PORT || 5000));
 	app.get('/', function(request, response) {
 		var result = 'Bot is running';
@@ -29,17 +28,15 @@ if (config.is_heroku_version) {
 	});
 }
 
-var lastExecTime = {};
-var shouldCarbonAnnounce = true;
+var lastExecTime = {}; //for cooldown
+var shouldCarbonAnnounce = true; //set if the bot should announce when joining an invite sent without a command
 
 var bot = new discord.Client();
-bot.on('warn', function (m) {
-	try { logger.log("warn", m); }
-	catch(err) { logger.log("error", err); }});
+bot.on('warn', function (m) { logger.log("warn", m); });
 bot.on('debug', function(m) { logger.log("debug", m); });
 
 bot.on("ready", function () {
-	bot.setPlayingGame(games[Math.floor(Math.random() * (games.length))]);
+	bot.setPlayingGame(games[Math.floor(Math.random() * (games.length))]); //set game to a random game from games.json
 	//bot.setPlayingGame("]help [command]");
 	logger.log("info", "BrussellBot is ready! Listening to " + bot.channels.length + " channels on " + bot.servers.length + " servers");
 	logger.log("info", "Username: "+bot.user.username);
@@ -51,29 +48,29 @@ bot.on("ready", function () {
 bot.on("disconnected", function () {
 	logger.log("info", "Disconnected");
 	if (!config.is_heroku_version) { process.exit(0); }
-	else {
+	else { //if on heroku try to re-connect
 		setTimeout(function(){
 			logger.log("info", "Attempting to log in...");
 			bot.login(process.env.email, process.env.password, function (err, token) {
 				if (err) { logger.log("error", err); process.exit(0); }
 				if (!token) { logger.log("warn", "Failed to re-connect"); process.exit(0); }
-			});}, 20000);
+			});}, 20000); //waits 20 seconds before doing
 	}
 });
 
 bot.on("message", function (msg) {
-	if (msg.channel.isPrivate && msg.author.id != bot.user.id && (/(https?:\/\/discord\.gg\/[A-Za-z0-9]+|https?:\/\/discordapp\.com\/invite\/[A-Za-z0-9]+)/.test(msg.content))) { carbonInvite(msg); }
-	if (msg.author.id == config.admin_id && msg.content.indexOf("$$eval$$ ") > -1 && msg.content.indexOf("$$eval$$ ") < 10) { evaluateString(msg); return; }
-	if (msg.mentions.length !== 0) {
+	if (msg.channel.isPrivate && msg.author.id != bot.user.id && (/(https?:\/\/discord\.gg\/[A-Za-z0-9]+|https?:\/\/discordapp\.com\/invite\/[A-Za-z0-9]+)/.test(msg.content))) { carbonInvite(msg); } //accept invites sent in a DM
+	if (msg.author.id == config.admin_id && msg.content.indexOf("$$eval$$ ") > -1 && msg.content.indexOf("(eval) ") < 10) { evaluateString(msg); return; } //bot owner eval command
+	if (msg.mentions.length !== 0) { //cleverbot
 		msg.mentions.forEach(function(usr) { 
-			if (usr.id == bot.user.id && msg.content.startsWith("<@125367104336691200>")) { cleverbot(bot, msg); logger.log("info", msg.author.username+" asked the bot: "+msg.content.substring(22).replace(/\n/g, " ")); }
+			if (usr.id == bot.user.id && msg.content.startsWith("<@125367104336691200>")) { cleverbot(bot, msg); logger.log("info", msg.author.username+" asked the bot: "+msg.content.substring(22).replace(/\n/g, " ")); return; }
 		});
 	}
-	if (msg.content[0] != config.command_prefix && msg.content[0] != config.mod_command_prefix) { return; }
-	if (msg.author.id == bot.user.id) { return; }
+	if (msg.content[0] != config.command_prefix && msg.content[0] != config.mod_command_prefix) { return; } //if not a command
+	if (msg.author.id == bot.user.id) { return; } //stop from replying to itself
 	var cmd = msg.content.split(" ")[0].replace(/\n/g, " ").substring(1).toLowerCase();
-	var suffix = msg.content.replace(/\n/g, " ").substring( cmd.length + 2 );
-	if (msg.content.startsWith(config.command_prefix)) {
+	var suffix = msg.content.replace(/\n/g, " ").substring( cmd.length + 2 ); //seperate the command and suffix
+	if (msg.content.startsWith(config.command_prefix)) { //normal commands
 		if (commands.hasOwnProperty(cmd)) {
 			try {
 				logger.log("info", "" + msg.author.username + " executed: " + msg.content.replace(/\n/g, " "));
@@ -82,9 +79,9 @@ bot.on("message", function (msg) {
 						var cTime = new Date();
 						var leTime = new Date(lastExecTime[cmd]);
 						leTime.setSeconds(leTime.getSeconds() + commands[cmd].cooldown);
-						if (cTime < leTime) {
+						if (cTime < leTime) { //if it is still on cooldown
 							var left = (leTime - cTime) / 1000;
-							if (msg.author.id != config.admin_id) {
+							if (msg.author.id != config.admin_id) { //admin bypass
 								bot.sendMessage(msg, ":warning: This command is on cooldown with " + Math.round(left) + " seconds remaining");
 								return;
 							}
@@ -93,13 +90,13 @@ bot.on("message", function (msg) {
 				}
 				commands[cmd].process(bot, msg, suffix);
 				if (commands[cmd].hasOwnProperty("deleteCommand")) {
-					if (commands[cmd].deleteCommand === true) { bot.deleteMessage(msg, {"wait": 3500}); }
+					if (commands[cmd].deleteCommand === true) { bot.deleteMessage(msg, {"wait": 3500}); } //delete command after 3.5 seconds
 				}
 				logger.log("debug", "Command processed: " + cmd);
 			} catch (err) { logger.log("error", err); }
 		}
-	} else if (msg.content.startsWith(config.mod_command_prefix)) {
-		if (cmd == "reload") { reload(); bot.deleteMessage(msg); return; }
+	} else if (msg.content.startsWith(config.mod_command_prefix)) { //mod commands
+		if (cmd == "reload") { reload(); bot.deleteMessage(msg); return; } //reload the .json files and modules
 		if (mod.hasOwnProperty(cmd)) {
 			try {
 				logger.log("info", "" + msg.author.username + " executed: " + msg.content.replace(/\n/g, " "));
@@ -173,7 +170,7 @@ bot.on('userUnbanned', function (objUser, objServer) {
 
 bot.on('userUpdated', function (objUser, objNewUser) {
 	if (config.non_essential_event_listeners) {
-		if (objUser.username != objNewUser.username){
+		if (objUser.username != objNewUser.username){ //if new username
 			//logger.log("info", "" + objUser.username + " changed their name to " + objNewUser.username);
 			if (config.username_changes) {
 				bot.servers.forEach(function(ser){
@@ -188,7 +185,7 @@ bot.on('presence', function(user, status, game) {
 	if (config.log_presence) { logger.log("debug", "Presence: " + user.username + " is now " + status + " playing " + game); }
 });
 
-bot.on('serverDeleted', function(objServer) {
+bot.on('serverDeleted', function(objServer) { //detect when the bot leaves a server
 	logger.log("info", "Left server "+objServer.name);
 });
 
@@ -197,7 +194,7 @@ logger.log("info", "Logging in...");
 if (config.is_heroku_version) {
 	bot.login(process.env.email, process.env.password, function (err, token) {
 		if (err) { logger.log("error", err); setTimeout(function(){ process.exit(0); }, 2000); }
-		if (!token) { logger.log("warn", "failed to connect"); setTimeout(function(){ process.exit(0); }, 2000); }
+		if (!token) { logger.log("warn", "failed to connect"); setTimeout(function(){ process.exit(0); }, 2000); } //make sure it logged in successfully
 	});
 }
 else { 
@@ -217,7 +214,7 @@ function carbonInvite(msg){
 				} else {
 					logger.log("info", "Joined server: " + server.name);
 					bot.sendMessage(msg, ":white_check_mark: Successfully joined ***" + server.name + "***");
-					if (msg.author.id != 109338686889476096) { bot.sendMessage(msg, "It's not like I wanted you to use the correct command or anything, b-baka!"); }
+					if (msg.author.id != 109338686889476096) { bot.sendMessage(msg, "It's not like I wanted you to use `"+config.command_prefix+"joins` or anything, b-baka!"); }
 					if (shouldCarbonAnnounce) {
 						var msgArray = [];
 						msgArray.push("Hi! I'm **" + bot.user.username + "** and I was invited to this server by " + msg.author + ".");
@@ -232,7 +229,7 @@ function carbonInvite(msg){
 }
 
 function reload() {
-	delete require.cache[require.resolve('./bot/config.json')];
+	delete require.cache[require.resolve('./bot/config.json')]; //delete cache or it won't work
 	config = require("./bot/config.json");
 	delete require.cache[require.resolve('./bot/games.json')];
 	games = require("./bot/games.json").games;
@@ -280,15 +277,20 @@ if (config.is_heroku_version) {
 	var http = require("http");
 	setInterval(function() {
 		http.get("http://sheltered-river-1376.herokuapp.com"); //your URL here
-	}, 1200000);
+	}, 1200000); //every 20 minutes to keep the bot from sleeping which breaks it
 }
 
 function evaluateString (msg) {
 	/*EXTREMELY DANGEROUS so lets check again*/if (msg.author.id != config.admin_id) { logger.log("warn", "Somehow an unauthorized user got into eval!"); return; }
 	logger.log("info", "Running eval");
-	eval(msg.content.substring(9).replace(/\n/g, ""));
+	var result = eval(msg.content.substring(7).replace(/\n/g, ""));
+	if (typeof result !== 'object') {
+		bot.sendMessage(msg, result);
+		logger.log("info", "Result: "+result);
+	} else { logger.log("info", "Result was an object"); }
+
 }
 
 setInterval(function() {
 	bot.setPlayingGame(games[Math.floor(Math.random() * (games.length))]);
-}, 800000);
+}, 800000); //change playing game every 12 minutes

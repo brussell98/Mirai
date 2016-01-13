@@ -47,11 +47,11 @@ An multipurpose bot for Discord using the [Discord.js](https://github.com/hydrab
 	- [x] Clean bot messages
 	- [x] Prune chat
 	- [x] Vote ([BlackHayate](https://github.com/BlackHayate) helped with this)
-		- [x] Find a way to end votes after a time limit
 		- [ ] Custom votes
-		- [x] Store the vote announcement and update it
+		- [ ] Show who voted for what
 	- [x] Anime/Manga Lookup
 	- [x] Avatar
+		- [x] Default to sender's
 	- [ ] osu!
 		- [x] Username defaults to `msg.author.username`
 		- [x] Sig generator

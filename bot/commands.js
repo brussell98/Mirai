@@ -45,7 +45,7 @@ var commands = {
 			if (!suffix){
 				msgArray.push(":information_source: This is a list of commands. Use `" + config.command_prefix + "help <command name>` to get info on a specific command.");
 				msgArray.push("Moderation related commands can be found with `" + config.mod_command_prefix + "help [command]`.");
-				msgArray.push("You can also find command info at **github.com/brussell98/BrussellBot/wiki/Commands**");
+				msgArray.push("You can also find examples and command info at **https://github.com/brussell98/BrussellBot/wiki/Commands**");
 				msgArray.push("**Commands: **");
 				msgArray.push("```");
 				msgArray.push("@"+bot.user.username+" text: Talk to the bot (cleverbot)");
@@ -479,10 +479,10 @@ var commands = {
 		usage: "<@mention>",
 		deleteCommand: true,
 		process: function(bot, msg, suffix) {
-			if (msg.mentions.length == 0) { bot.sendMessage(msg, correctUsage("avatar")); return; }
-			msg.mentions.map(function(usr) {
-				(usr.avatarURL != null) ? bot.sendMessage(msg, usr.username+"'s avatar is: "+usr.avatarURL+"") : bot.sendMessage(msg, "User has no avatar") ;
-			});
+			if (msg.mentions.length == 0) { (msg.author.avatarURL != null) ? bot.sendMessage(msg, msg.author.username+"'s avatar is: "+msg.author.avatarURL+"") : bot.sendMessage(msg, msg.author.username+" has no avatar"); }
+			else { msg.mentions.map(function(usr) {
+				(usr.avatarURL != null) ? bot.sendMessage(msg, usr.username+"'s avatar is: "+usr.avatarURL+"") : bot.sendMessage(msg, "User has no avatar");
+			});}
 		}
 	},
 	"rps": {
