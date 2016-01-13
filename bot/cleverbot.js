@@ -3,7 +3,7 @@ var Slave = new Cleverbot();
 
 exports.cleverbot = function(bot, msg) {
 	var mention = msg.content.split(" ")[0];
-	var suffix = msg.content.substring(mention.length + 2).match(/[a-zA-Z0-9 ',:.!\(\)-]+/g);
+	var suffix = msg.content.substring(mention.length + 2).match(/[a-zA-Z0-9 ',:.?!\(\)-]+/g);
 	if (suffix) {
 		bot.startTyping(msg.channel);
 		suffix = suffix.join();
