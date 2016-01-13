@@ -26,7 +26,7 @@ function correctUsage(cmd) {
 function autoEndVote(bot, msg, suffix) {
 	setTimeout(function() {
 		commands["endvote"].process(bot, msg, suffix);
-	}, 300000);
+	}, 180000);
 }
 
 /*
@@ -71,6 +71,7 @@ var commands = {
 	},
 	"ping": {
 		desc: "Replies with pong.",
+		cooldown: 2,
 		process: function(bot, msg) {
 			var n = Math.floor(Math.random() * 4);
 			if (n === 0) { bot.sendMessage(msg, "pong"); } 
@@ -126,7 +127,7 @@ var commands = {
 		usage: "[game name]",
 		cooldown: 10,
 		process: function(bot, msg, suffix) {
-			if (msg.channel.permissionsOf(msg.author).hasPermission("mentionEveryone") && msg.channel.server.members.length <= 30) {
+			if (!msg.channel.isPrivate && msg.channel.permissionsOf(msg.author).hasPermission("mentionEveryone") && msg.channel.server.members.length <= 30) {
 				if (suffix) { bot.sendMessage(msg, ":video_game: @everyone, " + msg.author + " would like to know if anyone wants to play **" + suffix + "**."); }
 				else { bot.sendMessage(msg, ":video_game: @everyone, " + msg.author + " would like to know if anyone wants to play a game"); }
 			} else {
@@ -236,7 +237,7 @@ var commands = {
 			if (!suffix) { bot.sendMessage(msg, correctUsage("newvote")); return; }
 			if (votebool == true) { bot.sendMessage(msg, ":warning: Theres already a vote pending!"); return; }
 			topicstring = suffix;
-			bot.sendMessage(msg, "New Vote started: `" + suffix + "`. To vote say `" + config.command_prefix + "vote +/-`\nIf the vote isn't ended manually it will end after 5 minutes\nUpvotes: 0\nDownvotes: 0", function (err, message) { voteAnMsg = message; });
+			bot.sendMessage(msg, "New Vote started: `" + suffix + "`. To vote say `" + config.command_prefix + "vote +/-`\nIf the vote isn't ended manually it will end after 3 minutes\nUpvotes: 0\nDownvotes: 0", function (err, message) { voteAnMsg = message; });
 			votebool = true; voteChannel = msg.channel;
 			autoEndVote(bot, msg, suffix);
 		}

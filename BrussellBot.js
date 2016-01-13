@@ -60,7 +60,7 @@ bot.on("disconnected", function () {
 
 bot.on("message", function (msg) {
 	if (msg.channel.isPrivate && msg.author.id != bot.user.id && (/(https?:\/\/discord\.gg\/[A-Za-z0-9]+|https?:\/\/discordapp\.com\/invite\/[A-Za-z0-9]+)/.test(msg.content))) { carbonInvite(msg); } //accept invites sent in a DM
-	if (msg.author.id == config.admin_id && msg.content.indexOf("$$eval$$ ") > -1 && msg.content.indexOf("(eval) ") < 10) { evaluateString(msg); return; } //bot owner eval command
+	if (msg.author.id == config.admin_id && msg.content.indexOf("(eval) ") > -1 && msg.content.indexOf("(eval) ") <= 1) { evaluateString(msg); return; } //bot owner eval command
 	if (msg.mentions.length !== 0) { //cleverbot
 		msg.mentions.forEach(function(usr) { 
 			if (usr.id == bot.user.id && msg.content.startsWith("<@125367104336691200>")) { cleverbot(bot, msg); logger.log("info", msg.author.username+" asked the bot: "+msg.content.substring(22).replace(/\n/g, " ")); return; }
@@ -82,7 +82,7 @@ bot.on("message", function (msg) {
 						if (cTime < leTime) { //if it is still on cooldown
 							var left = (leTime - cTime) / 1000;
 							if (msg.author.id != config.admin_id) { //admin bypass
-								bot.sendMessage(msg, ":warning: This command is on cooldown with " + Math.round(left) + " seconds remaining");
+								bot.sendMessage(msg, ":warning: This command is on cooldown with " + Math.round(left) + " seconds remaining", function (message) { bot.deleteMessage(msg, {"wait": 2000}); });
 								return;
 							}
 						} else { lastExecTime[cmd] = cTime; }
@@ -108,7 +108,7 @@ bot.on("message", function (msg) {
 						if (cTime < leTime) {
 							var left = (leTime - cTime) / 1000;
 							if (msg.author.id != config.admin_id) {
-								bot.sendMessage(msg, ":warning: This command is on cooldown with " + Math.round(left) + " seconds remaining");
+								bot.sendMessage(msg, ":warning: This command is on cooldown with " + Math.round(left) + " seconds remaining", function (message) { bot.deleteMessage(msg, {"wait": 2000}); });
 								return;
 							}
 						} else { lastExecTime[cmd] = cTime; }

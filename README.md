@@ -17,6 +17,8 @@ An multipurpose bot for Discord using the [Discord.js](https://github.com/hydrab
 ### TODO
 
 - [ ] Add comments so people can understand what this stuff does
+- [ ] Banned servers
+- [ ] Banned words
 - [ ] Commands
 	- [x] Join server
 	- [x] Leave Server
@@ -49,6 +51,7 @@ An multipurpose bot for Discord using the [Discord.js](https://github.com/hydrab
 	- [x] Vote ([BlackHayate](https://github.com/BlackHayate) helped with this)
 		- [ ] Custom votes
 		- [ ] Show who voted for what
+		- [ ] Allow people to change their vote
 	- [x] Anime/Manga Lookup
 	- [x] Avatar
 		- [x] Default to sender's
