@@ -92,7 +92,7 @@ var commands = {
 				for (invite of invites) {
 					if (/https?:\/\/discord\.gg\/[A-Za-z0-9]+/.test(invite)) {
 						bot.joinServer(invite, function (err, server) {
-							if (err) {
+							if (err || !server) {
 								bot.sendMessage(msg, ":warning: Failed to join: " + err);
 								logger.log("warn", err);
 							} else {

@@ -20,6 +20,7 @@ An multipurpose bot for Discord using the [Discord.js](https://github.com/hydrab
 - [x] joins picked up by carbonInvite fix needed pls thx
 - [ ] Move eval to a module
 - [ ] figure something out for osu api's crap
+- [ ] Catch the stupid http://hastebin.com/simajucili.vbs
 - [ ] Commands
 	- [ ] Music commands - After discord.js gets patched for volume
 		- [ ] Audio help

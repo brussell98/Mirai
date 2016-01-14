@@ -208,7 +208,7 @@ function carbonInvite(msg){
 	if (msg) {
 		try {
 			bot.joinServer(msg.content, function (err, server) {
-				if (err) {
+				if (err || !server) {
 					bot.sendMessage(msg, ":warning: Failed to join: " + err);
 					logger.log("warn", err);
 				} else {
