@@ -53,7 +53,7 @@ var commands = {
 	"stats": {
 		desc: "Get the stats of the bot",
 		usage: "[-ls (list servers)] ",
-		cooldown: 60,
+		cooldown: 30,
 		deleteCommand: true,
 		process: function(bot, msg, suffix) {
 			if (msg.author.id == config.admin_id || msg.channel.isPrivate || msg.author.id == msg.channel.server.owner.id) { //perm checks all over
@@ -140,7 +140,7 @@ var commands = {
 	"prune": {
 		desc: "Cleans the specified number of messages from the channel.",
 		usage: "<number of messages 1-100>",
-		cooldown: 15,
+		cooldown: 10,
 		deleteCommand: true,
 		process: function (bot, msg, suffix) {
 			if (suffix && /^\d+$/.test(suffix)) {
@@ -193,6 +193,7 @@ var commands = {
 		desc: "Send a DM to all users in the server. Admins only.",
 		deleteCommand: false,
 		usage: "<message>",
+		cooldown: 1,
 		process: function (bot, msg, suffix) {
 			if (suffix) {
 				if (msg.author.id == config.admin_id && msg.channel.isPrivate) { //bot owner to all servers

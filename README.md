@@ -16,15 +16,11 @@ An multipurpose bot for Discord using the [Discord.js](https://github.com/hydrab
 
 ### TODO
 
-- [ ] Add comments so people can understand what this stuff does
-- [ ] Banned servers
-- [ ] Banned words
+- [x] fix cleverbot not accepting non-Latin characters
+- [x] joins picked up by carbonInvite fix needed pls thx
+- [ ] Move eval to a module
+- [ ] figure something out for osu api's crap
 - [ ] Commands
-	- [x] Join server
-	- [x] Leave Server
-	- [x] Help
-	- [x] About
-	- [x] Stats
 	- [ ] Music commands - After discord.js gets patched for volume
 		- [ ] Audio help
 		- [ ] Queue song from youtube
@@ -35,33 +31,8 @@ An multipurpose bot for Discord using the [Discord.js](https://github.com/hydrab
 		- [ ] List of queues songs
 		- [ ] Set playing to song name
 		- [ ] Bot owner gets priority
-	- [x] Cleverbot module activated with mention
-	- [x] Set playing status
-	- [x] Info commands
-	- [x] Ask if anyone wants to play a game
-	- [x] Announce to servers (for bot owner)
-	- [x] Dice roll
-	- [x] Roll
-	- [x] Coin flip
-	- [x] 8ball
-	- [x] Rock paper scissors
-	- [x] Choose for me
-	- [x] Clean bot messages
-	- [x] Prune chat
 	- [x] Vote ([BlackHayate](https://github.com/BlackHayate) helped with this)
 		- [ ] Custom votes
-		- [ ] Show who voted for what
 		- [ ] Allow people to change their vote
-	- [x] Anime/Manga Lookup
-	- [x] Avatar
-		- [x] Default to sender's
-	- [ ] osu!
-		- [x] Username defaults to `msg.author.username`
-		- [x] Sig generator
-		- [x] User details
-		- [x] User best
-		- [x] User recent
-		- [ ] Match details
-	- [x] Get a link to the help server
 	- [ ] Pull recent changelogs from the BrussellBot server
 - [ ] Could do stuff with checking how long a user has been on the server for perms

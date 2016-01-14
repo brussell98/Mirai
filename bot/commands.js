@@ -40,6 +40,7 @@ var commands = {
 		desc: "Sends a DM containing all of the commands. If a command is specified gives info on that command.",
 		usage: "[command]",
 		deleteCommand: true,
+		cooldown: 1,
 		process: function(bot, msg, suffix) {
 			var msgArray = [];
 			if (!suffix){
@@ -65,6 +66,7 @@ var commands = {
 	},
 	"botserver": {
 		desc: "Get a link to the BrussellBot / Bot-chan server.",
+		cooldown: 5,
 		process: function(bot, msg, suffix) {
 			bot.sendMessage(msg, "Here's an invite to my server: **https://discord.gg/0kvLlwb7slG3XCCQ**");
 		}
@@ -94,14 +96,16 @@ var commands = {
 								bot.sendMessage(msg, ":warning: Failed to join: " + err);
 								logger.log("warn", err);
 							} else {
-								logger.log("info", "Joined server: " + server);
-								bot.sendMessage(msg, ":white_check_mark: Successfully joined ***" + server + "***");
+								logger.log("info", "Joined server: " + server.name);
+								bot.sendMessage(msg, ":white_check_mark: Successfully joined ***" + server.name + "***");
 								if (suffix.indexOf("-a") != -1) {
-									var msgArray = [];
-									msgArray.push("Hi! I'm **" + bot.user.username + "** and I was invited to this server by " + msg.author + ".");
-									msgArray.push("You can use `" + config.command_prefix + "help` to see what I can do. Mods can use "+config.mod_command_prefix+"help for mod commands.");
-									msgArray.push("If I shouldn't be here someone with the `Kick Members` permission can use `" + config.mod_command_prefix + "leaves` to make me leave");
-									bot.sendMessage(server.defaultChannel, msgArray);
+									setTimeout(function(){
+										var msgArray = [];
+										msgArray.push("Hi! I'm **" + bot.user.username + "** and I was invited to this server by " + msg.author + ".");
+										msgArray.push("You can use `" + config.command_prefix + "help` to see what I can do. Mods can use "+config.mod_command_prefix+"help for mod commands.");
+										msgArray.push("If I shouldn't be here someone with the `Kick Members` permission can use `" + config.mod_command_prefix + "leaves` to make me leave");
+										bot.sendMessage(server.defaultChannel, msgArray);
+									}, 2000);
 								}
 							}
 						});
@@ -113,6 +117,7 @@ var commands = {
 	"about": {
 		desc: "Info about the bot.",
 		deleteCommand: true,
+		cooldown: 5,
 		process: function(bot, msg, suffix) {
 			var msgArray = [];
 			msgArray.push("I'm " + bot.user.username + " and I was made by brussell98.");
@@ -140,6 +145,7 @@ var commands = {
 		desc: "Roll some dice. (1d6 by default)",
 		deleteCommand: true,
 		usage: "[(rolls)d(sides)]",
+		cooldown: 2,
 		process: function(bot, msg, suffix) {
 			var dice = "1d6";
 			if (suffix && /\d+d\d+/.test(suffix)) { dice = suffix; }
@@ -158,6 +164,7 @@ var commands = {
 		desc: "Pick a random number",
 		deleteCommand: true,
 		usage: "[range]   Example: roll 100",
+		cooldown: 2,
 		process: function(bot, msg, suffix) {
 			var roll = 100;
 			try {
@@ -217,6 +224,7 @@ var commands = {
 	"choose": {
 		desc: "Makes a choice for you.",
 		usage: "<option 1>, <option 2>, [option], [option]",
+		cooldown: 3,
 		process: function (bot, msg, suffix) {
 			if (!suffix || /(.*), ?(.*)/.test(suffix) == false) { bot.sendMessage(msg, correctUsage("choose")); return;}
 			var choices = suffix.split(",");
@@ -277,6 +285,7 @@ var commands = {
 	"8ball": {
 		desc: "Ask the bot a question (8ball).",
 		usage: "[question]",
+		cooldown: 3,
 		process: function (bot, msg) {
 			var responses = ["It is certain", "It is decidedly so", "Without a doubt", "Yes, definitely", "You may rely on it", "As I see it, yes", "Most likely", "Outlook good", "Yes", "Signs point to yes", "Better not tell you now", "Don't count on it", "My reply is no", "My sources say no", "Outlook not so good", "Very doubtful"];
 			var choice = Math.floor(Math.random() * (responses.length));
@@ -287,6 +296,7 @@ var commands = {
 		desc: "Gets the details on an anime from MAL.",
 		usage: "<anime name>",
 		deleteCommand: true,
+		cooldown: 5,
 		process: function (bot, msg, suffix) {
 			if (suffix) {
 				if (config.is_heroku_version) { var USER = process.env.mal_user; } else { var USER = config.mal_user; }
@@ -317,7 +327,7 @@ var commands = {
 							}
 						bot.sendMessage(msg, "**" + title + " / " + english+"**\n**Type:** "+ type +" **| Episodes:** "+ep+" **| Status:** "+status+" **| Score:** "+score+"\n"+synopsis);
 						});
-					} else { bot.sendMessage(msg, "Not found"); }
+					} else { bot.sendMessage(msg, "\""+suffix+"\" not found"); }
 				});
 				bot.stopTyping(msg.channel);
 			} else { bot.sendMessage(msg, correctUsage("anime")); }
@@ -327,6 +337,7 @@ var commands = {
 		desc: "Gets the details on an manga from MAL.",
 		usage: "<manga/novel name>",
 		deleteCommand: true,
+		cooldown: 5,
 		process: function (bot, msg, suffix) {
 			if (suffix) {
 				if (config.is_heroku_version) { var USER = process.env.mal_user; } else { var USER = config.mal_user; }
@@ -358,7 +369,7 @@ var commands = {
 							}
 							bot.sendMessage(msg, "**" + title + " / " + english+"**\n**Type:** "+ type +" **| Chapters:** "+chapters+" **| Volumes: **"+volumes+" **| Status:** "+status+" **| Score:** "+score+"\n"+synopsis);
 						});
-					} else { bot.sendMessage(msg, "Not found"); }
+					} else { bot.sendMessage(msg, "\""+suffix+"\" not found"); }
 				});
 				bot.stopTyping(msg.channel);
 			} else { bot.sendMessage(msg, correctUsage("manga")); }
@@ -368,6 +379,7 @@ var commands = {
 		desc: "Flips a coin",
 		usage: "",
 		deleteCommand: true,
+		cooldown: 1,
 		process: function(bot, msg, suffix) {
 			var side = Math.floor(Math.random() * (2));
 			if (side == 0) { bot.sendMessage(msg, msg.author.username+" flipped a coin and got Heads"); }
@@ -376,8 +388,9 @@ var commands = {
 	},
 	"osu": {
 		desc: "Osu! commands. Use "+config.command_prefix+"help osu",
-		usage: "<sig/user/best/recent> <username> [hex color for sig]",
+		usage: "<sig/user/best/recent> [username]",
 		deleteCommand: true,
+		cooldown: 6,
 		process: function(bot, msg, suffix) {
 			if (suffix) {
 			if (suffix.split(" ")[0] === "sig") {
@@ -407,14 +420,16 @@ var commands = {
 				var osu = new osuapi.Api(APIKEY);
 				osu.getUser(username, function(err, data){
 					if (err) { bot.sendMessage(msg, ":warning: Error: "+err); return; }
-					if (data[0] == null) { bot.sendMessage(msg, ":warning: User not found"); return; }
-					var msgArray = [];
-					msgArray.push("Osu stats for: **"+data.username+"**:");
-					msgArray.push("----------------------------------");
-					msgArray.push("**Play Count**: "+data.playcount.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" | **Ranked Score**: "+data.ranked_score.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" | **Total Score**: "+data.total_score.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" | **Level**: "+data.level.substring(0, data.level.split(".")[0].length+3));
-					msgArray.push("**PP**: "+data.pp_raw.split(".")[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" | **Rank**: #"+data.pp_rank.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" | **Country Rank**: #"+data.pp_country_rank.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" | **Accuracy**: "+data.accuracy.substring(0, data.accuracy.split(".")[0].length+3)+"%");
-					msgArray.push("**300**: "+data.count300.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" | **100**: "+data.count100.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" | **50**: "+data.count50.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" | **SS**: "+data.count_rank_ss+" | **S**: "+data.count_rank_s+" | **A**: "+data.count_rank_a).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-					bot.sendMessage(msg, msgArray);
+					if (!data) { bot.sendMessage(msg, ":warning: User not found"); return; }
+					try {
+						var msgArray = [];
+						msgArray.push("Osu stats for: **"+data.username+"**:");
+						msgArray.push("----------------------------------");
+						msgArray.push("**Play Count**: "+data.playcount.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" | **Ranked Score**: "+data.ranked_score.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" | **Total Score**: "+data.total_score.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" | **Level**: "+data.level.substring(0, data.level.split(".")[0].length+3));
+						msgArray.push("**PP**: "+data.pp_raw.split(".")[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" | **Rank**: #"+data.pp_rank.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" | **Country Rank**: #"+data.pp_country_rank.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" | **Accuracy**: "+data.accuracy.substring(0, data.accuracy.split(".")[0].length+3)+"%");
+						msgArray.push("**300**: "+data.count300.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" | **100**: "+data.count100.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" | **50**: "+data.count50.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" | **SS**: "+data.count_rank_ss+" | **S**: "+data.count_rank_s+" | **A**: "+data.count_rank_a.replace(/\B(?=(\d{3})+(?!\d))/g, ","));
+						bot.sendMessage(msg, msgArray);
+					} catch(error) { bot.sendMessage(msg, "Error: "+error); }
 				});
 
 			} else if (suffix.split(" ")[0] === "best") {
@@ -426,22 +441,24 @@ var commands = {
 				var osu = new osuapi.Api(APIKEY);
 				osu.getUserBest(username, function (err, data) {
 					if (err) { bot.sendMessage(msg, ":warning: Error: "+err); return; }
-					if (data[0] == null) { bot.sendMessage(msg, ":warning: User not found"); return; }
-					var msgArray = [];
-					msgArray.push("Top 5 osu scores for: **"+username+"**:");
-					msgArray.push("----------------------------------");
-					osu.getBeatmap(data[0].beatmap_id, function (err, map1) {
-						msgArray.push("**1.** *"+map1.title+" (☆"+map1.difficultyrating.substring(0, map1.difficultyrating.split(".")[0].length+3)+")*: **PP:** "+Math.round(data[0].pp.split(".")[0])+" **| Score:** "+data[0].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" **| Max Combo:** "+data[0].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" **| Misses:** "+data[0].countmiss+" **| Date:** "+data[0].date);
-						osu.getBeatmap(data[1].beatmap_id, function (err, map2) {
-							msgArray.push("**2.** *"+map2.title+" (☆"+map2.difficultyrating.substring(0, map2.difficultyrating.split(".")[0].length+3)+")*: **PP:** "+Math.round(data[1].pp.split(".")[0])+" **| Score:** "+data[1].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" **| Max Combo:** "+data[1].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" **| Misses:** "+data[1].countmiss+" **| Date:** "+data[1].date);
-							osu.getBeatmap(data[2].beatmap_id, function (err, map3) {
-								msgArray.push("**3.** *"+map3.title+" (☆"+map3.difficultyrating.substring(0, map3.difficultyrating.split(".")[0].length+3)+")*: **PP:** "+Math.round(data[2].pp.split(".")[0])+" **| Score:** "+data[2].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" **| Max Combo:** "+data[2].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" **| Misses:** "+data[2].countmiss+" **| Date:** "+data[2].date);
-								osu.getBeatmap(data[3].beatmap_id, function (err, map4) {
-									msgArray.push("**4.** *"+map4.title+" (☆"+map4.difficultyrating.substring(0, map4.difficultyrating.split(".")[0].length+3)+")*: **PP:** "+Math.round(data[3].pp.split(".")[0])+" **| Score:** "+data[3].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" **| Max Combo:** "+data[3].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" **| Misses:** "+data[3].countmiss+" **| Date:** "+data[3].date);
-									osu.getBeatmap(data[4].beatmap_id, function (err, map5) {
-										msgArray.push("**5.** *"+map5.title+" (☆"+map5.difficultyrating.substring(0, map5.difficultyrating.split(".")[0].length+3)+")*: **PP:** "+Math.round(data[4].pp.split(".")[0])+" **| Score:** "+data[4].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" **| Max Combo:** "+data[4].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" **| Misses:** "+data[4].countmiss+" **| Date:** "+data[4].date);
-										bot.sendMessage(msg, msgArray);
-					});});});});});
+					if (!data || !data[0] || !data[1] || !data[2] || !data[3] || !data[4]) { bot.sendMessage(msg, ":warning: User not found or didn't receive all data"); return; }
+					try {
+						var msgArray = [];
+						msgArray.push("Top 5 osu scores for: **"+username+"**:");
+						msgArray.push("----------------------------------");
+						osu.getBeatmap(data[0].beatmap_id, function (err, map1) {
+							msgArray.push("**1.** *"+map1.title+" (☆"+map1.difficultyrating.substring(0, map1.difficultyrating.split(".")[0].length+3)+")*: **PP:** "+Math.round(data[0].pp.split(".")[0])+" **| Score:** "+data[0].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" **| Max Combo:** "+data[0].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" **| Misses:** "+data[0].countmiss+" **| Date:** "+data[0].date);
+							osu.getBeatmap(data[1].beatmap_id, function (err, map2) {
+								msgArray.push("**2.** *"+map2.title+" (☆"+map2.difficultyrating.substring(0, map2.difficultyrating.split(".")[0].length+3)+")*: **PP:** "+Math.round(data[1].pp.split(".")[0])+" **| Score:** "+data[1].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" **| Max Combo:** "+data[1].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" **| Misses:** "+data[1].countmiss+" **| Date:** "+data[1].date);
+								osu.getBeatmap(data[2].beatmap_id, function (err, map3) {
+									msgArray.push("**3.** *"+map3.title+" (☆"+map3.difficultyrating.substring(0, map3.difficultyrating.split(".")[0].length+3)+")*: **PP:** "+Math.round(data[2].pp.split(".")[0])+" **| Score:** "+data[2].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" **| Max Combo:** "+data[2].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" **| Misses:** "+data[2].countmiss+" **| Date:** "+data[2].date);
+									osu.getBeatmap(data[3].beatmap_id, function (err, map4) {
+										msgArray.push("**4.** *"+map4.title+" (☆"+map4.difficultyrating.substring(0, map4.difficultyrating.split(".")[0].length+3)+")*: **PP:** "+Math.round(data[3].pp.split(".")[0])+" **| Score:** "+data[3].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" **| Max Combo:** "+data[3].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" **| Misses:** "+data[3].countmiss+" **| Date:** "+data[3].date);
+										osu.getBeatmap(data[4].beatmap_id, function (err, map5) {
+											msgArray.push("**5.** *"+map5.title+" (☆"+map5.difficultyrating.substring(0, map5.difficultyrating.split(".")[0].length+3)+")*: **PP:** "+Math.round(data[4].pp.split(".")[0])+" **| Score:** "+data[4].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" **| Max Combo:** "+data[4].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" **| Misses:** "+data[4].countmiss+" **| Date:** "+data[4].date);
+											bot.sendMessage(msg, msgArray);
+						});});});});});
+					} catch(error) { bot.sendMessage(msg, "Error: "+error); }
 				});
 
 			} else if (suffix.split(" ")[0] === "recent") {
@@ -453,7 +470,7 @@ var commands = {
 				var osu = new osuapi.Api(APIKEY);
 				osu.getUserRecent(username, function (err, data) {
 					if (err) { bot.sendMessage(msg, ":warning: Error: "+err); return; }
-					if (data[0] == null) { bot.sendMessage(msg, ":warning: User not found"); return; }
+					if (!data || !data[0] || !data[1] || !data[2] || !data[3] || !data[4]) { bot.sendMessage(msg, ":warning: User not found or didn't receive all data"); return; }
 					var msgArray = [];
 					msgArray.push("5 most recent plays for: **"+username+"**:");
 					msgArray.push("----------------------------------");
@@ -479,6 +496,7 @@ var commands = {
 		desc: "Get a link to a user's avatar",
 		usage: "<@mention>",
 		deleteCommand: true,
+		cooldown: 5,
 		process: function(bot, msg, suffix) {
 			if (msg.mentions.length == 0) { (msg.author.avatarURL != null) ? bot.sendMessage(msg, msg.author.username+"'s avatar is: "+msg.author.avatarURL+"") : bot.sendMessage(msg, msg.author.username+" has no avatar"); }
 			else { msg.mentions.map(function(usr) {
@@ -501,6 +519,7 @@ var commands = {
 		desc: "Get the weather for a location",
 		usage: "<City/City,Us> or <zip/zip,us>     example: ]weather 12345,us",
 		deleteCommand: true,
+		cooldown: 3,
 		process: function(bot, msg, suffix) {
 			if (config.is_heroku_version) { var APIKEY = process.env.weather_api_key; } else { var APIKEY = config.weather_api_key; }
 			if (APIKEY == null || APIKEY == "") { bot.sendMessage(msg, ":warning: No API key defined by bot owner"); return; }
@@ -529,6 +548,7 @@ var commands = {
 		desc: "Let me Google that for you",
 		deleteCommand: true,
 		usage: "<search>",
+		cooldown: 3,
 		process: function(bot, msg, suffix) {
 			if (!suffix) { bot.sendMessage(msg, "**http://www.lmgtfy.com/?q=brussellbot+commands**"); return; }
 			if (/[^a-zA-Z0-9 ]/.test(suffix)) { bot.sendMessage(msg, ":warning: Special characters not allowed"); return; }
