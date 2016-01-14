@@ -282,6 +282,7 @@ var commands = {
 					votersDown.push(msg.author);
 					bot.updateMessage(voteAnMsg, voteAnMsg.content.replace(/Downvotes\: [\d]{1,2}/g, "Downvotes: "+downvote), function (err, message) { voteAnMsg = message; });
 				}
+			}
 		}
 	},
 	"endvote": {
