@@ -31,5 +31,8 @@
 		"express": "*",
 		"cleverbot-node": "*",
 		"osu-api": "*"
+	},
+	"optionalDependencies": {
+		"pg": "*"
 	}
 }

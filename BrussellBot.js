@@ -82,7 +82,7 @@ bot.on("message", function (msg) {
 						if (cTime < leTime) { //if it is still on cooldown
 							var left = (leTime - cTime) / 1000;
 							if (msg.author.id != config.admin_id) { //admin bypass
-								bot.sendMessage(msg, ":warning: This command is on cooldown with " + Math.round(left) + " seconds remaining", function (message) { bot.deleteMessage(msg, {"wait": 2000}); });
+								bot.sendMessage(msg, ":warning: This command is on cooldown with " + Math.round(left) + " seconds remaining", function (message) { bot.deleteMessage(message, {"wait": 2000}); });
 								return;
 							}
 						} else { lastExecTime[cmd] = cTime; }
@@ -108,7 +108,7 @@ bot.on("message", function (msg) {
 						if (cTime < leTime) {
 							var left = (leTime - cTime) / 1000;
 							if (msg.author.id != config.admin_id) {
-								bot.sendMessage(msg, ":warning: This command is on cooldown with " + Math.round(left) + " seconds remaining", function (message) { bot.deleteMessage(msg, {"wait": 2000}); });
+								bot.sendMessage(msg, ":warning: This command is on cooldown with " + Math.round(left) + " seconds remaining", function (message) { bot.deleteMessage(message, {"wait": 2000}); });
 								return;
 							}
 						} else { lastExecTime[cmd] = cTime; }
@@ -207,6 +207,7 @@ else {
 function carbonInvite(msg){
 	if (msg) {
 		try {
+			logger.log("info", "Attempting to join: "+msg.content);
 			bot.joinServer(msg.content, function (err, server) {
 				if (err || !server) {
 					bot.sendMessage(msg, ":warning: Failed to join: " + err);
@@ -216,11 +217,13 @@ function carbonInvite(msg){
 					bot.sendMessage(msg, ":white_check_mark: Successfully joined ***" + server.name + "***");
 					if (msg.author.id != 109338686889476096) { bot.sendMessage(msg, "It's not like I wanted you to use `"+config.command_prefix+"joins` or anything, b-baka!"); }
 					if (shouldCarbonAnnounce) {
-						var msgArray = [];
-						msgArray.push("Hi! I'm **" + bot.user.username + "** and I was invited to this server by " + msg.author + ".");
-						msgArray.push("You can use `" + config.command_prefix + "help` to see what I can do. Mods can use `"+config.mod_command_prefix+"help` for mod commands.");
-						msgArray.push("If I shouldn't be here someone with the `Kick Members` permission can use `" + config.mod_command_prefix + "leaves` to make me leave");
-						bot.sendMessage(server.defaultChannel, msgArray);
+						setTimeout(function(){
+							var msgArray = [];
+							msgArray.push("Hi! I'm **" + bot.user.username + "** and I was invited to this server by " + msg.author + ".");
+							msgArray.push("You can use `" + config.command_prefix + "help` to see what I can do. Mods can use `"+config.mod_command_prefix+"help` for mod commands.");
+							msgArray.push("If I shouldn't be here someone with the `Kick Members` permission can use `" + config.mod_command_prefix + "leaves` to make me leave");
+							bot.sendMessage(server.defaultChannel, msgArray);
+						}, 2000);
 					}
 				}
 			});

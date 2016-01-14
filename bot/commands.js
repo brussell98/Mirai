@@ -8,7 +8,7 @@ var xml2js = require('xml2js');
 var fs = require('fs');
 
 //voting vars
-var topicstring = "", voter = [], upvote = 0, downvote = 0, votebool = false, voteChannel = {}, voteAnMsg = {};
+var topicstring = "", votersUp = [], votersDown = [], upvote = 0, downvote = 0, votebool = false, voteChannel = {}, voteAnMsg = {};
 
 var osuapi = require('osu-api');
 
@@ -257,17 +257,30 @@ var commands = {
 		process: function (bot, msg, suffix) {
 			if (!suffix) { bot.sendMessage(msg, correctUsage("vote")); return; }
 			if (votebool == false) { bot.sendMessage(msg, ":warning: There isn't a topic being voted on right now! Use `"+config.command_prefix+"newvote <topic>`"); return; }
-			if (voter.indexOf(msg.author) != -1) { return; }
 			if (msg.channel != voteChannel) { bot.sendMessage(msg, ":warning: You must vote in the channel where the vote was started"); return; }
 			if (suffix.indexOf("+") > -1) {
-				upvote += 1;
-				voter.push(msg.author);
-				bot.updateMessage(voteAnMsg, voteAnMsg.content.replace(/Upvotes\: [\d]{1,2}/g, "Upvotes: "+upvote), function (err, message) { voteAnMsg = message; });
-			}
-			else if (suffix.indexOf("-") > -1) {
-				downvote += 1;
-				voter.push(msg.author);
-				bot.updateMessage(voteAnMsg, voteAnMsg.content.replace(/Downvotes\: [\d]{1,2}/g, "Downvotes: "+downvote), function (err, message) { voteAnMsg = message; });
+				if (votersUp.indexOf(msg.author) > -1) { return; }
+				if (votersDown.indexOf(msg.author) > -1) {
+					downvote -= 1; upvote += 1;
+					var i = votersDown.indexOf(msg.author);
+					delete votersDown[i]; votersUp.push(msg.author);
+					bot.updateMessage(voteAnMsg, voteAnMsg.content.replace(/Upvotes\: [\d]{1,2}\nDownvotes: [\d]{1,2}/g, "Upvotes: "+upvote+"\nDownvotes: "+downvote), function (err, message) { voteAnMsg = message; });
+				} else {
+					upvote += 1;
+					votersUp.push(msg.author);
+					bot.updateMessage(voteAnMsg, voteAnMsg.content.replace(/Upvotes\: [\d]{1,2}/g, "Upvotes: "+upvote), function (err, message) { voteAnMsg = message; });
+				}
+			} else if (suffix.indexOf("-") > -1) {
+				if (votersDown.indexOf(msg.author) > -1) { return; }
+				if (votersUp.indexOf(msg.author) > -1) {
+					downvote += 1; upvote -= 1;
+					var i = votersUp.indexOf(msg.author);
+					delete votersUp[i]; votersDown.push(msg.author);
+					bot.updateMessage(voteAnMsg, voteAnMsg.content.replace(/Upvotes\: [\d]{1,2}\nDownvotes: [\d]{1,2}/g, "Upvotes: "+upvote+"\nDownvotes: "+downvote), function (err, message) { voteAnMsg = message; });
+				} else {
+					downvote += 1;
+					votersDown.push(msg.author);
+					bot.updateMessage(voteAnMsg, voteAnMsg.content.replace(/Downvotes\: [\d]{1,2}/g, "Downvotes: "+downvote), function (err, message) { voteAnMsg = message; });
 				}
 		}
 	},
@@ -275,11 +288,11 @@ var commands = {
 		desc: "End current vote.",
 		deleteCommand: true,
 		process: function (bot, msg, suffix) {
-			try {//if this crashes try checking if bot.channels.get.id has it first
+			try {//if this crashes try checking if bot.channels.get("id", ) has it first
 				bot.sendMessage(voteChannel, "**Results of last vote:**\nTopic: `" + topicstring + "`\nUpvotes: `" + upvote + " " + (upvote/(upvote+downvote))*100 + "%`\nDownvotes: `" + downvote + " " + (downvote/(upvote+downvote))*100 + "%`");
 				bot.deleteMessage(voteAnMsg);
 			} catch(err) { logger.log("error", "Error sending vote results: " + err) }
-			upvote = 0; downvote = 0; voter = []; votebool = false; topicstring = ""; voteChannel = {}; voteAnMsg = {};
+			upvote = 0; downvote = 0; votersUp = []; votersDown = []; votebool = false; topicstring = ""; voteChannel = {}; voteAnMsg = {};
 		}
 	},
 	"8ball": {
@@ -519,7 +532,7 @@ var commands = {
 		desc: "Get the weather for a location",
 		usage: "<City/City,Us> or <zip/zip,us>     example: ]weather 12345,us",
 		deleteCommand: true,
-		cooldown: 3,
+		cooldown: 2,
 		process: function(bot, msg, suffix) {
 			if (config.is_heroku_version) { var APIKEY = process.env.weather_api_key; } else { var APIKEY = config.weather_api_key; }
 			if (APIKEY == null || APIKEY == "") { bot.sendMessage(msg, ":warning: No API key defined by bot owner"); return; }

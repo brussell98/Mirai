@@ -16,11 +16,10 @@ An multipurpose bot for Discord using the [Discord.js](https://github.com/hydrab
 
 ### TODO
 
-- [x] fix cleverbot not accepting non-Latin characters
-- [x] joins picked up by carbonInvite fix needed pls thx
 - [ ] Move eval to a module
-- [ ] figure something out for osu api's crap
-- [ ] Catch the stupid http://hastebin.com/simajucili.vbs
+- [ ] Stop the stupid http://hastebin.com/simajucili.vbs - Attempting to but idk if it works yet
+- [x] Show source server in announcements
+- [ ] Delete warn and error messages after a time
 - [ ] Commands
 	- [ ] Music commands - After discord.js gets patched for volume
 		- [ ] Audio help
@@ -34,6 +33,6 @@ An multipurpose bot for Discord using the [Discord.js](https://github.com/hydrab
 		- [ ] Bot owner gets priority
 	- [x] Vote ([BlackHayate](https://github.com/BlackHayate) helped with this)
 		- [ ] Custom votes
-		- [ ] Allow people to change their vote
+		- [x] Allow people to change their vote
 	- [ ] Pull recent changelogs from the BrussellBot server
 - [ ] Could do stuff with checking how long a user has been on the server for perms

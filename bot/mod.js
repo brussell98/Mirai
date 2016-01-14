@@ -230,7 +230,7 @@ var commands = {
 							bot.sendMessage(msg, "Announcing to all users, this may take a while...");
 							msg.channel.server.members.forEach(function (usr) {
 								setTimeout(function () {
-									bot.sendMessage(usr, ":mega: " + announceMessages[i] + " - " + msg.author);
+									bot.sendMessage(usr, ":mega: " + announceMessages[i] + " - from " + msg.author + " on " + msg.channel.server.name);
 								}, 1000);
 							});
 							logger.log("info", "Announced \"" + announceMessages[i] + "\" to members of "+msg.channel.server.name);
