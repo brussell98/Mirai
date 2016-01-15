@@ -40,7 +40,7 @@ var commands = {
 				Object.keys(commands).forEach(function(cmd){
 				if (commands[cmd].hasOwnProperty("shouldDisplay")) {
 						if (commands[cmd].shouldDisplay) { msgArray.push("" + config.mod_command_prefix + "" + cmd + ": " + commands[cmd].desc + ""); }
-					} else { msgArray.push("" + config.command_prefix + "" + cmd + ": " + commands[cmd].desc + ""); }
+					} else { msgArray.push("" + config.mod_command_prefix + "" + cmd + ": " + commands[cmd].desc + ""); }
 				});
 				msgArray.push("```");
 				bot.sendMessage(msg.author, msgArray);

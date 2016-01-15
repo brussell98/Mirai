@@ -523,8 +523,8 @@ var commands = {
 					});});});});});
 				});
 
-			} else { bot.sendMessage(msg, correctUsage("osu"), function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
-			} else { bot.sendMessage(msg, correctUsage("osu"), function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
+			} else { bot.sendMessage(msg, correctUsage("osu"), function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 15000}); }); }
+			} else { bot.sendMessage(msg, correctUsage("osu"), function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 15000}); }); }
 		}
 	},
 	"rps": {
