@@ -14,7 +14,6 @@ var versioncheck = require("./bot/versioncheck.js");
 var fs = require("fs");
 var logger = require("./bot/logger.js").Logger;
 var cleverbot = require("./bot/cleverbot.js").cleverbot;
-var evaluate = require("./bot/evaluate.js").evaluate;
 checkConfig(); //notify user if they are missing things in the config
 
 if (config.is_heroku_version) { //For avoiding Heroku $PORT error
