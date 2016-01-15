@@ -39,7 +39,6 @@ bot.on("ready", function () {
 	bot.setPlayingGame(games[Math.floor(Math.random() * (games.length))]); //set game to a random game from games.json
 	//bot.setPlayingGame("]help [command]");
 	logger.log("info", "BrussellBot is ready! Listening to " + bot.channels.length + " channels on " + bot.servers.length + " servers");
-	logger.log("info", "Username: "+bot.user.username);
 	versioncheck.checkForUpdate(function (resp) {
 		if (resp !== null) { logger.log("info", resp); }
 	});
@@ -222,6 +221,7 @@ function carbonInvite(msg){
 							msgArray.push("Hi! I'm **" + bot.user.username + "** and I was invited to this server by " + msg.author + ".");
 							msgArray.push("You can use `" + config.command_prefix + "help` to see what I can do. Mods can use `"+config.mod_command_prefix+"help` for mod commands.");
 							msgArray.push("If I shouldn't be here someone with the `Kick Members` permission can use `" + config.mod_command_prefix + "leaves` to make me leave");
+							msgArray.push("For help / feedback / bugs/ testing / info / changelogs / etc. go to **https://discord.gg/0kvLlwb7slG3XCCQ**");
 							bot.sendMessage(server.defaultChannel, msgArray);
 						}, 2000);
 					}

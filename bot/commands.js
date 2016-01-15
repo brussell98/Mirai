@@ -40,6 +40,7 @@ var commands = {
 		desc: "Sends a DM containing all of the commands. If a command is specified gives info on that command.",
 		usage: "[command]",
 		deleteCommand: true,
+		shouldDisplay: false,
 		cooldown: 1,
 		process: function(bot, msg, suffix) {
 			var msgArray = [];
@@ -50,7 +51,11 @@ var commands = {
 				msgArray.push("**Commands: **");
 				msgArray.push("```");
 				msgArray.push("@"+bot.user.username+" text: Talk to the bot (cleverbot)");
-				Object.keys(commands).forEach(function(cmd){ msgArray.push("" + config.command_prefix + "" + cmd + ": " + commands[cmd].desc + ""); });
+				Object.keys(commands).forEach(function(cmd){
+					if (commands[cmd].hasOwnProperty("shouldDisplay")) {
+						if (commands[cmd].shouldDisplay) { msgArray.push("" + config.command_prefix + "" + cmd + ": " + commands[cmd].desc + ""); }
+					} else { msgArray.push("" + config.command_prefix + "" + cmd + ": " + commands[cmd].desc + ""); }
+				});
 				msgArray.push("```");
 				bot.sendMessage(msg.author, msgArray);
 			} else {
@@ -74,6 +79,7 @@ var commands = {
 	"ping": {
 		desc: "Replies with pong.",
 		cooldown: 2,
+		shouldDisplay: false,
 		process: function(bot, msg) {
 			var n = Math.floor(Math.random() * 4);
 			if (n === 0) { bot.sendMessage(msg, "pong"); } 
@@ -83,7 +89,7 @@ var commands = {
 		}
 	},
 	"joins": {
-		desc: "Accepts the invite sent to it.",
+		desc: "Accepts an invite.",
 		usage: "<invite link> [invite link] [-a (announce presence)]",
 		deleteCommand: true,
 		process: function (bot, msg, suffix) {
@@ -104,6 +110,7 @@ var commands = {
 										msgArray.push("Hi! I'm **" + bot.user.username + "** and I was invited to this server by " + msg.author + ".");
 										msgArray.push("You can use `" + config.command_prefix + "help` to see what I can do. Mods can use "+config.mod_command_prefix+"help for mod commands.");
 										msgArray.push("If I shouldn't be here someone with the `Kick Members` permission can use `" + config.mod_command_prefix + "leaves` to make me leave");
+										msgArray.push("For help / feedback / bugs/ testing / info / changelogs / etc. go to **https://discord.gg/0kvLlwb7slG3XCCQ**");
 										bot.sendMessage(server.defaultChannel, msgArray);
 									}, 2000);
 								}
@@ -115,7 +122,7 @@ var commands = {
 		}
 	},
 	"about": {
-		desc: "Info about the bot.",
+		desc: "About me",
 		deleteCommand: true,
 		cooldown: 5,
 		process: function(bot, msg, suffix) {
@@ -127,7 +134,7 @@ var commands = {
 		}
 	},
 	"letsplay": {
-		desc: "Ask if anyone wants to play a game. Uses @everyone if the executer can and if the server has <= 30 members.",
+		desc: "Ask if anyone wants to play a game. (@everyone if members <= 30)",
 		deleteCommand: true,
 		usage: "[game name]",
 		cooldown: 10,
@@ -142,7 +149,7 @@ var commands = {
 		}
 	},
 	"dice": {
-		desc: "Roll some dice. (1d6 by default)",
+		desc: "Roll dice. (1d6 by default)",
 		deleteCommand: true,
 		usage: "[(rolls)d(sides)]",
 		cooldown: 2,
@@ -221,6 +228,18 @@ var commands = {
 			} else { bot.sendMessage(msg, ":warning: Can't do that in a DM.", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
 		}
 	},
+	"avatar": {
+		desc: "Get a link to a user's avatar (must use @mention).",
+		usage: "<@mention>",
+		deleteCommand: true,
+		cooldown: 5,
+		process: function(bot, msg, suffix) {
+			if (msg.mentions.length == 0) { (msg.author.avatarURL != null) ? bot.sendMessage(msg, msg.author.username+"'s avatar is: "+msg.author.avatarURL+"") : bot.sendMessage(msg, msg.author.username+" has no avatar", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
+			else { msg.mentions.map(function(usr) {
+				(usr.avatarURL != null) ? bot.sendMessage(msg, usr.username+"'s avatar is: "+usr.avatarURL+"") : bot.sendMessage(msg, "User has no avatar", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); });
+			});}
+		}
+	},
 	"choose": {
 		desc: "Makes a choice for you.",
 		usage: "<option 1>, <option 2>, [option], [option]",
@@ -238,7 +257,7 @@ var commands = {
 		}
 	},
 	"newvote": {
-		desc: "Create a new vote.",
+		desc: "Start a vote.",
 		usage: "<topic>",
 		deleteCommand: true,
 		process: function (bot, msg, suffix) {
@@ -290,14 +309,16 @@ var commands = {
 		deleteCommand: true,
 		process: function (bot, msg, suffix) {
 			try {//if this crashes try checking if bot.channels.get("id", ) has it first
-				bot.sendMessage(voteChannel, "**Results of last vote:**\nTopic: `" + topicstring + "`\nUpvotes: `" + upvote + " " + (upvote/(upvote+downvote))*100 + "%`\nDownvotes: `" + downvote + " " + (downvote/(upvote+downvote))*100 + "%`");
-				bot.deleteMessage(voteAnMsg);
+				if (msg.channel == voteChannel) {
+					bot.sendMessage(voteChannel, "**Results of last vote:**\nTopic: `" + topicstring + "`\nUpvotes: `" + upvote + " " + (upvote/(upvote+downvote))*100 + "%`\nDownvotes: `" + downvote + " " + (downvote/(upvote+downvote))*100 + "%`");
+					bot.deleteMessage(voteAnMsg);
+				} else { bot.sendMessage(msg, ":warning: Must be done in the channel the vote was created in.", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 			} catch(err) { logger.log("error", "Error sending vote results: " + err) }
 			upvote = 0; downvote = 0; votersUp = []; votersDown = []; votebool = false; topicstring = ""; voteChannel = {}; voteAnMsg = {};
 		}
 	},
 	"8ball": {
-		desc: "Ask the bot a question (8ball).",
+		desc: "It's an 8ball...",
 		usage: "[question]",
 		cooldown: 3,
 		process: function (bot, msg) {
@@ -307,7 +328,7 @@ var commands = {
 		}
 	},
 	"anime": {
-		desc: "Gets the details on an anime from MAL.",
+		desc: "Gets details on an anime from MAL.",
 		usage: "<anime name>",
 		deleteCommand: true,
 		cooldown: 5,
@@ -348,7 +369,7 @@ var commands = {
 		}
 	},
 	"manga": {
-		desc: "Gets the details on an manga from MAL.",
+		desc: "Gets details on a manga from MAL.",
 		usage: "<manga/novel name>",
 		deleteCommand: true,
 		cooldown: 5,
@@ -390,7 +411,7 @@ var commands = {
 		}
 	},
 	"coinflip": {
-		desc: "Flips a coin",
+		desc: "Flip a coin",
 		usage: "",
 		deleteCommand: true,
 		cooldown: 1,
@@ -402,7 +423,7 @@ var commands = {
 	},
 	"osu": {
 		desc: "Osu! commands. Use "+config.command_prefix+"help osu",
-		usage: "<sig/user/best/recent> [username]",
+		usage: "<sig/user/best/recent> [username] [hex color for sig]",
 		deleteCommand: true,
 		cooldown: 6,
 		process: function(bot, msg, suffix) {
@@ -506,18 +527,6 @@ var commands = {
 			} else { bot.sendMessage(msg, correctUsage("osu"), function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
 		}
 	},
-	"avatar": {
-		desc: "Get a link to a user's avatar",
-		usage: "<@mention>",
-		deleteCommand: true,
-		cooldown: 5,
-		process: function(bot, msg, suffix) {
-			if (msg.mentions.length == 0) { (msg.author.avatarURL != null) ? bot.sendMessage(msg, msg.author.username+"'s avatar is: "+msg.author.avatarURL+"") : bot.sendMessage(msg, msg.author.username+" has no avatar", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
-			else { msg.mentions.map(function(usr) {
-				(usr.avatarURL != null) ? bot.sendMessage(msg, usr.username+"'s avatar is: "+usr.avatarURL+"") : bot.sendMessage(msg, "User has no avatar", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); });
-			});}
-		}
-	},
 	"rps": {
 		desc: "Play Rock Paper Scissors",
 		usage: "<rock/paper/scissors>",
@@ -530,7 +539,7 @@ var commands = {
 		}
 	},
 	"weather": {
-		desc: "Get the weather for a location",
+		desc: "Get the weather",
 		usage: "<City/City,Us> or <zip/zip,us>     example: ]weather 12345,us",
 		deleteCommand: true,
 		cooldown: 2,
@@ -565,9 +574,9 @@ var commands = {
 		cooldown: 3,
 		process: function(bot, msg, suffix) {
 			if (!suffix) { bot.sendMessage(msg, "**http://www.lmgtfy.com/?q=brussellbot+commands**"); return; }
-			if (/[^a-zA-Z0-9 ]/.test(suffix)) { bot.sendMessage(msg, ":warning: Special characters not allowed", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
-			suffix = suffix.replace(/ /g, "+");
-			bot.sendMessage(msg, ":mag: **http://www.lmgtfy.com/?q="+suffix+"**");
+			suffix = suffix.split(" ");
+			for (var i = 0; i < suffix.length; i++) { suffix[i] = encodeURIComponent(suffix[i]); }
+			bot.sendMessage(msg, ":mag: **http://www.lmgtfy.com/?q="+suffix.join("+")+"**");
 		}
 	}
 };

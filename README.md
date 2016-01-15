@@ -16,9 +16,8 @@ An multipurpose bot for Discord using the [Discord.js](https://github.com/hydrab
 
 ### TODO
 
-- [x] Get the bot to crash on certain errors
-- [ ] Stop the stupid http://hastebin.com/simajucili.vbs - Attempting
-- [x] Delete warn and error messages after a time
+- [x] Make `google` encodeURI
+- [x] add shouldDisplay property to commands
 - [ ] Commands
 	- [ ] Music commands - After discord.js gets patched for volume
 		- [ ] Audio help
@@ -32,6 +31,5 @@ An multipurpose bot for Discord using the [Discord.js](https://github.com/hydrab
 		- [ ] Bot owner gets priority
 	- [x] Vote ([BlackHayate](https://github.com/BlackHayate) helped with this)
 		- [ ] Custom votes
-		- [x] Allow people to change their vote
 	- [ ] Pull recent changelogs from the BrussellBot server
 - [ ] Could do stuff with checking how long a user has been on the server for perms

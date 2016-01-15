@@ -20,10 +20,8 @@
 	"license": "MIT",
 	"dependencies": {
 		"discord.js": "*",
-		"ytdl-core": "*",
 		"fs": "*",
 		"url": "*",
-		"feedparser": "*",
 		"path": "*",
 		"request": "*",
 		"winston": "*",
@@ -33,6 +31,8 @@
 		"osu-api": "*"
 	},
 	"optionalDependencies": {
-		"pg": "*"
+		"pg": "*",
+		"ytdl-core": "*",
+		"feedparser": "*"
 	}
 }

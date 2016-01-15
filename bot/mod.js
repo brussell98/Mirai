@@ -29,6 +29,7 @@ var commands = {
 		desc: "Sends a DM containing all of the commands. If a command is specified gives info on that command.",
 		usage: "[command]",
 		deleteCommand: true,
+		shouldDisplay: false,
 		process: function(bot, msg, suffix) {
 			var msgArray = [];
 			if (!suffix){
@@ -36,7 +37,11 @@ var commands = {
 				msgArray.push("");
 				msgArray.push("**Commands: **");
 				msgArray.push("```");
-				Object.keys(commands).forEach(function(cmd){ msgArray.push("" + config.mod_command_prefix + "" + cmd + ": " + commands[cmd].desc + ""); });
+				Object.keys(commands).forEach(function(cmd){
+				if (commands[cmd].hasOwnProperty("shouldDisplay")) {
+						if (commands[cmd].shouldDisplay) { msgArray.push("" + config.mod_command_prefix + "" + cmd + ": " + commands[cmd].desc + ""); }
+					} else { msgArray.push("" + config.command_prefix + "" + cmd + ": " + commands[cmd].desc + ""); }
+				});
 				msgArray.push("```");
 				bot.sendMessage(msg.author, msgArray);
 			} else { //if user wants info on a command
@@ -52,7 +57,7 @@ var commands = {
 	},
 	"stats": {
 		desc: "Get the stats of the bot",
-		usage: "[-ls (list servers)] ",
+		usage: "[-ls (list servers (DM only))] ",
 		cooldown: 30,
 		deleteCommand: true,
 		process: function(bot, msg, suffix) {
@@ -90,17 +95,16 @@ var commands = {
 		}
 	},
 	"playing": {
-		desc: "Set what the bot is playing. Leave empty for random. (Don't abuse this, you'll ruin it for everyone).",
+		desc: "Refresh what game the bot is playing",
 		usage: "[game]",
 		cooldown: 5,
+		shouldDisplay: false,
 		deleteCommand: true,
 		process: function (bot, msg, suffix) {
-			if (!msg.channel.isPrivate) {
-				if (msg.channel.server.owner.id == msg.author.id || msg.author.id == config.admin_id) {
-					!suffix ? bot.setPlayingGame(games[Math.floor(Math.random() * (games.length))]) : bot.setPlayingGame(suffix);
-					logger.log("info", "" + msg.author.username + " set the playing status to: " + suffix);
-				} else { bot.sendMessage(msg, "Server owners only", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
-			} else { bot.sendMessage(msg, "Must be done in a server", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
+			if (msg.author.id == config.admin_id) {
+				if (!suffix) { bot.setPlayingGame(games[Math.floor(Math.random() * (games.length))]); }
+				else { bot.setPlayingGame(suffix); logger.log("info", "" + msg.author.username + " changed the playing status to: "+suffix); }
+			} else { bot.setPlayingGame(games[Math.floor(Math.random() * (games.length))]); }
 		}
 	},
 	"clean": {
