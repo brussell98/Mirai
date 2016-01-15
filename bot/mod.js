@@ -86,7 +86,7 @@ var commands = {
 					bot.sendMessage(msg, svrArray);
 
 				}
-			} else { bot.sendMessage(msg, "Only server owners can do this."); }
+			} else { bot.sendMessage(msg, "Only server owners can do this.", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
 		}
 	},
 	"playing": {
@@ -99,8 +99,8 @@ var commands = {
 				if (msg.channel.server.owner.id == msg.author.id || msg.author.id == config.admin_id) {
 					!suffix ? bot.setPlayingGame(games[Math.floor(Math.random() * (games.length))]) : bot.setPlayingGame(suffix);
 					logger.log("info", "" + msg.author.username + " set the playing status to: " + suffix);
-				} else { bot.sendMessage(msg, "Server owners only"); }
-			} else { bot.sendMessage(msg, "Must be done in a server"); }
+				} else { bot.sendMessage(msg, "Server owners only", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
+			} else { bot.sendMessage(msg, "Must be done in a server", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
 		}
 	},
 	"clean": {
@@ -133,8 +133,8 @@ var commands = {
 							bot.stopTyping(msg.channel);
 						}
 					});
-				} else { bot.sendMessage(msg, ":warning: You must have permission to manage messages in this channel"); }
-			} else { bot.sendMessage(msg, correctUsage("clean")); }
+				} else { bot.sendMessage(msg, ":warning: You must have permission to manage messages in this channel", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
+			} else { bot.sendMessage(msg, correctUsage("clean"), function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
 		}
 	},
 	"prune": {
@@ -167,10 +167,10 @@ var commands = {
 									bot.stopTyping(msg.channel);
 								}
 							});
-						} else { bot.sendMessage(msg, ":warning: I don't have permission to delete messages."); }
-					} else { bot.sendMessage(msg, ":warning: You must have permission to manage messages in this channel"); }
-				} else { bot.sendMessage(msg, ":warning: Can't do that in a DM"); }
-			} else { bot.sendMessage(msg, correctUsage("prune")); }
+						} else { bot.sendMessage(msg, ":warning: I don't have permission to delete messages.", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
+					} else { bot.sendMessage(msg, ":warning: You must have permission to manage messages in this channel", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
+				} else { bot.sendMessage(msg, ":warning: Can't do that in a DM"), function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }; }
+			} else { bot.sendMessage(msg, correctUsage("prune"), function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
 		}
 	},
 	"leaves": {
@@ -186,7 +186,7 @@ var commands = {
 					bot.sendMessage(msg, "You can't tell me what to do! (You need permission to kick users in this channel)");
 					logger.log("info", "A non-privileged user (" + msg.sender.username + ") tried to make me leave a server.");
 				}
-			} else { bot.sendMessage(msg, ":warning: I can't leave a DM."); }
+			} else { bot.sendMessage(msg, ":warning: I can't leave a DM.", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
 		}
 	},
 	"announce": {
@@ -200,7 +200,7 @@ var commands = {
 					if (/^\d+$/.test(suffix)) { //if confirm code
 						for (var i = 0; i < confirmCodes.length; i++) {
 							if (confirmCodes[i] != suffix) {
-								if (i == confirmCodes.length - 1) { bot.sendMessage(msg, "Confirmation code not found"); continue; }
+								if (i == confirmCodes.length - 1) { bot.sendMessage(msg, "Confirmation code not found", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); continue; }
 								else { continue; }
 							}
 							bot.sendMessage(msg, "Announcing to all servers...");
@@ -224,7 +224,7 @@ var commands = {
 					if (/^\d+$/.test(suffix)) {
 						for (var i = 0; i < confirmCodes.length; i++) {
 							if (confirmCodes[i] != suffix) {
-								if (i == confirmCodes.length - 1) { bot.sendMessage(msg, "Confirmation code not found"); continue; }
+								if (i == confirmCodes.length - 1) { bot.sendMessage(msg, "Confirmation code not found", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); continue; }
 								else { continue; }
 							}
 							bot.sendMessage(msg, "Announcing to all users, this may take a while...");
@@ -242,8 +242,8 @@ var commands = {
 						confirmCodes.push(Math.floor(code));
 						bot.sendMessage(msg, ":warning: This will send a private message to **all** members of this server. If you're sure you want to do this say `"+config.mod_command_prefix+"announce "+code+"`");
 					}
-				} else { bot.sendMessage(msg, ":warning: Server admins only"); }
-			} else { bot.sendMessage(msg, ":warning: You must specify a message to announce"); }
+				} else { bot.sendMessage(msg, ":warning: Server admins only", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
+			} else { bot.sendMessage(msg, ":warning: You must specify a message to announce", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
 		}
 	}
 }

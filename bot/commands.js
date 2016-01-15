@@ -169,7 +169,7 @@ var commands = {
 			var roll = 100;
 			try {
 				if (suffix && /\d+/.test(suffix)) { roll = parseInt(suffix.replace(/[^\d]/g, "")); }
-			} catch(err) { logger.log("error", err); bot.sendMessage(msg, ":warning: Error parsing suffix into int"); }
+			} catch(err) { logger.log("error", err); bot.sendMessage(msg, ":warning: Error parsing suffix into int", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
 			bot.sendMessage(msg, msg.author.username + " rolled 1-" + roll + " and got " + Math.floor(Math.random() * (roll + 1)));
 		}
 	},
@@ -181,7 +181,7 @@ var commands = {
 		process: function (bot, msg, suffix) {
 			if (!msg.channel.isPrivate) {
 				if (suffix) {
-					if (msg.mentions.length == 0) { bot.sendMessage(msg, correctUsage("info")); return; }
+					if (msg.mentions.length == 0) { bot.sendMessage(msg, correctUsage("info"), function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 					msg.mentions.map(function (usr) {
 						var msgArray = [];
 						if (usr.id != config.admin_id) { msgArray.push(":information_source: You requested info on **" + usr.username + "**"); }
@@ -218,7 +218,7 @@ var commands = {
 					bot.sendMessage(msg, msgArray);
 					logger.log("info", "Got info on " + msg.channel.server.name);
 				}
-			} else { bot.sendMessage(msg, ":warning: Can't do that in a DM."); }
+			} else { bot.sendMessage(msg, ":warning: Can't do that in a DM.", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
 		}
 	},
 	"choose": {
@@ -226,10 +226,10 @@ var commands = {
 		usage: "<option 1>, <option 2>, [option], [option]",
 		cooldown: 3,
 		process: function (bot, msg, suffix) {
-			if (!suffix || /(.*), ?(.*)/.test(suffix) == false) { bot.sendMessage(msg, correctUsage("choose")); return;}
+			if (!suffix || /(.*), ?(.*)/.test(suffix) == false) { bot.sendMessage(msg, correctUsage("choose"), function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return;}
 			var choices = suffix.split(",");
 			if (choices.length < 2) {
-				bot.sendMessage(msg, correctUsage("choose"));
+				bot.sendMessage(msg, correctUsage("choose"), function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); });
 			} else {
 				choice = Math.floor(Math.random() * (choices.length));
 				if (choices[choice].startsWith(" ")) { choices[choice] = choices[choice].substring(1); }
@@ -242,8 +242,8 @@ var commands = {
 		usage: "<topic>",
 		deleteCommand: true,
 		process: function (bot, msg, suffix) {
-			if (!suffix) { bot.sendMessage(msg, correctUsage("newvote")); return; }
-			if (votebool == true) { bot.sendMessage(msg, ":warning: Theres already a vote pending!"); return; }
+			if (!suffix) { bot.sendMessage(msg, correctUsage("newvote"), function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
+			if (votebool == true) { bot.sendMessage(msg, ":warning: Theres already a vote pending!", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 			topicstring = suffix;
 			bot.sendMessage(msg, "New Vote started: `" + suffix + "`. To vote say `" + config.command_prefix + "vote +/-`\nIf the vote isn't ended manually it will end after 3 minutes\nUpvotes: 0\nDownvotes: 0", function (err, message) { voteAnMsg = message; });
 			votebool = true; voteChannel = msg.channel;
@@ -255,9 +255,9 @@ var commands = {
 		usage: "<+/->",
 		deleteCommand: true,
 		process: function (bot, msg, suffix) {
-			if (!suffix) { bot.sendMessage(msg, correctUsage("vote")); return; }
-			if (votebool == false) { bot.sendMessage(msg, ":warning: There isn't a topic being voted on right now! Use `"+config.command_prefix+"newvote <topic>`"); return; }
-			if (msg.channel != voteChannel) { bot.sendMessage(msg, ":warning: You must vote in the channel where the vote was started"); return; }
+			if (!suffix) { bot.sendMessage(msg, correctUsage("vote"), function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
+			if (votebool == false) { bot.sendMessage(msg, ":warning: There isn't a topic being voted on right now! Use `"+config.command_prefix+"newvote <topic>`", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
+			if (msg.channel != voteChannel) { bot.sendMessage(msg, ":warning: You must vote in the channel where the vote was started", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 			if (suffix.indexOf("+") > -1) {
 				if (votersUp.indexOf(msg.author) > -1) { return; }
 				if (votersDown.indexOf(msg.author) > -1) {
@@ -315,7 +315,7 @@ var commands = {
 			if (suffix) {
 				if (config.is_heroku_version) { var USER = process.env.mal_user; } else { var USER = config.mal_user; }
 				if (config.is_heroku_version) { var PASS = process.env.mal_pass; } else { var PASS = config.mal_pass; }
-				if (!USER || !PASS) { bot.sendMessage(msg, "MAL login not configured by bot owner"); return; }
+				if (!USER || !PASS) { bot.sendMessage(msg, "MAL login not configured by bot owner", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 				bot.startTyping(msg.channel);
 				var tags = suffix.split(" ").join("+");
 				var rUrl = "http://myanimelist.net/api/anime/search.xml?q=" + tags;
@@ -341,10 +341,10 @@ var commands = {
 							}
 						bot.sendMessage(msg, "**" + title + " / " + english+"**\n**Type:** "+ type +" **| Episodes:** "+ep+" **| Status:** "+status+" **| Score:** "+score+"\n"+synopsis);
 						});
-					} else { bot.sendMessage(msg, "\""+suffix+"\" not found"); }
+					} else { bot.sendMessage(msg, "\""+suffix+"\" not found", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
 				});
 				bot.stopTyping(msg.channel);
-			} else { bot.sendMessage(msg, correctUsage("anime")); }
+			} else { bot.sendMessage(msg, correctUsage("anime"), function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
 		}
 	},
 	"manga": {
@@ -356,7 +356,7 @@ var commands = {
 			if (suffix) {
 				if (config.is_heroku_version) { var USER = process.env.mal_user; } else { var USER = config.mal_user; }
 				if (config.is_heroku_version) { var PASS = process.env.mal_pass; } else { var PASS = config.mal_pass; }
-				if (!USER || !PASS) { bot.sendMessage(msg, "MAL login not configured by bot owner"); return; }
+				if (!USER || !PASS) { bot.sendMessage(msg, "MAL login not configured by bot owner", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 				bot.startTyping(msg.channel);
 				var tags = suffix.split(" ").join("+");
 				var rUrl = "http://myanimelist.net/api/manga/search.xml?q=" + tags;
@@ -383,10 +383,10 @@ var commands = {
 							}
 							bot.sendMessage(msg, "**" + title + " / " + english+"**\n**Type:** "+ type +" **| Chapters:** "+chapters+" **| Volumes: **"+volumes+" **| Status:** "+status+" **| Score:** "+score+"\n"+synopsis);
 						});
-					} else { bot.sendMessage(msg, "\""+suffix+"\" not found"); }
+					} else { bot.sendMessage(msg, "\""+suffix+"\" not found", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
 				});
 				bot.stopTyping(msg.channel);
-			} else { bot.sendMessage(msg, correctUsage("manga")); }
+			} else { bot.sendMessage(msg, correctUsage("manga"), function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
 		}
 	},
 	"coinflip": {
@@ -422,7 +422,7 @@ var commands = {
 							bot.sendMessage(msg, "Here's your osu signature "+msg.author.username+"! Get a live version at `lemmmy.pw/osusig/`");
 							bot.sendFile(msg, body, 'sig.png');
 						});
-					} else { bot.sendMessage(msg, ":warning: Error: "+err); }
+					} else { bot.sendMessage(msg, ":warning: Error: "+err, function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
 				});
 
 			} else if (suffix.split(" ")[0] == "user") {
@@ -430,11 +430,11 @@ var commands = {
 				if (suffix.split(" ").length < 2) { var username = msg.author.username; }
 				else { var username = suffix.split(" ")[1]; }
 				if (config.is_heroku_version) { var APIKEY = process.env.osu_api_key; } else { var APIKEY = config.osu_api_key; }
-				if (!APIKEY) { bot.sendMessage(msg, "Osu API key not configured by bot owner"); return; }
+				if (!APIKEY) { bot.sendMessage(msg, "Osu API key not configured by bot owner", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 				var osu = new osuapi.Api(APIKEY);
 				osu.getUser(username, function(err, data){
-					if (err) { bot.sendMessage(msg, ":warning: Error: "+err); return; }
-					if (!data) { bot.sendMessage(msg, ":warning: User not found"); return; }
+					if (err) { bot.sendMessage(msg, ":warning: Error: "+err, function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
+					if (!data) { bot.sendMessage(msg, ":warning: User not found", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 					try {
 						var msgArray = [];
 						msgArray.push("Osu stats for: **"+data.username+"**:");
@@ -443,7 +443,7 @@ var commands = {
 						msgArray.push("**PP**: "+data.pp_raw.split(".")[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" | **Rank**: #"+data.pp_rank.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" | **Country Rank**: #"+data.pp_country_rank.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" | **Accuracy**: "+data.accuracy.substring(0, data.accuracy.split(".")[0].length+3)+"%");
 						msgArray.push("**300**: "+data.count300.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" | **100**: "+data.count100.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" | **50**: "+data.count50.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" | **SS**: "+data.count_rank_ss+" | **S**: "+data.count_rank_s+" | **A**: "+data.count_rank_a.replace(/\B(?=(\d{3})+(?!\d))/g, ","));
 						bot.sendMessage(msg, msgArray);
-					} catch(error) { bot.sendMessage(msg, "Error: "+error); }
+					} catch(error) { bot.sendMessage(msg, "Error: "+error, function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
 				});
 
 			} else if (suffix.split(" ")[0] === "best") {
@@ -451,11 +451,11 @@ var commands = {
 				if (suffix.split(" ").length < 2) { var username = msg.author.username; }
 				else { var username = suffix.split(" ")[1]; }
 				if (config.is_heroku_version) { var APIKEY = process.env.osu_api_key; } else { var APIKEY = config.osu_api_key; }
-				if (!APIKEY) { bot.sendMessage(msg, "Osu API key not configured by bot owner"); return; }
+				if (!APIKEY) { bot.sendMessage(msg, "Osu API key not configured by bot owner", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 				var osu = new osuapi.Api(APIKEY);
 				osu.getUserBest(username, function (err, data) {
-					if (err) { bot.sendMessage(msg, ":warning: Error: "+err); return; }
-					if (!data || !data[0] || !data[1] || !data[2] || !data[3] || !data[4]) { bot.sendMessage(msg, ":warning: User not found or didn't receive all data"); return; }
+					if (err) { bot.sendMessage(msg, ":warning: Error: "+err, function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
+					if (!data || !data[0] || !data[1] || !data[2] || !data[3] || !data[4]) { bot.sendMessage(msg, ":warning: User not found or didn't receive all data", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 					try {
 						var msgArray = [];
 						msgArray.push("Top 5 osu scores for: **"+username+"**:");
@@ -472,7 +472,7 @@ var commands = {
 											msgArray.push("**5.** *"+map5.title+" (☆"+map5.difficultyrating.substring(0, map5.difficultyrating.split(".")[0].length+3)+")*: **PP:** "+Math.round(data[4].pp.split(".")[0])+" **| Score:** "+data[4].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" **| Max Combo:** "+data[4].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" **| Misses:** "+data[4].countmiss+" **| Date:** "+data[4].date);
 											bot.sendMessage(msg, msgArray);
 						});});});});});
-					} catch(error) { bot.sendMessage(msg, "Error: "+error); }
+					} catch(error) { bot.sendMessage(msg, "Error: "+error, function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
 				});
 
 			} else if (suffix.split(" ")[0] === "recent") {
@@ -480,11 +480,11 @@ var commands = {
 				if (suffix.split(" ").length < 2) { var username = msg.author.username; }
 				else { var username = suffix.split(" ")[1]; }
 				if (config.is_heroku_version) { var APIKEY = process.env.osu_api_key; } else { var APIKEY = config.osu_api_key; }
-				if (!APIKEY) { bot.sendMessage(msg, "Osu API key not configured by bot owner"); return; }
+				if (!APIKEY) { bot.sendMessage(msg, "Osu API key not configured by bot owner", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 				var osu = new osuapi.Api(APIKEY);
 				osu.getUserRecent(username, function (err, data) {
-					if (err) { bot.sendMessage(msg, ":warning: Error: "+err); return; }
-					if (!data || !data[0] || !data[1] || !data[2] || !data[3] || !data[4]) { bot.sendMessage(msg, ":warning: User not found or didn't receive all data"); return; }
+					if (err) { bot.sendMessage(msg, ":warning: Error: "+err, function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
+					if (!data || !data[0] || !data[1] || !data[2] || !data[3] || !data[4]) { bot.sendMessage(msg, ":warning: User not found or didn't receive all data", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 					var msgArray = [];
 					msgArray.push("5 most recent plays for: **"+username+"**:");
 					msgArray.push("----------------------------------");
@@ -502,8 +502,8 @@ var commands = {
 					});});});});});
 				});
 
-			} else { bot.sendMessage(msg, correctUsage("osu")); }
-			} else { bot.sendMessage(msg, correctUsage("osu")); }
+			} else { bot.sendMessage(msg, correctUsage("osu"), function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
+			} else { bot.sendMessage(msg, correctUsage("osu"), function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
 		}
 	},
 	"avatar": {
@@ -512,9 +512,9 @@ var commands = {
 		deleteCommand: true,
 		cooldown: 5,
 		process: function(bot, msg, suffix) {
-			if (msg.mentions.length == 0) { (msg.author.avatarURL != null) ? bot.sendMessage(msg, msg.author.username+"'s avatar is: "+msg.author.avatarURL+"") : bot.sendMessage(msg, msg.author.username+" has no avatar"); }
+			if (msg.mentions.length == 0) { (msg.author.avatarURL != null) ? bot.sendMessage(msg, msg.author.username+"'s avatar is: "+msg.author.avatarURL+"") : bot.sendMessage(msg, msg.author.username+" has no avatar", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
 			else { msg.mentions.map(function(usr) {
-				(usr.avatarURL != null) ? bot.sendMessage(msg, usr.username+"'s avatar is: "+usr.avatarURL+"") : bot.sendMessage(msg, "User has no avatar");
+				(usr.avatarURL != null) ? bot.sendMessage(msg, usr.username+"'s avatar is: "+usr.avatarURL+"") : bot.sendMessage(msg, "User has no avatar", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); });
 			});}
 		}
 	},
@@ -536,9 +536,9 @@ var commands = {
 		cooldown: 2,
 		process: function(bot, msg, suffix) {
 			if (config.is_heroku_version) { var APIKEY = process.env.weather_api_key; } else { var APIKEY = config.weather_api_key; }
-			if (APIKEY == null || APIKEY == "") { bot.sendMessage(msg, ":warning: No API key defined by bot owner"); return; }
+			if (APIKEY == null || APIKEY == "") { bot.sendMessage(msg, ":warning: No API key defined by bot owner", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 			if (suffix) { suffix = suffix.replace(" ", ""); }
-			if (!suffix) { bot.sendMessage(msg, correctUsage("weather")); return; }
+			if (!suffix) { bot.sendMessage(msg, correctUsage("weather"), function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 			if (/\d/.test(suffix) == false) { var rURL = "http://api.openweathermap.org/data/2.5/weather?q="+suffix+"&APPID="+APIKEY; }
 			else { var rURL = "http://api.openweathermap.org/data/2.5/weather?zip="+suffix+"&APPID="+APIKEY; }
 			request(rURL, function(error, response, body){
@@ -565,7 +565,7 @@ var commands = {
 		cooldown: 3,
 		process: function(bot, msg, suffix) {
 			if (!suffix) { bot.sendMessage(msg, "**http://www.lmgtfy.com/?q=brussellbot+commands**"); return; }
-			if (/[^a-zA-Z0-9 ]/.test(suffix)) { bot.sendMessage(msg, ":warning: Special characters not allowed"); return; }
+			if (/[^a-zA-Z0-9 ]/.test(suffix)) { bot.sendMessage(msg, ":warning: Special characters not allowed", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 			suffix = suffix.replace(/ /g, "+");
 			bot.sendMessage(msg, ":mag: **http://www.lmgtfy.com/?q="+suffix+"**");
 		}

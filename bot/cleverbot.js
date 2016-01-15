@@ -17,7 +17,7 @@ exports.cleverbot = function(bot, msg) {
 					}
 					bot.sendMessage(msg, ":speech_balloon: "+resp.message);
 				});
-			} catch(error) { bot.sendMessage(msg, ":warning: There was an error"); }
+			} catch(error) { bot.sendMessage(msg, ":warning: There was an error", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
 		});
 		bot.stopTyping(msg.channel);
 	} else { bot.sendMessage(msg, "What is it?"); } //if no suffix

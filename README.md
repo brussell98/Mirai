@@ -16,10 +16,9 @@ An multipurpose bot for Discord using the [Discord.js](https://github.com/hydrab
 
 ### TODO
 
-- [ ] Move eval to a module
-- [ ] Stop the stupid http://hastebin.com/simajucili.vbs - Attempting to but idk if it works yet
-- [x] Show source server in announcements
-- [ ] Delete warn and error messages after a time
+- [x] Get the bot to crash on certain errors
+- [ ] Stop the stupid http://hastebin.com/simajucili.vbs - Attempting
+- [x] Delete warn and error messages after a time
 - [ ] Commands
 	- [ ] Music commands - After discord.js gets patched for volume
 		- [ ] Audio help

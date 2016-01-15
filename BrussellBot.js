@@ -13,7 +13,8 @@ var games = require("./bot/games.json").games;
 var versioncheck = require("./bot/versioncheck.js");
 var fs = require("fs");
 var logger = require("./bot/logger.js").Logger;
-var cleverbot = require("./bot/cleverbot").cleverbot;
+var cleverbot = require("./bot/cleverbot.js").cleverbot;
+var evaluate = require("./bot/evaluate.js").evaluate;
 checkConfig(); //notify user if they are missing things in the config
 
 if (config.is_heroku_version) { //For avoiding Heroku $PORT error
@@ -82,7 +83,7 @@ bot.on("message", function (msg) {
 						if (cTime < leTime) { //if it is still on cooldown
 							var left = (leTime - cTime) / 1000;
 							if (msg.author.id != config.admin_id) { //admin bypass
-								bot.sendMessage(msg, ":warning: This command is on cooldown with " + Math.round(left) + " seconds remaining", function (message) { bot.deleteMessage(message, {"wait": 2000}); });
+								bot.sendMessage(msg, ":warning: This command is on cooldown with " + Math.round(left) + " seconds remaining", function (erro, message) { bot.deleteMessage(message, {"wait": 2000}); });
 								return;
 							}
 						} else { lastExecTime[cmd] = cTime; }
@@ -108,7 +109,7 @@ bot.on("message", function (msg) {
 						if (cTime < leTime) {
 							var left = (leTime - cTime) / 1000;
 							if (msg.author.id != config.admin_id) {
-								bot.sendMessage(msg, ":warning: This command is on cooldown with " + Math.round(left) + " seconds remaining", function (message) { bot.deleteMessage(message, {"wait": 2000}); });
+								bot.sendMessage(msg, ":warning: This command is on cooldown with " + Math.round(left) + " seconds remaining", function (erro, message) { bot.deleteMessage(message, {"wait": 2000}); });
 								return;
 							}
 						} else { lastExecTime[cmd] = cTime; }
@@ -280,7 +281,7 @@ if (config.is_heroku_version) {
 	var http = require("http");
 	setInterval(function() {
 		http.get("http://sheltered-river-1376.herokuapp.com"); //your URL here
-	}, 1200000); //every 20 minutes to keep the bot from sleeping which breaks it
+	}, 1320000); //every 22 minutes to keep the bot from sleeping which breaks it
 }
 
 function evaluateString (msg) {
@@ -297,3 +298,14 @@ function evaluateString (msg) {
 setInterval(function() {
 	bot.setPlayingGame(games[Math.floor(Math.random() * (games.length))]);
 }, 800000); //change playing game every 12 minutes
+
+process.on('uncaughtException', function (err) {
+	if (err.message.indexOf("Cannot read property 'forEach' of undefined") > -1) {
+		logger.log("error", "Got the stupid 'new Server' error");
+		logger.log("error", err);
+		process.exit(0); //make sure that it crashes
+	} else if (err.stack.indexOf("evaluateString") > -1) {
+		logger.log("error", "Error running eval");
+		process.exit(0); //make sure that it crashes
+	}
+});
