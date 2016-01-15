@@ -18,6 +18,8 @@ An multipurpose bot for Discord using the [Discord.js](https://github.com/hydrab
 
 - [x] Make `google` encodeURI
 - [x] add shouldDisplay property to commands
+- [ ] Make osu work for spaces
+- [x] Fix colors in osu sig and detect suffix length
 - [ ] Commands
 	- [ ] Music commands - After discord.js gets patched for volume
 		- [ ] Audio help

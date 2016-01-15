@@ -434,8 +434,11 @@ var commands = {
 				else { var username = suffix.split(" ")[1]; }
 				var color = "ff66aa";
 				if (/sig (.*) #?[A-Fa-f0-9]{6}/.test(suffix)){
-					if (suffix.split(" ")[2].length == 6) { color = suffix.split(" ")[1]; }
-					if (suffix.split(" ")[2].length == 7) { color = suffix.split(" ")[1].substring(1); }
+					if (suffix.split(" ")[2].length == 6) { color = suffix.split(" ")[2]; }
+					if (suffix.split(" ")[2].length == 7) { color = suffix.split(" ")[2].substring(1); }
+				} else if (/sig #?[A-Fa-f0-9]{6}/.test(suffix)) {
+					if (suffix.split(" ")[1].length == 6) { color = suffix.split(" ")[1]; }
+					if (suffix.split(" ")[1].length == 7) { color = suffix.split(" ")[1].substring(1); }
 				}
 				request.head('https://lemmmy.pw/osusig/sig.php?colour=hex'+color+'&uname='+username+'&pp=2&flagshadow&xpbar&xpbarhex&darktriangles', function(err, res, body) {
 					if (!err) {
