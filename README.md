@@ -16,22 +16,19 @@ An multipurpose bot for Discord using the [Discord.js](https://github.com/hydrab
 
 ### TODO
 
-- [x] Make `google` encodeURI
-- [x] add shouldDisplay property to commands
-- [ ] Make osu work for spaces
+- [x] Make osu work for spaces
 - [x] Fix colors in osu sig and detect suffix length
-- [ ] Commands
-	- [ ] Music commands - After discord.js gets patched for volume
-		- [ ] Audio help
-		- [ ] Queue song from youtube
-		- [ ] Skip
-		- [ ] Have pre-made playlists available
-		- [ ] Queue a playlist
-		- [ ] Bind music messages to a channel and show what is playing. Plus delete old messages.
-		- [ ] List of queues songs
-		- [ ] Set playing to song name
-		- [ ] Bot owner gets priority
-	- [x] Vote ([BlackHayate](https://github.com/BlackHayate) helped with this)
-		- [ ] Custom votes
-	- [ ] Pull recent changelogs from the BrussellBot server
+- [ ] Music commands - After discord.js gets patched for volume
+	- [ ] Audio help
+	- [ ] Queue song from youtube
+	- [ ] Skip
+	- [ ] Have pre-made playlists available
+	- [ ] Queue a playlist
+	- [ ] Bind music messages to a channel and show what is playing. Plus delete old messages.
+	- [ ] List of queues songs
+	- [ ] Set playing to song name
+	- [ ] Bot owner gets priority
+- [x] Strawpoll
+- [x] Pull recent changelogs from the BrussellBot server
+- [x] Number facts
 - [ ] Could do stuff with checking how long a user has been on the server for perms

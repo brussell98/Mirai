@@ -249,6 +249,26 @@ var commands = {
 				} else { bot.sendMessage(msg, ":warning: Server admins only", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
 			} else { bot.sendMessage(msg, ":warning: You must specify a message to announce", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
 		}
+	},
+	"changelog": {
+		desc: "See recent changes to the bot",
+		deleteCommand: true,
+		usage: "",
+		process: function(bot, msg, suffix) {
+			var chanelogChannel = bot.channels.get("id", '135527608564580353');
+			if (!chanelogChannel) { bot.sendMessage(msg, "The bot is not in the BrussellBot Official Server", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
+			else {
+				bot.getChannelLogs(chanelogChannel, 2, function (err, messages) {
+					if (err) { bot.sendMessage(msg, "Error getting changelogs: "+err); return; }
+					var msgArray = ["*Changelogs:*"];
+					for (var i = messages.length - 1; i >= 0; i--) {
+						msgArray.push("**----------------------------------**");
+						msgArray.push(messages[i]);
+						if (i == 0) { bot.sendMessage(msg, msgArray); }
+					}
+				});
+			}
+		}
 	}
 }
 

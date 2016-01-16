@@ -113,7 +113,7 @@ var commands = {
 										msgArray.push("For help / feedback / bugs/ testing / info / changelogs / etc. go to **https://discord.gg/0kvLlwb7slG3XCCQ**");
 										bot.sendMessage(server.defaultChannel, msgArray);
 									}, 2000);
-								}
+								} else { setTimeout(function(){ bot.sendMessage(server.defaultChannel, "*Quietly walks in*"); }, 2000); }
 							}
 						});
 					}
@@ -246,12 +246,11 @@ var commands = {
 		cooldown: 3,
 		process: function (bot, msg, suffix) {
 			if (!suffix || /(.*), ?(.*)/.test(suffix) == false) { bot.sendMessage(msg, correctUsage("choose"), function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return;}
-			var choices = suffix.split(",");
+			var choices = suffix.split(/, ?/);
 			if (choices.length < 2) {
 				bot.sendMessage(msg, correctUsage("choose"), function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); });
 			} else {
 				choice = Math.floor(Math.random() * (choices.length));
-				if (choices[choice].startsWith(" ")) { choices[choice] = choices[choice].substring(1); }
 				bot.sendMessage(msg, "I picked " + choices[choice]);
 			}
 		}
@@ -315,6 +314,33 @@ var commands = {
 				} else { bot.sendMessage(msg, ":warning: Must be done in the channel the vote was created in.", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 			} catch(err) { logger.log("error", "Error sending vote results: " + err) }
 			upvote = 0; downvote = 0; votersUp = []; votersDown = []; votebool = false; topicstring = ""; voteChannel = {}; voteAnMsg = {};
+		}
+	},
+	"strawpoll": {
+		desc: "Create a strawpoll",
+		deleteCommand: true,
+		usage: "<option1>, <option2>, [option3], ...",
+		process: function(bot, msg, suffix) {
+			if (suffix && /^[^, ](.*), ?(.*)[^, ]$/.test(suffix)) {
+				suffix = suffix.split(/, ?/);
+				request.post(
+				    {
+				    	"url": 'https://strawpoll.me/api/v2/polls', 
+				    	"headers": {"content-type": "application/json"}, 
+				    	"json": true, 
+				    	body: {
+				    		"title": ""+msg.author.username+"'s Poll",
+				    		"options": suffix
+				    	}
+				    },
+				    function (error, response, body) {
+				        if (!error && response.statusCode == 201) {
+				            bot.sendMessage(msg, msg.author.username + " created a strawpoll. Vote here: http://strawpoll.me/" + body.id);
+				        } else if (error) { bot.sendMessage(msg, error); }
+				        else if (response.statusCode != 201) { bot.sendMessage(msg, "Got status code "+response.statusCode); }
+				    }
+				);
+			} else { bot.sendMessage(msg, correctUsage("strawpoll"), function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
 		}
 	},
 	"8ball": {
@@ -430,15 +456,19 @@ var commands = {
 			if (suffix) {
 			if (suffix.split(" ")[0] === "sig") {
 
-				if (suffix.split(" ").length < 2) { var username = msg.author.username; }
-				else { var username = suffix.split(" ")[1]; }
-				var color = "ff66aa";
-				if (/sig (.*) #?[A-Fa-f0-9]{6}/.test(suffix)){
-					if (suffix.split(" ")[2].length == 6) { color = suffix.split(" ")[2]; }
-					if (suffix.split(" ")[2].length == 7) { color = suffix.split(" ")[2].substring(1); }
-				} else if (/sig #?[A-Fa-f0-9]{6}/.test(suffix)) {
-					if (suffix.split(" ")[1].length == 6) { color = suffix.split(" ")[1]; }
-					if (suffix.split(" ")[1].length == 7) { color = suffix.split(" ")[1].substring(1); }
+				var color = "ff66aa",
+					username = msg.author.username;
+				suffix = suffix.split(" ");
+				if (suffix.length >= 2) {
+					if (/sig (.*) #?[A-Fa-f0-9]{6}$/.test(suffix.join(" "))){
+						var username = suffix.join("%20").substring(6, suffix.join("%20").lastIndexOf("%20"));
+						if (suffix[suffix.length - 1].length == 6) { color = suffix[suffix.length - 1]; }
+						if (suffix[suffix.length - 1].length == 7) { color = suffix[suffix.length - 1].substring(1); }
+					} else if (/sig #?[A-Fa-f0-9]{6}$/.test(suffix.join(" "))) {
+						var username = msg.author.username;
+						if (suffix[1].length == 6) { color = suffix[1]; }
+						if (suffix[1].length == 7) { color = suffix[1].substring(1); }
+					}
 				}
 				request.head('https://lemmmy.pw/osusig/sig.php?colour=hex'+color+'&uname='+username+'&pp=2&flagshadow&xpbar&xpbarhex&darktriangles', function(err, res, body) {
 					if (!err) {
@@ -452,7 +482,7 @@ var commands = {
 			} else if (suffix.split(" ")[0] == "user") {
 
 				if (suffix.split(" ").length < 2) { var username = msg.author.username; }
-				else { var username = suffix.split(" ")[1]; }
+				else { var username = suffix.substring(5); }
 				if (config.is_heroku_version) { var APIKEY = process.env.osu_api_key; } else { var APIKEY = config.osu_api_key; }
 				if (!APIKEY) { bot.sendMessage(msg, "Osu API key not configured by bot owner", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 				var osu = new osuapi.Api(APIKEY);
@@ -473,13 +503,13 @@ var commands = {
 			} else if (suffix.split(" ")[0] === "best") {
 
 				if (suffix.split(" ").length < 2) { var username = msg.author.username; }
-				else { var username = suffix.split(" ")[1]; }
+				else { var username = suffix.substring(5); }
 				if (config.is_heroku_version) { var APIKEY = process.env.osu_api_key; } else { var APIKEY = config.osu_api_key; }
 				if (!APIKEY) { bot.sendMessage(msg, "Osu API key not configured by bot owner", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 				var osu = new osuapi.Api(APIKEY);
 				osu.getUserBest(username, function (err, data) {
 					if (err) { bot.sendMessage(msg, ":warning: Error: "+err, function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
-					if (!data || !data[0] || !data[1] || !data[2] || !data[3] || !data[4]) { bot.sendMessage(msg, ":warning: User not found or didn't receive all data", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
+					if (!data || !data[0] || !data[1] || !data[2] || !data[3] || !data[4]) { bot.sendMessage(msg, ":warning: User not found or user doesn't have 5 plays", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 					try {
 						var msgArray = [];
 						msgArray.push("Top 5 osu scores for: **"+username+"**:");
@@ -502,24 +532,28 @@ var commands = {
 			} else if (suffix.split(" ")[0] === "recent") {
 
 				if (suffix.split(" ").length < 2) { var username = msg.author.username; }
-				else { var username = suffix.split(" ")[1]; }
+				else { var username = suffix.substring(7); }
 				if (config.is_heroku_version) { var APIKEY = process.env.osu_api_key; } else { var APIKEY = config.osu_api_key; }
 				if (!APIKEY) { bot.sendMessage(msg, "Osu API key not configured by bot owner", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 				var osu = new osuapi.Api(APIKEY);
 				osu.getUserRecent(username, function (err, data) {
 					if (err) { bot.sendMessage(msg, ":warning: Error: "+err, function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
-					if (!data || !data[0] || !data[1] || !data[2] || !data[3] || !data[4]) { bot.sendMessage(msg, ":warning: User not found or didn't receive all data", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
+					if (!data || !data[0]) { bot.sendMessage(msg, ":warning: User not found or no recent plays", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 					var msgArray = [];
 					msgArray.push("5 most recent plays for: **"+username+"**:");
 					msgArray.push("----------------------------------");
 					osu.getBeatmap(data[0].beatmap_id, function (err, map1) {
 						msgArray.push("**1.** *"+map1.title+" (☆"+map1.difficultyrating.substring(0, map1.difficultyrating.split(".")[0].length+3)+")*: **Score:** "+data[0].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" **| Max Combo:** "+data[0].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" **| Misses:** "+data[0].countmiss+" **| Date:** "+data[0].date);
+						if (!data[1]) { bot.sendMessage(msg, msgArray); return; }
 						osu.getBeatmap(data[1].beatmap_id, function (err, map2) {
 							msgArray.push("**2.** *"+map2.title+" (☆"+map2.difficultyrating.substring(0, map2.difficultyrating.split(".")[0].length+3)+")*: **Score:** "+data[1].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" **| Max Combo:** "+data[1].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" **| Misses:** "+data[1].countmiss+" **| Date:** "+data[1].date);
+							if (!data[2]) { bot.sendMessage(msg, msgArray); return; }
 							osu.getBeatmap(data[2].beatmap_id, function (err, map3) {
 								msgArray.push("**3.** *"+map3.title+" (☆"+map3.difficultyrating.substring(0, map3.difficultyrating.split(".")[0].length+3)+")*: **Score:** "+data[2].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" **| Max Combo:** "+data[2].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" **| Misses:** "+data[2].countmiss+" **| Date:** "+data[2].date);
+								if (!data[3]) { bot.sendMessage(msg, msgArray); return; }
 								osu.getBeatmap(data[3].beatmap_id, function (err, map4) {
 									msgArray.push("**4.** *"+map4.title+" (☆"+map4.difficultyrating.substring(0, map4.difficultyrating.split(".")[0].length+3)+")*: **Score:** "+data[3].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" **| Max Combo:** "+data[3].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" **| Misses:** "+data[3].countmiss+" **| Date:** "+data[3].date);
+									if (!data[4]) { bot.sendMessage(msg, msgArray); return; }
 									osu.getBeatmap(data[4].beatmap_id, function (err, map5) {
 										msgArray.push("**5.** *"+map5.title+" (☆"+map5.difficultyrating.substring(0, map5.difficultyrating.split(".")[0].length+3)+")*: **Score:** "+data[4].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" **| Max Combo:** "+data[4].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",")+" **| Misses:** "+data[4].countmiss+" **| Date:** "+data[4].date);
 										bot.sendMessage(msg, msgArray);
@@ -580,6 +614,23 @@ var commands = {
 			suffix = suffix.split(" ");
 			for (var i = 0; i < suffix.length; i++) { suffix[i] = encodeURIComponent(suffix[i]); }
 			bot.sendMessage(msg, ":mag: **http://www.lmgtfy.com/?q="+suffix.join("+")+"**");
+		}
+	},
+	"numberfacts": {
+		desc: "Get facts about a number",
+		deleteCommand: true,
+		usage: "[number]",
+		process: function(bot, msg, suffix) {
+			var number = "random";
+			if (suffix && /^\d+$/.test(suffix)) { number = suffix; }
+			request('http://numbersapi.com/'+number+'/trivia?json', function (error, response, body) {
+				if (error) { bot.sendMessage(msg, "Error: "+error, function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 10000}); }); }
+				if (response.statusCode != 200) { bot.sendMessage(msg, "Got status code "+response.statusCode, function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 10000}); }); }
+				if (!error && response.statusCode == 200) {
+					body = JSON.parse(body);
+					bot.sendMessage(msg, body.text);
+				}
+			});
 		}
 	}
 };

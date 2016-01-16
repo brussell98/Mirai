@@ -24,7 +24,7 @@ if (config.is_heroku_version) { //For avoiding Heroku $PORT error
 		var result = 'Bot is running';
 		response.send(result);
 	}).listen(app.get('port'), function() {
-		console.log('Bot is running, server is listening on port', app.get('port'));
+		console.log('Server is listening on port', app.get('port'));
 	});
 }
 
@@ -89,7 +89,7 @@ bot.on("message", function (msg) {
 				}
 				commands[cmd].process(bot, msg, suffix);
 				if (commands[cmd].hasOwnProperty("deleteCommand")) {
-					if (commands[cmd].deleteCommand === true) { bot.deleteMessage(msg, {"wait": 3500}); } //delete command after 3.5 seconds
+					if (commands[cmd].deleteCommand === true) { bot.deleteMessage(msg, {"wait": 10000}); } //delete command after 3.5 seconds
 				}
 				logger.log("debug", "Command processed: " + cmd);
 			} catch (err) { logger.log("error", err); }
@@ -115,7 +115,7 @@ bot.on("message", function (msg) {
 				}
 				mod[cmd].process(bot, msg, suffix);
 				if (mod[cmd].hasOwnProperty("deleteCommand")) {
-					if (mod[cmd].deleteCommand === true) { bot.deleteMessage(msg, {"wait": 3500}); }
+					if (mod[cmd].deleteCommand === true) { bot.deleteMessage(msg, {"wait": 10000}); }
 				}
 				logger.log("debug", "Command processed: " + cmd);
 			} catch (err) { logger.log("error", err); }
