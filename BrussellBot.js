@@ -208,9 +208,15 @@ function carbonInvite(msg){
 		try {
 			logger.log("info", "Attempting to join: "+msg.content);
 			bot.joinServer(msg.content, function (err, server) {
-				if (err || !server) {
+				if (err) {
 					bot.sendMessage(msg, ":warning: Failed to join: " + err);
 					logger.log("warn", err);
+				} else if (!server || server.name == undefined || server.roles == undefined || server.channels == undefined || server.members == undefined) { //this problem is a pain in the ass
+					logger.log("info", "Error joining server. Didn't receive all data.");
+					bot.sendMessage(msg, ":warning: Failed to receive all data, please try again in a few seconds.");
+					try {
+						bot.leaveServer(server);
+					} catch(error) { /*how did it get here?*/ }
 				} else {
 					logger.log("info", "Joined server: " + server.name);
 					bot.sendMessage(msg, ":white_check_mark: Successfully joined ***" + server.name + "***");
@@ -221,7 +227,7 @@ function carbonInvite(msg){
 							msgArray.push("Hi! I'm **" + bot.user.username + "** and I was invited to this server by " + msg.author + ".");
 							msgArray.push("You can use `" + config.command_prefix + "help` to see what I can do. Mods can use `"+config.mod_command_prefix+"help` for mod commands.");
 							msgArray.push("If I shouldn't be here someone with the `Kick Members` permission can use `" + config.mod_command_prefix + "leaves` to make me leave");
-							msgArray.push("For help / feedback / bugs/ testing / info / changelogs / etc. go to **https://discord.gg/0kvLlwb7slG3XCCQ**");
+							msgArray.push("For help / feedback / bugs/ testing / info / changelogs / etc. go to **discord.gg/0kvLlwb7slG3XCCQ**");
 							bot.sendMessage(server.defaultChannel, msgArray);
 						}, 2000);
 					}

@@ -73,7 +73,7 @@ var commands = {
 		desc: "Get a link to the BrussellBot / Bot-chan server.",
 		cooldown: 5,
 		process: function(bot, msg, suffix) {
-			bot.sendMessage(msg, "Here's an invite to my server: **https://discord.gg/0kvLlwb7slG3XCCQ**");
+			bot.sendMessage(msg, "Here's an invite to my server: **discord.gg/0kvLlwb7slG3XCCQ**");
 		}
 	},
 	"ping": {
@@ -98,9 +98,15 @@ var commands = {
 				for (invite of invites) {
 					if (/https?:\/\/discord\.gg\/[A-Za-z0-9]+/.test(invite)) {
 						bot.joinServer(invite, function (err, server) {
-							if (err || !server) {
+							if (err) {
 								bot.sendMessage(msg, ":warning: Failed to join: " + err);
 								logger.log("warn", err);
+							} else if (!server || server.name == undefined || server.roles == undefined || server.channels == undefined || server.members == undefined) {
+								logger.log("info", "Error joining server. Didn't receive all data.");
+								bot.sendMessage(msg, ":warning: Failed to receive all data, please try again in a few seconds.");
+								try {
+									bot.leaveServer(server);
+								} catch(error) { /*how did it get here?*/ }
 							} else {
 								logger.log("info", "Joined server: " + server.name);
 								bot.sendMessage(msg, ":white_check_mark: Successfully joined ***" + server.name + "***");
@@ -110,7 +116,7 @@ var commands = {
 										msgArray.push("Hi! I'm **" + bot.user.username + "** and I was invited to this server by " + msg.author + ".");
 										msgArray.push("You can use `" + config.command_prefix + "help` to see what I can do. Mods can use "+config.mod_command_prefix+"help for mod commands.");
 										msgArray.push("If I shouldn't be here someone with the `Kick Members` permission can use `" + config.mod_command_prefix + "leaves` to make me leave");
-										msgArray.push("For help / feedback / bugs/ testing / info / changelogs / etc. go to **https://discord.gg/0kvLlwb7slG3XCCQ**");
+										msgArray.push("For help / feedback / bugs/ testing / info / changelogs / etc. go to **discord.gg/0kvLlwb7slG3XCCQ**");
 										bot.sendMessage(server.defaultChannel, msgArray);
 									}, 2000);
 								} else { setTimeout(function(){ bot.sendMessage(server.defaultChannel, "*Quietly walks in*"); }, 2000); }
@@ -193,35 +199,35 @@ var commands = {
 						var msgArray = [];
 						if (usr.id != config.admin_id) { msgArray.push(":information_source: You requested info on **" + usr.username + "**"); }
 						else { msgArray.push(":information_source: You requested info on **Bot Creator-senpai**"); }
-						msgArray.push("User ID: `" + usr.id + "`");
-						if (usr.game != null) { msgArray.push("Status: `" + usr.status + "` playing `" + usr.game.name + "`"); } //broken
-						else { msgArray.push("Status: `" + usr.status + "`"); }
+						msgArray.push("**User ID:** `" + usr.id + "`");
+						if (usr.game != null) { msgArray.push("Status: `" + usr.status + "` playing `" + usr.game.name + "`"); }
+						else { msgArray.push("**Status:** `" + usr.status + "`"); }
 						var jDate = new Date(msg.channel.server.detailsOfUser(usr).joinedAt);
-						msgArray.push("Joined this server on: `" + jDate.toUTCString() + "`");
+						msgArray.push("**Joined this server on:** `" + jDate.toUTCString() + "`");
 						var rsO = msg.channel.server.rolesOfUser(usr.id)
 						var rols = "everyone, "
 						for (rO of rsO) { rols += (rO.name + ", "); }
 						rols = rols.replace("@", "");
-						msgArray.push("Roles: `" + rols.substring(0, rols.length - 2) + "`");
-						if (usr.avatarURL != null) { msgArray.push("Avatar URL: `" + usr.avatarURL + "`"); }
+						msgArray.push("**Roles:** `" + rols.substring(0, rols.length - 2) + "`");
+						if (usr.avatarURL != null) { msgArray.push("**Avatar URL:** `" + usr.avatarURL + "`"); }
 						bot.sendMessage(msg, msgArray);
 						logger.log("info", "Got info on " + usr.username);
 					});
 				} else {
 					var msgArray = [];
 					msgArray.push(":information_source: You requested info on **" + msg.channel.server.name + "**");
-					msgArray.push("Server ID: `" + msg.channel.server.id + "`");
-					msgArray.push("Owner: `" + msg.channel.server.owner.username + "` (id: `" + msg.channel.server.owner.id + "`)");
-					msgArray.push("Region: `" + msg.channel.server.region + "`");
-					msgArray.push("Members: `" + msg.channel.server.members.length + "`");
+					msgArray.push("**Server ID:** `" + msg.channel.server.id + "`");
+					msgArray.push("**Owner:** `" + msg.channel.server.owner.username + "` (**id:** `" + msg.channel.server.owner.id + "`)");
+					msgArray.push("**Region:** `" + msg.channel.server.region + "`");
+					msgArray.push("**Members:** `" + msg.channel.server.members.length + "`");
 					var rsO = msg.channel.server.roles;
 					var rols = "everyone, ";
 					for (rO of rsO) { rols += (rO.name + ", "); }
 					rols = rols.replace("@", "");
-					msgArray.push("Roles: `" + rols.substring(0, rols.length - 2) + "`");
-					msgArray.push("Default channel: #" + msg.channel.server.defaultChannel.name + "");
-					msgArray.push("This channel's id: `" + msg.channel.id + "`");
-					msgArray.push("Icon URL: `" + msg.channel.server.iconURL + "`");
+					msgArray.push("**Roles:** `" + rols.substring(0, rols.length - 2) + "`");
+					msgArray.push("**Default channel:** #" + msg.channel.server.defaultChannel.name + "");
+					msgArray.push("**This channel's id:** `" + msg.channel.id + "`");
+					msgArray.push("**Icon URL:** `" + msg.channel.server.iconURL + "`");
 					bot.sendMessage(msg, msgArray);
 					logger.log("info", "Got info on " + msg.channel.server.name);
 				}

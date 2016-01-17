@@ -104,7 +104,7 @@ var commands = {
 			if (msg.author.id == config.admin_id) {
 				if (!suffix) { bot.setPlayingGame(games[Math.floor(Math.random() * (games.length))]); }
 				else { bot.setPlayingGame(suffix); logger.log("info", "" + msg.author.username + " changed the playing status to: "+suffix); }
-			} else { bot.setPlayingGame(games[Math.floor(Math.random() * (games.length))]); }
+			} else { bot.setPlayingGame("with "+msg.author.username); }
 		}
 	},
 	"clean": {
