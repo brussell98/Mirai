@@ -16,11 +16,10 @@ An multipurpose bot for Discord using the [Discord.js](https://github.com/hydrab
 
 ### TODO
 
-- [x] Make osu work for spaces
-- [x] Fix colors in osu sig and detect suffix length
 - [ ] Music commands - After discord.js gets patched for volume
 	- [ ] Audio help
 	- [ ] Queue song from youtube
+		- [ ] Or pass it a webm link
 	- [ ] Skip
 	- [ ] Have pre-made playlists available
 	- [ ] Queue a playlist
@@ -28,7 +27,4 @@ An multipurpose bot for Discord using the [Discord.js](https://github.com/hydrab
 	- [ ] List of queues songs
 	- [ ] Set playing to song name
 	- [ ] Bot owner gets priority
-- [x] Strawpoll
-- [x] Pull recent changelogs from the BrussellBot server
-- [x] Number facts
 - [ ] Could do stuff with checking how long a user has been on the server for perms

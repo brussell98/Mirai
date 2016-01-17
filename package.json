@@ -19,10 +19,8 @@
 	},
 	"license": "MIT",
 	"dependencies": {
-		"discord.js": "*",
+		"discord.js": "hydrabolt/discord.js#indev",
 		"fs": "*",
-		"url": "*",
-		"path": "*",
 		"request": "*",
 		"winston": "*",
 		"xml2js": "*",
@@ -33,6 +31,8 @@
 	"optionalDependencies": {
 		"pg": "*",
 		"ytdl-core": "*",
-		"feedparser": "*"
+		"feedparser": "*",
+		"url": "*",
+		"path": "*"
 	}
 }
