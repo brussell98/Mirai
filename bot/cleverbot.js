@@ -2,13 +2,15 @@ var Cleverbot = require('cleverbot-node');
 var Slave = new Cleverbot();
 
 exports.cleverbot = function(bot, msg) {
-	var mention = msg.content.split(" ")[0];
-	var suffix = msg.content.substring(mention.length + 2);
-	if (suffix) {
+	var text = msg.content.substring(22);
+	if (text){
 		bot.startTyping(msg.channel);
+		for (var i = 0; i < msg.mentions.length; i++){
+			if (msg.mentions[i].id != bot.user.id) { text = text.replace("<@"+msg.mentions[i].id+">", msg.mentions[i].username); }
+		}
 		Cleverbot.prepare(function() {
 			try {
-				Slave.write(suffix, function(resp) {
+				Slave.write(text, function(resp) {
 					if (/\|/g.test(resp.message)) {
 						resp.message = resp.message.replace(/\|/g, "\\u"); //replace | with \u
 						resp.message = resp.message.replace(/\\u([\d\w]{4})/gi, function (match, grp) { //unescape unicode
