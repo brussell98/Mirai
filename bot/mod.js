@@ -58,30 +58,19 @@ var commands = {
 		usage: "[-ls (list servers (DM only))] ",
 		cooldown: 30,
 		deleteCommand: true,
-		process: function(bot, msg, suffix) {
-			if (msg.author.id == config.admin_id || msg.channel.isPrivate || msg.author.id == msg.channel.server.owner.id) { //perm checks all over
-				fs.readFile("./logs/debug.txt", 'utf8', function (err, data) {
-					if (err) { logger.log("warn", "Error getting debug logs: " + err); }
-					logger.log("debug", "Fetched debug logs");
-					data = data.split(/\r?\n/); //split by line
-					var cmdCount = 0,
-						clevCount = 0;
-					for (line of data) {
-						if (line.indexOf(" - debug: Command processed: ") > -1) { cmdCount += 1; }
-						else if (line.indexOf(" asked the bot: ") > -1) { clevCount += 1; }
-					}
-					var msgArray = [];
-					msgArray.push("```");
-					msgArray.push("Uptime: " + (Math.round(bot.uptime / (1000 * 60 * 60))) + " hours, " + (Math.round(bot.uptime / (1000 * 60)) % 60) + " minutes, and " + (Math.round(bot.uptime / 1000) % 60) + " seconds.");
-					msgArray.push("Connected to " + bot.servers.length + " servers and " + bot.channels.length + " channels.");
-					msgArray.push("Serving " + bot.users.length + " users.");
-					msgArray.push("Memory Usage: " + Math.round(process.memoryUsage().rss/1024/1000)+"MB");
-					msgArray.push("Running BrussellBot v" + version);
-					msgArray.push("Commands processed this session: " + cmdCount);
-					msgArray.push("Users talked to "+bot.user.username+" "+clevCount+" times");
-					msgArray.push("```");
-					bot.sendMessage(msg, msgArray);
-				});
+		process: function(bot, msg, suffix, commandsProcessed, talkedToTimes) {
+			if (msg.author.id == config.admin_id || msg.channel.isPrivate || msg.author.id == msg.channel.server.owner.id) {
+				var msgArray = [];
+				msgArray.push("```");
+				msgArray.push("Uptime: " + (Math.round(bot.uptime / (1000 * 60 * 60))) + " hours, " + (Math.round(bot.uptime / (1000 * 60)) % 60) + " minutes, and " + (Math.round(bot.uptime / 1000) % 60) + " seconds.");
+				msgArray.push("Connected to " + bot.servers.length + " servers and " + bot.channels.length + " channels.");
+				msgArray.push("Serving " + bot.users.length + " users.");
+				msgArray.push("Memory Usage: " + Math.round(process.memoryUsage().rss/1024/1000)+"MB");
+				msgArray.push("Running BrussellBot v" + version);
+				msgArray.push("Commands processed this session: " + commandsProcessed);
+				msgArray.push("Users talked to "+bot.user.username+" "+talkedToTimes+" times");
+				msgArray.push("```");
+				bot.sendMessage(msg, msgArray);
 
 				if (suffix.indexOf("-ls") != -1 && msg.channel.isPrivate) { //if user wants a list of servers
 					var svrArray = [];
@@ -93,7 +82,7 @@ var commands = {
 		}
 	},
 	"playing": {
-		desc: "Refresh what game the bot is playing",
+		desc: "Allows the bot owner to set the game.",
 		usage: "[game]",
 		cooldown: 5,
 		shouldDisplay: false,

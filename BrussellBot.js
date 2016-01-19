@@ -30,6 +30,7 @@ if (config.is_heroku_version) { //For avoiding Heroku $PORT error
 
 var lastExecTime = {}; //for cooldown
 var shouldCarbonAnnounce = true; //set if the bot should announce when joining an invite sent without a command
+var commandsProcessed = 0, talkedToTimes = 0;
 
 var bot = new discord.Client();
 bot.on('warn', function (m) { logger.log("warn", m); });
@@ -62,7 +63,7 @@ bot.on("message", function (msg) {
 	if (msg.author.id == config.admin_id && msg.content.indexOf("(eval) ") > -1 && msg.content.indexOf("(eval) ") <= 1) { evaluateString(msg); return; } //bot owner eval command
 	if (msg.mentions.length !== 0) { //cleverbot
 		msg.mentions.forEach(function(usr) { 
-			if (usr.id == bot.user.id && msg.content.startsWith("<@"+bot.user.id+">")) { cleverbot(bot, msg); logger.log("info", msg.author.username+" asked the bot: "+msg.content.substring(22).replace(/\n/g, " ")); return; }
+			if (usr.id == bot.user.id && msg.content.startsWith("<@"+bot.user.id+">")) { cleverbot(bot, msg); talkedToTimes += 1; logger.log("info", msg.author.username+" asked the bot: "+msg.content.substring(22).replace(/\n/g, " ")); return; }
 		});
 	}
 	if (msg.content[0] != config.command_prefix && msg.content[0] != config.mod_command_prefix) { return; } //if not a command
@@ -73,6 +74,7 @@ bot.on("message", function (msg) {
 		if (commands.hasOwnProperty(cmd)) {
 			try {
 				logger.log("info", "" + msg.author.username + " executed: " + msg.content.replace(/\n/g, " "));
+				commandsProcessed += 1;
 				if (commands[cmd].hasOwnProperty("cooldown")) {
 					if (lastExecTime.hasOwnProperty(cmd)) {
 						var cTime = new Date();
@@ -99,6 +101,7 @@ bot.on("message", function (msg) {
 		if (mod.hasOwnProperty(cmd)) {
 			try {
 				logger.log("info", "" + msg.author.username + " executed: " + msg.content.replace(/\n/g, " "));
+				commandsProcessed += 1;
 				if (mod[cmd].hasOwnProperty("cooldown")) {
 					if (lastExecTime.hasOwnProperty(cmd)) {
 						var cTime = new Date();
@@ -113,7 +116,7 @@ bot.on("message", function (msg) {
 						} else { lastExecTime[cmd] = cTime; }
 					} else { lastExecTime[cmd] = new Date(); }
 				}
-				mod[cmd].process(bot, msg, suffix);
+				mod[cmd].process(bot, msg, suffix, commandsProcessed, talkedToTimes);
 				if (mod[cmd].hasOwnProperty("deleteCommand")) {
 					if (mod[cmd].deleteCommand === true) { bot.deleteMessage(msg, {"wait": 10000}); }
 				}
