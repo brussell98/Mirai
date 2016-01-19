@@ -1,101 +1,104 @@
 /*
-==========
-This is a "ping-pong bot" / music bot.
+This is a multipurpose bot
 Run this with node to run the bot.
-==========
-*/
+
+invite regex: /https?:\/\/discord\.gg\/[A-Za-z0-9]+/
+//===================================================*/
 
 var discord = require("discord.js");
 var commands = require("./bot/commands.js").commands;
 var mod = require("./bot/mod.js").commands;
 var config = require("./bot/config.json");
 var games = require("./bot/games.json").games;
-var perms = require("./bot/permissions.json");
 var versioncheck = require("./bot/versioncheck.js");
 var fs = require("fs");
-var chatlog = require("./bot/logger.js").ChatLog;
 var logger = require("./bot/logger.js").Logger;
+var cleverbot = require("./bot/cleverbot.js").cleverbot;
+checkConfig(); //notify user if they are missing things in the config
 
-var servers = getServers();
-var lastExecTime = {};
+if (config.is_heroku_version) { //For avoiding Heroku $PORT error
+	var express = require('express');
+	var app = express();
+	app.set('port', (process.env.PORT || 5000));
+	app.get('/', function(request, response) {
+		var result = 'Bot is running';
+		response.send(result);
+	}).listen(app.get('port'), function() {
+		console.log('Server is listening on port', app.get('port'));
+	});
+}
+
+var lastExecTime = {}; //for cooldown
+var shouldCarbonAnnounce = true; //set if the bot should announce when joining an invite sent without a command
 
 var bot = new discord.Client();
-bot.on('warn', (m) => logger.log("warn", m));
-bot.on('debug', (m) => logger.log("debug", m));
+bot.on('warn', function (m) { logger.log("warn", m); });
+bot.on('debug', function(m) { logger.log("debug", m); });
 
 bot.on("ready", function () {
-	checkServers();
-	bot.setPlayingGame(games[Math.floor(Math.random() * (games.length))]);
+	bot.setPlayingGame(games[Math.floor(Math.random() * (games.length))]); //set game to a random game from games.json
+	//bot.setPlayingGame("]help [command]");
 	logger.log("info", "BrussellBot is ready! Listening to " + bot.channels.length + " channels on " + bot.servers.length + " servers");
 	versioncheck.checkForUpdate(function (resp) {
-		if (resp != null) {
-			logger.log("info", resp);
-		}
+		if (resp !== null) { logger.log("info", resp); }
 	});
 });
 
 bot.on("disconnected", function () {
 	logger.log("info", "Disconnected");
-	process.exit(1);
+	if (!config.is_heroku_version) { process.exit(0); }
+	else { //if on heroku try to re-connect
+		setTimeout(function(){
+			logger.log("info", "Attempting to log in...");
+			bot.login(process.env.email, process.env.password, function (err, token) {
+				if (err) { logger.log("error", err); process.exit(0); }
+				if (!token) { logger.log("warn", "Failed to re-connect"); process.exit(0); }
+			});}, 20000); //waits 20 seconds before doing
+	}
 });
 
 bot.on("message", function (msg) {
-	if (!msg.channel.isPrivate && msg.author.id != bot.user.id) {
-		if (config.log_messages && servers[msg.channel.server.id].log_messages == 1) {
-			var shouldLog = true;
-			if (msg.content[0] == config.command_prefix) { shouldLog = false; }
-			if (msg.content[0] == config.mod_command_prefix) { shouldLog = false; }
-			if (shouldLog = true) {
-				var d = new Date();
-				var mtext = msg.content.replace(/\r?\n|\r/g, " ");
-				chatlog.info(d.toUTCString() + ": " + msg.channel.server.name + " --> " + msg.channel.name + " -> " + msg.author.username + " said " + mtext);
-			}
-		}
+	if (msg.channel.isPrivate && msg.author.id != bot.user.id && (/(^https?:\/\/discord\.gg\/[A-Za-z0-9]+$|^https?:\/\/discordapp\.com\/invite\/[A-Za-z0-9]+$)/.test(msg.content))) { carbonInvite(msg); } //accept invites sent in a DM
+	if (msg.author.id == config.admin_id && msg.content.indexOf("(eval) ") > -1 && msg.content.indexOf("(eval) ") <= 1) { evaluateString(msg); return; } //bot owner eval command
+	if (msg.mentions.length !== 0) { //cleverbot
+		msg.mentions.forEach(function(usr) { 
+			if (usr.id == bot.user.id && msg.content.startsWith("<@"+bot.user.id+">")) { cleverbot(bot, msg); logger.log("info", msg.author.username+" asked the bot: "+msg.content.substring(22).replace(/\n/g, " ")); return; }
+		});
 	}
-	var isCmd = false; //temp fix
-	if (msg.content[0] == config.command_prefix) { isCmd = true; }
-	if (msg.content[0] == config.mod_command_prefix) { isCmd = true; }
-	if (isCmd == false) { return; }
-	logger.log("info", "" + msg.author.username + " executed: " + msg.content);
-	if (msg.author.id == bot.user.id) { return; }
-	var cmd = msg.content.split(" ")[0].substring(1).toLowerCase();
-	var suffix = msg.content.substring( cmd.length + 2 );
-	if (msg.content.startsWith(config.command_prefix)) {
-		var permLvl = 0;
-		if (perms.hasOwnProperty(msg.author.id)) { permLvl = perms[msg.author.id].level; }
+	if (msg.content[0] != config.command_prefix && msg.content[0] != config.mod_command_prefix) { return; } //if not a command
+	if (msg.author.id == bot.user.id) { return; } //stop from replying to itself
+	var cmd = msg.content.split(" ")[0].replace(/\n/g, " ").substring(1).toLowerCase();
+	var suffix = msg.content.replace(/\n/g, " ").substring( cmd.length + 2 ); //seperate the command and suffix
+	if (msg.content.startsWith(config.command_prefix)) { //normal commands
 		if (commands.hasOwnProperty(cmd)) {
 			try {
+				logger.log("info", "" + msg.author.username + " executed: " + msg.content.replace(/\n/g, " "));
 				if (commands[cmd].hasOwnProperty("cooldown")) {
 					if (lastExecTime.hasOwnProperty(cmd)) {
 						var cTime = new Date();
 						var leTime = new Date(lastExecTime[cmd]);
 						leTime.setSeconds(leTime.getSeconds() + commands[cmd].cooldown);
-						if (cTime < leTime) {
+						if (cTime < leTime) { //if it is still on cooldown
 							var left = (leTime - cTime) / 1000;
-							bot.sendMessage(msg, "This command is on cooldown with " + Math.round(left) + " seconds remaining");
-							return;
+							if (msg.author.id != config.admin_id) { //admin bypass
+								bot.sendMessage(msg, ":warning: This command is on cooldown with " + Math.round(left) + " seconds remaining", function (erro, message) { bot.deleteMessage(message, {"wait": 2000}); });
+								return;
+							}
 						} else { lastExecTime[cmd] = cTime; }
 					} else { lastExecTime[cmd] = new Date(); }
 				}
-				if (commands[cmd].hasOwnProperty("permLevel")) {
-					if (commands[cmd].permLevel <= permLvl) { commands[cmd].process(bot, msg, suffix); logger.log("debug", "Command processed: " + cmd); }
-					else {
-						bot.sendMessage(msg, "You need permission level " + commands[cmd].permLevel + " to do that.");
-						logger.log("info", "Insufficient permissions");
-					}
-				} else { commands[cmd].process(bot, msg, suffix); logger.log("debug", "Command processed: " + cmd); }
-			} catch (err) {
-				logger.log("error", err);
-			}
+				commands[cmd].process(bot, msg, suffix);
+				if (commands[cmd].hasOwnProperty("deleteCommand")) {
+					if (commands[cmd].deleteCommand === true) { bot.deleteMessage(msg, {"wait": 10000}); } //delete command after 3.5 seconds
+				}
+				logger.log("debug", "Command processed: " + cmd);
+			} catch (err) { logger.log("error", err); }
 		}
-	} else if (msg.content.startsWith(config.mod_command_prefix)) {
-		if (cmd == "reload") {
-			if (perms.hasOwnProperty(msg.author.id)) {
-				if (perms[msg.author.id].level >= 1) { reload(); }
-			}
-		}
+	} else if (msg.content.startsWith(config.mod_command_prefix)) { //mod commands
+		if (cmd == "reload") { reload(); bot.deleteMessage(msg); return; } //reload the .json files and modules
 		if (mod.hasOwnProperty(cmd)) {
 			try {
+				logger.log("info", "" + msg.author.username + " executed: " + msg.content.replace(/\n/g, " "));
 				if (mod[cmd].hasOwnProperty("cooldown")) {
 					if (lastExecTime.hasOwnProperty(cmd)) {
 						var cTime = new Date();
@@ -103,172 +106,211 @@ bot.on("message", function (msg) {
 						leTime.setSeconds(leTime.getSeconds() + mod[cmd].cooldown);
 						if (cTime < leTime) {
 							var left = (leTime - cTime) / 1000;
-							bot.sendMessage(msg, "This command is on cooldown with " + Math.round(left) + " seconds remaining");
-							return;
+							if (msg.author.id != config.admin_id) {
+								bot.sendMessage(msg, ":warning: This command is on cooldown with " + Math.round(left) + " seconds remaining", function (erro, message) { bot.deleteMessage(message, {"wait": 2000}); });
+								return;
+							}
 						} else { lastExecTime[cmd] = cTime; }
 					} else { lastExecTime[cmd] = new Date(); }
 				}
 				mod[cmd].process(bot, msg, suffix);
+				if (mod[cmd].hasOwnProperty("deleteCommand")) {
+					if (mod[cmd].deleteCommand === true) { bot.deleteMessage(msg, {"wait": 10000}); }
+				}
 				logger.log("debug", "Command processed: " + cmd);
-			} catch (err) {
-				logger.log("error", err);
-				mod[cmd].process(bot, msg, suffix); //might be a bad idea
-			}
+			} catch (err) { logger.log("error", err); }
 		}
 	}
 });
 
 //event listeners
 bot.on('serverNewMember', function (objServer, objUser) {
-	if (servers[objServer.id].username_change == 1) {
-		logger.log("info", "New member on " + objServer.name + ": " + objUser.username);
-		bot.sendMessage(objServer.defaultChannel, "Welcome to " + objServer.name + " " + objUser.username);
+	if (objServer.members.length < 71 && config.non_essential_event_listeners) {
+		if (config.greet_new_memebrs) { logger.log("info", "New member on " + objServer.name + ": " + objUser.username); bot.sendMessage(objServer.defaultChannel, "Welcome to " + objServer.name + " " + objUser.username); }
 	}
 });
 
 bot.on('serverUpdated', function (objServer, objNewServer) {
-	if (config.non_essential_event_listeners) {
-		logger.log("debug", "" + objServer.name + " is now " + objNewServer.name);
-	}
+	if (config.non_essential_event_listeners) { logger.log("debug", "" + objServer.name + " is now " + objNewServer.name); }
 });
 
 bot.on('channelCreated', function (objChannel) {
 	if (config.non_essential_event_listeners) {
-		if (!objChannel.isPrivate){
-			logger.log("debug", "New channel created. Type: " + objChannel.type + ". Name: " + objChannel.name + ". Server: " + objChannel.server.name);
-		}
+		if (!objChannel.isPrivate){ logger.log("debug", "New channel created. Type: " + objChannel.type + ". Name: " + objChannel.name + ". Server: " + objChannel.server.name); }
 	}
 });
 
 bot.on('channelDeleted', function (objChannel) {
 	if (config.non_essential_event_listeners) {
-		if (!objChannel.isPrivate) {
-			logger.log("debug", "Channel deleted. Type: " + objChannel.type + ". Name: " + objChannel.name + ". Server: " + objChannel.server.name);
-		}
+		if (!objChannel.isPrivate) { logger.log("debug", "Channel deleted. Type: " + objChannel.type + ". Name: " + objChannel.name + ". Server: " + objChannel.server.name); }
 	}
 });
 
 bot.on('channelUpdated', function (objChannel) { //You could make this find the new channel by id to get new info
 	if (config.non_essential_event_listeners) {
 		if (!objChannel.isPrivate) {
-			if (objChannel.type == "text") {
-				logger.log("debug", "Channel updated. Was: Type: Text. Name: " + objChannel.name + ". Topic: " + objChannel.topic);
-			} else {
-				logger.log("debug", "Channel updated. Was: Type: Voice. Name: " + objChannel.name + ".");
-			}
+			if (objChannel.type == "text") { logger.log("debug", "Channel updated. Was: Type: Text. Name: " + objChannel.name + ". Topic: " + objChannel.topic); }
+			else { logger.log("debug", "Channel updated. Was: Type: Voice. Name: " + objChannel.name + "."); }
 		}
 	}
 });
 
 bot.on('userBanned', function (objUser, objServer) {
-	if (servers[objServer.id].ban_message == 1) {
+	if (objServer.members.length < 301 && config.non_essential_event_listeners) {
 		logger.log("info", "" + objUser.username + " banned on " + objServer.name);
-		bot.sendMessage(objServer.defaultChannel, "" + objUser.username + " was banned");
-		bot.sendMessage(objUser, "You were banned from " + objServer.name);
+		bot.sendMessage(objServer.defaultChannel, ":warning: " + objUser.username + " was banned");
+		bot.sendMessage(objUser, ":warning: You were banned from " + objServer.name);
 	}
 });
 
 bot.on('userUnbanned', function (objUser, objServer) {
-	if (config.non_essential_event_listeners) {
-		logger.log("info", "" + objUser.username + " unbanned on " + objServer.name);
-	}
+	if (objServer.members.length < 301 && config.non_essential_event_listeners) { logger.log("info", objUser.username + " unbanned on " + objServer.name); }
 });
 
 bot.on('userUpdated', function (objUser, objNewUser) {
-    if (objUser.username != objNewUser.username){
-		logger.log("info", "" + objUser.username + " changed their name to " + objNewUser.username);
-		bot.servers.forEach(function(ser){
-			if (ser.members.get('id', objUser.id) != null && servers[ser.id].username_change == 1){
-				bot.sendMessage(ser, "User in this server: `" + objUser.username + "`. changed their name to: `" + objNewUser.username + "`.");
+	if (config.non_essential_event_listeners) {
+		if (objUser.username != objNewUser.username){ //if new username
+			//logger.log("info", "" + objUser.username + " changed their name to " + objNewUser.username);
+			if (config.username_changes) {
+				bot.servers.forEach(function(ser){
+					if (ser.members.get('id', objUser.id) !== null && ser.members.length < 101){ bot.sendMessage(ser, ":warning: User in this server: `" + objUser.username + "`. changed their name to: `" + objNewUser.username + "`."); }
+				});
 			}
-		});
-    }
-    //if (config.non_essential_event_listeners) {
-    //	if (objUser.avatarURL != objNewUser.avatarURL) {
-    //		logger.log("info", "" + objNewUser.username + " changed their avatar to: " + objNewUser.avatarUrl);
-    //	}
-    //}
+		}
+	}
 });
 
 bot.on('presence', function(user, status, game) {
-	if (config.log_presence) {
-		logger.log("debug", "Presence: " + user.username + " is now " + status + " playing " + game);
-	}
+	if (config.log_presence) { logger.log("debug", "Presence: " + user.username + " is now " + status + " playing " + game); }
 });
 
-bot.on('serverCreated', function (objServer) {
-	addServer(objServer);
-});
-
-bot.on('serverDeleted', function (objServer) {
-	removeServer(objServer);
+bot.on('serverDeleted', function(objServer) { //detect when the bot leaves a server
+	logger.log("info", "Left server "+objServer.name);
 });
 
 //login
-bot.login(config.email, config.password);
 logger.log("info", "Logging in...");
-
-function updateServers() {
-	fs.writeFile("./bot/servers.json", JSON.stringify(servers, null, '\t'), null);
-	servers = getServers();
-	logger.log("info", "Updated servers.json");
+if (config.is_heroku_version) {
+	bot.login(process.env.email, process.env.password, function (err, token) {
+		if (err) { logger.log("error", err); setTimeout(function(){ process.exit(0); }, 2000); }
+		if (!token) { logger.log("warn", "failed to connect"); setTimeout(function(){ process.exit(0); }, 2000); } //make sure it logged in successfully
+	});
 }
-
-function getServers() {
-	var svrs = require("./bot/servers.json");
-	return svrs;
-}
-
-function addServer(svr) {
-	var log_m = 1;
-	if (svr.members.length < 101) { var user_c = 1; var s_g = 1; }
-	else { var user_c = 0; var s_g = 0; }
-	if (svr.members.length < 301) { var ban_m = 1; }
-	else { var ban_m = 0; }
-	var setngs = {
-		"log_messages": log_m,
-		"username_change": user_c,
-		"server_greeting": s_g,
-		"ban_message": ban_m
-	}
-	servers[svr.id] = setngs;
-	updateServers();
-}
-
-function removeServer(svr) {
-	delete servers[svr.id];
-	updateServers();
-}
-
-function checkServers() {
-	bot.servers.forEach(function (ser) {
-		if (servers.hasOwnProperty(ser.id)) {
-			//found server in config
-		} else {
-			logger.log("debug", "Found new server");
-			addServer(ser);
-		}
+else { 
+	bot.login(config.email, config.password, function (err, token) {
+		if (err) { logger.log("error", err); setTimeout(function(){ process.exit(1); }, 2000); }
+		if (!token) { logger.log("warn", "failed to connect"); setTimeout(function(){ process.exit(1); }, 2000); }
 	});
 }
 
+function carbonInvite(msg){
+	if (msg) {
+		try {
+			logger.log("info", "Attempting to join: "+msg.content);
+			bot.joinServer(msg.content, function (err, server) {
+				if (err) {
+					bot.sendMessage(msg, ":warning: Failed to join: " + err);
+					logger.log("warn", err);
+				} else if (!server || server.name == undefined || server.roles == undefined || server.channels == undefined || server.members == undefined) { //this problem is a pain in the ass
+					logger.log("info", "Error joining server. Didn't receive all data.");
+					bot.sendMessage(msg, ":warning: Failed to receive all data, please try again in a few seconds.");
+					try {
+						bot.leaveServer(server);
+					} catch(error) { /*how did it get here?*/ }
+				} else {
+					logger.log("info", "Joined server: " + server.name);
+					bot.sendMessage(msg, ":white_check_mark: Successfully joined ***" + server.name + "***");
+					if (msg.author.id != 109338686889476096) { bot.sendMessage(msg, "It's not like I wanted you to use `"+config.command_prefix+"joins` or anything, b-baka!"); }
+					if (shouldCarbonAnnounce) {
+						setTimeout(function(){
+							var msgArray = [];
+							msgArray.push("Hi! I'm **" + bot.user.username + "** and I was invited to this server by " + msg.author + ".");
+							msgArray.push("You can use `" + config.command_prefix + "help` to see what I can do. Mods can use `"+config.mod_command_prefix+"help` for mod commands.");
+							msgArray.push("If I shouldn't be here someone with the `Kick Members` permission can use `" + config.mod_command_prefix + "leaves` to make me leave");
+							msgArray.push("For help / feedback / bugs/ testing / info / changelogs / etc. go to **discord.gg/0kvLlwb7slG3XCCQ**");
+							bot.sendMessage(server.defaultChannel, msgArray);
+						}, 2000);
+					}
+				}
+			});
+		} catch(err) { bot.sendMessage(msg, ":heavy_exclamation_mark: Bot encountered an error while joining"); logger.log("error", err); }
+	}
+}
+
 function reload() {
+	delete require.cache[require.resolve('./bot/config.json')]; //delete cache or it won't work
 	config = require("./bot/config.json");
 	delete require.cache[require.resolve('./bot/games.json')];
 	games = require("./bot/games.json").games;
-	delete require.cache[require.resolve('./bot/permissions.json')];
-	perms = require("./bot/permissions.json");
 	delete require.cache[require.resolve('./bot/commands.js')];
 	try { commands = require("./bot/commands.js").commands;
-	} catch(err) { bot.sendMessage(msg.author, "You broke it: " + err); }
+	} catch(err) {  }
 	delete require.cache[require.resolve('./bot/mod.js')];
 	try {mod = require("./bot/mod.js").commands;
-	} catch(err) { bot.sendMessage(msg.author, "You broke it: " + err); }
+	} catch(err) {  }
 	delete require.cache[require.resolve('./bot/config.json')];
 	delete require.cache[require.resolve('./bot/versioncheck.js')];
 	versioncheck = require("./bot/versioncheck.js");
 	delete require.cache[require.resolve('./bot/logger.js')];
-	chatlog = require("./bot/logger.js").ChatLog;
 	logger = require("./bot/logger.js").Logger;
-	servers = getServers();
+	delete require.cache[require.resolve('./bot/cleverbot.js')];
+	cleverbot = require("./bot/cleverbot").cleverbot;
 	logger.info("Reloaded modules with no errors");
 }
+
+function checkConfig() {
+	if (config.is_heroku_version) {
+		if (process.env.email === null) { logger.log("warn", "Email not defined"); }
+		if (process.env.password === null) { logger.log("warn", "Password not defined"); }
+		if (config.command_prefix === null || config.command_prefix.length !== 1) { logger.log("warn", "Prefix either not defined or more than one character"); }
+		if (config.mod_command_prefix === null || config.mod_command_prefix.length !== 1) { logger.log("warn", "Mod prefix either not defined or more than one character"); }
+		if (config.admin_id === null) { logger.log("info", "Admin user's id not defined"); }
+		if (process.env.mal_user === null) { logger.log("info", "MAL username not defined"); }
+		if (process.env.mal_pass === null) { logger.log("info", "MAL password not defined"); }
+		if (process.env.weather_api_key === null) { logger.log("info", "OpenWeatherMap API key not defined"); }
+		if (process.env.osu_api_key === null) { logger.log("info", "Osu API key not defined"); }
+	} else {
+		if (config.email === null) { logger.log("warn", "Email not defined"); }
+		if (config.password === null) { logger.log("warn", "Password not defined"); }
+		if (config.command_prefix === null || config.command_prefix.length !== 1) { logger.log("warn", "Prefix either not defined or more than one character"); }
+		if (config.mod_command_prefix === null || config.mod_command_prefix.length !== 1) { logger.log("warn", "Mod prefix either not defined or more than one character"); }
+		if (config.admin_id === null) { logger.log("info", "Admin user's id not defined"); }
+		if (config.mal_user === null) { logger.log("info", "MAL username not defined"); }
+		if (config.mal_pass === null) { logger.log("info", "MAL password not defined"); }
+		if (config.weather_api_key === null) { logger.log("info", "OpenWeatherMap API key not defined"); }
+		if (config.osu_api_key === null) { logger.log("info", "Osu API key not defined"); }
+	}
+}
+
+if (config.is_heroku_version) {
+	var http = require("http");
+	setInterval(function() {
+		http.get("http://sheltered-river-1376.herokuapp.com"); //your URL here
+	}, 1320000); //every 22 minutes to keep the bot from sleeping which breaks it
+}
+
+function evaluateString (msg) {
+	/*EXTREMELY DANGEROUS so lets check again*/if (msg.author.id != config.admin_id) { logger.log("warn", "Somehow an unauthorized user got into eval!"); return; }
+	logger.log("info", "Running eval");
+	var result = eval(msg.content.substring(7).replace(/\n/g, ""));
+	if (typeof result !== 'object') {
+		bot.sendMessage(msg, result);
+		logger.log("info", "Result: "+result);
+	} else { logger.log("info", "Result was an object"); }
+
+}
+
+setInterval(function() {
+	bot.setPlayingGame(games[Math.floor(Math.random() * (games.length))]);
+}, 800000); //change playing game every 12 minutes
+
+process.on('uncaughtException', function (err) {
+	if (err.message.indexOf("Cannot read property 'forEach' of undefined") > -1) {
+		logger.log("error", "Got the stupid 'new Server' error");
+		logger.log("error", err);
+		process.exit(0); //make sure that it crashes
+	} else if (err.stack.indexOf("evaluateString") > -1) {
+		logger.log("error", "Error running eval");
+		process.exit(0); //make sure that it crashes
+	}
+});
