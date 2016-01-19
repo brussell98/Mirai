@@ -6,11 +6,10 @@ var logger = require("./logger.js").Logger;
 var request = require('request');
 var xml2js = require('xml2js');
 var fs = require('fs');
+var osuapi = require('osu-api');
 
 //voting vars
 var topicstring = "", votersUp = [], votersDown = [], upvote = 0, downvote = 0, votebool = false, voteChannel = {}, voteAnMsg = {};
-
-var osuapi = require('osu-api');
 
 /*
 ====================
@@ -45,33 +44,32 @@ var commands = {
 		process: function(bot, msg, suffix) {
 			var msgArray = [];
 			if (!suffix){
-				msgArray.push(":information_source: This is a list of commands. Use `" + config.command_prefix + "help <command name>` to get info on a specific command.");
-				msgArray.push("Moderation related commands can be found with `" + config.mod_command_prefix + "help [command]`.");
-				msgArray.push("You can also find examples and command info at **https://github.com/brussell98/BrussellBot/wiki/Commands**");
-				msgArray.push("**Commands: **");
-				msgArray.push("```");
-				msgArray.push("@"+bot.user.username+" text: Talk to the bot (cleverbot)");
+				msgArray.push("Use `" + config.command_prefix + "help <command name>` to get info on a specific command.");
+				msgArray.push("Mod can be found with `" + config.mod_command_prefix + "help [command]`.");
+				msgArray.push("You can also find examples and more at __github.com/brussell98/BrussellBot/wiki/Commands__");
+				msgArray.push("**Commands:**\n");
+				msgArray.push("`@"+bot.user.username+" text`\n        Talk to the bot (cleverbot)");
 				Object.keys(commands).forEach(function(cmd){
 					if (commands[cmd].hasOwnProperty("shouldDisplay")) {
-						if (commands[cmd].shouldDisplay) { msgArray.push("" + config.command_prefix + "" + cmd + ": " + commands[cmd].desc + ""); }
-					} else { msgArray.push("" + config.command_prefix + "" + cmd + ": " + commands[cmd].desc + ""); }
+						if (commands[cmd].shouldDisplay) { msgArray.push("`" + config.command_prefix + cmd + " " + commands[cmd].usage + "`\n        " + commands[cmd].desc); }
+					} else { msgArray.push("`" + config.command_prefix + cmd + " " + commands[cmd].usage + "`\n        " + commands[cmd].desc); }
 				});
-				msgArray.push("```");
 				bot.sendMessage(msg.author, msgArray);
 			} else {
 				if (commands.hasOwnProperty(suffix)){
-					msgArray.push(":information_source: **" + config.command_prefix + "" + suffix + ": **" + commands[suffix].desc);
-					if (commands[suffix].hasOwnProperty("usage")) { msgArray.push("**Usage: **`" + config.command_prefix + "" + suffix + " " + commands[suffix].usage + "`"); }
-					if (commands[suffix].hasOwnProperty("cooldown")) { msgArray.push("**Cooldown: **" + commands[suffix].cooldown + " seconds"); }
-					if (commands[suffix].hasOwnProperty("deleteCommand")) { msgArray.push("This command will delete the message that activates it"); }
-					bot.sendMessage(msg.author, msgArray);
-				} else { bot.sendMessage(msg.author, ":warning: Command `" + suffix + "` not found."); }
+					msgArray.push("**" + config.command_prefix + "" + suffix + ": **" + commands[suffix].desc);
+					if (commands[suffix].hasOwnProperty("usage")) { msgArray.push("**Usage:** `" + config.command_prefix + "" + suffix + " " + commands[suffix].usage + "`"); }
+					if (commands[suffix].hasOwnProperty("cooldown")) { msgArray.push("**Cooldown:** " + commands[suffix].cooldown + " seconds"); }
+					if (commands[suffix].hasOwnProperty("deleteCommand")) { msgArray.push("*This command will delete the message that activates it*"); }
+					bot.sendMessage(msg, msgArray);
+				} else { bot.sendMessage(msg, "Command `" + suffix + "` not found.", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
 			}
 		}
 	},
 	"botserver": {
 		desc: "Get a link to the BrussellBot / Bot-chan server.",
 		cooldown: 5,
+		usage: "",
 		process: function(bot, msg, suffix) {
 			bot.sendMessage(msg, "Here's an invite to my server: **discord.gg/0kvLlwb7slG3XCCQ**");
 		}
@@ -80,6 +78,7 @@ var commands = {
 		desc: "Replies with pong.",
 		cooldown: 2,
 		shouldDisplay: false,
+		usage: "",
 		process: function(bot, msg) {
 			var n = Math.floor(Math.random() * 4);
 			if (n === 0) { bot.sendMessage(msg, "pong"); } 
@@ -131,6 +130,7 @@ var commands = {
 		desc: "About me",
 		deleteCommand: true,
 		cooldown: 5,
+		usage: "",
 		process: function(bot, msg, suffix) {
 			var msgArray = [];
 			msgArray.push("I'm " + bot.user.username + " and I was made by brussell98.");
@@ -312,6 +312,7 @@ var commands = {
 	"endvote": {
 		desc: "End current vote.",
 		deleteCommand: true,
+		usage: "",
 		process: function (bot, msg, suffix) {
 			try {//if this crashes try checking if bot.channels.get("id", ) has it first
 				if (msg.channel == voteChannel) {

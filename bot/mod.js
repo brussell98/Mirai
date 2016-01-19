@@ -33,25 +33,23 @@ var commands = {
 		process: function(bot, msg, suffix) {
 			var msgArray = [];
 			if (!suffix){
-				msgArray.push(":information_source: This is a list of mod commands. Use `" + config.mod_command_prefix + "help <command name>` to get info on a specific command.");
+				msgArray.push("Use `" + config.mod_command_prefix + "help <command name>` to get info on a specific command.");
 				msgArray.push("");
-				msgArray.push("**Commands: **");
-				msgArray.push("```");
+				msgArray.push("**Commands: **\n");
 				Object.keys(commands).forEach(function(cmd){
 				if (commands[cmd].hasOwnProperty("shouldDisplay")) {
-						if (commands[cmd].shouldDisplay) { msgArray.push("" + config.mod_command_prefix + "" + cmd + ": " + commands[cmd].desc + ""); }
-					} else { msgArray.push("" + config.mod_command_prefix + "" + cmd + ": " + commands[cmd].desc + ""); }
+						if (commands[cmd].shouldDisplay) { msgArray.push("`" + config.mod_command_prefix + cmd + " " + commands[cmd].usage + "`\n        " + commands[cmd].desc); }
+					} else { msgArray.push("`" + config.mod_command_prefix + cmd + " " + commands[cmd].usage + "`\n        " + commands[cmd].desc); }
 				});
-				msgArray.push("```");
 				bot.sendMessage(msg.author, msgArray);
 			} else { //if user wants info on a command
 				if (commands.hasOwnProperty(suffix)){
-					msgArray.push(":information_source: **" + config.mod_command_prefix + "" + suffix + ": **" + commands[suffix].desc);
-					if (commands[suffix].hasOwnProperty("usage")) { msgArray.push("**Usage: **`" + config.mod_command_prefix + "" + suffix + " " + commands[suffix].usage + "`"); }
-					if (commands[suffix].hasOwnProperty("cooldown")) { msgArray.push("**Cooldown: **" + commands[suffix].cooldown + " seconds"); }
-					if (commands[suffix].hasOwnProperty("deleteCommand")) { msgArray.push("This command will delete the message that activates it"); }
-					bot.sendMessage(msg.author, msgArray);
-				} else { bot.sendMessage(msg.author, ":warning: Command `" + suffix + "` not found."); }
+					msgArray.push("**" + config.mod_command_prefix + "" + suffix + ": **" + commands[suffix].desc);
+					if (commands[suffix].hasOwnProperty("usage")) { msgArray.push("**Usage:** `" + config.mod_command_prefix + "" + suffix + " " + commands[suffix].usage + "`"); }
+					if (commands[suffix].hasOwnProperty("cooldown")) { msgArray.push("**Cooldown:** " + commands[suffix].cooldown + " seconds"); }
+					if (commands[suffix].hasOwnProperty("deleteCommand")) { msgArray.push("*This command will delete the message that activates it*"); }
+					bot.sendMessage(msg, msgArray);
+				} else { bot.sendMessage(msg, "Command `" + suffix + "` not found.", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
 			}
 		}
 	},
@@ -134,6 +132,7 @@ var commands = {
 									return;
 								}
 							}
+							logger.log("debug", "Done! Deleted " + delcount + " messages.");
 							bot.stopTyping(msg.channel);
 						}
 					});
@@ -143,11 +142,11 @@ var commands = {
 	},
 	"prune": {
 		desc: "Cleans the specified number of messages from the channel.",
-		usage: "<number of messages 1-100>",
+		usage: "<number of messages 1-100> [if it contains this]",
 		cooldown: 10,
 		deleteCommand: true,
 		process: function (bot, msg, suffix) {
-			if (suffix && /^\d+$/.test(suffix)) {
+			if (suffix && /^\d+$/.test(suffix.split(" ")[0])) {
 				if (!msg.channel.isPrivate) {
 					if (msg.channel.permissionsOf(msg.author).hasPermission("manageMessages")) {
 						if (msg.channel.permissionsOf(bot.user).hasPermission("manageMessages")) {
@@ -156,18 +155,26 @@ var commands = {
 								else {
 									bot.startTyping(msg.channel);
 									logger.log("debug", "Pruning messages...");
-									var todo = parseInt(suffix) + 1;
+									var todo = parseInt(suffix);
+									var hasTerm = false;
+									var term = "";
+									if (suffix.split(" ").length > 1) { todo += 1; hasTerm = true; term = suffix.substring(suffix.indexOf(" ") + 1); }
 									var delcount = 0;
 									for (cMsg of messages) {
-										bot.deleteMessage(cMsg);
-										delcount++;
-										todo--;
+										if (hasTerm && cMsg.content.indexOf(term) > -1) {
+											bot.deleteMessage(cMsg);
+											delcount++;
+											todo--;
+										} else {
+											bot.deleteMessage(cMsg);
+											delcount++;
+											todo--;
+										}
 										if (todo == 0 || delcount == 100) {
-											logger.log("debug", "Done! Deleted " + delcount + " messages.");
-											bot.stopTyping(msg.channel);
 											return;
 										}
 									}
+									logger.log("debug", "Done! Deleted " + delcount + " messages.");
 									bot.stopTyping(msg.channel);
 								}
 							});
@@ -179,6 +186,7 @@ var commands = {
 	},
 	"leaves": {
 		desc: "Leaves the server.",
+		usage: "",
 		deleteCommand: true,
 		process: function(bot, msg, suffix) {
 			if (msg.channel.server) {

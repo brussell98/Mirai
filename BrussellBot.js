@@ -164,7 +164,7 @@ bot.on('userBanned', function (objUser, objServer) {
 });
 
 bot.on('userUnbanned', function (objUser, objServer) {
-	if (objServer.members.length < 301 && config.non_essential_event_listeners) { logger.log("info", ":warning: " + objUser.username + " unbanned on " + objServer.name); }
+	if (objServer.members.length < 301 && config.non_essential_event_listeners) { logger.log("info", objUser.username + " unbanned on " + objServer.name); }
 });
 
 bot.on('userUpdated', function (objUser, objNewUser) {
