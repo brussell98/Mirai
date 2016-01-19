@@ -116,7 +116,6 @@ var commands = {
 					bot.getChannelLogs(msg.channel, 100, function (error, messages) {
 						if (error) { logger.log("warn", "Something went wrong while fetching logs."); return; }
 						else {
-							bot.startTyping(msg.channel);
 							logger.log("debug", "Cleaning bot messages...");
 							var todo = parseInt(suffix),
 							delcount = 0;
@@ -133,7 +132,6 @@ var commands = {
 								}
 							}
 							logger.log("debug", "Done! Deleted " + delcount + " messages.");
-							bot.stopTyping(msg.channel);
 						}
 					});
 				} else { bot.sendMessage(msg, ":warning: You must have permission to manage messages in this channel", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
@@ -153,7 +151,6 @@ var commands = {
 							bot.getChannelLogs(msg.channel, 100, function (error, messages) {
 								if (error) { logger.log("warn", "Something went wrong while fetching logs."); return; }
 								else {
-									bot.startTyping(msg.channel);
 									logger.log("debug", "Pruning messages...");
 									var todo = parseInt(suffix);
 									var hasTerm = false;
@@ -165,7 +162,7 @@ var commands = {
 											bot.deleteMessage(cMsg);
 											delcount++;
 											todo--;
-										} else {
+										} else if (!hasTerm) {
 											bot.deleteMessage(cMsg);
 											delcount++;
 											todo--;
@@ -175,7 +172,6 @@ var commands = {
 										}
 									}
 									logger.log("debug", "Done! Deleted " + delcount + " messages.");
-									bot.stopTyping(msg.channel);
 								}
 							});
 						} else { bot.sendMessage(msg, ":warning: I don't have permission to delete messages.", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
