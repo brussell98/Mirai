@@ -1,8 +1,6 @@
 /*
 This is a multipurpose bot
 Run this with node to run the bot.
-
-invite regex: /https?:\/\/discord\.gg\/[A-Za-z0-9]+/
 //===================================================*/
 
 var discord = require("discord.js");
@@ -12,9 +10,10 @@ var config = require("./bot/config.json");
 var games = require("./bot/games.json").games;
 var versioncheck = require("./bot/versioncheck.js");
 var fs = require("fs");
-var logger = require("./bot/logger.js").Logger;
 var cleverbot = require("./bot/cleverbot.js").cleverbot;
 checkConfig(); //notify user if they are missing things in the config
+var chalk = require('chalk');
+var c = new chalk.constructor({enabled: true});
 
 if (config.is_heroku_version) { //For avoiding Heroku $PORT error
 	var express = require('express');
@@ -33,27 +32,27 @@ var shouldCarbonAnnounce = true; //set if the bot should announce when joining a
 var commandsProcessed = 0, talkedToTimes = 0;
 
 var bot = new discord.Client();
-bot.on('warn', function (m) { logger.log("warn", m); });
-bot.on('debug', function(m) { logger.log("debug", m); });
+bot.on('warn', function (m) { console.log(c.bgYellow.black(" WARN ")+" "+m); });
+bot.on('debug', function (m) { if (config.debug) { console.log(c.inverse(" DEBUG ")+" "+m); } });
 
 bot.on("ready", function () {
 	bot.setPlayingGame(games[Math.floor(Math.random() * (games.length))]); //set game to a random game from games.json
 	//bot.setPlayingGame("]help [command]");
-	logger.log("info", "BrussellBot is ready! Listening to " + bot.channels.length + " channels on " + bot.servers.length + " servers");
+	console.log(c.green("BrussellBot is ready!")+" Listening to " + bot.channels.length + " channels on " + bot.servers.length + " servers");
 	versioncheck.checkForUpdate(function (resp) {
-		if (resp !== null) { logger.log("info", resp); }
+		if (resp !== null) { console.log(resp); }
 	});
 });
 
 bot.on("disconnected", function () {
-	logger.log("info", "Disconnected");
+	console.log(c.red("Disconnected"));
 	if (!config.is_heroku_version) { process.exit(0); }
 	else { //if on heroku try to re-connect
 		setTimeout(function(){
-			logger.log("info", "Attempting to log in...");
+			console.log("Attempting to log in...");
 			bot.login(process.env.email, process.env.password, function (err, token) {
-				if (err) { logger.log("error", err); process.exit(0); }
-				if (!token) { logger.log("warn", "Failed to re-connect"); process.exit(0); }
+				if (err) { errorLog(err); process.exit(0); }
+				if (!token) { console.log(c.bgYellow.black(" WARN ")+" Failed to re-connect"); process.exit(0); }
 			});}, 20000); //waits 20 seconds before doing
 	}
 });
@@ -63,7 +62,7 @@ bot.on("message", function (msg) {
 	if (msg.author.id == config.admin_id && msg.content.indexOf("(eval) ") > -1 && msg.content.indexOf("(eval) ") <= 1) { evaluateString(msg); return; } //bot owner eval command
 	if (msg.mentions.length !== 0) { //cleverbot
 		msg.mentions.forEach(function(usr) { 
-			if (usr.id == bot.user.id && msg.content.startsWith("<@"+bot.user.id+">")) { cleverbot(bot, msg); talkedToTimes += 1; logger.log("info", msg.author.username+" asked the bot: "+msg.content.substring(22).replace(/\n/g, " ")); return; }
+			if (usr.id == bot.user.id && msg.content.startsWith("<@"+bot.user.id+">")) { cleverbot(bot, msg); talkedToTimes += 1; console.log(checkForServer(msg)+c.green(msg.author.username)+" > "+c.yellow('@Bot-chan')+" "+msg.content.substring(22).replace(/\n/g, " ")); return; }
 		});
 	}
 	if (msg.content[0] != config.command_prefix && msg.content[0] != config.mod_command_prefix) { return; } //if not a command
@@ -73,7 +72,7 @@ bot.on("message", function (msg) {
 	if (msg.content.startsWith(config.command_prefix)) { //normal commands
 		if (commands.hasOwnProperty(cmd)) {
 			try {
-				logger.log("info", "" + msg.author.username + " executed: " + msg.content.replace(/\n/g, " "));
+				console.log(checkForServer(msg)+c.green(msg.author.username)+" > "+msg.content.replace(/\n/g, " "));
 				commandsProcessed += 1;
 				if (commands[cmd].hasOwnProperty("cooldown")) {
 					if (lastExecTime.hasOwnProperty(cmd)) {
@@ -93,14 +92,13 @@ bot.on("message", function (msg) {
 				if (commands[cmd].hasOwnProperty("deleteCommand")) {
 					if (commands[cmd].deleteCommand === true) { bot.deleteMessage(msg, {"wait": 10000}); } //delete command after 3.5 seconds
 				}
-				logger.log("debug", "Command processed: " + cmd);
-			} catch (err) { logger.log("error", err); }
+			} catch (err) { errorLog(err); }
 		}
 	} else if (msg.content.startsWith(config.mod_command_prefix)) { //mod commands
 		if (cmd == "reload") { reload(); bot.deleteMessage(msg); return; } //reload the .json files and modules
 		if (mod.hasOwnProperty(cmd)) {
 			try {
-				logger.log("info", "" + msg.author.username + " executed: " + msg.content.replace(/\n/g, " "));
+				console.log(checkForServer(msg)+c.green(msg.author.username)+" > "+msg.content.replace(/\n/g, " "));
 				commandsProcessed += 1;
 				if (mod[cmd].hasOwnProperty("cooldown")) {
 					if (lastExecTime.hasOwnProperty(cmd)) {
@@ -120,8 +118,7 @@ bot.on("message", function (msg) {
 				if (mod[cmd].hasOwnProperty("deleteCommand")) {
 					if (mod[cmd].deleteCommand === true) { bot.deleteMessage(msg, {"wait": 10000}); }
 				}
-				logger.log("debug", "Command processed: " + cmd);
-			} catch (err) { logger.log("error", err); }
+			} catch (err) { errorLog(err); }
 		}
 	}
 });
@@ -129,54 +126,54 @@ bot.on("message", function (msg) {
 //event listeners
 bot.on('serverNewMember', function (objServer, objUser) {
 	if (objServer.members.length < 71 && config.non_essential_event_listeners) {
-		if (config.greet_new_memebrs) { logger.log("info", "New member on " + objServer.name + ": " + objUser.username); bot.sendMessage(objServer.defaultChannel, "Welcome to " + objServer.name + " " + objUser.username); }
+		if (config.greet_new_memebrs) { console.log("New member on " + objServer.name + ": " + objUser.username); bot.sendMessage(objServer.defaultChannel, "Welcome to " + objServer.name + " " + objUser.username); }
 	}
 });
 
 bot.on('serverUpdated', function (objServer, objNewServer) {
-	if (config.non_essential_event_listeners) { logger.log("debug", "" + objServer.name + " is now " + objNewServer.name); }
+	if (config.non_essential_event_listeners) { if (config.debug) { console.log(c.inverse(" DEBUG ")+" "+objServer.name + " is now " + objNewServer.name); } }
 });
 
 bot.on('channelCreated', function (objChannel) {
 	if (config.non_essential_event_listeners) {
-		if (!objChannel.isPrivate){ logger.log("debug", "New channel created. Type: " + objChannel.type + ". Name: " + objChannel.name + ". Server: " + objChannel.server.name); }
+		if (!objChannel.isPrivate){ if (config.debug) { console.log(c.inverse(" DEBUG ")+" New channel created. Type: " + objChannel.type + ". Name: " + objChannel.name + ". Server: " + objChannel.server.name); } }
 	}
 });
 
 bot.on('channelDeleted', function (objChannel) {
 	if (config.non_essential_event_listeners) {
-		if (!objChannel.isPrivate) { logger.log("debug", "Channel deleted. Type: " + objChannel.type + ". Name: " + objChannel.name + ". Server: " + objChannel.server.name); }
+		if (!objChannel.isPrivate) { if (config.debug) { console.log(c.inverse(" DEBUG ")+" Channel deleted. Type: " + objChannel.type + ". Name: " + objChannel.name + ". Server: " + objChannel.server.name); } }
 	}
 });
 
 bot.on('channelUpdated', function (objChannel) { //You could make this find the new channel by id to get new info
 	if (config.non_essential_event_listeners) {
 		if (!objChannel.isPrivate) {
-			if (objChannel.type == "text") { logger.log("debug", "Channel updated. Was: Type: Text. Name: " + objChannel.name + ". Topic: " + objChannel.topic); }
-			else { logger.log("debug", "Channel updated. Was: Type: Voice. Name: " + objChannel.name + "."); }
+			if (objChannel.type == "text") { if (config.debug) { console.log(c.inverse(" DEBUG ")+" Channel updated. Was: Type: Text. Name: " + objChannel.name + ". Topic: " + objChannel.topic); } }
+			else { if (config.debug) { console.log(c.inverse(" DEBUG ")+" Channel updated. Was: Type: Voice. Name: " + objChannel.name + "."); } }
 		}
 	}
 });
 
 bot.on('userBanned', function (objUser, objServer) {
 	if (objServer.members.length < 301 && config.non_essential_event_listeners) {
-		logger.log("info", "" + objUser.username + " banned on " + objServer.name);
+		console.log(objUser.username + c.red(" banned on ") + objServer.name);
 		bot.sendMessage(objServer.defaultChannel, ":warning: " + objUser.username + " was banned");
 		bot.sendMessage(objUser, ":warning: You were banned from " + objServer.name);
 	}
 });
 
 bot.on('userUnbanned', function (objUser, objServer) {
-	if (objServer.members.length < 301 && config.non_essential_event_listeners) { logger.log("info", objUser.username + " unbanned on " + objServer.name); }
+	if (objServer.members.length < 301 && config.non_essential_event_listeners) { console.log(objUser.username + " unbanned on " + objServer.name); }
 });
 
 bot.on('userUpdated', function (objUser, objNewUser) {
 	if (config.non_essential_event_listeners) {
 		if (objUser.username != objNewUser.username){ //if new username
-			//logger.log("info", "" + objUser.username + " changed their name to " + objNewUser.username);
+			if (config.debug) { console.log(c.inverse(" DEBUG ")+" "+objUser.username + " changed their name to " + objNewUser.username); }
 			if (config.username_changes) {
 				bot.servers.forEach(function(ser){
-					if (ser.members.get('id', objUser.id) !== null && ser.members.length < 101){ bot.sendMessage(ser, ":warning: User in this server: `" + objUser.username + "`. changed their name to: `" + objNewUser.username + "`."); }
+					if (ser.members.has('id', objUser.id) && ser.members.length < 101){ bot.sendMessage(ser, ":warning: User in this server: `" + objUser.username + "`. changed their name to: `" + objNewUser.username + "`."); }
 				});
 			}
 		}
@@ -184,45 +181,56 @@ bot.on('userUpdated', function (objUser, objNewUser) {
 });
 
 bot.on('presence', function(user, status, game) {
-	if (config.log_presence) { logger.log("debug", "Presence: " + user.username + " is now " + status + " playing " + game); }
+	if (config.log_presence) { if (config.debug) { console.log(c.inverse(" Presence: ")+ user.username + " is now " + status + " playing " + game); } }
 });
 
 bot.on('serverDeleted', function(objServer) { //detect when the bot leaves a server
-	logger.log("info", "Left server "+objServer.name);
+	console.log(c.underline.yellow("Left server")+" "+objServer.name);
 });
 
 //login
-logger.log("info", "Logging in...");
+console.log("Logging in...");
 if (config.is_heroku_version) {
 	bot.login(process.env.email, process.env.password, function (err, token) {
-		if (err) { logger.log("error", err); setTimeout(function(){ process.exit(0); }, 2000); }
-		if (!token) { logger.log("warn", "failed to connect"); setTimeout(function(){ process.exit(0); }, 2000); } //make sure it logged in successfully
+		if (err) { errorLog(err); setTimeout(function(){ process.exit(0); }, 2000); }
+		if (!token) { console.log(c.bgYellow.black(" WARN ")+" failed to connect"); setTimeout(function(){ process.exit(0); }, 2000); } //make sure it logged in successfully
 	});
 }
 else { 
 	bot.login(config.email, config.password, function (err, token) {
-		if (err) { logger.log("error", err); setTimeout(function(){ process.exit(1); }, 2000); }
-		if (!token) { logger.log("warn", "failed to connect"); setTimeout(function(){ process.exit(1); }, 2000); }
+		if (err) { errorLog(err); setTimeout(function(){ process.exit(1); }, 2000); }
+		if (!token) { console.log(c.bgYellow.black(" WARN ")+" failed to connect"); setTimeout(function(){ process.exit(1); }, 2000); }
 	});
+}
+
+function checkForServer(msg){
+	if (msg) {
+		if (!msg.channel.isPrivate) { return c.underline.cyan(msg.channel.server.name)+" > "; }
+		else { return ""; }
+	} return "";
 }
 
 function carbonInvite(msg){
 	if (msg) {
 		try {
-			logger.log("info", "Attempting to join: "+msg.content);
+			if (config.debug) { console.log(c.inverse(" DEBUG ")+" Attempting to join: "+msg.content); }
+			var cServers = bot.servers;
 			bot.joinServer(msg.content, function (err, server) {
 				if (err) {
-					bot.sendMessage(msg, ":warning: Failed to join: " + err);
-					logger.log("warn", err);
+					bot.sendMessage(msg, "Failed to join: " + err);
+					console.log(c.bgYellow.black(" WARN ")+" "+err);
 				} else if (!server || server.name == undefined || server.roles == undefined || server.channels == undefined || server.members == undefined) { //this problem is a pain in the ass
-					logger.log("info", "Error joining server. Didn't receive all data.");
-					bot.sendMessage(msg, ":warning: Failed to receive all data, please try again in a few seconds.");
+					console.log(c.bgYellow.black(" WARN ")+" Error joining server. Didn't receive all data.");
+					bot.sendMessage(msg, "Failed to receive all data, please try again in a few seconds.");
 					try {
 						bot.leaveServer(server);
 					} catch(error) { /*how did it get here?*/ }
+				} else if (cServers.has("id", server.id)) {
+					console.log("Already in server "+server.name);
+					bot.sendMessage(msg, "I'm already in that server!");
 				} else {
-					logger.log("info", "Joined server: " + server.name);
-					bot.sendMessage(msg, ":white_check_mark: Successfully joined ***" + server.name + "***");
+					console.log(c.green("Joined server: ")+" "+server.name);
+					bot.sendMessage(msg, "Successfully joined " + server.name);
 					if (msg.author.id != 109338686889476096) { bot.sendMessage(msg, "It's not like I wanted you to use `"+config.command_prefix+"joins` or anything, b-baka!"); }
 					if (shouldCarbonAnnounce) {
 						setTimeout(function(){
@@ -236,7 +244,7 @@ function carbonInvite(msg){
 					}
 				}
 			});
-		} catch(err) { bot.sendMessage(msg, ":heavy_exclamation_mark: Bot encountered an error while joining"); logger.log("error", err); }
+		} catch(err) { bot.sendMessage(msg, "Bot encountered an error while joining"); errorLog(err); }
 	}
 }
 
@@ -258,30 +266,30 @@ function reload() {
 	logger = require("./bot/logger.js").Logger;
 	delete require.cache[require.resolve('./bot/cleverbot.js')];
 	cleverbot = require("./bot/cleverbot").cleverbot;
-	logger.info("Reloaded modules with no errors");
+	console.log(c.green("Reloaded modules with no errors"));
 }
 
 function checkConfig() {
 	if (config.is_heroku_version) {
-		if (process.env.email === null) { logger.log("warn", "Email not defined"); }
-		if (process.env.password === null) { logger.log("warn", "Password not defined"); }
-		if (config.command_prefix === null || config.command_prefix.length !== 1) { logger.log("warn", "Prefix either not defined or more than one character"); }
-		if (config.mod_command_prefix === null || config.mod_command_prefix.length !== 1) { logger.log("warn", "Mod prefix either not defined or more than one character"); }
-		if (config.admin_id === null) { logger.log("info", "Admin user's id not defined"); }
-		if (process.env.mal_user === null) { logger.log("info", "MAL username not defined"); }
-		if (process.env.mal_pass === null) { logger.log("info", "MAL password not defined"); }
-		if (process.env.weather_api_key === null) { logger.log("info", "OpenWeatherMap API key not defined"); }
-		if (process.env.osu_api_key === null) { logger.log("info", "Osu API key not defined"); }
+		if (process.env.email === null) { console.log(c.bgYellow.black(" WARN ")+" Email not defined"); }
+		if (process.env.password === null) { console.log(c.bgYellow.black(" WARN ")+" Password not defined"); }
+		if (config.command_prefix === null || config.command_prefix.length !== 1) { console.log(c.bgYellow.black(" WARN ")+" Prefix either not defined or more than one character"); }
+		if (config.mod_command_prefix === null || config.mod_command_prefix.length !== 1) { console.log(c.bgYellow.black(" WARN ")+" Mod prefix either not defined or more than one character"); }
+		if (config.admin_id === null) { console.log(c.yellow("Admin user's id not defined")); }
+		if (process.env.mal_user === null) { console.log(c.yellow("MAL username not defined")); }
+		if (process.env.mal_pass === null) { console.log(c.yellow("MAL password not defined")); }
+		if (process.env.weather_api_key === null) { console.log(c.yellow("OpenWeatherMap API key not defined")); }
+		if (process.env.osu_api_key === null) { console.log(c.yellow("Osu API key not defined")); }
 	} else {
-		if (config.email === null) { logger.log("warn", "Email not defined"); }
-		if (config.password === null) { logger.log("warn", "Password not defined"); }
-		if (config.command_prefix === null || config.command_prefix.length !== 1) { logger.log("warn", "Prefix either not defined or more than one character"); }
-		if (config.mod_command_prefix === null || config.mod_command_prefix.length !== 1) { logger.log("warn", "Mod prefix either not defined or more than one character"); }
-		if (config.admin_id === null) { logger.log("info", "Admin user's id not defined"); }
-		if (config.mal_user === null) { logger.log("info", "MAL username not defined"); }
-		if (config.mal_pass === null) { logger.log("info", "MAL password not defined"); }
-		if (config.weather_api_key === null) { logger.log("info", "OpenWeatherMap API key not defined"); }
-		if (config.osu_api_key === null) { logger.log("info", "Osu API key not defined"); }
+		if (config.email === null) { console.log(c.bgYellow.black(" WARN ")+" Email not defined"); }
+		if (config.password === null) { console.log(c.bgYellow.black(" WARN ")+" Password not defined"); }
+		if (config.command_prefix === null || config.command_prefix.length !== 1) { console.log(c.bgYellow.black(" WARN ")+" Prefix either not defined or more than one character"); }
+		if (config.mod_command_prefix === null || config.mod_command_prefix.length !== 1) { console.log(c.bgYellow.black(" WARN ")+" Mod prefix either not defined or more than one character"); }
+		if (config.admin_id === null) { console.log(c.yellow("Admin user's id not defined")); }
+		if (config.mal_user === null) { console.log(c.yellow("MAL username not defined")); }
+		if (config.mal_pass === null) { console.log(c.yellow("MAL password not defined")); }
+		if (config.weather_api_key === null) { console.log(c.yellow("OpenWeatherMap API key not defined")); }
+		if (config.osu_api_key === null) { console.log(c.yellow("Osu API key not defined")); }
 	}
 }
 
@@ -293,27 +301,16 @@ if (config.is_heroku_version) {
 }
 
 function evaluateString (msg) {
-	/*EXTREMELY DANGEROUS so lets check again*/if (msg.author.id != config.admin_id) { logger.log("warn", "Somehow an unauthorized user got into eval!"); return; }
-	logger.log("info", "Running eval");
-	var result = eval(msg.content.substring(7).replace(/\n/g, ""));
+	/*EXTREMELY DANGEROUS so lets check again*/if (msg.author.id != config.admin_id) { console.log(c.bgYellow.black(" WARN ")+"Somehow an unauthorized user got into eval!"); return; }
+	console.log(c.bgYellow.black(" Running eval "));
+	var result = eval("try{"+msg.content.substring(7).replace(/\n/g, "")+"}catch(err){console.log(err);}");
 	if (typeof result !== 'object') {
 		bot.sendMessage(msg, result);
-		logger.log("info", "Result: "+result);
-	} else { logger.log("info", "Result was an object"); }
+		console.log("Result: "+result);
+	} else { console.log("Result was an object"); }
 
 }
 
 setInterval(function() {
 	bot.setPlayingGame(games[Math.floor(Math.random() * (games.length))]);
 }, 800000); //change playing game every 12 minutes
-
-process.on('uncaughtException', function (err) {
-	if (err.message.indexOf("Cannot read property 'forEach' of undefined") > -1) {
-		logger.log("error", "Got the stupid 'new Server' error");
-		logger.log("error", err);
-		process.exit(0); //make sure that it crashes
-	} else if (err.stack.indexOf("evaluateString") > -1) {
-		logger.log("error", "Error running eval");
-		process.exit(0); //make sure that it crashes
-	}
-});

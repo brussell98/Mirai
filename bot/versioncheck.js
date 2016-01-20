@@ -1,11 +1,12 @@
 var request = require("request");
 var version = require("../package.json").version;
-var logger = require("./logger.js").Logger;
+var chalk = require('chalk');
+var c = new chalk.constructor({enabled: true});
 
 exports.checkForUpdate = function (callback) {
 	request("https://raw.githubusercontent.com/brussell98/BrussellBot/master/package.json", function (err, response, body) {
 		if (err) {
-			logger.log("warn", "Version check error: " + err);
+			console.log(c.bgYellow.black("Version check error: " + err));
 			return callback(null);
 		}
 		if (response.statusCode == 200) {
@@ -14,7 +15,7 @@ exports.checkForUpdate = function (callback) {
 			if ((version.split(".").join("")) > (latest.split(".").join(""))) { return callback("Bot is a development version (v" + version + ")"); }
 			return callback("BrussellBot is up-to-date (v" + version + ")");
 		} else {
-			logger.warn("Failed to check for new version: " + response.statusCode);
+			console.log(c.bgYellow.black("Failed to check for new version: " + response.statusCode));
 			return callback(null);
 		}
 	});

@@ -28,3 +28,4 @@ An multipurpose bot for Discord using the [Discord.js](https://github.com/hydrab
 	- [ ] Set playing to song name
 	- [ ] Bot owner gets priority
 - [ ] Could do stuff with checking how long a user has been on the server for perms
+- [ ] Fix presence
