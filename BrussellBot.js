@@ -61,7 +61,7 @@ bot.on("message", function (msg) {
 	if (msg.author.id == config.admin_id && msg.content.indexOf("(eval) ") > -1 && msg.content.indexOf("(eval) ") <= 1) { evaluateString(msg); return; } //bot owner eval command
 	if (msg.mentions.length !== 0) { //cleverbot
 		msg.mentions.forEach(function(usr) { 
-			if (usr.id == bot.user.id && msg.content.startsWith("<@"+bot.user.id+">")) { cleverbot(bot, msg); talkedToTimes += 1; if (msg.channel.isPrivate) { console.log(colors.cServer(msg.channel.server.name)+" > "+colors.cGreen(msg.author.username)+" > "+colors.cYellow('@Bot-chan')+" "+msg.content.substring(22).replace(/\n/g, " ")); } else { console.log(colors.cGreen(msg.author.username)+" > "+colors.cYellow('@Bot-chan')+" "+msg.content.substring(22).replace(/\n/g, " ")); } return; }
+			if (usr.id == bot.user.id && msg.content.startsWith("<@"+bot.user.id+">")) { cleverbot(bot, msg); talkedToTimes += 1; if (!msg.channel.isPrivate) { console.log(colors.cServer(msg.channel.server.name)+" > "+colors.cGreen(msg.author.username)+" > "+colors.cYellow('@Bot-chan')+" "+msg.content.substring(22).replace(/\n/g, " ")); } else { console.log(colors.cGreen(msg.author.username)+" > "+colors.cYellow('@Bot-chan')+" "+msg.content.substring(22).replace(/\n/g, " ")); } return; }
 		});
 	}
 	if (msg.content[0] != config.command_prefix && msg.content[0] != config.mod_command_prefix) { return; } //if not a command
@@ -71,7 +71,7 @@ bot.on("message", function (msg) {
 	if (msg.content.startsWith(config.command_prefix)) { //normal commands
 		if (commands.hasOwnProperty(cmd)) {
 			try {
-				if (msg.channel.isPrivate) { console.log(colors.cServer(msg.channel.server.name)+" > "+colors.cGreen(msg.author.username)+" > "+msg.content.replace(/\n/g, " ")); } else { console.log(colors.cGreen(msg.author.username)+" > "+msg.content.replace(/\n/g, " ")); }
+				if (!msg.channel.isPrivate) { console.log(colors.cServer(msg.channel.server.name)+" > "+colors.cGreen(msg.author.username)+" > "+msg.content.replace(/\n/g, " ")); } else { console.log(colors.cGreen(msg.author.username)+" > "+msg.content.replace(/\n/g, " ")); }
 				commandsProcessed += 1;
 				if (commands[cmd].hasOwnProperty("cooldown")) {
 					if (lastExecTime.hasOwnProperty(cmd)) {
@@ -97,7 +97,7 @@ bot.on("message", function (msg) {
 		if (cmd == "reload") { reload(); bot.deleteMessage(msg); return; } //reload the .json files and modules
 		if (mod.hasOwnProperty(cmd)) {
 			try {
-				if (msg.channel.isPrivate) { console.log(colors.cServer(msg.channel.server.name)+" > "+colors.cGreen(msg.author.username)+" > "+msg.content.replace(/\n/g, " ")); } else { console.log(colors.cGreen(msg.author.username)+" > "+msg.content.replace(/\n/g, " ")); }
+				if (!msg.channel.isPrivate) { console.log(colors.cServer(msg.channel.server.name)+" > "+colors.cGreen(msg.author.username)+" > "+msg.content.replace(/\n/g, " ")); } else { console.log(colors.cGreen(msg.author.username)+" > "+msg.content.replace(/\n/g, " ")); }
 				commandsProcessed += 1;
 				if (mod[cmd].hasOwnProperty("cooldown")) {
 					if (lastExecTime.hasOwnProperty(cmd)) {

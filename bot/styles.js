@@ -7,7 +7,7 @@ exports.cWarn = function (text) {
 	text + 
 	chalk.styles.black.close + 
 	chalk.styles.bgYellow.close + 
-	" ";
+	" "+chalk.reset('');
 };
 																  
 exports.cError = function (text) { 
@@ -16,7 +16,7 @@ exports.cError = function (text) {
 	text + 
 	chalk.styles.bgRed.close + 
 	chalk.styles.black.close + 
-	" ";
+	" "+chalk.reset('');
 };
 																  
 exports.cDebug = function (text) { 
@@ -25,7 +25,7 @@ exports.cDebug = function (text) {
 	text + 
 	chalk.styles.bgWhite.close + 
 	chalk.styles.black.close + 
-	" ";
+	" "+chalk.reset('');
 };
 
 exports.cGreen = function (text) { 
@@ -33,7 +33,7 @@ exports.cGreen = function (text) {
 	chalk.styles.bold.open + 
 	text + 
 	chalk.styles.bold.close + 
-	chalk.styles.green.close;
+	chalk.styles.green.close+chalk.reset('');
 };
 
 exports.cGrey = function (text) { 
@@ -41,7 +41,7 @@ exports.cGrey = function (text) {
 	chalk.styles.bold.open + 
 	text + 
 	chalk.styles.grey.close + 
-	chalk.styles.bold.close;
+	chalk.styles.bold.close+chalk.reset('');
 };
 
 exports.cYellow = function (text) { 
@@ -49,7 +49,7 @@ exports.cYellow = function (text) {
 	chalk.styles.bold.open + 
 	text + 
 	chalk.styles.yellow.close + 
-	chalk.styles.bold.close;
+	chalk.styles.bold.close+chalk.reset('');
 };
 	
 exports.cRed = function (text) { 
@@ -57,17 +57,15 @@ exports.cRed = function (text) {
 	chalk.styles.bold.open + 
 	text + 
 	chalk.styles.red.close + 
-	chalk.styles.bold.close;
+	chalk.styles.bold.close+chalk.reset('');
 };
 
 exports.cServer = function (text) { 
 	return chalk.styles.cyan.open + 
-	chalk.styles.underline.open + 
 	chalk.styles.bold.open + 
 	text + 
 	chalk.styles.cyan.close + 
-	chalk.styles.bold.close + 
-	chalk.styles.underline.close;
+	chalk.styles.bold.close+chalk.reset('');
 };
 
 exports.cUYellow = function (text) { 
@@ -77,7 +75,7 @@ exports.cUYellow = function (text) {
 	text + 
 	chalk.styles.yellow.close +
 	chalk.styles.underline.close + 
-	chalk.styles.bold.close;
+	chalk.styles.bold.close+chalk.reset('');
 };
 
 exports.cBgGreen = function (text) { 
@@ -85,5 +83,5 @@ exports.cBgGreen = function (text) {
 	chalk.styles.black.open + 
 	text + 
 	chalk.styles.bgGreen.close + 
-	chalk.styles.black.close;
+	chalk.styles.black.close+chalk.reset('');
 };
