@@ -181,7 +181,7 @@ var commands = {
 					console.log(colors.cYellow("I've left a server on request of " + msg.sender.username + ". ")+"I'm only in " + bot.servers.length + " servers now.");
 				} else {
 					bot.sendMessage(msg, "You can't tell me what to do! (You need permission to kick users in this channel)");
-					console.log(colors.cYellow("Non-privileged user: " + msg.sender.username)" tried to make me leave a server.");
+					console.log(colors.cYellow("Non-privileged user: " + msg.sender.username)+" tried to make me leave a server.");
 				}
 			} else { bot.sendMessage(msg, ":warning: I can't leave a DM.", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
 		}
