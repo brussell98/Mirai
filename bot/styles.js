@@ -7,7 +7,7 @@ exports.cWarn = function (text) {
 	text + 
 	chalk.styles.black.close + 
 	chalk.styles.bgYellow.close + 
-	chalk.styles.white.open + " ";
+	chalk.styles.white.open + chalk.styles.bgBlack.open +" ";
 };
 																  
 exports.cError = function (text) { 
