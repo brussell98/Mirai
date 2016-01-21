@@ -294,7 +294,7 @@ if (config.is_heroku_version) {
 
 function evaluateString (msg) {
 	/*EXTREMELY DANGEROUS so lets check again*/if (msg.author.id != config.admin_id) { console.log(colors.cWarn(" WARN ")+"Somehow an unauthorized user got into eval!"); return; }
-	console.log(colors.cWarn(" Running eval "));
+	console.log(colors.cWarn(" Running eval ")+" ");
 	var result = eval("try{"+msg.content.substring(7).replace(/\n/g, "")+"}catch(err){console.log(err);}");
 	if (typeof result !== 'object') {
 		bot.sendMessage(msg, result);
