@@ -110,7 +110,7 @@ var commands = {
 								console.log("Already in server");
 								bot.sendMessage(msg, "I'm already in that server!");
 							} else {
-								console.log(colors.cGreen("Joined server: "+server.name));
+								console.log(colors.cGreen("Joined server: "+server.name)+" ");
 								bot.sendMessage(msg, ":white_check_mark: Successfully joined ***" + server.name + "***");
 								if (suffix.indexOf("-a") != -1) {
 									setTimeout(function(){
