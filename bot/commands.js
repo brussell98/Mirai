@@ -1,9 +1,7 @@
 var config = require("./config.json");
 var games = require("./games.json").games;
 var version = require("../package.json").version;
-var chalk = require('chalk');
-var c = new chalk.constructor({enabled: true});
-
+var colors = require('./styles.js');
 var request = require('request');
 var xml2js = require('xml2js');
 var fs = require('fs');
@@ -97,22 +95,22 @@ var commands = {
 				var invites = suffix.split(" ");
 				for (invite of invites) {
 					if (/https?:\/\/discord\.gg\/[A-Za-z0-9]+/.test(invite)) {
-						var cServers = bot.servers;
+						var cServers = bot.servers.getAll("id", /(.*)/);
 						bot.joinServer(invite, function (err, server) {
 							if (err) {
 								bot.sendMessage(msg, ":warning: Failed to join: " + err);
-								console.log(c.bgYellow.black(" WARN ")+" "+err);
+								console.log(colors.cWarn(" WARN ")+err);
 							} else if (!server || server.name == undefined || server.roles == undefined || server.channels == undefined || server.members == undefined) {
-								console.log(c.bgYellow.black(" WARN ")+" Error joining server. Didn't receive all data.");
+								console.log(colors.cWarn(" WARN ")+"Error joining server. Didn't receive all data.");
 								bot.sendMessage(msg, ":warning: Failed to receive all data, please try again in a few seconds.");
 								try {
 									bot.leaveServer(server);
 								} catch(error) { /*how did it get here?*/ }
-							} else if (cServers.has("id", server.id)) {
+							} else if (cServers.indexOf(server.id) > -1) {
 								console.log("Already in server");
 								bot.sendMessage(msg, "I'm already in that server!");
 							} else {
-								console.log(c.green("Joined server: ")+server.name);
+								console.log(colors.cGreen("Joined server: "+server.name));
 								bot.sendMessage(msg, ":white_check_mark: Successfully joined ***" + server.name + "***");
 								if (suffix.indexOf("-a") != -1) {
 									setTimeout(function(){
@@ -171,7 +169,7 @@ var commands = {
 					var roll = JSON.parse(body);
 					if (roll.details.length <= 100) { bot.sendMessage(msg, ":game_die: Your " + roll.input + " resulted in " + roll.result + " " + roll.details); }
 					else { bot.sendMessage(msg, ":game_die: Your " + roll.input + " resulted in " + roll.result); }
-				} else { console.log(c.bgYellow.black(" WARN ")+" Got an error: ", error, ", status code: ", response.statusCode); }
+				} else { console.log(colors.cWarn(" WARN ")+"Got an error: ", error, ", status code: ", response.statusCode); }
 			});
 		}
 	},
@@ -183,7 +181,7 @@ var commands = {
 			var roll = 100;
 			try {
 				if (suffix && /\d+/.test(suffix)) { roll = parseInt(suffix.replace(/[^\d]/g, "")); }
-			} catch(err) { console.log(c.bgRed.black(" ERROR ")+" "+err); bot.sendMessage(msg, ":warning: Error parsing suffix into int", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
+			} catch(err) { console.log(colors.cError(" ERROR ")+err); bot.sendMessage(msg, ":warning: Error parsing suffix into int", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
 			bot.sendMessage(msg, msg.author.username + " rolled 1-" + roll + " and got " + Math.floor(Math.random() * (roll + 1)));
 		}
 	},
@@ -212,7 +210,7 @@ var commands = {
 						msgArray.push("**Roles:** `" + rols.substring(0, rols.length - 2) + "`");
 						if (usr.avatarURL != null) { msgArray.push("**Avatar URL:** `" + usr.avatarURL + "`"); }
 						bot.sendMessage(msg, msgArray);
-						if (config.debug) { console.log(c.inverse(" DEBUG ")+" Got info on " + usr.username); }
+						if (config.debug) { console.log(colors.cDebug(" DEBUG ")+"Got info on " + usr.username); }
 					});
 				} else {
 					var msgArray = [];
@@ -230,7 +228,7 @@ var commands = {
 					msgArray.push("**This channel's id:** `" + msg.channel.id + "`");
 					msgArray.push("**Icon URL:** `" + msg.channel.server.iconURL + "`");
 					bot.sendMessage(msg, msgArray);
-					if (config.debug) { console.log(c.inverse(" DEBUG ")+" Got info on " + msg.channel.server.name); }
+					if (config.debug) { console.log(colors.cDebug(" DEBUG ")+"Got info on " + msg.channel.server.name); }
 				}
 			} else { bot.sendMessage(msg, ":warning: Can't do that in a DM.", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
 		}
@@ -320,7 +318,7 @@ var commands = {
 					bot.sendMessage(voteChannel, "**Results of last vote:**\nTopic: `" + topicstring + "`\nUpvotes: `" + upvote + " " + Math.round((upvote/(upvote+downvote))*100) + "%`\nDownvotes: `" + downvote + " " + Math.round((downvote/(upvote+downvote))*100) + "%`");
 					bot.deleteMessage(voteAnMsg);
 				} else { bot.sendMessage(msg, ":warning: Must be done in the channel the vote was created in.", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
-			} catch(err) { console.log("error", "Error sending vote results: " + err) }
+			} catch(err) { console.log(colors.cError(" ERROR ")+"Error sending vote results: " + err) }
 			upvote = 0; downvote = 0; votersUp = []; votersDown = []; votebool = false; topicstring = ""; voteChannel = {}; voteAnMsg = {};
 		}
 	},
