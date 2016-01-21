@@ -95,7 +95,8 @@ var commands = {
 				var invites = suffix.split(" ");
 				for (invite of invites) {
 					if (/https?:\/\/discord\.gg\/[A-Za-z0-9]+/.test(invite)) {
-						var cServers = bot.servers.getAll("id", /(.*)/);
+						var cServers = [];
+						bot.servers.map(function(srvr){cServers.push(srvr.id);});
 						bot.joinServer(invite, function (err, server) {
 							if (err) {
 								bot.sendMessage(msg, ":warning: Failed to join: " + err);
@@ -631,6 +632,21 @@ var commands = {
 				if (!error && response.statusCode == 200) {
 					body = JSON.parse(body);
 					bot.sendMessage(msg, body.text);
+				}
+			});
+		}
+	},
+	"catfacts": {
+		desc: "Your hourly dose of cat facts.",
+		usage: "",
+		deleteCommand: true,
+		process: function (bot, msg, suffix) {
+			request('http://catfacts-api.appspot.com/api/facts', function (error, response, body) {
+				if (error) { bot.sendMessage(msg, "Error: "+error, function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 10000}); }); }
+				if (response.statusCode != 200) { bot.sendMessage(msg, "Got status code "+response.statusCode, function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 10000}); }); }
+				if (!error && response.statusCode == 200) {
+					body = JSON.parse(body);
+					bot.sendMessage(msg, msg.author.username+", did you know that "+body.facts[0]);
 				}
 			});
 		}

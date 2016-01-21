@@ -81,7 +81,7 @@ bot.on("message", function (msg) {
 						if (cTime < leTime) { //if it is still on cooldown
 							var left = (leTime - cTime) / 1000;
 							if (msg.author.id != config.admin_id) { //admin bypass
-								bot.sendMessage(msg, ":warning: This command is on cooldown with " + Math.round(left) + " seconds remaining", function (erro, message) { bot.deleteMessage(message, {"wait": 2000}); });
+								bot.sendMessage(msg, ":warning: This command is on cooldown with " + Math.round(left) + " seconds remaining", function (erro, message) { bot.deleteMessage(message, {"wait": 4000}); });
 								return;
 							}
 						} else { lastExecTime[cmd] = cTime; }
@@ -89,7 +89,7 @@ bot.on("message", function (msg) {
 				}
 				commands[cmd].process(bot, msg, suffix);
 				if (commands[cmd].hasOwnProperty("deleteCommand")) {
-					if (commands[cmd].deleteCommand === true) { bot.deleteMessage(msg, {"wait": 10000}); } //delete command after 3.5 seconds
+					if (commands[cmd].deleteCommand === true) { bot.deleteMessage(msg, {"wait": 8000}); } //delete command after 3.5 seconds
 				}
 			} catch (err) { console.log(err); }
 		}
@@ -107,7 +107,7 @@ bot.on("message", function (msg) {
 						if (cTime < leTime) {
 							var left = (leTime - cTime) / 1000;
 							if (msg.author.id != config.admin_id) {
-								bot.sendMessage(msg, ":warning: This command is on cooldown with " + Math.round(left) + " seconds remaining", function (erro, message) { bot.deleteMessage(message, {"wait": 2000}); });
+								bot.sendMessage(msg, ":warning: This command is on cooldown with " + Math.round(left) + " seconds remaining", function (erro, message) { bot.deleteMessage(message, {"wait": 4000}); });
 								return;
 							}
 						} else { lastExecTime[cmd] = cTime; }
@@ -115,7 +115,7 @@ bot.on("message", function (msg) {
 				}
 				mod[cmd].process(bot, msg, suffix, commandsProcessed, talkedToTimes);
 				if (mod[cmd].hasOwnProperty("deleteCommand")) {
-					if (mod[cmd].deleteCommand === true) { bot.deleteMessage(msg, {"wait": 10000}); }
+					if (mod[cmd].deleteCommand === true) { bot.deleteMessage(msg, {"wait": 6000}); }
 				}
 			} catch (err) { console.log(err); }
 		}
@@ -179,8 +179,11 @@ bot.on('userUpdated', function (objUser, objNewUser) {
 	}
 });
 
-bot.on('presence', function(user, status, game) { //check if game and also it's now oldUser newUser
-	if (config.log_presence) { if (config.debug) { console.log(colors.cDebug(" PRESENCE ")+ user.username + " is now " + status + " playing " + game); } }
+bot.on('presence', function(userOld, userNew) { //check if game and also it's now oldUser newUser
+	if (config.log_presence) { if (config.debug) { 
+		if (userNew.game === null) { console.log(colors.cDebug(" PRESENCE ")+ userNew.username + " is now " + userNew.status); }
+		else { console.log(colors.cDebug(" PRESENCE ")+ userNew.username + " is now " + userNew.status + " playing " + userNew.game.name); }
+	} }
 });
 
 bot.on('serverDeleted', function(objServer) { //detect when the bot leaves a server
@@ -206,7 +209,8 @@ function carbonInvite(msg){
 	if (msg) {
 		try {
 			if (config.debug) { console.log(colors.cDebug(" DEBUG ")+"Attempting to join: "+msg.content); }
-			var cServers = bot.servers.getAll("id", /(.*)/);
+			var cServers = [];
+			bot.servers.map(function(srvr){cServers.push(srvr.id);});
 			bot.joinServer(msg.content, function (err, server) {
 				if (err) {
 					bot.sendMessage(msg, "Failed to join: " + err);

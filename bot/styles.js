@@ -16,7 +16,7 @@ exports.cError = function (text) {
 	text + 
 	chalk.styles.black.close + 
 	chalk.styles.bgRed.close + 
-	chalk.styles.white.open + " ";
+	chalk.styles.white.open + chalk.styles.bgBlack.open + " ";
 };
 																  
 exports.cDebug = function (text) { 
@@ -25,7 +25,7 @@ exports.cDebug = function (text) {
 	text + 
 	chalk.styles.black.close + 
 	chalk.styles.bgWhite.close + 
-	chalk.styles.white.open + " ";
+	chalk.styles.white.open + chalk.styles.bgBlack.open + " ";
 };
 
 exports.cGreen = function (text) { 
@@ -83,5 +83,5 @@ exports.cBgGreen = function (text) {
 	chalk.styles.black.open + 
 	text + 
 	chalk.styles.bgGreen.close + 
-	chalk.styles.black.close + chalk.styles.white.open;
+	chalk.styles.black.close + chalk.styles.white.open + chalk.styles.bgBlack.open;
 };
