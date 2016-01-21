@@ -222,7 +222,7 @@ function carbonInvite(msg){
 					bot.sendMessage(msg, "I'm already in that server!");
 				} else {
 					console.log(colors.cGreen("Joined server: ")+" "+server.name);
-					bot.sendMessage(msg, colors.cGreen("Successfully joined " + server.name));
+					bot.sendMessage(msg, "Successfully joined " + server.name);
 					if (msg.author.id != 109338686889476096) { bot.sendMessage(msg, "It's not like I wanted you to use `"+config.command_prefix+"joins` or anything, b-baka!"); }
 					if (shouldCarbonAnnounce) {
 						setTimeout(function(){
@@ -258,7 +258,7 @@ function reload() {
 	logger = require("./bot/logger.js").Logger;
 	delete require.cache[require.resolve('./bot/cleverbot.js')];
 	cleverbot = require("./bot/cleverbot").cleverbot;
-	console.log(colors.BgGreen(" Reloaded modules with no errors ")+" ");
+	console.log(colors.BgGreen(" Reloaded modules ")+" success");
 }
 
 function checkConfig() {
@@ -267,21 +267,21 @@ function checkConfig() {
 		if (process.env.password === null) { console.log(colors.cWarn(" WARN ")+"Password not defined"); }
 		if (config.command_prefix === null || config.command_prefix.length !== 1) { console.log(colors.cWarn(" WARN ")+"Prefix either not defined or more than one character"); }
 		if (config.mod_command_prefix === null || config.mod_command_prefix.length !== 1) { console.log(colors.cWarn(" WARN ")+"Mod prefix either not defined or more than one character"); }
-		if (config.admin_id === null) { console.log(colors.cYellow("Admin user's id not defined")+" "); }
-		if (process.env.mal_user === null) { console.log(colors.cYellow("MAL username not defined")+" "); }
-		if (process.env.mal_pass === null) { console.log(colors.cYellow("MAL password not defined")+" "); }
-		if (process.env.weather_api_key === null) { console.log(colors.cYellow("OpenWeatherMap API key not defined")+" "); }
-		if (process.env.osu_api_key === null) { console.log(colors.cYellow("Osu API key not defined")+" "); }
+		if (config.admin_id === null) { console.log(colors.cYellow("Admin user's id not defined")+" in process.env"); }
+		if (process.env.mal_user === null) { console.log(colors.cYellow("MAL username not defined")+" in process.env"); }
+		if (process.env.mal_pass === null) { console.log(colors.cYellow("MAL password not defined")+" in process.env"); }
+		if (process.env.weather_api_key === null) { console.log(colors.cYellow("OpenWeatherMap API key not defined")+" in process.env"); }
+		if (process.env.osu_api_key === null) { console.log(colors.cYellow("Osu API key not defined")+" in process.env"); }
 	} else {
 		if (config.email === null) { console.log(colors.cWarn(" WARN ")+"Email not defined"); }
 		if (config.password === null) { console.log(colors.cWarn(" WARN ")+"Password not defined"); }
 		if (config.command_prefix === null || config.command_prefix.length !== 1) { console.log(colors.cWarn(" WARN ")+"Prefix either not defined or more than one character"); }
 		if (config.mod_command_prefix === null || config.mod_command_prefix.length !== 1) { console.log(colors.cWarn(" WARN ")+"Mod prefix either not defined or more than one character"); }
-		if (config.admin_id === null) { console.log(colors.cYellow("Admin user's id not defined")+" "); }
-		if (config.mal_user === null) { console.log(colors.cYellow("MAL username not defined")+" "); }
-		if (config.mal_pass === null) { console.log(colors.cYellow("MAL password not defined")+" "); }
-		if (config.weather_api_key === null) { console.log(colors.cYellow("OpenWeatherMap API key not defined")+" "); }
-		if (config.osu_api_key === null) { console.log(colors.cYellow("Osu API key not defined")+" "); }
+		if (config.admin_id === null) { console.log(colors.cYellow("Admin user's id not defined")+" in config"); }
+		if (config.mal_user === null) { console.log(colors.cYellow("MAL username not defined")+" in config"); }
+		if (config.mal_pass === null) { console.log(colors.cYellow("MAL password not defined")+" in config"); }
+		if (config.weather_api_key === null) { console.log(colors.cYellow("OpenWeatherMap API key not defined")+" in config"); }
+		if (config.osu_api_key === null) { console.log(colors.cYellow("Osu API key not defined")+" in config"); }
 	}
 }
 
@@ -294,7 +294,7 @@ if (config.is_heroku_version) {
 
 function evaluateString (msg) {
 	/*EXTREMELY DANGEROUS so lets check again*/if (msg.author.id != config.admin_id) { console.log(colors.cWarn(" WARN ")+"Somehow an unauthorized user got into eval!"); return; }
-	console.log(colors.cWarn(" Running eval ")+" ");
+	console.log(colors.cWarn(" WARN ")+"Running eval");
 	var result = eval("try{"+msg.content.substring(7).replace(/\n/g, "")+"}catch(err){console.log(err);}");
 	if (typeof result !== 'object') {
 		bot.sendMessage(msg, result);
