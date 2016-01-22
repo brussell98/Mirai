@@ -75,17 +75,20 @@ bot.on("message", function (msg) {
 				commandsProcessed += 1;
 				if (commands[cmd].hasOwnProperty("cooldown")) {
 					if (lastExecTime.hasOwnProperty(cmd)) {
-						var cTime = new Date();
-						var leTime = new Date(lastExecTime[cmd]);
-						leTime.setSeconds(leTime.getSeconds() + commands[cmd].cooldown);
-						if (cTime < leTime) { //if it is still on cooldown
-							var left = (leTime - cTime) / 1000;
-							if (msg.author.id != config.admin_id) { //admin bypass
-								bot.sendMessage(msg, ":warning: This command is on cooldown with " + Math.round(left) + " seconds remaining", function (erro, message) { bot.deleteMessage(message, {"wait": 4000}); });
-								return;
-							}
-						} else { lastExecTime[cmd] = cTime; }
-					} else { lastExecTime[cmd] = new Date(); }
+						var id = msg.author.id;
+						if (lastExecTime[cmd][id] != undefined) {
+							var cTime = new Date();
+							var leTime = new Date(lastExecTime[cmd][id]);
+							leTime.setSeconds(leTime.getSeconds() + commands[cmd].cooldown);
+							if (cTime < leTime) { //if it is still on cooldown
+								var left = (leTime - cTime) / 1000;
+								if (msg.author.id != config.admin_id) { //admin bypass
+									bot.sendMessage(msg, msg.author.username+", you can't use this command for " + Math.round(left) + " more seconds", function (erro, message) { bot.deleteMessage(message, {"wait": 6000}); });
+									return;
+								}
+							} else { lastExecTime[cmd][id] = cTime; }
+						} else { lastExecTime[cmd][id] = new Date(); }
+					} else { lastExecTime[cmd] = {}; }
 				}
 				commands[cmd].process(bot, msg, suffix);
 				if (commands[cmd].hasOwnProperty("deleteCommand")) {
@@ -101,17 +104,20 @@ bot.on("message", function (msg) {
 				commandsProcessed += 1;
 				if (mod[cmd].hasOwnProperty("cooldown")) {
 					if (lastExecTime.hasOwnProperty(cmd)) {
-						var cTime = new Date();
-						var leTime = new Date(lastExecTime[cmd]);
-						leTime.setSeconds(leTime.getSeconds() + mod[cmd].cooldown);
-						if (cTime < leTime) {
-							var left = (leTime - cTime) / 1000;
-							if (msg.author.id != config.admin_id) {
-								bot.sendMessage(msg, ":warning: This command is on cooldown with " + Math.round(left) + " seconds remaining", function (erro, message) { bot.deleteMessage(message, {"wait": 4000}); });
-								return;
-							}
-						} else { lastExecTime[cmd] = cTime; }
-					} else { lastExecTime[cmd] = new Date(); }
+						var id = msg.author.id;
+						if (lastExecTime[cmd][id] != undefined) {
+							var cTime = new Date();
+							var leTime = new Date(lastExecTime[cmd][id]);
+							leTime.setSeconds(leTime.getSeconds() + mod[cmd].cooldown);
+							if (cTime < leTime) { //if it is still on cooldown
+								var left = (leTime - cTime) / 1000;
+								if (msg.author.id != config.admin_id) { //admin bypass
+									bot.sendMessage(msg, msg.author.username+", you can't use this command for " + Math.round(left) + " more seconds", function (erro, message) { bot.deleteMessage(message, {"wait": 6000}); });
+									return;
+								}
+							} else { lastExecTime[cmd][id] = cTime; }
+						} else { lastExecTime[cmd][id] = new Date(); }
+					} else { lastExecTime[cmd] = {}; }
 				}
 				mod[cmd].process(bot, msg, suffix, commandsProcessed, talkedToTimes);
 				if (mod[cmd].hasOwnProperty("deleteCommand")) {
@@ -299,11 +305,11 @@ if (config.is_heroku_version) {
 function evaluateString (msg) {
 	/*EXTREMELY DANGEROUS so lets check again*/if (msg.author.id != config.admin_id) { console.log(colors.cWarn(" WARN ")+"Somehow an unauthorized user got into eval!"); return; }
 	console.log(colors.cWarn(" WARN ")+"Running eval");
-	var result = eval("try{"+msg.content.substring(7).replace(/\n/g, "")+"}catch(err){console.log(err);}");
+	var result = eval("try{"+msg.content.substring(7).replace(/\n/g, "")+"}catch(err){console.log(colors.cError(\" ERROR \")+err);bot.sendMessage(msg, \"```\"+err+\"```\");}");
 	if (typeof result !== 'object') {
 		bot.sendMessage(msg, result);
 		console.log("Result: "+result);
-	} else { console.log("Result was an object"); }
+	}
 
 }
 

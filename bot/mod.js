@@ -84,7 +84,7 @@ var commands = {
 	"playing": {
 		desc: "Allows the bot owner to set the game.",
 		usage: "[game]",
-		cooldown: 5,
+		cooldown: 10,
 		shouldDisplay: false,
 		deleteCommand: true,
 		process: function (bot, msg, suffix) {
@@ -247,6 +247,7 @@ var commands = {
 		desc: "See recent changes to the bot",
 		deleteCommand: true,
 		usage: "",
+		cooldown: 30,
 		process: function(bot, msg, suffix) {
 			var chanelogChannel = bot.channels.get("id", '135527608564580353');
 			if (!chanelogChannel) { bot.sendMessage(msg, "The bot is not in the BrussellBot Official Server", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
