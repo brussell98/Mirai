@@ -9,7 +9,7 @@ var osuapi = require('osu-api');
 
 //voting vars
 var topicstring = "", votersUp = [], votersDown = [], upvote = 0, downvote = 0, votebool = false, voteAnMsg = {};
-var lottoMax = 1, lottoMsg = {}, lottoEntries = [], lottoBool = false;
+var lottoMax = 1, lottoMsg = {}, lottoEntries = [], lottoBool = false, lottoStarter = "";
 
 /*
 ====================
@@ -27,7 +27,7 @@ function autoEndVote(bot, msg) {
 }
 
 function autoEndLotto(bot, msg) {
-	setTimeout(function(){ if (lottoBool) { commands["lotto"].process(bot, msg, "end"); } }, 300000);
+	setTimeout(function(){ if (lottoBool) { commands["lotto"].process(bot, msg, "end"); } }, 600000);
 }
 
 /*
@@ -84,7 +84,7 @@ var commands = {
 		process: function(bot, msg) {
 			var n = Math.floor(Math.random() * 4);
 			if (n === 0) { bot.sendMessage(msg, "pong"); } 
-			else if (n === 1) { bot.sendMessage(msg, "You though I would say pong, didn't you?");} 
+			else if (n === 1) { bot.sendMessage(msg, "You thought I would say pong, didn't you?");} 
 			else if (n === 2) { bot.sendMessage(msg, "pong!");} 
 			else if (n === 3) { bot.sendMessage(msg, "Yeah, I'm still here");} 
 		}
@@ -268,7 +268,7 @@ var commands = {
 	},
 	"lotto": {
 		desc: "Lottery picks a random entered user.",
-		usage: "end | enter | new [max entries] | <mentions to pick from> (pick from the users mentioned)",
+		usage: "end | enter | new [max entries] [-noautoend] | <mentions to pick from> (pick from the users mentioned)",
 		deleteCommand: true,
 		cooldown: 5,
 		process: function (bot, msg, suffix) {
@@ -276,31 +276,33 @@ var commands = {
 				if (lottoBool) { bot.sendMessage(msg, "Lottery already running, please wait for it to end."), function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }; return; }
 				else { 
 					if (suffix.split(" ").length > 1) {
-						if (/^\d+$/.test(suffix.substring(4))) { lottoMax = parseInt(suffix.substring(4)); }
+						if (/^\d+$/.test(suffix.substring(4).replace(" -noautoend", ""))) { lottoMax = parseInt(suffix.substring(4)); }
 					}
 					lottoBool = true;
 					bot.sendMessage(msg, msg.author.username+" started a lottery! Use `"+config.command_prefix+"lotto enter` to enter. (Max entries: "+lottoMax+")", function (e, message) { lottoMsg = message; }); 
-					autoEndLotto(bot, msg);
+					lottoStarter = msg.author.id;
+					if (suffix.indexOf("-noautoend") == -1) { autoEndLotto(bot, msg); }
 				}
 			} else if (suffix.replace(" ", "") == "end") {
 				if (!lottoBool) { bot.sendMessage(msg, "There isn't a lottery running.", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 				else if (msg.channel.id != lottoMsg.channel.id) { bot.sendMessage(msg, "You can only end the lottery from the channel it's running in.", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
+				else if (msg.author.id != lottoStarter) { bot.sendMessage(msg, "You didn't start this lottery!", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 				else {
 					if (lottoEntries.length < 2) { bot.sendMessage(msg, "Less than 2 people entered the lottery."); }
 					else {
 						var choice = Math.floor(Math.random() * lottoEntries.length);
 						bot.sendMessage(lottoMsg.channel, "Out of "+lottoEntries.length+" entries the winner is "+lottoEntries[choice]);
 					}
-					lottoMax = 1; lottoMsg = {}; lottoEntries = []; lottoBool = false;
+					lottoMax = 1; lottoMsg = {}; lottoEntries = []; lottoBool = false, lottoStarter = "";
 				}
 			} else if (suffix.replace(" ", "") == "enter") {
 				if (!lottoBool) { bot.sendMessage(msg, "No lottery to enter!", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 				else if (msg.channel.id != lottoMsg.channel.id) { bot.sendMessage(msg, "You must enter the lottery in the channel it is running in.", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 				else {
-					if (lottoEntries.indexOf(msg.author) == -1) { lottoEntries.push(msg.author); }
+					if (lottoEntries.indexOf(msg.author) == -1) { lottoEntries.push(msg.author); bot.sendMessage(msg, "Entered "+msg.author.username+" into the lottery"); return; }
 					else {
 						if (lottoMax == 1) { bot.sendMessage(msg, "You've entered the max number of times "+msg.author.username+"."), function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }; return; }
-						else if (lottoEntries.filter(function(value){return value == msg.author;}).length < lottoMax) { lottoEntries.push(msg.author); bot.sendMessage(msg, "Entered "+msg.author.username+" into the lottery"), function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 6000}); }; return; }
+						else if (lottoEntries.filter(function(value){return value == msg.author;}).length < lottoMax) { lottoEntries.push(msg.author); bot.sendMessage(msg, "Entered "+msg.author.username+" into the lottery"); }; return; }
 						else { bot.sendMessage(msg, msg.author.username+" you've already entered the maximum amount of times!"), function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 6000}); }; return; }
 					}
 				}
@@ -403,7 +405,7 @@ var commands = {
 		desc: "Gets details on an anime from MAL.",
 		usage: "<anime name>",
 		deleteCommand: true,
-		cooldown: 8,
+		cooldown: 6,
 		process: function (bot, msg, suffix) {
 			if (suffix) {
 				if (config.is_heroku_version) { var USER = process.env.mal_user; } else { var USER = config.mal_user; }
@@ -444,7 +446,7 @@ var commands = {
 		desc: "Gets details on a manga from MAL.",
 		usage: "<manga/novel name>",
 		deleteCommand: true,
-		cooldown: 8,
+		cooldown: 6,
 		process: function (bot, msg, suffix) {
 			if (suffix) {
 				if (config.is_heroku_version) { var USER = process.env.mal_user; } else { var USER = config.mal_user; }
@@ -497,7 +499,7 @@ var commands = {
 		desc: "Osu! commands. Use "+config.command_prefix+"help osu",
 		usage: "sig [username] [hex] | best [username] | user [username] | recent [username]",
 		deleteCommand: true,
-		cooldown: 8,
+		cooldown: 5,
 		process: function(bot, msg, suffix) {
 			if (suffix) {
 			if (suffix.split(" ")[0] === "sig") {
