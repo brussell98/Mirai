@@ -302,7 +302,7 @@ var commands = {
 					if (lottoEntries.indexOf(msg.author) == -1) { lottoEntries.push(msg.author); bot.sendMessage(msg, "Entered "+msg.author.username+" into the lottery"); return; }
 					else {
 						if (lottoMax == 1) { bot.sendMessage(msg, "You've entered the max number of times "+msg.author.username+".", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
-						else if (lottoEntries.filter(function(value){return value == msg.author;}).length < lottoMax) { lottoEntries.push(msg.author); bot.sendMessage(msg, "Entered "+msg.author.username+" into the lottery"); }; return; }
+						else if (lottoEntries.filter(function(value){return value == msg.author;}).length < lottoMax) { lottoEntries.push(msg.author); bot.sendMessage(msg, "Entered "+msg.author.username+" into the lottery"); return; }
 						else { bot.sendMessage(msg, msg.author.username+" you've already entered the maximum amount of times!", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 6000}); }); return; }
 					}
 				}
