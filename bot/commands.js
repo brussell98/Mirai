@@ -234,7 +234,8 @@ var commands = {
 					var rols = "everyone, ";
 					for (rO of rsO) { rols += (rO.name + ", "); }
 					rols = rols.replace("@", "");
-					msgArray.push("**Roles:** `" + rols.substring(0, rols.length - 2) + "`");
+					if (rols.length <= 1500) { msgArray.push("**Roles:** `" + rols.substring(0, rols.length - 2) + "`"); }
+						else { msgArray.push("**Roles:** `Too many to display`"); }
 					msgArray.push("**Default channel:** #" + msg.channel.server.defaultChannel.name + "");
 					msgArray.push("**This channel's id:** `" + msg.channel.id + "`");
 					msgArray.push("**Icon URL:** `" + msg.channel.server.iconURL + "`");

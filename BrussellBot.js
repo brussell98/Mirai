@@ -283,13 +283,6 @@ function checkConfig() {
 	}
 }
 
-if (config.is_heroku_version) {
-	var http = require("http");
-	setInterval(function() {
-		http.get("http://sheltered-river-1376.herokuapp.com"); //your URL here
-	}, 1320000); //every 22 minutes to keep the bot from sleeping which breaks it
-}
-
 function evaluateString (msg) {
 	/*EXTREMELY DANGEROUS so lets check again*/if (msg.author.id != config.admin_id) { console.log(colors.cWarn(" WARN ")+"Somehow an unauthorized user got into eval!"); return; }
 	console.log(colors.cWarn(" WARN ")+"Running eval");
