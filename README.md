@@ -29,5 +29,7 @@ An multipurpose bot for Discord using the [Discord.js](https://github.com/hydrab
 	- [ ] Bot owner gets priority
 - [ ] Pagination
 - [ ] Get images from a subreddit
-- [ ] not everyone can end a vote
-- [ ] Multiple votes and lotteries.
+- [ ] Convert &codes; from cleverbot
+- [x] If roles brings `]info` over 2000 don't show them
+- [ ] DM owner mentions
+- [ ] Allow server mods to end votes and lotteries despite not starting them

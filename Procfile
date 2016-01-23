@@ -1,1 +1,1 @@
-web: node BrussellBot.js --harmony
+bot: node BrussellBot.js --harmony

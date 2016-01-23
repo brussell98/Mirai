@@ -7,9 +7,8 @@ var xml2js = require('xml2js');
 var fs = require('fs');
 var osuapi = require('osu-api');
 
-//voting vars
-var topicstring = "", votersUp = [], votersDown = [], upvote = 0, downvote = 0, votebool = false, voteAnMsg = {};
-var lottoMax = 1, lottoMsg = {}, lottoEntries = [], lottoBool = false, lottoStarter = "";
+var VoteDB = {};
+var LottoDB = {};
 
 /*
 ====================
@@ -23,11 +22,15 @@ function correctUsage(cmd) {
 }
 
 function autoEndVote(bot, msg) {
-	setTimeout(function() { if (votebool) { commands["vote"].process(bot, msg, "end"); } }, 180000);
+    setTimeout(function(){
+        if (VoteDB.hasOwnProperty(msg.channel.id)) { commands["vote"].process(bot, msg, "end"); }
+    }, 600000); //10 minutes = 600,000
 }
 
 function autoEndLotto(bot, msg) {
-	setTimeout(function(){ if (lottoBool) { commands["lotto"].process(bot, msg, "end"); } }, 600000);
+    setTimeout(function(){
+        if (LottoDB.hasOwnProperty(msg.channel.id)) { commands["lotto"].process(bot, msg, "end"); }
+    }, 600000);
 }
 
 /*
@@ -47,7 +50,7 @@ var commands = {
 			var msgArray = [];
 			if (!suffix){
 				msgArray.push("Use `" + config.command_prefix + "help <command name>` to get info on a specific command.");
-				msgArray.push("Mod can be found with `" + config.mod_command_prefix + "help [command]`.");
+				msgArray.push("Mod commands can be found with `" + config.mod_command_prefix + "help [command]`.");
 				msgArray.push("You can also find examples and more at __github.com/brussell98/BrussellBot/wiki/Commands__");
 				msgArray.push("**Commands:**\n");
 				msgArray.push("`@"+bot.user.username+" text`\n        Talk to the bot (cleverbot)");
@@ -172,6 +175,7 @@ var commands = {
 			request('https://rolz.org/api/?' + dice + '.json', function(err, response, body) {
 				if (!err && response.statusCode == 200) {
 					var roll = JSON.parse(body);
+					if (roll.result.indexOf("Error") > -1) { bot.sendMessage(msg, roll.result, function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 					if (roll.details.length <= 100) { bot.sendMessage(msg, ":game_die: Your " + roll.input + " resulted in " + roll.result + " " + roll.details); }
 					else { bot.sendMessage(msg, ":game_die: Your " + roll.input + " resulted in " + roll.result); }
 				} else { console.log(colors.cWarn(" WARN ")+"Got an error: ", error, ", status code: ", response.statusCode); }
@@ -213,7 +217,8 @@ var commands = {
 						var rols = "everyone, "
 						for (rO of rsO) { rols += (rO.name + ", "); }
 						rols = rols.replace("@", "");
-						msgArray.push("**Roles:** `" + rols.substring(0, rols.length - 2) + "`");
+						if (rols.length <= 1500) { msgArray.push("**Roles:** `" + rols.substring(0, rols.length - 2) + "`"); }
+						else { msgArray.push("**Roles:** `Too many to display`"); }
 						if (usr.avatarURL != null) { msgArray.push("**Avatar URL:** `" + usr.avatarURL + "`"); }
 						bot.sendMessage(msg, msgArray);
 						if (config.debug) { console.log(colors.cDebug(" DEBUG ")+"Got info on " + usr.username); }
@@ -268,99 +273,139 @@ var commands = {
 	},
 	"lotto": {
 		desc: "Lottery picks a random entered user.",
-		usage: "end | enter | new [max entries] [-noautoend] | <mentions to pick from> (pick from the users mentioned)",
+		usage: "end | enter | new [max entries] | <mentions to pick from> (pick from the users mentioned)",
 		deleteCommand: true,
-		cooldown: 5,
+		cooldown: 2,
 		process: function (bot, msg, suffix) {
-			if (suffix.split(" ")[0].replace(" ", "") == "new") {
-				if (lottoBool) { bot.sendMessage(msg, "Lottery already running, please wait for it to end."), function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }; return; }
-				else { 
-					if (suffix.split(" ").length > 1) {
-						if (/^\d+$/.test(suffix.substring(4).replace(" -noautoend", ""))) { lottoMax = parseInt(suffix.substring(4)); }
-					}
-					lottoBool = true;
-					bot.sendMessage(msg, msg.author.username+" started a lottery! Use `"+config.command_prefix+"lotto enter` to enter. (Max entries: "+lottoMax+")", function (e, message) { lottoMsg = message; }); 
-					lottoStarter = msg.author.id;
-					if (suffix.indexOf("-noautoend") == -1) { autoEndLotto(bot, msg); }
+			if (suffix.split(" ")[0] == "new") {
+				
+				if (msg.channel.isPrivate) { bot.sendMessage(msg, "Can't do that in a direct message"); return; }
+				var currentchannel = msg.channel.id;
+				if (suffix.length > 1){
+					if (/^\d+$/.test(suffix.split(" ")[1])) { var maxentries = parseInt(suffix.split(" ")[1]); } else { var maxentries = 1; }
 				}
+				if (LottoDB.hasOwnProperty(currentchannel)){
+					bot.sendMessage(msg.channel, "Lottery already running, please wait for it to end.", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); });
+				} else {
+				   bot.sendMessage(msg, "New lottery started by " + msg.author.username + " (max entries per user: " + maxentries + "). Use `"+config.command_prefix+"lotto enter` to enter.");
+				   var object = {'max': maxentries, 'msg': msg, 'entries': "", 'starter': msg.author.id};
+				   LottoDB[currentchannel] = [];
+				   LottoDB[currentchannel][0] = object;
+				   if (suffix.indexOf("-noautoend") == -1){ autoEndLotto(bot, msg); }
+				}
+				
 			} else if (suffix.replace(" ", "") == "end") {
-				if (!lottoBool) { bot.sendMessage(msg, "There isn't a lottery running.", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
-				else if (msg.channel.id != lottoMsg.channel.id) { bot.sendMessage(msg, "You can only end the lottery from the channel it's running in.", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
-				else if (msg.author.id != lottoStarter) { bot.sendMessage(msg, "You didn't start this lottery!", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
-				else {
-					if (lottoEntries.length < 2) { bot.sendMessage(msg, "Less than 2 people entered the lottery."); }
-					else {
-						var choice = Math.floor(Math.random() * lottoEntries.length);
-						bot.sendMessage(lottoMsg.channel, "Out of "+lottoEntries.length+" entries the winner is "+lottoEntries[choice]);
+				
+				if (msg.channel.isPrivate) { bot.sendMessage(msg, "Can't do that in a direct message"); return; }
+				if (LottoDB.hasOwnProperty(msg.channel.id)) {
+					var currentchannel = msg.channel.id;
+					if (msg.author.id != LottoDB[currentchannel][0].starter) { bot.sendMessage(msg, "Only the person that started the lottery can end it!", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
+					else if (LottoDB[currentchannel][0].entries.split(",").length < 3) {
+						bot.sendMessage(msg, "Lottery ended but there have to be two entries into the lottery for a winner to be picked.");
+						delete LottoDB[currentchannel];
+					} else {
+						var winner = msg.channel.server.members.get("id", LottoDB[currentchannel][0].entries.split(",")[Math.floor((Math.random() * (LottoDB[currentchannel][0].entries.split(",").length - 1)) + 1)]);
+						bot.sendMessage(msg, "Out of " + (LottoDB[currentchannel][0].entries.split(",").length - 1) + " entries the winner is " + winner);
+						delete LottoDB[currentchannel];
 					}
-					lottoMax = 1; lottoMsg = {}; lottoEntries = []; lottoBool = false, lottoStarter = "";
-				}
+				} else { bot.sendMessage(msg, "There isn't a lottery running in this channel!", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
+				
 			} else if (suffix.replace(" ", "") == "enter") {
-				if (!lottoBool) { bot.sendMessage(msg, "No lottery to enter!", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
-				else if (msg.channel.id != lottoMsg.channel.id) { bot.sendMessage(msg, "You must enter the lottery in the channel it is running in.", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
-				else {
-					if (lottoEntries.indexOf(msg.author) == -1) { lottoEntries.push(msg.author); bot.sendMessage(msg, "Entered "+msg.author.username+" into the lottery"); return; }
-					else {
-						if (lottoMax == 1) { bot.sendMessage(msg, "You've entered the max number of times "+msg.author.username+".", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
-						else if (lottoEntries.filter(function(value){return value == msg.author;}).length < lottoMax) { lottoEntries.push(msg.author); bot.sendMessage(msg, "Entered "+msg.author.username+" into the lottery"); return; }
-						else { bot.sendMessage(msg, msg.author.username+" you've already entered the maximum amount of times!", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 6000}); }); return; }
+			
+				if (msg.channel.isPrivate) { bot.sendMessage(msg, "Can't do that in a direct message"); return; }
+				var currentchannel = msg.channel.id;
+				if (LottoDB.hasOwnProperty(currentchannel)){
+					if (LottoDB[currentchannel][0].entries.split(",").indexOf(msg.author.id) > -1){
+						if (LottoDB[currentchannel][0].max < 2) { bot.sendMessage(msg.channel, "You can only enter this lottery 1 time.", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
+						else {
+							if (LottoDB[currentchannel][0].entries.split(",").filter(function(value){return value == msg.author.id;}).length >= LottoDB[currentchannel][0].max) { bot.sendMessage(msg.channel, "You can only enter this lottery " + LottoDB[currentchannel][0].max + " time.", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
+							else {
+								LottoDB[currentchannel][0].entries = LottoDB[currentchannel][0].entries + "," + msg.author.id;
+								console.log(LottoDB[currentchannel][0].entries);
+								bot.sendMessage(msg.channel, "Added " + msg.author.username + " to the lottery");
+							}
+						}
+					} else {
+						LottoDB[currentchannel][0].entries = LottoDB[currentchannel][0].entries + "," + msg.author.id;
+						console.log(LottoDB[currentchannel][0].entries);
+						bot.sendMessage(msg.channel, "Added " + msg.author.username + " to the lottery");
+						return;
 					}
-				}
+				} else { bot.sendMessage(msg.channel, "No lottery to enter!", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
+				
 			} else if (msg.mentions.length > 0) {
+
+				if (msg.channel.isPrivate) { bot.sendMessage(msg, "Can't do that in a direct message"); return; }
 				if (msg.mentions.length < 2) { bot.sendMessage(msg, "You need to enter multiple users!"); return; }
 				var choice = Math.floor(Math.random() * msg.mentions.length);
 				bot.sendMessage(msg, "Out of "+msg.mentions.length+" entries the winner is "+msg.mentions[choice]);
-			} else { bot.sendMessage(msg, correctUsage("lotto"), function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 15000}); }); }
+				
+			} else { bot.sendMessage(msg, correctUsage("lotto"), function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 15000}); }); } //wrong usage
 		}
 	},
 	"vote": {
 		desc: "Start / end a vote, or vote on one.",
-		usage: "+/- | new <topic> | end",
+		usage: "+/- | new <topic> [-noautoend] | end",
 		deleteCommand: true,
-		cooldown: 4,
 		process: function (bot, msg, suffix) {
 			if (suffix.split(" ")[0] == "new") {
-				if (votebool == true) { bot.sendMessage(msg, ":warning: Theres already a vote pending!", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
-				if (suffix.length > 4) { topicstring = suffix.substring(4); } else { topicstring = "None"; }
-				bot.sendMessage(msg, "New Vote started: `" + topicstring + "`. To vote say `" + config.command_prefix + "vote +/-`\nIf the vote isn't ended manually it will end after 3 minutes\nUpvotes: 0\nDownvotes: 0", function (err, message) { voteAnMsg = message; });
-				votebool = true;
-				autoEndVote(bot, msg);
+				
+				if (msg.channel.isPrivate) { bot.sendMessage(msg, "Can't do that in a direct message"); return; }
+				var currentChannel = msg.channel.id;
+				if (VoteDB.hasOwnProperty(currentChannel)) { bot.sendMessage(msg, "There is already a vote pending!", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); });  return; }
+				if (suffix.replace(" -noautoend", "").split(" ").length > 1) { var topic = suffix.replace(" -noautoend", "").substring(4); }
+				else { var topic = "None"; }
+				bot.sendMessage(msg, "New vote started by " + msg.author.username + ". Topic: `" + topic + "`. To vote say `" + config.command_prefix + "vote +/-`\nUpvotes: 0\nDownvotes: 0", function (err, message) {
+					if (err) { bot.sendMessage(msg, err); return; }
+					var object = {'topic': topic, 'annMsg': message, 'upvoters': "", 'downvoters': "", 'upvotes': 0, 'downvotes': 0, 'starter': msg.author.id};
+					VoteDB[currentChannel] = [];
+					VoteDB[currentChannel][0] = object;
+					if (suffix.indexOf("-noautoend") == -1){ autoEndVote(bot, msg); }
+				});
+				
 			} else if (suffix.replace(" ", "") == "end") {
-				if (votebool == false) { bot.sendMessage(msg, "There isn't a vote to end.", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
-				if (msg.channel.id == voteAnMsg.channel.id && bot.channels.get("id", voteAnMsg.channel.id) !== null) {
-					bot.sendMessage(voteAnMsg.channel, "**Results of last vote:**\nTopic: `" + topicstring + "`\nUpvotes: `" + upvote + " " + Math.round((upvote/(upvote+downvote))*100) + "%`\nDownvotes: `" + downvote + " " + Math.round((downvote/(upvote+downvote))*100) + "%`");
-					bot.deleteMessage(voteAnMsg);
-				} else { bot.sendMessage(msg, ":warning: Must be done in the channel the vote was created in.", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
-			upvote = 0; downvote = 0; votersUp = []; votersDown = []; votebool = false; topicstring = ""; voteAnMsg = {};
+				
+				if (msg.channel.isPrivate) { bot.sendMessage(msg, "Can't do that in a direct message"); return; }
+				var currentChannel = msg.channel.id;
+				if (!VoteDB.hasOwnProperty(currentChannel)) { bot.sendMessage(msg, "There isn't a vote to end!", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); });  return; }
+				if (msg.author.id != VoteDB[currentChannel][0].starter) { bot.sendMessage(msg, "Only the person that started the vote can end it!", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
+				bot.deleteMessage(VoteDB[currentChannel][0].annMsg);
+				bot.sendMessage(msg, "**Results of last vote:**\nTopic: `" + VoteDB[currentChannel][0].topic + "`\nUpvotes: `" + VoteDB[currentChannel][0].upvotes + " " + Math.round((VoteDB[currentChannel][0].upvotes/(VoteDB[currentChannel][0].upvotes+VoteDB[currentChannel][0].downvotes))*100) + "%`\nDownvotes: `" + VoteDB[currentChannel][0].downvotes + " " + Math.round((VoteDB[currentChannel][0].downvotes/(VoteDB[currentChannel][0].upvotes+VoteDB[currentChannel][0].downvotes))*100) + "%`");
+				delete VoteDB[currentChannel];
+			
 			} else if (suffix.replace(" ", "") == "+" || suffix.replace(" ", "") == "-") {
-				if (votebool == false) { bot.sendMessage(msg, ":warning: There isn't a topic being voted on right now! Use `"+config.command_prefix+"newvote <topic>`", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
-				if (msg.channel.id != voteAnMsg.channel.id) { bot.sendMessage(msg, ":warning: You must vote in the channel where the vote was started", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
-				if (suffix.indexOf("+") > -1) {
-					if (votersUp.indexOf(msg.author) > -1) { return; }
-					if (votersDown.indexOf(msg.author) > -1) {
-						downvote -= 1; upvote += 1;
-						var i = votersDown.indexOf(msg.author);
-						delete votersDown[i]; votersUp.push(msg.author);
-						bot.updateMessage(voteAnMsg, voteAnMsg.content.replace(/Upvotes\: [\d]{1,2}\nDownvotes: [\d]{1,2}/g, "Upvotes: "+upvote+"\nDownvotes: "+downvote), function (err, message) { voteAnMsg = message; });
+				
+				if (msg.channel.isPrivate) { bot.sendMessage(msg, "Can't do that in a direct message"); return; }
+				var currentChannel = msg.channel.id;
+				if (VoteDB.hasOwnProperty(currentChannel) == false) { bot.sendMessage(msg, "There isn't a vote to vote on!", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); });  return; }
+				if (suffix.replace(" ", "") == "+") {
+					if (VoteDB[currentChannel][0].upvoters.indexOf(msg.author.id) > -1) { return; }
+					if (VoteDB[currentChannel][0].downvoters.indexOf(msg.author.id) > -1) {
+						VoteDB[currentChannel][0].upvoters += ","+msg.author.id;
+						VoteDB[currentChannel][0].upvotes += 1;
+						VoteDB[currentChannel][0].downvoters = VoteDB[currentChannel][0].upvoters.replace(","+msg.author.id, "");
+						VoteDB[currentChannel][0].downvotes -= 1;
+						bot.updateMessage(VoteDB[currentChannel][0].annMsg, VoteDB[currentChannel][0].annMsg.content.replace(/Upvotes\: [\d]{1,2}\nDownvotes: [\d]{1,2}/g, "Upvotes: "+VoteDB[currentChannel][0].upvotes+"\nDownvotes: "+VoteDB[currentChannel][0].downvotes), function (err, message) { VoteDB[currentChannel][0].annMsg = message; });
 					} else {
-						upvote += 1;
-						votersUp.push(msg.author);
-						bot.updateMessage(voteAnMsg, voteAnMsg.content.replace(/Upvotes\: [\d]{1,2}/g, "Upvotes: "+upvote), function (err, message) { voteAnMsg = message; });
+						VoteDB[currentChannel][0].upvoters += ","+msg.author.id;
+						VoteDB[currentChannel][0].upvotes += 1;
+						bot.updateMessage(VoteDB[currentChannel][0].annMsg, VoteDB[currentChannel][0].annMsg.content.replace(/Upvotes\: [\d]{1,2}\nDownvotes: [\d]{1,2}/g, "Upvotes: "+VoteDB[currentChannel][0].upvotes+"\nDownvotes: "+VoteDB[currentChannel][0].downvotes), function (err, message) { VoteDB[currentChannel][0].annMsg = message; });
 					}
-				} else if (suffix.indexOf("-") > -1) {
-					if (votersDown.indexOf(msg.author) > -1) { return; }
-					if (votersUp.indexOf(msg.author) > -1) {
-						downvote += 1; upvote -= 1;
-						var i = votersUp.indexOf(msg.author);
-						delete votersUp[i]; votersDown.push(msg.author);
-						bot.updateMessage(voteAnMsg, voteAnMsg.content.replace(/Upvotes\: [\d]{1,2}\nDownvotes: [\d]{1,2}/g, "Upvotes: "+upvote+"\nDownvotes: "+downvote), function (err, message) { voteAnMsg = message; });
+				} else if (suffix.replace(" ", "") == "-") {
+					if (VoteDB[currentChannel][0].downvoters.indexOf(msg.author.id) > -1) { return; }
+					if (VoteDB[currentChannel][0].upvoters.indexOf(msg.author.id) > -1) {
+						VoteDB[currentChannel][0].downvoters += ","+msg.author.id;
+						VoteDB[currentChannel][0].downvotes += 1;
+						VoteDB[currentChannel][0].upvoters = VoteDB[currentChannel][0].upvoters.replace(","+msg.author.id, "");
+						VoteDB[currentChannel][0].upvotes -= 1;
+						bot.updateMessage(VoteDB[currentChannel][0].annMsg, VoteDB[currentChannel][0].annMsg.content.replace(/Upvotes\: [\d]{1,2}\nDownvotes: [\d]{1,2}/g, "Upvotes: "+VoteDB[currentChannel][0].upvotes+"\nDownvotes: "+VoteDB[currentChannel][0].downvotes), function (err, message) { VoteDB[currentChannel][0].annMsg = message; });
 					} else {
-						downvote += 1;
-						votersDown.push(msg.author);
-						bot.updateMessage(voteAnMsg, voteAnMsg.content.replace(/Downvotes\: [\d]{1,2}/g, "Downvotes: "+downvote), function (err, message) { voteAnMsg = message; });
+						VoteDB[currentChannel][0].downvoters += ","+msg.author.id;
+						VoteDB[currentChannel][0].downvotes += 1;
+						bot.updateMessage(VoteDB[currentChannel][0].annMsg, VoteDB[currentChannel][0].annMsg.content.replace(/Upvotes\: [\d]{1,2}\nDownvotes: [\d]{1,2}/g, "Upvotes: "+VoteDB[currentChannel][0].upvotes+"\nDownvotes: "+VoteDB[currentChannel][0].downvotes), function (err, message) { VoteDB[currentChannel][0].annMsg = message; });
 					}
 				}
-			} else { bot.sendMessage(msg, correctUsage("vote"), function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 12000}); }); return; }
+			} else { bot.sendMessage(msg, correctUsage("vote"), function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 12000}); }); }
 		}
 	},
 	"strawpoll": {

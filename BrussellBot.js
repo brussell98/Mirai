@@ -14,18 +14,6 @@ var cleverbot = require("./bot/cleverbot.js").cleverbot;
 var colors = require('./bot/styles.js');
 checkConfig(); //notify user if they are missing things in the config
 
-if (config.is_heroku_version) { //For avoiding Heroku $PORT error
-	var express = require('express');
-	var app = express();
-	app.set('port', (process.env.PORT || 5000));
-	app.get('/', function(request, response) {
-		var result = 'Bot is running';
-		response.send(result);
-	}).listen(app.get('port'), function() {
-		console.log('Server is listening on port', app.get('port'));
-	});
-}
-
 var lastExecTime = {}; //for cooldown
 var shouldCarbonAnnounce = true; //set if the bot should announce when joining an invite sent without a command
 var commandsProcessed = 0, talkedToTimes = 0;

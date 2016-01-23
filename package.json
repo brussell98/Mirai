@@ -23,7 +23,6 @@
 		"fs": "*",
 		"request": "*",
 		"xml2js": "*",
-		"express": "*",
 		"cleverbot-node": "*",
 		"osu-api": "*",
 		"chalk": "*"
