@@ -50,6 +50,7 @@ bot.on("message", function (msg) {
 	if (msg.mentions.length !== 0) { //cleverbot
 		msg.mentions.forEach(function(usr) { 
 			if (usr.id == bot.user.id && msg.content.startsWith("<@"+bot.user.id+">")) { cleverbot(bot, msg); talkedToTimes += 1; if (!msg.channel.isPrivate) { console.log(colors.cServer(msg.channel.server.name)+" > "+colors.cGreen(msg.author.username)+" > "+colors.cYellow('@Bot-chan')+" "+msg.content.substring(22).replace(/\n/g, " ")); } else { console.log(colors.cGreen(msg.author.username)+" > "+colors.cYellow('@Bot-chan')+" "+msg.content.substring(22).replace(/\n/g, " ")); } return; }
+			if (usr.id == config.admin_id && config.send_mentions && usr.status != "online") { bot.sendMessage(usr, msg.channel.server.name + " > " + msg.author.username + ": " + msg.content); }
 		});
 	}
 	if (msg.content[0] != config.command_prefix && msg.content[0] != config.mod_command_prefix) { return; } //if not a command
