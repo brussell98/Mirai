@@ -1,5 +1,6 @@
 var Cleverbot = require('cleverbot-node');
 var Slave = new Cleverbot();
+var ent = require('entities');
 
 exports.cleverbot = function(bot, msg) {
 	var text = msg.content.substring(22);
@@ -17,10 +18,10 @@ exports.cleverbot = function(bot, msg) {
 						    return String.fromCharCode(parseInt(grp, 16));
 						});
 					}
-					bot.sendMessage(msg, ":speech_balloon: "+resp.message);
+					bot.sendMessage(msg, ":speech_balloon: "+ent.decodeHTML(resp.message));
 				});
 			} catch(error) { bot.sendMessage(msg, ":warning: There was an error", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
 		});
 		bot.stopTyping(msg.channel);
-	} else { bot.sendMessage(msg, "What is it?"); } //if no suffix
+	} else { bot.sendMessage(msg, "Yes?"); } //if no suffix
 };

@@ -25,7 +25,8 @@
 		"xml2js": "*",
 		"cleverbot-node": "*",
 		"osu-api": "*",
-		"chalk": "*"
+		"chalk": "*",
+		"entities": ">=1.1.1"
 	},
 	"optionalDependencies": {
 		"pg": "*",
