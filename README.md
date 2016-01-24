@@ -16,7 +16,7 @@ An multipurpose bot for Discord using the [Discord.js](https://github.com/hydrab
 
 ### TODO
 
-- [ ] Music commands - After discord.js gets patched for volume
+- [ ] Music commands
 	- [ ] Audio help
 	- [ ] Queue song from youtube
 		- [ ] Or pass it a webm link
@@ -27,4 +27,3 @@ An multipurpose bot for Discord using the [Discord.js](https://github.com/hydrab
 	- [ ] List of queues songs
 	- [ ] Set playing to song name
 	- [ ] Bot owner gets priority
-- [ ] Could do stuff with checking how long a user has been on the server for perms

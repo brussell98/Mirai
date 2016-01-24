@@ -1,6 +1,6 @@
 {
 	"name": "brussellbot",
-	"version": "1.0.0",
+	"version": "1.1.0",
 	"description": "A Discord all-in-one bot using discord.js",
 	"author": "brussell98",
 	"main": "BrussellBot.js",
@@ -12,7 +12,7 @@
 		"url": "https://github.com/brussell98/BrussellBot/issues"
 	},
 	"engines": {
-		"node": ">=4.2.4"
+		"node": ">=4.2.5"
 	},
 	"scripts": {
 		"start": "node BrussellBot.js --harmony"
@@ -22,11 +22,11 @@
 		"discord.js": "hydrabolt/discord.js#indev",
 		"fs": "*",
 		"request": "*",
-		"winston": "*",
 		"xml2js": "*",
-		"express": "*",
 		"cleverbot-node": "*",
-		"osu-api": "*"
+		"osu-api": "*",
+		"chalk": "*",
+		"entities": ">=1.1.1"
 	},
 	"optionalDependencies": {
 		"pg": "*",

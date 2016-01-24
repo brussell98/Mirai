@@ -1,8 +1,8 @@
 var config = require("./config.json");
 var games = require("./games.json").games;
 var version = require("../package.json").version;
-var logger = require("./logger.js").Logger;
 var fs = require('fs');
+var colors = require('./styles.js');
 
 var confirmCodes = []; //stuff for announce
 var announceMessages = [];
@@ -62,7 +62,7 @@ var commands = {
 			if (msg.author.id == config.admin_id || msg.channel.isPrivate || msg.author.id == msg.channel.server.owner.id) {
 				var msgArray = [];
 				msgArray.push("```");
-				msgArray.push("Uptime: " + (Math.round(bot.uptime / (1000 * 60 * 60))) + " hours, " + (Math.round(bot.uptime / (1000 * 60)) % 60) + " minutes, and " + (Math.round(bot.uptime / 1000) % 60) + " seconds.");
+				msgArray.push("Uptime (may be inaccurate): " + (Math.round(bot.uptime / (1000 * 60 * 60))) + " hours, " + (Math.round(bot.uptime / (1000 * 60)) % 60) + " minutes, and " + (Math.round(bot.uptime / 1000) % 60) + " seconds.");
 				msgArray.push("Connected to " + bot.servers.length + " servers and " + bot.channels.length + " channels.");
 				msgArray.push("Serving " + bot.users.length + " users.");
 				msgArray.push("Memory Usage: " + Math.round(process.memoryUsage().rss/1024/1000)+"MB");
@@ -72,7 +72,7 @@ var commands = {
 				msgArray.push("```");
 				bot.sendMessage(msg, msgArray);
 
-				if (suffix.indexOf("-ls") != -1 && msg.channel.isPrivate) { //if user wants a list of servers
+				if (suffix.indexOf("-ls") != -1 && msg.channel.isPrivate) { //if user wants a list of servers NEED TO PAGINATE AND FORMAT BETTER
 					var svrArray = [];
 					for (svrObj of bot.servers) { svrArray.push("`"+svrObj.name+": C: "+svrObj.channels.length+", U: "+svrObj.members.length+"`"); }
 					bot.sendMessage(msg, svrArray);
@@ -84,13 +84,13 @@ var commands = {
 	"playing": {
 		desc: "Allows the bot owner to set the game.",
 		usage: "[game]",
-		cooldown: 5,
+		cooldown: 10,
 		shouldDisplay: false,
 		deleteCommand: true,
 		process: function (bot, msg, suffix) {
 			if (msg.author.id == config.admin_id) {
 				if (!suffix) { bot.setPlayingGame(games[Math.floor(Math.random() * (games.length))]); }
-				else { bot.setPlayingGame(suffix); logger.log("info", "" + msg.author.username + " changed the playing status to: "+suffix); }
+				else { bot.setPlayingGame(suffix); if (config.debug) { console.log(colors.cDebug(" DEBUG ")+msg.author.username + " changed the playing status to: "+suffix); } }
 			} else { bot.setPlayingGame("with "+msg.author.username); }
 		}
 	},
@@ -103,9 +103,9 @@ var commands = {
 			if (suffix && /^\d+$/.test(suffix)) { //if suffix has digits
 				if (msg.channel.isPrivate || msg.channel.permissionsOf(msg.author).hasPermission("manageMessages") || msg.author.id == config.admin_id) {
 					bot.getChannelLogs(msg.channel, 100, function (error, messages) {
-						if (error) { logger.log("warn", "Something went wrong while fetching logs."); return; }
+						if (error) { console.log(colors.cWarn(" WARN ")+"Something went wrong while fetching logs."); return; }
 						else {
-							logger.log("debug", "Cleaning bot messages...");
+							if (config.debug) { console.log(colors.cDebug(" DEBUG ")+"Cleaning bot messages..."); }
 							var todo = parseInt(suffix),
 							delcount = 0;
 							for (msg1 of messages) {
@@ -115,12 +115,12 @@ var commands = {
 									todo--;
 								}
 								if (todo == 0) {
-									logger.log("debug", "Done! Deleted " + delcount + " messages.");
+									if (config.debug) { console.log(colors.cDebug(" DEBUG ")+"Done! Deleted " + delcount + " messages."); }
 									bot.stopTyping(msg.channel);
 									return;
 								}
 							}
-							logger.log("debug", "Done! Deleted " + delcount + " messages.");
+							if (config.debug) { console.log(colors.cDebug(" DEBUG ")+"Done! Deleted " + delcount + " messages."); }
 						}
 					});
 				} else { bot.sendMessage(msg, ":warning: You must have permission to manage messages in this channel", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
@@ -138,9 +138,9 @@ var commands = {
 					if (msg.channel.permissionsOf(msg.author).hasPermission("manageMessages")) {
 						if (msg.channel.permissionsOf(bot.user).hasPermission("manageMessages")) {
 							bot.getChannelLogs(msg.channel, 100, function (error, messages) {
-								if (error) { logger.log("warn", "Something went wrong while fetching logs."); return; }
+								if (error) { console.log(colors.cWarn(" WARN ")+"Something went wrong while fetching logs."); return; }
 								else {
-									logger.log("debug", "Pruning messages...");
+									if (config.debug) { console.log(colors.cDebug(" DEBUG ")+"Pruning messages..."); }
 									var todo = parseInt(suffix);
 									var hasTerm = false;
 									var term = "";
@@ -160,7 +160,7 @@ var commands = {
 											return;
 										}
 									}
-									logger.log("debug", "Done! Deleted " + delcount + " messages.");
+									if (config.debug) { console.log(colors.cDebug(" DEBUG ")+"Done! Deleted " + delcount + " messages."); }
 								}
 							});
 						} else { bot.sendMessage(msg, ":warning: I don't have permission to delete messages.", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
@@ -178,10 +178,10 @@ var commands = {
 				if (msg.channel.permissionsOf(msg.author).hasPermission("kickMembers") || msg.author.id == config.admin_id) {
 					bot.sendMessage(msg, "It's not like I want to be here or anything, baka").then(
 					bot.leaveServer(msg.channel.server));
-					logger.log("info", "I've left a server on request of " + msg.sender.username + ". I'm only in " + bot.servers.length + " servers now.");
+					console.log(colors.cYellow("I've left a server on request of " + msg.sender.username + ". ")+"I'm only in " + bot.servers.length + " servers now.");
 				} else {
 					bot.sendMessage(msg, "You can't tell me what to do! (You need permission to kick users in this channel)");
-					logger.log("info", "A non-privileged user (" + msg.sender.username + ") tried to make me leave a server.");
+					console.log(colors.cYellow("Non-privileged user: " + msg.sender.username)+" tried to make me leave a server.");
 				}
 			} else { bot.sendMessage(msg, ":warning: I can't leave a DM.", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
 		}
@@ -208,7 +208,7 @@ var commands = {
 									}, 1000); //1 message per second
 								}
 							});
-							logger.log("info", "Announced \"" + announceMessages[i] + "\" to servers");
+							if (config.debug) { console.log(colors.cDebug(" DEBUG ")+"Announced \"" + announceMessages[i] + "\" to servers"); }
 							return;
 						}
 					} else {
@@ -230,7 +230,7 @@ var commands = {
 									bot.sendMessage(usr, ":mega: " + announceMessages[i] + " - from " + msg.author + " on " + msg.channel.server.name);
 								}, 1000);
 							});
-							logger.log("info", "Announced \"" + announceMessages[i] + "\" to members of "+msg.channel.server.name);
+							if (config.debug) { console.log(colors.cDebug(" DEBUG ")+"Announced \"" + announceMessages[i] + "\" to members of "+msg.channel.server.name); }
 							return;
 						}
 					} else {
@@ -247,6 +247,7 @@ var commands = {
 		desc: "See recent changes to the bot",
 		deleteCommand: true,
 		usage: "",
+		cooldown: 30,
 		process: function(bot, msg, suffix) {
 			var chanelogChannel = bot.channels.get("id", '135527608564580353');
 			if (!chanelogChannel) { bot.sendMessage(msg, "The bot is not in the BrussellBot Official Server", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
