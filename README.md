@@ -27,7 +27,3 @@ An multipurpose bot for Discord using the [Discord.js](https://github.com/hydrab
 	- [ ] List of queues songs
 	- [ ] Set playing to song name
 	- [ ] Bot owner gets priority
-- [ ] Pagination
-- [ ] Get images from a subreddit
-- [ ] DM owner mentions
-- [ ] Allow server mods to end votes and lotteries despite not starting them
