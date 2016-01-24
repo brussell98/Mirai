@@ -60,7 +60,11 @@ var commands = {
 						if (commands[cmd].shouldDisplay) { msgArray.push("`" + config.command_prefix + cmd + " " + commands[cmd].usage + "`\n        " + commands[cmd].desc); }
 					} else { msgArray.push("`" + config.command_prefix + cmd + " " + commands[cmd].usage + "`\n        " + commands[cmd].desc); }
 				});
-				bot.sendMessage(msg.author, msgArray);
+				msgArray = msgArray.join("\n");
+				var helpPart2 = msgArray.substring(msgArray.indexOf("`]lotto`"));
+				var helpPart1 = msgArray.substring(0, msgArray.indexOf("`]lotto`") - 1);
+				bot.sendMessage(msg.author, helpPart1);
+				bot.sendMessage(msg.author, helpPart2);
 			} else {
 				if (commands.hasOwnProperty(suffix)){
 					msgArray.push("**" + config.command_prefix + "" + suffix + ": **" + commands[suffix].desc);
@@ -176,7 +180,7 @@ var commands = {
 			request('https://rolz.org/api/?' + dice + '.json', function(err, response, body) {
 				if (!err && response.statusCode == 200) {
 					var roll = JSON.parse(body);
-					if (roll.result.indexOf("Error") > -1) { bot.sendMessage(msg, roll.result, function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
+					if (roll.details == null) { bot.sendMessage(msg, roll.result, function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 					if (roll.details.length <= 100) { bot.sendMessage(msg, ":game_die: Your " + roll.input + " resulted in " + roll.result + " " + roll.details); }
 					else { bot.sendMessage(msg, ":game_die: Your " + roll.input + " resulted in " + roll.result); }
 				} else { console.log(colors.cWarn(" WARN ")+"Got an error: ", error, ", status code: ", response.statusCode); }
