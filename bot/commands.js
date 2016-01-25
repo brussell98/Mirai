@@ -122,6 +122,21 @@ var commands = {
 								console.log("Already in server");
 								bot.sendMessage(msg, "I'm already in that server!");
 							} else {
+								if (config.is_heroku_version) {
+									if (process.env.banned_server_ids && process.env.banned_server_ids.indexOf(server.id) > -1) {
+										console.log(colors.cRed("Joined server but it was on the ban list")+": "+server.name);
+										bot.sendMessage(msg, "This server is on the ban list");
+										bot.leaveServer(server);
+										return;
+									}
+								} else {
+									if (config.banned_server_ids && config.banned_server_ids.indexOf(server.id) > -1) {
+										console.log(colors.cRed("Joined server but it was on the ban list")+": "+server.name);
+										bot.sendMessage(msg, "This server is on the ban list");
+										bot.leaveServer(server);
+										return;
+									}
+								}
 								console.log(colors.cGreen("Joined server: ")+server.name);
 								bot.sendMessage(msg, ":white_check_mark: Successfully joined ***" + server.name + "***");
 								if (suffix.indexOf("-a") != -1) {
@@ -449,7 +464,7 @@ var commands = {
 		usage: "[question]",
 		cooldown: 4,
 		process: function (bot, msg) {
-			var responses = ["It is certain", "It is decidedly so", "Without a doubt", "Yes, definitely", "You may rely on it", "As I see it, yes", "Most likely", "Outlook good", "Yes", "Signs point to yes", "Better not tell you now", "Don't count on it", "My reply is no", "My sources say no", "Outlook not so good", "Very doubtful"];
+			var responses = ["It is certain", "Without a doubt", "You may rely on it", "Most likely", "Yes", "Signs point to yes", "Better not tell you now", "Don't count on it", "My reply is no", "My sources say no", "Outlook not so good", "Very doubtful"];
 			var choice = Math.floor(Math.random() * (responses.length));
 			bot.sendMessage(msg, ":8ball: "+responses[choice]);
 		}

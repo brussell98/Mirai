@@ -256,7 +256,7 @@ var commands = {
 					if (err) { bot.sendMessage(msg, "Error getting changelogs: "+err); return; }
 					var msgArray = ["*Changelogs:*"];
 					for (var i = messages.length - 1; i >= 0; i--) {
-						msgArray.push("**----------------------------------**");
+						msgArray.push("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╾╴");
 						msgArray.push(messages[i]);
 						if (i == 0) { bot.sendMessage(msg, msgArray); }
 					}

@@ -220,6 +220,21 @@ function carbonInvite(msg){
 					console.log("Already in server "+server.name);
 					bot.sendMessage(msg, "I'm already in that server!");
 				} else {
+					if (config.is_heroku_version) {
+						if (process.env.banned_server_ids && process.env.banned_server_ids.indexOf(server.id) > -1) {
+							console.log(colors.cRed("Joined server but it was on the ban list")+": "+server.name);
+							bot.sendMessage(msg, "This server is on the ban list");
+							bot.leaveServer(server);
+							return;
+						}
+					} else {
+						if (config.banned_server_ids && config.banned_server_ids.indexOf(server.id) > -1) {
+							console.log(colors.cRed("Joined server but it was on the ban list")+": "+server.name);
+							bot.sendMessage(msg, "This server is on the ban list");
+							bot.leaveServer(server);
+							return;
+						}
+					}
 					console.log(colors.cGreen("Joined server: ")+" "+server.name);
 					bot.sendMessage(msg, "Successfully joined " + server.name);
 					if (msg.author.id != 109338686889476096) { bot.sendMessage(msg, "It's not like I wanted you to use `"+config.command_prefix+"joins` or anything, b-baka!"); }

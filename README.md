@@ -27,3 +27,4 @@ An multipurpose bot for Discord using the [Discord.js](https://github.com/hydrab
 	- [ ] List of queues songs
 	- [ ] Set playing to song name
 	- [ ] Bot owner gets priority
+- [ ] Rate waifu
