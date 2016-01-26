@@ -27,4 +27,6 @@ An multipurpose bot for Discord using the [Discord.js](https://github.com/hydrab
 	- [ ] List of queues songs
 	- [ ] Set playing to song name
 	- [ ] Bot owner gets priority
-- [ ] Rate waifu
+- [ ] Rate waifu - stored in object until reboot
+- [ ] prune can remove user (new format _prune <#/term/user> <term/username>)
+- [ ] Mention commands can take non-mention usernames

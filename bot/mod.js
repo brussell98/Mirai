@@ -123,7 +123,7 @@ var commands = {
 							if (config.debug) { console.log(colors.cDebug(" DEBUG ")+"Done! Deleted " + delcount + " messages."); }
 						}
 					});
-				} else { bot.sendMessage(msg, ":warning: You must have permission to manage messages in this channel", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
+				} else { bot.sendMessage(msg, "⚠ You must have permission to manage messages in this channel", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
 			} else { bot.sendMessage(msg, correctUsage("clean"), function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
 		}
 	},
@@ -163,9 +163,9 @@ var commands = {
 									if (config.debug) { console.log(colors.cDebug(" DEBUG ")+"Done! Deleted " + delcount + " messages."); }
 								}
 							});
-						} else { bot.sendMessage(msg, ":warning: I don't have permission to delete messages.", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
-					} else { bot.sendMessage(msg, ":warning: You must have permission to manage messages in this channel", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
-				} else { bot.sendMessage(msg, ":warning: Can't do that in a DM"), function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }; }
+						} else { bot.sendMessage(msg, "⚠ I don't have permission to delete messages.", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
+					} else { bot.sendMessage(msg, "⚠ You must have permission to manage messages in this channel", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
+				} else { bot.sendMessage(msg, "⚠ Can't do that in a DM"), function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }; }
 			} else { bot.sendMessage(msg, correctUsage("prune"), function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
 		}
 	},
@@ -183,7 +183,7 @@ var commands = {
 					bot.sendMessage(msg, "You can't tell me what to do! (You need permission to kick users in this channel)");
 					console.log(colors.cYellow("Non-privileged user: " + msg.sender.username)+" tried to make me leave a server.");
 				}
-			} else { bot.sendMessage(msg, ":warning: I can't leave a DM.", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
+			} else { bot.sendMessage(msg, "⚠ I can't leave a DM.", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
 		}
 	},
 	"announce": {
@@ -204,7 +204,7 @@ var commands = {
 							bot.servers.forEach(function (ser) {
 								if (ser.members.length <= 500) { //only if less than 501 members
 									setTimeout(function () {
-										bot.sendMessage(ser.defaultChannel, ":mega: " + announceMessages[i] + " - " + msg.author.username + " *(bot owner)*");
+										bot.sendMessage(ser.defaultChannel, "📣 " + announceMessages[i] + " - " + msg.author.username + " *(bot owner)*");
 									}, 1000); //1 message per second
 								}
 							});
@@ -215,7 +215,7 @@ var commands = {
 						announceMessages.push(suffix);
 						var code = Math.floor(Math.random() * 999999999);
 						confirmCodes.push(Math.floor(code));
-						bot.sendMessage(msg, ":warning: This will send a private message to **all** of the servers I'm in. If you're sure you want to do this say `"+config.mod_command_prefix+"announce "+code+"`");
+						bot.sendMessage(msg, "⚠ This will send a private message to **all** of the servers I'm in. If you're sure you want to do this say `"+config.mod_command_prefix+"announce "+code+"`");
 					}
 				} else if (!msg.channel.isPrivate && msg.channel.permissionsOf(msg.author).hasPermission("manageServer")) {
 					if (/^\d+$/.test(suffix)) {
@@ -227,7 +227,7 @@ var commands = {
 							bot.sendMessage(msg, "Announcing to all users, this may take a while...");
 							msg.channel.server.members.forEach(function (usr) {
 								setTimeout(function () {
-									bot.sendMessage(usr, ":mega: " + announceMessages[i] + " - from " + msg.author + " on " + msg.channel.server.name);
+									bot.sendMessage(usr, "📣 " + announceMessages[i] + " - from " + msg.author + " on " + msg.channel.server.name);
 								}, 1000);
 							});
 							if (config.debug) { console.log(colors.cDebug(" DEBUG ")+"Announced \"" + announceMessages[i] + "\" to members of "+msg.channel.server.name); }
@@ -237,10 +237,10 @@ var commands = {
 						announceMessages.push(suffix);
 						var code = Math.floor(Math.random() * 999999999);
 						confirmCodes.push(Math.floor(code));
-						bot.sendMessage(msg, ":warning: This will send a private message to **all** members of this server. If you're sure you want to do this say `"+config.mod_command_prefix+"announce "+code+"`");
+						bot.sendMessage(msg, "⚠ This will send a private message to **all** members of this server. If you're sure you want to do this say `"+config.mod_command_prefix+"announce "+code+"`");
 					}
-				} else { bot.sendMessage(msg, ":warning: Server admins only", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
-			} else { bot.sendMessage(msg, ":warning: You must specify a message to announce", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
+				} else { bot.sendMessage(msg, "⚠ Server admins only", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
+			} else { bot.sendMessage(msg, "⚠ You must specify a message to announce", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
 		}
 	},
 	"changelog": {
@@ -256,7 +256,7 @@ var commands = {
 					if (err) { bot.sendMessage(msg, "Error getting changelogs: "+err); return; }
 					var msgArray = ["*Changelogs:*"];
 					for (var i = messages.length - 1; i >= 0; i--) {
-						msgArray.push("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╾╴");
+						msgArray.push("━━━━━━━━━━━━━━━━━━━");
 						msgArray.push(messages[i]);
 						if (i == 0) { bot.sendMessage(msg, msgArray); }
 					}

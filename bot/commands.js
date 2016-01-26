@@ -110,11 +110,11 @@ var commands = {
 						bot.servers.map(function(srvr){cServers.push(srvr.id);});
 						bot.joinServer(invite, function (err, server) {
 							if (err) {
-								bot.sendMessage(msg, ":warning: Failed to join: " + err);
+								bot.sendMessage(msg, "⚠ Failed to join: " + err);
 								console.log(colors.cWarn(" WARN ")+err);
 							} else if (!server || server.name == undefined || server.roles == undefined || server.channels == undefined || server.members == undefined) {
 								console.log(colors.cWarn(" WARN ")+"Error joining server. Didn't receive all data.");
-								bot.sendMessage(msg, ":warning: Failed to receive all data, please try again in a few seconds.");
+								bot.sendMessage(msg, "⚠ Failed to receive all data, please try again in a few seconds.");
 								try {
 									bot.leaveServer(server);
 								} catch(error) { /*how did it get here?*/ }
@@ -138,7 +138,7 @@ var commands = {
 									}
 								}
 								console.log(colors.cGreen("Joined server: ")+server.name);
-								bot.sendMessage(msg, ":white_check_mark: Successfully joined ***" + server.name + "***");
+								bot.sendMessage(msg, "✅ Successfully joined ***" + server.name + "***");
 								if (suffix.indexOf("-a") != -1) {
 									setTimeout(function(){
 										var msgArray = [];
@@ -176,11 +176,11 @@ var commands = {
 		cooldown: 15,
 		process: function(bot, msg, suffix) {
 			if (!msg.channel.isPrivate && msg.channel.permissionsOf(msg.author).hasPermission("mentionEveryone") && msg.channel.server.members.length <= 30) {
-				if (suffix) { bot.sendMessage(msg, ":video_game: @everyone, " + msg.author + " would like to know if anyone wants to play **" + suffix + "**."); }
-				else { bot.sendMessage(msg, ":video_game: @everyone, " + msg.author + " would like to know if anyone wants to play a game"); }
+				if (suffix) { bot.sendMessage(msg, "🎮 @everyone, " + msg.author + " would like to know if anyone wants to play **" + suffix + "**."); }
+				else { bot.sendMessage(msg, "🎮 @everyone, " + msg.author + " would like to know if anyone wants to play a game"); }
 			} else {
-				if (suffix) { bot.sendMessage(msg, ":video_game: " + msg.author + " would like to know if anyone wants to play **" + suffix + "**."); }
-				else { bot.sendMessage(msg, ":video_game: " + msg.author + " would like to know if anyone wants to play a game"); }
+				if (suffix) { bot.sendMessage(msg, "🎮 " + msg.author + " would like to know if anyone wants to play **" + suffix + "**."); }
+				else { bot.sendMessage(msg, "🎮 " + msg.author + " would like to know if anyone wants to play a game"); }
 			}
 		}
 	},
@@ -196,8 +196,8 @@ var commands = {
 				if (!err && response.statusCode == 200) {
 					var roll = JSON.parse(body);
 					if (roll.details == null) { bot.sendMessage(msg, roll.result, function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
-					if (roll.details.length <= 100) { bot.sendMessage(msg, ":game_die: Your " + roll.input + " resulted in " + roll.result + " " + roll.details); }
-					else { bot.sendMessage(msg, ":game_die: Your " + roll.input + " resulted in " + roll.result); }
+					if (roll.details.length <= 100) { bot.sendMessage(msg, "🎲 Your " + roll.input + " resulted in " + roll.result + " " + roll.details); }
+					else { bot.sendMessage(msg, "🎲 Your " + roll.input + " resulted in " + roll.result); }
 				} else { console.log(colors.cWarn(" WARN ")+"Got an error: ", error, ", status code: ", response.statusCode); }
 			});
 		}
@@ -211,7 +211,7 @@ var commands = {
 			var roll = 100;
 			try {
 				if (suffix && /\d+/.test(suffix)) { roll = parseInt(suffix.replace(/[^\d]/g, "")); }
-			} catch(err) { console.log(colors.cError(" ERROR ")+err); bot.sendMessage(msg, ":warning: Error parsing suffix into int", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
+			} catch(err) { console.log(colors.cError(" ERROR ")+err); bot.sendMessage(msg, "⚠ Error parsing suffix into int", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
 			bot.sendMessage(msg, msg.author.username + " rolled 1-" + roll + " and got " + Math.floor((Math.random() * (roll)) + 1));
 		}
 	},
@@ -226,8 +226,8 @@ var commands = {
 					if (msg.mentions.length == 0) { bot.sendMessage(msg, correctUsage("info"), function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 					msg.mentions.map(function (usr) {
 						var msgArray = [];
-						if (usr.id != config.admin_id) { msgArray.push(":information_source: You requested info on **" + usr.username + "**"); }
-						else { msgArray.push(":information_source: You requested info on **Bot Creator-senpai**"); }
+						if (usr.id != config.admin_id) { msgArray.push("ℹ You requested info on **" + usr.username + "**"); }
+						else { msgArray.push("ℹ You requested info on **Bot Creator-senpai**"); }
 						msgArray.push("**User ID:** `" + usr.id + "`");
 						if (usr.game != null) { msgArray.push("Status: `" + usr.status + "` playing `" + usr.game.name + "`"); }
 						else { msgArray.push("**Status:** `" + usr.status + "`"); }
@@ -245,7 +245,7 @@ var commands = {
 					});
 				} else {
 					var msgArray = [];
-					msgArray.push(":information_source: You requested info on **" + msg.channel.server.name + "**");
+					msgArray.push("ℹ You requested info on **" + msg.channel.server.name + "**");
 					msgArray.push("**Server ID:** `" + msg.channel.server.id + "`");
 					msgArray.push("**Owner:** `" + msg.channel.server.owner.username + "` (**id:** `" + msg.channel.server.owner.id + "`)");
 					msgArray.push("**Region:** `" + msg.channel.server.region + "`");
@@ -262,7 +262,7 @@ var commands = {
 					bot.sendMessage(msg, msgArray);
 					if (config.debug) { console.log(colors.cDebug(" DEBUG ")+"Got info on " + msg.channel.server.name); }
 				}
-			} else { bot.sendMessage(msg, ":warning: Can't do that in a DM.", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
+			} else { bot.sendMessage(msg, "⚠ Can't do that in a DM.", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
 		}
 	},
 	"avatar": {
@@ -466,7 +466,7 @@ var commands = {
 		process: function (bot, msg) {
 			var responses = ["It is certain", "Without a doubt", "You may rely on it", "Most likely", "Yes", "Signs point to yes", "Better not tell you now", "Don't count on it", "My reply is no", "My sources say no", "Outlook not so good", "Very doubtful"];
 			var choice = Math.floor(Math.random() * (responses.length));
-			bot.sendMessage(msg, ":8ball: "+responses[choice]);
+			bot.sendMessage(msg, "🎱 "+responses[choice]);
 		}
 	},
 	"anime": {
@@ -581,8 +581,8 @@ var commands = {
 					}
 				}
 				request({url: 'https://lemmmy.pw/osusig/sig.php?colour=hex'+color+'&uname='+username+'&pp=2&flagshadow&xpbar&xpbarhex&darktriangles', encoding: null}, function(err, response, body){
-					if (err) { bot.sendMessage(msg, ":warning: Error: "+err, function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
-					else if (response.statusCode != 200) { bot.sendMessage(msg, ":warning: Got status code "+response.statusCode, function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
+					if (err) { bot.sendMessage(msg, "⚠ Error: "+err, function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
+					else if (response.statusCode != 200) { bot.sendMessage(msg, "⚠ Got status code "+response.statusCode, function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
 					else { bot.sendMessage(msg, "Here's your osu signature "+msg.author.username+"! Get a live version at `lemmmy.pw/osusig/`");
 					bot.sendFile(msg, body, 'sig.png'); }
 				});
@@ -595,8 +595,8 @@ var commands = {
 				if (!APIKEY) { bot.sendMessage(msg, "Osu API key not configured by bot owner", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 				var osu = new osuapi.Api(APIKEY);
 				osu.getUser(username, function(err, data){
-					if (err) { bot.sendMessage(msg, ":warning: Error: "+err, function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
-					if (!data) { bot.sendMessage(msg, ":warning: User not found", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
+					if (err) { bot.sendMessage(msg, "⚠ Error: "+err, function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
+					if (!data) { bot.sendMessage(msg, "⚠ User not found", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 					try {
 						var msgArray = [];
 						msgArray.push("Osu stats for: **"+data.username+"**:");
@@ -616,8 +616,8 @@ var commands = {
 				if (!APIKEY) { bot.sendMessage(msg, "Osu API key not configured by bot owner", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 				var osu = new osuapi.Api(APIKEY);
 				osu.getUserBest(username, function (err, data) {
-					if (err) { bot.sendMessage(msg, ":warning: Error: "+err, function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
-					if (!data || !data[0] || !data[1] || !data[2] || !data[3] || !data[4]) { bot.sendMessage(msg, ":warning: User not found or user doesn't have 5 plays", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
+					if (err) { bot.sendMessage(msg, "⚠ Error: "+err, function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
+					if (!data || !data[0] || !data[1] || !data[2] || !data[3] || !data[4]) { bot.sendMessage(msg, "⚠ User not found or user doesn't have 5 plays", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 					try {
 						var msgArray = [];
 						msgArray.push("Top 5 osu scores for: **"+username+"**:");
@@ -645,8 +645,8 @@ var commands = {
 				if (!APIKEY) { bot.sendMessage(msg, "Osu API key not configured by bot owner", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 				var osu = new osuapi.Api(APIKEY);
 				osu.getUserRecent(username, function (err, data) {
-					if (err) { bot.sendMessage(msg, ":warning: Error: "+err, function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
-					if (!data || !data[0]) { bot.sendMessage(msg, ":warning: User not found or no recent plays", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
+					if (err) { bot.sendMessage(msg, "⚠ Error: "+err, function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
+					if (!data || !data[0]) { bot.sendMessage(msg, "⚠ User not found or no recent plays", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 					var msgArray = [];
 					msgArray.push("5 most recent plays for: **"+username+"**:");
 					msgArray.push("----------------------------------");
@@ -691,7 +691,7 @@ var commands = {
 		cooldown: 7,
 		process: function(bot, msg, suffix) {
 			if (config.is_heroku_version) { var APIKEY = process.env.weather_api_key; } else { var APIKEY = config.weather_api_key; }
-			if (APIKEY == null || APIKEY == "") { bot.sendMessage(msg, ":warning: No API key defined by bot owner", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
+			if (APIKEY == null || APIKEY == "") { bot.sendMessage(msg, "⚠ No API key defined by bot owner", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 			if (suffix) { suffix = suffix.replace(" ", ""); }
 			if (!suffix) { bot.sendMessage(msg, correctUsage("weather"), function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 			if (/\d/.test(suffix) == false) { var rURL = "http://api.openweathermap.org/data/2.5/weather?q="+suffix+"&APPID="+APIKEY; }
@@ -704,10 +704,10 @@ var commands = {
 					else { var temp = Math.round(parseInt(body.main.temp)-273.15) + " °C"; }
 					if (body.sys.country == "US") { var windspeed = Math.round(parseInt(body.wind.speed)*2.23694) + " mph"; }
 					else { var windspeed = body.wind.speed + " m/s"; }
-					var emoji = ":sunny:";
-					if (body.weather[0].description.indexOf("cloud") > -1) { emoji = ":cloud:"; }
-					if (body.weather[0].description.indexOf("snow") > -1) { emoji = ":snowflake:"; }
-					if (body.weather[0].description.indexOf("rain") > -1 || body.weather[0].description.indexOf("storm") > -1 || body.weather[0].description.indexOf("drizzle") > -1) { emoji = ":umbrella:"; }
+					var emoji = "☀";
+					if (body.weather[0].description.indexOf("cloud") > -1) { emoji = "☁"; }
+					if (body.weather[0].description.indexOf("snow") > -1) { emoji = "❄"; }
+					if (body.weather[0].description.indexOf("rain") > -1 || body.weather[0].description.indexOf("storm") > -1 || body.weather[0].description.indexOf("drizzle") > -1) { emoji = "☔"; }
 					bot.sendMessage(msg, emoji+" Weather for **"+body.name+"**:\n**Conditions:** "+body.weather[0].description+" **Temp:** "+temp+"\n**Humidity:** "+body.main.humidity+"% **Wind:** "+windspeed+" **Cloudiness:** "+body.clouds.all+"%");
 				} else { console.log(error); }
 			});
@@ -722,7 +722,7 @@ var commands = {
 			if (!suffix) { bot.sendMessage(msg, "**http://www.lmgtfy.com/?q=brussellbot+commands**"); return; }
 			suffix = suffix.split(" ");
 			for (var i = 0; i < suffix.length; i++) { suffix[i] = encodeURIComponent(suffix[i]); }
-			bot.sendMessage(msg, ":mag: **http://www.lmgtfy.com/?q="+suffix.join("+")+"**");
+			bot.sendMessage(msg, "🔍 **http://www.lmgtfy.com/?q="+suffix.join("+")+"**");
 		}
 	},
 	"numberfacts": {
@@ -754,7 +754,7 @@ var commands = {
 				if (response.statusCode != 200) { bot.sendMessage(msg, "Got status code "+response.statusCode, function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 10000}); }); }
 				if (!error && response.statusCode == 200) {
 					body = JSON.parse(body);
-					bot.sendMessage(msg, msg.author.username+", did you know that "+body.facts[0]);
+					bot.sendMessage(msg, "🐱 "+msg.author.username+", did you know that "+body.facts[0]);
 				}
 			});
 		}

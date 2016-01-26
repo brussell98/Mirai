@@ -18,9 +18,9 @@ exports.cleverbot = function(bot, msg) {
 						    return String.fromCharCode(parseInt(grp, 16));
 						});
 					}
-					bot.sendMessage(msg, ":speech_balloon: "+ent.decodeHTML(resp.message));
+					bot.sendMessage(msg, "💬 "+ent.decodeHTML(resp.message));
 				});
-			} catch(error) { bot.sendMessage(msg, ":warning: There was an error", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
+			} catch(error) { bot.sendMessage(msg, "⚠ There was an error", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
 		});
 		bot.stopTyping(msg.channel);
 	} else { bot.sendMessage(msg, "Yes?"); } //if no suffix

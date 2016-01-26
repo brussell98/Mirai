@@ -86,7 +86,7 @@ bot.on("message", function (msg) {
 			} catch (err) { console.log(err); }
 		}
 	} else if (msg.content.startsWith(config.mod_command_prefix)) { //mod commands
-		if (cmd == "reload") { reload(); bot.deleteMessage(msg); return; } //reload the .json files and modules
+		if (cmd == "reload" && msg.author.id == config.admin_id) { reload(); bot.deleteMessage(msg); return; } //reload the .json files and modules
 		if (mod.hasOwnProperty(cmd)) {
 			try {
 				if (!msg.channel.isPrivate) { console.log(colors.cServer(msg.channel.server.name)+" > "+colors.cGreen(msg.author.username)+" > "+msg.content.replace(/\n/g, " ")); } else { console.log(colors.cGreen(msg.author.username)+" > "+msg.content.replace(/\n/g, " ")); }
@@ -152,8 +152,8 @@ bot.on('channelUpdated', function (objChannel) { //You could make this find the 
 bot.on('userBanned', function (objUser, objServer) {
 	if (objServer.members.length < 301 && config.non_essential_event_listeners) {
 		console.log(objUser.username + colors.cRed(" banned on ") + objServer.name);
-		bot.sendMessage(objServer.defaultChannel, ":warning: " + objUser.username + " was banned");
-		bot.sendMessage(objUser, ":warning: You were banned from " + objServer.name);
+		bot.sendMessage(objServer.defaultChannel, "⚠ " + objUser.username + " was banned");
+		bot.sendMessage(objUser, "⚠ You were banned from " + objServer.name);
 	}
 });
 
@@ -167,7 +167,7 @@ bot.on('userUpdated', function (objUser, objNewUser) {
 			if (config.username_changes) {
 				if (config.debug) { console.log(colors.cDebug(" DEBUG ")+objUser.username + " changed their name to " + objNewUser.username); }
 				bot.servers.forEach(function(ser){
-					if (ser.members.has('id', objUser.id) && ser.members.length < 101){ bot.sendMessage(ser, ":warning: User in this server: `" + objUser.username + "`. changed their name to: `" + objNewUser.username + "`."); }
+					if (ser.members.has('id', objUser.id) && ser.members.length < 101){ bot.sendMessage(ser, "⚠ User in this server: `" + objUser.username + "`. changed their name to: `" + objNewUser.username + "`."); }
 				});
 			}
 		}
@@ -268,8 +268,8 @@ function reload() {
 	delete require.cache[require.resolve('./bot/config.json')];
 	delete require.cache[require.resolve('./bot/versioncheck.js')];
 	versioncheck = require("./bot/versioncheck.js");
-	delete require.cache[require.resolve('./bot/logger.js')];
-	logger = require("./bot/logger.js").Logger;
+	delete require.cache[require.resolve('./bot/styles.js')];
+	colors = require("./bot/styles.js");
 	delete require.cache[require.resolve('./bot/cleverbot.js')];
 	cleverbot = require("./bot/cleverbot").cleverbot;
 	console.log(colors.BgGreen(" Reloaded modules ")+" success");
