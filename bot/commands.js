@@ -266,15 +266,23 @@ var commands = {
 		}
 	},
 	"avatar": {
-		desc: "Get a link to a user's avatar (must use @mention).",
-		usage: "<@mention>",
+		desc: "Get a link to a user's avatar. Can use a comma for multiple users.",
+		usage: "@mention OR username",
 		deleteCommand: true,
 		cooldown: 6,
 		process: function(bot, msg, suffix) {
-			if (msg.mentions.length == 0) { (msg.author.avatarURL != null) ? bot.sendMessage(msg, msg.author.username+"'s avatar is: "+msg.author.avatarURL+"") : bot.sendMessage(msg, msg.author.username+" has no avatar", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
-			else { msg.mentions.map(function(usr) {
-				(usr.avatarURL != null) ? bot.sendMessage(msg, usr.username+"'s avatar is: "+usr.avatarURL+"") : bot.sendMessage(msg, "User has no avatar", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); });
+			if (msg.mentions.length == 0 && !suffix) { (msg.author.avatarURL != null) ? bot.sendMessage(msg, msg.author.username+"'s avatar is: "+msg.author.avatarURL+"") : bot.sendMessage(msg, msg.author.username+" has no avatar", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
+			else if (msg.mentions.length > 0) { msg.mentions.map(function(usr) {
+				(usr.avatarURL != null) ? bot.sendMessage(msg, usr.username+"'s avatar is: "+usr.avatarURL+"") : bot.sendMessage(msg, usr.username+" has no avatar", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); });
 			});}
+			else {
+				var users = suffix.split(/, ?/);
+				for (user of users) {
+					var usr = msg.channel.server.members.get("username", user);
+					if (usr) { (usr.avatarURL != null) ? bot.sendMessage(msg, usr.username+"'s avatar is: "+usr.avatarURL+"") : bot.sendMessage(msg, usr.username+" has no avatar", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
+					else { bot.sendMessage(msg, "User \""+user+"\" not found. If you want to get the avatar of multiple users separate them with a comma.", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 20000}); }); }
+			}
+			}
 		}
 	},
 	"choose": {
