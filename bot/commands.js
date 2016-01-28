@@ -266,7 +266,7 @@ var commands = {
 	},
 	"info": {
 		desc: "Gets info on the server or a user if mentioned.",
-		usage: "[@username]",
+		usage: "[username]",
 		deleteCommand: true,
 		cooldown: 10,
 		process: function (bot, msg, suffix) {
@@ -351,10 +351,10 @@ var commands = {
 			if (msg.mentions.length == 0 && !suffix) { (msg.author.avatarURL != null) ? bot.sendMessage(msg, msg.author.username+"'s avatar is: "+msg.author.avatarURL+"") : bot.sendMessage(msg, msg.author.username+" has no avatar", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
 			else if (msg.mentions.length > 0) {
 				if (msg.everyoneMentioned) { bot.sendMessage(msg, "Hey, "+msg.author.username+", don't do that ok?", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
-				if (msg.mentions.length > 6) { bot.sendMessage(msg, "Limit of 6 users", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return;
+				if (msg.mentions.length > 6) { bot.sendMessage(msg, "Limit of 6 users", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 				msg.mentions.map(function(usr) {
 					(usr.avatarURL != null) ? bot.sendMessage(msg, usr.username+"'s avatar is: "+usr.avatarURL+"") : bot.sendMessage(msg, usr.username+" has no avatar", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); });
-				});}
+				});
 			} else {
 				var users = suffix.split(/, ?/);
 				if (users.length > 6) { bot.sendMessage(msg, "Limit of 6 users", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
