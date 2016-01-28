@@ -861,12 +861,12 @@ var commands = {
 			if (fullName) {
 				if (Ratings.hasOwnProperty(fullName)) { bot.sendMessage(msg, "I gave "+fullName+" a "+Ratings[fullName]+"/10"); } //already rated
 				else {
-					if (msg.channel.server.members.get("username", fullName)) { bot.sendMessage(msg, "Currently I'd rate "+fullName+" a "+generateUserRating(bot, msg, fullName)+"/10"); }
-					else { bot.sendMessage(msg, fullName+" is definitely a "+generateJSONRating(fullName)+"/10"); }
+					if (msg.channel.server.members.get("username", fullName)) { bot.sendMessage(msg, "I'd rate "+fullName+" "+generateUserRating(bot, msg, fullName)+"/10"); }
+					else { bot.sendMessage(msg, fullName+" is a "+generateJSONRating(fullName)+"/10"); }
 				}
 			} else {
 				if (Ratings.hasOwnProperty(suffix.toLowerCase())) { bot.sendMessage(msg, "I gave "+suffix+" a "+Ratings[suffix.toLowerCase()]+"/10"); return; } //already rated
-				bot.sendMessage(msg, "I don't know that name, but upon review I'd give them a "+generateRandomRating(suffix.toLowerCase(), true)+"/10");
+				bot.sendMessage(msg, "I'd say "+suffix+" is a "+generateRandomRating(suffix.toLowerCase(), true)+"/10");
 			}
 		}
 	}
