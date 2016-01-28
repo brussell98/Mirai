@@ -27,6 +27,9 @@ An multipurpose bot for Discord using the [Discord.js](https://github.com/hydrab
 	- [ ] List of queues songs
 	- [ ] Set playing to song name
 	- [ ] Bot owner gets priority
-- [ ] Rate waifu - stored in object until reboot
+- [x] Rate waifu - stored in object until reboot
 - [ ] prune can remove user (new format _prune <#/term/user> <term/username>)
-- [ ] Mention commands can take non-mention usernames
+- [x] Mention commands can take non-mention usernames
+- [ ] Less checking things a lot in `]ratewaifu`. Store them in variables.
+- [ ] If everyone is mentioned enter everyone into the lottery
+- [ ] Have ratewaifu check MAL for fav count
