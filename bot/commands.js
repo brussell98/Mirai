@@ -852,11 +852,12 @@ var commands = {
 			if (msg.mentions.length > 1) { bot.sendMessage(msg, "Multiple mentions aren't allowed!", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
 			var fullName = "";
 			if (!msg.channel.server.members.get("username", suffix) && msg.mentions.length < 1) {
+				Object.keys(waifus).map(function(name){if(name.toLowerCase()==suffix.toLowerCase()){fullName=name;return;}});
 				Object.keys(waifus).map(function(name){if(name.split(" ")[0].toLowerCase()==suffix.toLowerCase()){fullName=name;return;}});
 				Object.keys(waifus).map(function(name){if(name.split(" ").length > 1){for(var i=1;i<name.split(" ").length;i++){if(name.split(" ")[i].toLowerCase()==suffix.toLowerCase()){fullName=name;return;}}}});
 			} else {
 				if (msg.mentions.length > 0) { fullName = msg.mentions[0].username; if (msg.mentions[0].username == bot.user.username) { bot.sendMessage(msg, "I'd rate myself 10/10"); return; } }
-				else if (msg.channel.server.members.get("username", suffix)) { fullName = msg.channel.server.members.get("username", suffix).username; if (suffix == bot.user.username) { bot.sendMessage(msg, "I'd rate myself 10/10"); return; } }
+				else if (msg.channel.server.members.get("username", suffix)) { fullName = msg.channel.server.members.get("username", suffix).username; if (suffix.toLowerCase() == bot.user.username.toLowerCase()) { bot.sendMessage(msg, "I'd rate myself 10/10"); return; } }
 			}
 			if (fullName) {
 				if (Ratings.hasOwnProperty(fullName)) { bot.sendMessage(msg, "I gave "+fullName+" a "+Ratings[fullName]+"/10"); } //already rated
