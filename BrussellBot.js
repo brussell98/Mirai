@@ -124,10 +124,6 @@ bot.on('serverNewMember', function (objServer, objUser) {
 	}
 });
 
-bot.on('serverUpdated', function (objServer, objNewServer) {
-	if (config.non_essential_event_listeners) { if (config.debug) { console.log(colors.cDebug(" DEBUG ")+objServer.name + " is now " + objNewServer.name); } }
-});
-
 bot.on('channelCreated', function (objChannel) {
 	if (config.non_essential_event_listeners) {
 		if (!objChannel.isPrivate){ if (config.debug) { console.log(colors.cDebug(" DEBUG ")+"New channel created. Type: " + objChannel.type + ". Name: " + objChannel.name + ". Server: " + objChannel.server.name); } }
@@ -137,15 +133,6 @@ bot.on('channelCreated', function (objChannel) {
 bot.on('channelDeleted', function (objChannel) {
 	if (config.non_essential_event_listeners) {
 		if (!objChannel.isPrivate) { if (config.debug) { console.log(colors.cDebug(" DEBUG ")+"Channel deleted. Type: " + objChannel.type + ". Name: " + objChannel.name + ". Server: " + objChannel.server.name); } }
-	}
-});
-
-bot.on('channelUpdated', function (objChannel) { //You could make this find the new channel by id to get new info
-	if (config.non_essential_event_listeners) {
-		if (!objChannel.isPrivate) {
-			if (objChannel.type == "text") { if (config.debug) { console.log(colors.cDebug(" DEBUG ")+"Channel updated. Was: Type: Text. Name: " + objChannel.name + ". Topic: " + objChannel.topic); } }
-			else { if (config.debug) { console.log(colors.cDebug(" DEBUG ")+"Channel updated. Was: Type: Voice. Name: " + objChannel.name + "."); } }
-		}
 	}
 });
 

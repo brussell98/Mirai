@@ -1,2 +1,5 @@
 *.tmp
 *.env
+.vscode
+typings
+node_modules

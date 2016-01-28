@@ -36,7 +36,7 @@ function autoEndLotto(bot, msg) {
     }, 600000);
 }
 
-function generateRandomRating(fullName, storeRating) { //maybe if user who requested it has a rating base off of off that?
+function generateRandomRating(fullName, storeRating) {
 	var weightedNumber = Math.floor((Math.random() * 20) + 1); //between 1 and 20
 	var score, moreRandom = Math.floor(Math.random() * 4);
 	if (weightedNumber < 5) {
@@ -46,14 +46,14 @@ function generateRandomRating(fullName, storeRating) { //maybe if user who reque
 	else if (weightedNumber > 15) {
 		score = Math.floor((Math.random() * 3) + 8); }//between 8 and 10
 	if (moreRandom === 0 && score !== 1) { score -= 1; }
-	if (moreRandom === 3 && score != 10) { score += 1; }
-	if (storeRating) { Ratings[fullName] = score; }
+	else if (moreRandom == 3 && score != 10) { score += 1; }
+	if (storeRating) { Ratings[fullName.toLowerCase()] = score; }
 	return score;
 }
 
 function generateUserRating(bot, msg, fullName) {
 	var user = msg.channel.server.members.get("username", fullName);
-	var score = generateRandomRating(); if (score != 1) { score -= 1; }
+	var score = generateRandomRating() - 1;
 	var joined = new Date(msg.channel.server.detailsOfUser(user).joinedAt), now = new Date();
 	if (now-joined >= 2592000000) { score += 1; } //if user has been on the server for at least one month +1
 	if (msg.channel.permissionsOf(user).hasPermission("manageServer")) { score += 1; } //admins get +1 ;)
@@ -62,8 +62,8 @@ function generateUserRating(bot, msg, fullName) {
 	if (count > 2) { score += 1; } //if we share at least 3 servers
 	if (!user.avatarURL) { score -= 1; } //gotta have an avatar
 	if (user.username.length > 22) { score -= 1; } //long usernames are hard to type so -1
-	if (score > 10) { score = 10; } //no ratings past 10
-	Ratings[fullName] = score;
+	if (score > 10) { score = 10; } else if (score < 1) { score = 1; } //keep it within 1-10
+	Ratings[fullName.toLowerCase()] = score;
 	return score;
 }
 
@@ -72,14 +72,14 @@ function generateJSONRating(fullName) {
 	var ranges = {
 		"1": "1-4", "2": "2-4",
 		"3": "4-8", "4": "4-8",
-		"5": "5-8", "6": "5-9",
+		"5": "5-8", "6": "6-9",
 		"7": "7-10", "8": "8-10",
 		"9": "10-10"
 	};
 	var score = Math.floor((Math.random() * ((parseInt(ranges[ranking].split("-")[1], 10)+1-parseInt(ranges[ranking].split("-")[0], 10)))) + parseInt(ranges[ranking].split("-")[0], 10)); //(floor of rand * ((max+1)-min)) - min
 	var moreRandom = Math.floor(Math.random() * 4); //0-3
-	if (score > 1 && moreRandom === 0) { score -= 1; } if (score < 10 && moreRandom == 3) { score += 1; }
-	Ratings[fullName] = score;
+	if (score > 1 && moreRandom === 0) { score -= 1; } else if (score < 10 && moreRandom == 3) { score += 1; }
+	Ratings[fullName.toLowerCase()] = score;
 	return score;
 }
 
@@ -212,9 +212,8 @@ var commands = {
 		usage: "",
 		process: function(bot, msg, suffix) {
 			var msgArray = [];
-			msgArray.push("I'm " + bot.user.username + " and I was made by brussell98.");
-			msgArray.push("I run on the unofficial Discord API `Discord.js`");
-			msgArray.push("My website is **brussell98.github.io/BrussellBot/**");
+			msgArray.push("I'm " + bot.user.username + " and ~~I was made by brussell98.~~ I'm a strong independent bot who don't need no creator.");
+			msgArray.push("I run on the unofficial Discord API `Discord.js` and my website is **brussell98.github.io/BrussellBot/**");
 			bot.sendMessage(msg, msgArray);
 		}
 	},
@@ -383,11 +382,19 @@ var commands = {
 	},
 	"lotto": {
 		desc: "Lottery picks a random entered user.",
-		usage: "end | enter | new [max entries] | <mentions to pick from> (pick from the users mentioned)",
+		usage: "end | enter | new [max entries] | <mentions to pick from> (pick from the users mentioned) | everyone",
 		deleteCommand: true,
 		cooldown: 2,
 		process: function (bot, msg, suffix) {
-			if (suffix.split(" ")[0] == "new") {
+			if (msg.everyoneMentioned || suffix.toLowerCase() == "everyone") {
+  
+			  if (msg.channel.isPrivate) { bot.sendMessage(msg, "Can't do that in a direct message"); return; }
+			  if (LottoDB.hasOwnProperty(msg.channel.id)) { bot.sendMessage(msg, "There is already a lottery running!", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
+			  else {
+			    bot.sendMessage(msg, "Out of "+msg.channel.server.members.length+" members on this server, "+msg.channel.server.members[Math.floor(Math.random() * msg.channel.server.members.length)]+" is the winner!");
+			  }
+
+			} else if (suffix.split(" ")[0] == "new") {
 				
 				if (msg.channel.isPrivate) { bot.sendMessage(msg, "Can't do that in a direct message"); return; }
 				var currentchannel = msg.channel.id;
@@ -403,7 +410,7 @@ var commands = {
 				   LottoDB[currentchannel][0] = object;
 				   if (suffix.indexOf("-noautoend") == -1){ autoEndLotto(bot, msg); }
 				}
-				
+			  
 			} else if (suffix.replace(" ", "") == "end") {
 				
 				if (msg.channel.isPrivate) { bot.sendMessage(msg, "Can't do that in a direct message"); return; }
@@ -853,14 +860,15 @@ var commands = {
 			var fullName = "";
 			if (!msg.channel.server.members.get("username", suffix) && msg.mentions.length < 1) {
 				Object.keys(waifus).map(function(name){if(name.toLowerCase()==suffix.toLowerCase()){fullName=name;return;}});
-				Object.keys(waifus).map(function(name){if(name.split(" ")[0].toLowerCase()==suffix.toLowerCase()){fullName=name;return;}});
-				Object.keys(waifus).map(function(name){if(name.split(" ").length > 1){for(var i=1;i<name.split(" ").length;i++){if(name.split(" ")[i].toLowerCase()==suffix.toLowerCase()){fullName=name;return;}}}});
+				if (!fullName) { Object.keys(waifus).map(function(name){if(name.split(" ")[0].toLowerCase()==suffix.toLowerCase()){fullName=name;return;}}); }
+				if (!fullName) { Object.keys(waifus).map(function(name){if(name.split(" ").length > 1){for(var i=1;i<name.split(" ").length;i++){if(name.split(" ")[i].toLowerCase()==suffix.toLowerCase()){fullName=name;return;}}}}); }
 			} else {
+			  if (suffix.toLowerCase() == bot.user.username.toLowerCase()) { bot.sendMessage(msg, "I'd rate myself 10/10"); return; }
 				if (msg.mentions.length > 0) { fullName = msg.mentions[0].username; if (msg.mentions[0].username == bot.user.username) { bot.sendMessage(msg, "I'd rate myself 10/10"); return; } }
-				else if (msg.channel.server.members.get("username", suffix)) { fullName = msg.channel.server.members.get("username", suffix).username; if (suffix.toLowerCase() == bot.user.username.toLowerCase()) { bot.sendMessage(msg, "I'd rate myself 10/10"); return; } }
+				else if (msg.channel.server.members.get("username", suffix)) { fullName = msg.channel.server.members.get("username", suffix).username; }
 			}
 			if (fullName) {
-				if (Ratings.hasOwnProperty(fullName)) { bot.sendMessage(msg, "I gave "+fullName+" a "+Ratings[fullName]+"/10"); } //already rated
+				if (Ratings.hasOwnProperty(fullName.toLowerCase())) { bot.sendMessage(msg, "I gave "+fullName+" a "+Ratings[fullName.toLowerCase()]+"/10"); } //already rated
 				else {
 					if (msg.channel.server.members.get("username", fullName)) { bot.sendMessage(msg, "I'd rate "+fullName+" "+generateUserRating(bot, msg, fullName)+"/10"); }
 					else { bot.sendMessage(msg, fullName+" is a "+generateJSONRating(fullName)+"/10"); }
