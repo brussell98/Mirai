@@ -3,3 +3,5 @@
 .vscode
 typings
 node_modules
+jsconfig.json
+typings.json

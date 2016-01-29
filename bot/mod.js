@@ -1,3 +1,4 @@
+/// <reference path="../typings/main.d.ts" />
 var config = require("./config.json");
 var games = require("./games.json").games;
 var version = require("../package.json").version;

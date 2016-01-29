@@ -1,3 +1,4 @@
+/// <reference path="typings/main.d.ts" />
 /*
 This is a multipurpose bot
 Run this with node to run the bot.
@@ -162,10 +163,10 @@ bot.on('userUpdated', function (objUser, objNewUser) {
 });
 
 bot.on('presence', function(userOld, userNew) { //check if game and also it's now oldUser newUser
-	if (config.log_presence) { if (config.debug) { 
+	if (config.log_presence) {
 		if (userNew.game === null) { console.log(colors.cDebug(" PRESENCE ")+ userNew.username + " is now " + userNew.status); }
 		else { console.log(colors.cDebug(" PRESENCE ")+ userNew.username + " is now " + userNew.status + " playing " + userNew.game.name); }
-	} }
+	}
 });
 
 bot.on('serverDeleted', function(objServer) { //detect when the bot leaves a server

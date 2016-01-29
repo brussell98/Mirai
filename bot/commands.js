@@ -1,3 +1,4 @@
+/// <reference path="../typings/main.d.ts" />
 var config = require("./config.json");
 var games = require("./games.json").games;
 var version = require("../package.json").version;
@@ -347,6 +348,10 @@ var commands = {
 		deleteCommand: true,
 		cooldown: 6,
 		process: function(bot, msg, suffix) {
+			if (msg.channel.isPrivate) {
+				if (msg.author.avatarURL != null) { bot.sendMessage(msg, "I can only get your avatar in a direct message. Here it is: "+msg.author.avatarURL); return; }
+				else { bot.sendMessage(msg, "I can only get your avatar in a direct message. But you don't have one"); return; }
+			}
 			if (msg.mentions.length == 0 && !suffix) { (msg.author.avatarURL != null) ? bot.sendMessage(msg, msg.author.username+"'s avatar is: "+msg.author.avatarURL+"") : bot.sendMessage(msg, msg.author.username+" has no avatar", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
 			else if (msg.mentions.length > 0) {
 				if (msg.everyoneMentioned) { bot.sendMessage(msg, "Hey, "+msg.author.username+", don't do that ok?", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
@@ -858,19 +863,20 @@ var commands = {
 			if (msg.everyoneMentioned) { bot.sendMessage(msg, "Hey, "+msg.author.username+", don't do that ok?", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 			if (msg.mentions.length > 1) { bot.sendMessage(msg, "Multiple mentions aren't allowed!", function (erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
 			var fullName = "";
-			if (!msg.channel.server.members.get("username", suffix) && msg.mentions.length < 1) {
+			if (!msg.channel.isPrivate) { if (msg.channel.server.members.get("username", suffix)) { var user = msg.channel.server.members.get("username", suffix); } else { var user = false; } } else { var user = false; }
+			if (!user && msg.mentions.length < 1) {
 				Object.keys(waifus).map(function(name){if(name.toLowerCase()==suffix.toLowerCase()){fullName=name;return;}});
 				if (!fullName) { Object.keys(waifus).map(function(name){if(name.split(" ")[0].toLowerCase()==suffix.toLowerCase()){fullName=name;return;}}); }
 				if (!fullName) { Object.keys(waifus).map(function(name){if(name.split(" ").length > 1){for(var i=1;i<name.split(" ").length;i++){if(name.split(" ")[i].toLowerCase()==suffix.toLowerCase()){fullName=name;return;}}}}); }
 			} else {
-			  if (suffix.toLowerCase() == bot.user.username.toLowerCase()) { bot.sendMessage(msg, "I'd rate myself 10/10"); return; }
+				if (suffix.toLowerCase() == bot.user.username.toLowerCase()) { bot.sendMessage(msg, "I'd rate myself 10/10"); return; }
 				if (msg.mentions.length > 0) { fullName = msg.mentions[0].username; if (msg.mentions[0].username == bot.user.username) { bot.sendMessage(msg, "I'd rate myself 10/10"); return; } }
-				else if (msg.channel.server.members.get("username", suffix)) { fullName = msg.channel.server.members.get("username", suffix).username; }
+				else if (user) { fullName = user.username; }
 			}
 			if (fullName) {
 				if (Ratings.hasOwnProperty(fullName.toLowerCase())) { bot.sendMessage(msg, "I gave "+fullName+" a "+Ratings[fullName.toLowerCase()]+"/10"); } //already rated
 				else {
-					if (msg.channel.server.members.get("username", fullName)) { bot.sendMessage(msg, "I'd rate "+fullName+" "+generateUserRating(bot, msg, fullName)+"/10"); }
+					if (user || msg.mentions.length > 0) { bot.sendMessage(msg, "I'd rate "+fullName+" "+generateUserRating(bot, msg, fullName)+"/10"); }
 					else { bot.sendMessage(msg, fullName+" is a "+generateJSONRating(fullName)+"/10"); }
 				}
 			} else {
