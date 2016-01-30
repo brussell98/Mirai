@@ -1,10 +1,10 @@
-# BrussellBot
+# BrussellBot 1.2
 
-An multipurpose bot for Discord using the [Discord.js](https://github.com/hydrabolt/discord.js/) unofficial API.
+A multipurpose bot for Discord using the [Discord.js](https://github.com/hydrabolt/discord.js/) unofficial API.
 
 [Website](http://brussell98.github.io/BrussellBot)   
 [Discord Server](https://discord.gg/0kvLlwb7slG3XCCQ)   
-[Get the latests version here](https://github.com/brussell98/BrussellBot/releases/latest)
+[Get the latest version here](https://github.com/brussell98/BrussellBot/releases/latest)
 
 [Wiki](https://github.com/brussell98/BrussellBot/wiki)   
 [Commands](https://github.com/brussell98/BrussellBot/wiki/Commands)   
@@ -14,11 +14,11 @@ An multipurpose bot for Discord using the [Discord.js](https://github.com/hydrab
 
 ---
 
-### TODO
+### TO DO
 
 - [ ] Music commands
 	- [ ] Audio help
-	- [ ] Queue song from youtube
+	- [ ] Queue song from YouTube
 		- [ ] Or pass it a webm link
 	- [ ] Skip
 	- [ ] Have pre-made playlists available

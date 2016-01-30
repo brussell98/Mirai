@@ -4,9 +4,9 @@
 	"with JOHN CENA",
 	"kappa kappa kappa",
 	"no waifu no laifu",
-	"your waifu is trash",
+	"your waifu is __trash__",
 	"Kancolle",
-	"with you",
+	"with __you__",
 	"node.js",
 	"discord.js",
 	"osu!",
@@ -19,7 +19,7 @@
 	"Sakura Swim Club",
 	"Sakura Spirit",
 	"Akiba's Trip",
-	"Animaaayyyy lmao",
+	"Animaayyy lmao",
 	"Ayyyy lmao",
 	"Jet fuel can't melt dank memes",
 	"with nekos",
@@ -32,6 +32,9 @@
 	"who is this Bot-chan?",
 	"world domination",
 	"dank memes",
-	"]help [command]",
-	"what's an anime?"
+	"Toshinou Kyouko",
+	"__]help [command]__",
+	"what's an anime?",
+	"@everyone",
+	"http://brussell98.github.io/BrussellBot/"
 ]}

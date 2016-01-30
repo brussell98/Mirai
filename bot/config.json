@@ -14,5 +14,6 @@
 	"mal_pass": "",
 	"is_heroku_version": true,
 	"weather_api_key": "",
-	"osu_api_key": ""
+	"osu_api_key": "",
+	"banned_server_ids": [""]
 }
