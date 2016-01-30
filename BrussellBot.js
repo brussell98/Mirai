@@ -25,7 +25,6 @@ bot.on("debug", function(m) { if (config.debug) { console.log(colors.cDebug(" DE
 
 bot.on("ready", function() {
 	bot.setPlayingGame(games[Math.floor(Math.random() * (games.length))]); //set game to a random game from games.json
-	//bot.setPlayingGame("]help [command]");
 	console.log(colors.cGreen("BrussellBot is ready!") + " Listening to " + bot.channels.length + " channels on " + bot.servers.length + " servers");
 	versioncheck.checkForUpdate(function(resp) {
 		if (resp !== null) { console.log(resp); }
@@ -71,7 +70,7 @@ bot.on("message", function(msg) {
 							var leTime = new Date(lastExecTime[cmd][id]);
 							leTime.setSeconds(leTime.getSeconds() + commands[cmd].cooldown);
 							if (cTime < leTime) { //if it is still on cooldown
-								var left = (leTime - cTime) / 1000;
+								var left = (leTime.valueOf() - cTime.valueOf()) / 1000;
 								if (msg.author.id != config.admin_id) { //admin bypass
 									bot.sendMessage(msg, msg.author.username + ", you can't use this command for " + Math.round(left) + " more seconds", function(erro, message) { bot.deleteMessage(message, {"wait": 6000}); });
 									return;
@@ -100,7 +99,7 @@ bot.on("message", function(msg) {
 							var leTime = new Date(lastExecTime[cmd][id]);
 							leTime.setSeconds(leTime.getSeconds() + mod[cmd].cooldown);
 							if (cTime < leTime) { //if it is still on cooldown
-								var left = (leTime - cTime) / 1000;
+								var left = (leTime.valueOf() - cTime.valueOf()) / 1000;
 								if (msg.author.id != config.admin_id) { //admin bypass
 									bot.sendMessage(msg, msg.author.username + ", you can't use this command for " + Math.round(left) + " more seconds", function(erro, message) { bot.deleteMessage(message, {"wait": 6000}); });
 									return;
@@ -199,7 +198,7 @@ function carbonInvite(msg) {
 					console.log(colors.cWarn(" WARN ") + err);
 				} else if (!server || server.name == undefined || server.roles == undefined || server.channels == undefined || server.members == undefined) { //this problem is a pain in the ass
 					console.log(colors.cWarn(" WARN ") + "Error joining server. Didn't receive all data.");
-					bot.sendMessage(msg, "Failed to receive all data, please try again in a few seconds.");
+					bot.sendMessage(msg, "Failed to receive all data, please try again.");
 					try {
 						bot.leaveServer(server);
 					} catch (error) { /*how did it get here?*/ }
@@ -211,29 +210,24 @@ function carbonInvite(msg) {
 						if (process.env.banned_server_ids && process.env.banned_server_ids.indexOf(server.id) > -1) {
 							console.log(colors.cRed("Joined server but it was on the ban list") + ": " + server.name);
 							bot.sendMessage(msg, "This server is on the ban list");
-							bot.leaveServer(server);
-							return;
+							bot.leaveServer(server); return;
 						}
 					} else {
 						if (config.banned_server_ids && config.banned_server_ids.indexOf(server.id) > -1) {
 							console.log(colors.cRed("Joined server but it was on the ban list") + ": " + server.name);
 							bot.sendMessage(msg, "This server is on the ban list");
-							bot.leaveServer(server);
-							return;
+							bot.leaveServer(server); return;
 						}
 					}
 					console.log(colors.cGreen("Joined server: ") + " " + server.name);
 					bot.sendMessage(msg, "Successfully joined " + server.name);
-					if (msg.author.id != 109338686889476096) { bot.sendMessage(msg, "It's not like I wanted you to use `" + config.command_prefix + "joins` or anything, b-baka!"); }
 					if (shouldCarbonAnnounce) {
-						setTimeout(function() {
-							var msgArray = [];
-							msgArray.push("Hi! I'm **" + bot.user.username + "** and I was invited to this server through carbonitex.net.");
-							msgArray.push("You can use `" + config.command_prefix + "help` to see what I can do. Mods can use `" + config.mod_command_prefix + "help` for mod commands.");
-							msgArray.push("If I shouldn't be here someone with the `Kick Members` permission can use `" + config.mod_command_prefix + "leaves` to make me leave");
-							msgArray.push("For help / feedback / bugs/ testing / info / changelogs / etc. go to **discord.gg/0kvLlwb7slG3XCCQ**");
-							bot.sendMessage(server.defaultChannel, msgArray);
-						}, 2000);
+						var msgArray = [];
+						msgArray.push("Hi! I'm **" + bot.user.username + "** and I was invited to this server through carbonitex.net.");
+						msgArray.push("You can use `" + config.command_prefix + "help` to see what I can do. Mods can use `" + config.mod_command_prefix + "help` for mod commands.");
+						msgArray.push("If I shouldn't be here someone with the `Kick Members` permission can use `" + config.mod_command_prefix + "leaves` to make me leave");
+						msgArray.push("For help / feedback / bugs/ testing / info / changelogs / etc. go to **discord.gg/0kvLlwb7slG3XCCQ**");
+						bot.sendMessage(server.defaultChannel, msgArray);
 					}
 				}
 			});
@@ -242,16 +236,16 @@ function carbonInvite(msg) {
 }
 
 function reload() {
-	delete require.cache[require.resolve("./bot/config.json")]; //delete cache or it won"t work
+	delete require.cache[require.resolve("./bot/config.json")];
 	config = require("./bot/config.json");
 	delete require.cache[require.resolve("./bot/games.json")];
 	games = require("./bot/games.json").games;
 	delete require.cache[require.resolve("./bot/commands.js")];
 	try { commands = require("./bot/commands.js").commands;
-	} catch (err) {  }
+	} catch (err) { console.log(colors.cError(" ERROR ") + "Problem loading commands.js: " + err); }
 	delete require.cache[require.resolve("./bot/mod.js")];
 	try {mod = require("./bot/mod.js").commands;
-	} catch (err) {  }
+	} catch (err) { console.log(colors.cError(" ERROR ") + "Problem loading mod.js: " + err); }
 	delete require.cache[require.resolve("./bot/config.json")];
 	delete require.cache[require.resolve("./bot/versioncheck.js")];
 	versioncheck = require("./bot/versioncheck.js");
@@ -259,7 +253,7 @@ function reload() {
 	colors = require("./bot/styles.js");
 	delete require.cache[require.resolve("./bot/cleverbot.js")];
 	cleverbot = require("./bot/cleverbot").cleverbot;
-	console.log(colors.BgGreen(" Reloaded modules ") + " success");
+	console.log(colors.BgGreen(" Module Reload ") + " Success");
 }
 
 function checkConfig() {
@@ -288,7 +282,7 @@ function checkConfig() {
 
 function evaluateString(msg) {
 	/*EXTREMELY DANGEROUS so lets check again*/if (msg.author.id != config.admin_id) { console.log(colors.cWarn(" WARN ") + "Somehow an unauthorized user got into eval!"); return; }
-	console.log(colors.cWarn(" WARN ") + "Running eval");
+	console.log("Running eval");
 	var result = eval("try{" + msg.content.substring(7).replace(/\n/g, "") + "}catch(err){console.log(colors.cError(\" ERROR \")+err);bot.sendMessage(msg, \"```\"+err+\"```\");}");
 	if (typeof result !== "object") {
 		bot.sendMessage(msg, result);
@@ -299,4 +293,5 @@ function evaluateString(msg) {
 
 setInterval(function() {
 	bot.setPlayingGame(games[Math.floor(Math.random() * (games.length))]);
+	if (config.debug) { console.log(colors.cDebug(" DEBUG ") + "Updated bot's game"); }
 }, 800000); //change playing game every 12 minutes

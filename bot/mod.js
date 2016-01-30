@@ -64,8 +64,7 @@ var commands = {
 				var msgArray = [];
 				msgArray.push("```");
 				msgArray.push("Uptime (may be inaccurate): " + (Math.round(bot.uptime / (1000 * 60 * 60))) + " hours, " + (Math.round(bot.uptime / (1000 * 60)) % 60) + " minutes, and " + (Math.round(bot.uptime / 1000) % 60) + " seconds.");
-				msgArray.push("Connected to " + bot.servers.length + " servers and " + bot.channels.length + " channels.");
-				msgArray.push("Serving " + bot.users.length + " users.");
+				msgArray.push("Connected to " + bot.servers.length + " servers, " + bot.channels.length + " channels, and " + bot.users.length + " users.");
 				msgArray.push("Memory Usage: " + Math.round(process.memoryUsage().rss / 1024 / 1000) + "MB");
 				msgArray.push("Running BrussellBot v" + version);
 				msgArray.push("Commands processed this session: " + commandsProcessed);
@@ -210,7 +209,7 @@ var commands = {
 						}
 					} else {
 						announceMessages.push(suffix);
-						var code = Math.floor(Math.random() * 999999999);
+						var code = Math.floor(Math.random() * 100000000);
 						confirmCodes.push(Math.floor(code));
 						bot.sendMessage(msg, "⚠ This will send a private message to **all** of the servers I'm in. If you're sure you want to do this say `" + config.mod_command_prefix + "announce " + code + "`");
 					}
@@ -232,7 +231,7 @@ var commands = {
 						}
 					} else {
 						announceMessages.push(suffix);
-						var code = Math.floor(Math.random() * 999999999);
+						var code = Math.floor(Math.random() * 100000000);
 						confirmCodes.push(Math.floor(code));
 						bot.sendMessage(msg, "⚠ This will send a private message to **all** members of this server. If you're sure you want to do this say `" + config.mod_command_prefix + "announce " + code + "`");
 					}

@@ -53,7 +53,7 @@ function generateUserRating(bot, msg, fullName) {
 	var user = msg.channel.server.members.get("username", fullName);
 	var score = generateRandomRating() - 1;
 	var joined = new Date(msg.channel.server.detailsOfUser(user).joinedAt), now = new Date();
-	if (now - joined >= 2592000000) { score += 1; } //if user has been on the server for at least one month +1
+	if (now.valueOf() - joined.valueOf() >= 2592000000) { score += 1; } //if user has been on the server for at least one month +1
 	if (msg.channel.permissionsOf(user).hasPermission("manageServer")) { score += 1; } //admins get +1 ;)
 	var count = 0;
 	bot.servers.map(function(server) { if (server.members.get("id", user.id)) { count += 1; } }); //how many servers does the bot share with them
@@ -137,16 +137,18 @@ var commands = {
 		shouldDisplay: false,
 		usage: "",
 		process: function(bot, msg) {
-			var n = Math.floor(Math.random() * 4);
+			var n = Math.floor(Math.random() * 6);
 			if (n === 0) { bot.sendMessage(msg, "pong");
 			} else if (n === 1) { bot.sendMessage(msg, "You thought I would say pong, didn't you?");
 			} else if (n === 2) { bot.sendMessage(msg, "pong!");
-			} else if (n === 3) { bot.sendMessage(msg, "Yeah, I'm still here"); }
+			} else if (n === 3) { bot.sendMessage(msg, "Yeah, I'm still here");
+			} else if (n === 4) { bot.sendMessage(msg, "...");
+			} else if (n === 5) { bot.sendMessage(msg, config.command_prefix + "ping"); }
 		}
 	},
 	"joins": {
 		desc: "Accepts an invite.",
-		usage: "<invite link> [invite link] [-a (announce presence)]",
+		usage: "<invite link(s)> [-a (announce presence)]",
 		deleteCommand: true,
 		process: function(bot, msg, suffix) {
 			if (suffix) {
@@ -161,7 +163,7 @@ var commands = {
 								console.log(colors.cWarn(" WARN ") + err);
 							} else if (!server || server.name == undefined || server.roles == undefined || server.channels == undefined || server.members == undefined) {
 								console.log(colors.cWarn(" WARN ") + "Error joining server. Didn't receive all data.");
-								bot.sendMessage(msg, "⚠ Failed to receive all data, please try again in a few seconds.");
+								bot.sendMessage(msg, "⚠ Failed to receive all data, please try again.");
 								try {
 									bot.leaveServer(server);
 								} catch (error) { /*how did it get here?*/ }
@@ -187,14 +189,12 @@ var commands = {
 								console.log(colors.cGreen("Joined server: ") + server.name);
 								bot.sendMessage(msg, "✅ Successfully joined ***" + server.name + "***");
 								if (suffix.indexOf("-a") != -1) {
-									setTimeout(function() {
-										var msgArray = [];
-										msgArray.push("Hi! I'm **" + bot.user.username + "** and I was invited to this server by " + msg.author + ".");
-										msgArray.push("Use `" + config.command_prefix + "help` to get a list of normal commands.");
-										msgArray.push("If I shouldn't be here someone with the `Kick Members` permission can use `" + config.mod_command_prefix + "leaves` to make me leave");
-										msgArray.push("For help / feedback / bugs / testing / announcements / changelogs / etc. go to **discord.gg/0kvLlwb7slG3XCCQ**");
-										bot.sendMessage(server.defaultChannel, msgArray);
-									}, 2000);
+									var msgArray = [];
+									msgArray.push("Hi! I'm **" + bot.user.username + "** and I was invited to this server by " + msg.author + ".");
+									msgArray.push("Use `" + config.command_prefix + "help` to get a list of normal commands.");
+									msgArray.push("If I shouldn't be here someone with the `Kick Members` permission can use `" + config.mod_command_prefix + "leaves` to make me leave");
+									msgArray.push("For help / feedback / bugs / testing / announcements / changelogs / etc. go to **discord.gg/0kvLlwb7slG3XCCQ**");
+									bot.sendMessage(server.defaultChannel, msgArray);
 								} else { setTimeout(function() { bot.sendMessage(server.defaultChannel, "*Quietly walks in*"); }, 2000); }
 							}
 						});

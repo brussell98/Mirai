@@ -1,4 +1,4 @@
-# BrussellBot
+# BrussellBot 1.2
 
 A multipurpose bot for Discord using the [Discord.js](https://github.com/hydrabolt/discord.js/) unofficial API.
 
@@ -27,5 +27,3 @@ A multipurpose bot for Discord using the [Discord.js](https://github.com/hydrabo
 	- [ ] List of queues songs
 	- [ ] Set playing to song name
 	- [ ] Bot owner gets priority
-- [ ] prune can remove user
-- [x] Have `]info @user` get shared servers
