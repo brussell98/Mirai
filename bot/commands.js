@@ -273,8 +273,8 @@ var commands = {
 						if (msg.everyoneMentioned) { bot.sendMessage(msg, "Hey, " + msg.author.username + ", don't do that ok?", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 						if (msg.mentions.length > 4) { bot.sendMessage(msg, "Limit of 4 users", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 						msg.mentions.map(function(usr) {
-							var msgArray = [];
-							msgArray.push("ℹ **You requested info on** " + usr.username);
+							var msgArray = [], count = 0;
+							msgArray.push("ℹ **Info on** " + usr.username);
 							msgArray.push("**User ID:** " + usr.id);
 							if (usr.game != null) { msgArray.push("Status: " + usr.status + " last playing " + usr.game.name);
 							} else { msgArray.push("**Status:** " + usr.status); }
@@ -283,6 +283,8 @@ var commands = {
 							var roles = msg.channel.server.rolesOfUser(usr.id).map(function(role) { return role.name; });
 							roles = roles.join(", ").replace("@", "");
 							if (roles.length <= 1500) { msgArray.push("**Roles:** " + roles); } else { msgArray.push("**Roles:** Too many to display"); }
+							bot.servers.map(function(server) { if (server.members.indexOf(usr) > -1) { count += 1; } });
+							if (count > 1) { msgArray.push("**Shared servers:** " + count); }
 							if (usr.avatarURL != null) { msgArray.push("**Avatar URL:** `" + usr.avatarURL + "`"); }
 							bot.sendMessage(msg, msgArray);
 							if (config.debug) { console.log(colors.cDebug(" DEBUG ") + "Got info on " + usr.username); }
@@ -293,8 +295,8 @@ var commands = {
 						users.map(function(user) {
 							var usr = msg.channel.server.members.get("username", user);
 							if (usr) {
-								var msgArray = [];
-								msgArray.push("ℹ **You requested info on** " + usr.username);
+								var msgArray = [], count = 0;
+								msgArray.push("ℹ **Info on** " + usr.username);
 								msgArray.push("**User ID:** " + usr.id);
 								if (usr.game != null) { msgArray.push("Status: " + usr.status + " last playing " + usr.game.name);
 								} else { msgArray.push("**Status:** " + usr.status); }
@@ -303,6 +305,8 @@ var commands = {
 								var roles = msg.channel.server.rolesOfUser(usr.id).map(function(role) { return role.name; });
 								roles = roles.join(", ").replace("@", "");
 								if (roles.length <= 1500) { msgArray.push("**Roles:** " + roles); } else { msgArray.push("**Roles:** Too many to display"); }
+								bot.servers.map(function(server) { if (server.members.indexOf(usr) > -1) { count += 1; } });
+								if (count > 1) { msgArray.push("**Shared servers:** " + count); }
 								if (usr.avatarURL != null) { msgArray.push("**Avatar URL:** `" + usr.avatarURL + "`"); }
 								bot.sendMessage(msg, msgArray);
 								if (config.debug) { console.log(colors.cDebug(" DEBUG ") + "Got info on " + usr.username); }
@@ -311,7 +315,7 @@ var commands = {
 					}
 				} else {
 					var msgArray = [];
-					msgArray.push("ℹ **You requested info on** " + msg.channel.server.name);
+					msgArray.push("ℹ **Info on** " + msg.channel.server.name);
 					msgArray.push("**Server ID:** " + msg.channel.server.id);
 					msgArray.push("**Owner:** " + msg.channel.server.owner.username + " (**id:** " + msg.channel.server.owner.id);
 					msgArray.push("**Region:** " + msg.channel.server.region);
@@ -831,6 +835,7 @@ var commands = {
 			if (!suffix) { bot.sendMessage(msg, correctUsage("ratewaifu"), function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
 			if (msg.everyoneMentioned) { bot.sendMessage(msg, "Hey, " + msg.author.username + ", don't do that ok?", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 			if (msg.mentions.length > 1) { bot.sendMessage(msg, "Multiple mentions aren't allowed!", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
+			if (suffix.toLowerCase().replace("-", " ") == bot.user.username.toLowerCase().replace("-", " ")) { bot.sendMessage(msg, "I'd rate myself 10/10"); return; }
 			var fullName = "";
 			if (!msg.channel.isPrivate) { var user = (msg.channel.server.members.get("username", suffix)) ? msg.channel.server.members.get("username", suffix) : false; } else { var user = false; }
 			if (!user && msg.mentions.length < 1) {
@@ -838,7 +843,6 @@ var commands = {
 				if (!fullName) { Object.keys(waifus).map(function(name) {if (name.split(" ")[0].toLowerCase() == suffix.toLowerCase()) {fullName = name; return;}}); }
 				if (!fullName) { Object.keys(waifus).map(function(name) {if (name.split(" ").length > 1) {for (var i = 1;i < name.split(" ").length;i++) {if (name.split(" ")[i].toLowerCase() == suffix.toLowerCase()) {fullName = name; return;}}}}); }
 			} else {
-				if (suffix.toLowerCase() == bot.user.username.toLowerCase()) { bot.sendMessage(msg, "I'd rate myself 10/10"); return; }
 				if (msg.mentions.length > 0) { fullName = msg.mentions[0].username; if (msg.mentions[0].username == bot.user.username) { bot.sendMessage(msg, "I'd rate myself 10/10"); return; }
 				} else if (user) { fullName = user.username; }
 			}

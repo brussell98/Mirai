@@ -28,4 +28,4 @@ A multipurpose bot for Discord using the [Discord.js](https://github.com/hydrabo
 	- [ ] Set playing to song name
 	- [ ] Bot owner gets priority
 - [ ] prune can remove user
-- [ ] Have `]info @user` get shared servers
+- [x] Have `]info @user` get shared servers
