@@ -9,7 +9,7 @@ exports.cWarn = function (text) {
 	chalk.styles.bgYellow.close + 
 	chalk.styles.white.open + chalk.styles.bgBlack.open +" ";
 };
-																  
+
 exports.cError = function (text) { 
 	return chalk.styles.bgRed.open + 
 	chalk.styles.black.open +
@@ -18,7 +18,7 @@ exports.cError = function (text) {
 	chalk.styles.bgRed.close + 
 	chalk.styles.white.open + chalk.styles.bgBlack.open + " ";
 };
-																  
+
 exports.cDebug = function (text) { 
 	return chalk.styles.bgWhite.open + 
 	chalk.styles.black.open + 
