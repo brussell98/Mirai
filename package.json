@@ -19,7 +19,7 @@
 	},
 	"license": "MIT",
 	"dependencies": {
-		"discord.js": "hydrabolt/discord.js#indev",
+		"discord.js": ">=6.0.0",
 		"fs": "*",
 		"request": "*",
 		"xml2js": "*",

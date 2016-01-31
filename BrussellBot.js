@@ -4,8 +4,8 @@ This is a multipurpose bot
 Run this with node to run the bot.
 //===================================================*/
 
-var commands = require("./bot/commands.js").commands;
-var mod = require("./bot/mod.js").commands;
+var commands = require("./bot/commands.js");
+var mod = require("./bot/mod.js");
 var config = require("./bot/config.json");
 var games = require("./bot/games.json").games;
 var versioncheck = require("./bot/versioncheck.js");
@@ -58,64 +58,72 @@ bot.on("message", function(msg) {
 	var cmd = msg.content.split(" ")[0].replace(/\n/g, " ").substring(1).toLowerCase();
 	var suffix = msg.content.replace(/\n/g, " ").substring(cmd.length + 2); //seperate the command and suffix
 	if (msg.content.startsWith(config.command_prefix)) { //normal commands
-		if (commands.hasOwnProperty(cmd)) {
-			try {
-				if (!msg.channel.isPrivate) { console.log(colors.cServer(msg.channel.server.name) + " > " + colors.cGreen(msg.author.username) + " > " + msg.content.replace(/\n/g, " ")); } else { console.log(colors.cGreen(msg.author.username) + " > " + msg.content.replace(/\n/g, " ")); }
-				commandsProcessed += 1;
-				if (commands[cmd].hasOwnProperty("cooldown")) {
-					if (lastExecTime.hasOwnProperty(cmd)) {
-						var id = msg.author.id;
-						if (lastExecTime[cmd][id] != undefined) {
-							var cTime = new Date();
-							var leTime = new Date(lastExecTime[cmd][id]);
-							leTime.setSeconds(leTime.getSeconds() + commands[cmd].cooldown);
-							if (cTime < leTime) { //if it is still on cooldown
-								var left = (leTime.valueOf() - cTime.valueOf()) / 1000;
-								if (msg.author.id != config.admin_id) { //admin bypass
-									bot.sendMessage(msg, msg.author.username + ", you can't use this command for " + Math.round(left) + " more seconds", function(erro, message) { bot.deleteMessage(message, {"wait": 6000}); });
-									return;
-								}
-							} else { lastExecTime[cmd][id] = cTime; }
-						} else { lastExecTime[cmd][id] = new Date(); }
-					} else { lastExecTime[cmd] = {}; }
-				}
-				commands[cmd].process(bot, msg, suffix);
-				if (commands[cmd].hasOwnProperty("deleteCommand")) {
-					if (commands[cmd].deleteCommand === true) { bot.deleteMessage(msg, {"wait": 8000}); } //delete command after 3.5 seconds
-				}
-			} catch (err) { console.log(err); }
+		if (commands.commands.hasOwnProperty(cmd)) { execCommand(msg, cmd, suffix, "normal");
+		} else if (commands.aliases.hasOwnProperty(cmd)) {
+			msg.content = msg.content.replace(/[^ ]+ /, commands.aliases[cmd] + " ");
+			execCommand(msg, commands.aliases[cmd], suffix, "normal");
 		}
 	} else if (msg.content.startsWith(config.mod_command_prefix)) { //mod commands
 		if (cmd == "reload" && msg.author.id == config.admin_id) { reload(); bot.deleteMessage(msg); return; } //reload the .json files and modules
-		if (mod.hasOwnProperty(cmd)) {
-			try {
-				if (!msg.channel.isPrivate) { console.log(colors.cServer(msg.channel.server.name) + " > " + colors.cGreen(msg.author.username) + " > " + msg.content.replace(/\n/g, " ")); } else { console.log(colors.cGreen(msg.author.username) + " > " + msg.content.replace(/\n/g, " ")); }
-				commandsProcessed += 1;
-				if (mod[cmd].hasOwnProperty("cooldown")) {
-					if (lastExecTime.hasOwnProperty(cmd)) {
-						var id = msg.author.id;
-						if (lastExecTime[cmd][id] != undefined) {
-							var cTime = new Date();
-							var leTime = new Date(lastExecTime[cmd][id]);
-							leTime.setSeconds(leTime.getSeconds() + mod[cmd].cooldown);
-							if (cTime < leTime) { //if it is still on cooldown
-								var left = (leTime.valueOf() - cTime.valueOf()) / 1000;
-								if (msg.author.id != config.admin_id) { //admin bypass
-									bot.sendMessage(msg, msg.author.username + ", you can't use this command for " + Math.round(left) + " more seconds", function(erro, message) { bot.deleteMessage(message, {"wait": 6000}); });
-									return;
-								}
-							} else { lastExecTime[cmd][id] = cTime; }
-						} else { lastExecTime[cmd][id] = new Date(); }
-					} else { lastExecTime[cmd] = {}; }
-				}
-				mod[cmd].process(bot, msg, suffix, commandsProcessed, talkedToTimes);
-				if (mod[cmd].hasOwnProperty("deleteCommand")) {
-					if (mod[cmd].deleteCommand === true) { bot.deleteMessage(msg, {"wait": 6000}); }
-				}
-			} catch (err) { console.log(err); }
+		if (mod.commands.hasOwnProperty(cmd)) { execCommand(msg, cmd, suffix, "mod");
+		} else if (mod.aliases.hasOwnProperty(cmd)) {
+			msg.content = msg.content.replace(/[^ ]+ /, mod.aliases[cmd] + " ");
+			execCommand(msg, mod.aliases[cmd], suffix, "mod");
 		}
 	}
 });
+
+function execCommand(msg, cmd, suffix, type) {
+	try {
+		if (!msg.channel.isPrivate) { console.log(colors.cServer(msg.channel.server.name) + " > " + colors.cGreen(msg.author.username) + " > " + msg.content.replace(/\n/g, " ")); } else { console.log(colors.cGreen(msg.author.username) + " > " + msg.content.replace(/\n/g, " ")); }
+		commandsProcessed += 1;
+		if (type == "normal") {
+			if (commands.commands[cmd].hasOwnProperty("cooldown")) {
+				if (lastExecTime.hasOwnProperty(cmd)) {
+					var id = msg.author.id;
+					if (lastExecTime[cmd][id] != undefined) {
+						var cTime = new Date();
+						var leTime = new Date(lastExecTime[cmd][id]);
+						leTime.setSeconds(leTime.getSeconds() + commands.commands[cmd].cooldown);
+						if (cTime < leTime) { //if it is still on cooldown
+							var left = (leTime.valueOf() - cTime.valueOf()) / 1000;
+							if (msg.author.id != config.admin_id) { //admin bypass
+								bot.sendMessage(msg, msg.author.username + ", you can't use this command for " + Math.round(left) + " more seconds", function(erro, message) { bot.deleteMessage(message, {"wait": 6000}); });
+								return;
+							}
+						} else { lastExecTime[cmd][id] = cTime; }
+					} else { lastExecTime[cmd][id] = new Date(); }
+				} else { lastExecTime[cmd] = {}; }
+			}
+			commands.commands[cmd].process(bot, msg, suffix);
+			if (commands.commands[cmd].hasOwnProperty("deleteCommand")) {
+				if (commands.commands[cmd].deleteCommand === true) { bot.deleteMessage(msg, {"wait": 8000}); }
+			}
+		} else if (type == "mod") {
+			if (mod.commands[cmd].hasOwnProperty("cooldown")) {
+				if (lastExecTime.hasOwnProperty(cmd)) {
+					var id = msg.author.id;
+					if (lastExecTime[cmd][id] != undefined) {
+						var cTime = new Date();
+						var leTime = new Date(lastExecTime[cmd][id]);
+						leTime.setSeconds(leTime.getSeconds() + mod[cmd].cooldown);
+						if (cTime < leTime) { //if it is still on cooldown
+							var left = (leTime.valueOf() - cTime.valueOf()) / 1000;
+							if (msg.author.id != config.admin_id) { //admin bypass
+								bot.sendMessage(msg, msg.author.username + ", you can't use this command for " + Math.round(left) + " more seconds", function(erro, message) { bot.deleteMessage(message, {"wait": 6000}); });
+								return;
+							}
+						} else { lastExecTime[cmd][id] = cTime; }
+					} else { lastExecTime[cmd][id] = new Date(); }
+				} else { lastExecTime[cmd] = {}; }
+			}
+			mod.commands[cmd].process(bot, msg, suffix, commandsProcessed, talkedToTimes);
+			if (mod.commands[cmd].hasOwnProperty("deleteCommand")) {
+				if (mod.commands[cmd].deleteCommand === true) { bot.deleteMessage(msg, {"wait": 8000}); }
+			}
+		} else { return; }
+	} catch (err) { console.log(err.stack); }
+}
 
 //event listeners
 bot.on("serverNewMember", function(objServer, objUser) {
@@ -200,7 +208,7 @@ function carbonInvite(msg) {
 					console.log(colors.cWarn(" WARN ") + "Error joining server. Didn't receive all data.");
 					bot.sendMessage(msg, "Failed to receive all data, please try again.");
 					try {
-						bot.leaveServer(server);
+						server.leave();
 					} catch (error) { /*how did it get here?*/ }
 				} else if (cServers.indexOf(server.id) > -1) {
 					console.log("Already in server " + server.name);
@@ -241,10 +249,10 @@ function reload() {
 	delete require.cache[require.resolve("./bot/games.json")];
 	games = require("./bot/games.json").games;
 	delete require.cache[require.resolve("./bot/commands.js")];
-	try { commands = require("./bot/commands.js").commands;
+	try { commands = require("./bot/commands.js");
 	} catch (err) { console.log(colors.cError(" ERROR ") + "Problem loading commands.js: " + err); }
 	delete require.cache[require.resolve("./bot/mod.js")];
-	try {mod = require("./bot/mod.js").commands;
+	try {mod = require("./bot/mod.js");
 	} catch (err) { console.log(colors.cError(" ERROR ") + "Problem loading mod.js: " + err); }
 	delete require.cache[require.resolve("./bot/config.json")];
 	delete require.cache[require.resolve("./bot/versioncheck.js")];

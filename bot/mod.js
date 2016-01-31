@@ -25,6 +25,17 @@ Commands
 =====================
 */
 
+var aliases = {
+	"h": "help",
+	"s": "stats", "stat": "stats",
+	"play": "playing",
+	"c": "clean",
+	"p": "prune",
+	"l": "leave", "leaves": "leave",
+	"a": "announce", "ann": "announce",
+	"change": "changelog", "logs": "changelog", "changelogs": "changelog"
+};
+
 var commands = {
 	"help": {
 		desc: "Sends a DM containing all of the commands. If a command is specified gives info on that command.",
@@ -165,15 +176,15 @@ var commands = {
 			} else { bot.sendMessage(msg, correctUsage("prune"), function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
 		}
 	},
-	"leaves": {
+	"leave": {
 		desc: "Leaves the server.",
 		usage: "",
 		deleteCommand: true,
 		process: function(bot, msg, suffix) {
 			if (msg.channel.server) {
 				if (msg.channel.permissionsOf(msg.author).hasPermission("kickMembers") || msg.author.id == config.admin_id) {
-					bot.sendMessage(msg, "It's not like I want to be here or anything, baka").then(
-					bot.leaveServer(msg.channel.server));
+					bot.sendMessage(msg, "It's not like I wanted to be here or anything, baka").then(
+					msg.channel.server.leave());
 					console.log(colors.cYellow("I've left a server on request of " + msg.sender.username + ". ") + "I'm only in " + bot.servers.length + " servers now.");
 				} else {
 					bot.sendMessage(msg, "You can't tell me what to do! (You need permission to kick users in this channel)");
@@ -204,11 +215,13 @@ var commands = {
 									}, 1000); //1 message per second
 								}
 							});
+							delete announceMessages[i];
+							delete confirmCodes[i];
 							if (config.debug) { console.log(colors.cDebug(" DEBUG ") + "Announced \"" + announceMessages[i] + "\" to servers"); }
 							return;
 						}
 					} else {
-						announceMessages.push(suffix);
+						announceMessages.push(msg.cleanContent.substring(10));
 						var code = Math.floor(Math.random() * 100000000);
 						confirmCodes.push(Math.floor(code));
 						bot.sendMessage(msg, "⚠ This will send a private message to **all** of the servers I'm in. If you're sure you want to do this say `" + config.mod_command_prefix + "announce " + code + "`");
@@ -226,11 +239,13 @@ var commands = {
 									bot.sendMessage(usr, "📣 " + announceMessages[i] + " - from " + msg.author + " on " + msg.channel.server.name);
 								}, 1000);
 							});
+							delete announceMessages[i];
+							delete confirmCodes[i];
 							if (config.debug) { console.log(colors.cDebug(" DEBUG ") + "Announced \"" + announceMessages[i] + "\" to members of " + msg.channel.server.name); }
 							return;
 						}
 					} else {
-						announceMessages.push(suffix);
+						announceMessages.push(msg.cleanContent.substring(10));
 						var code = Math.floor(Math.random() * 100000000);
 						confirmCodes.push(Math.floor(code));
 						bot.sendMessage(msg, "⚠ This will send a private message to **all** members of this server. If you're sure you want to do this say `" + config.mod_command_prefix + "announce " + code + "`");
@@ -263,3 +278,4 @@ var commands = {
 }
 
 exports.commands = commands;
+exports.aliases = aliases;

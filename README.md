@@ -1,4 +1,4 @@
-# BrussellBot 1.2
+# BrussellBot 1.3
 
 A multipurpose bot for Discord using the [Discord.js](https://github.com/hydrabolt/discord.js/) unofficial API.
 
@@ -27,3 +27,11 @@ A multipurpose bot for Discord using the [Discord.js](https://github.com/hydrabo
 	- [ ] List of queues songs
 	- [ ] Set playing to song name
 	- [ ] Bot owner gets priority
+- [x] Implement `message.cleanContent`
+- [x] Implement `cache.random()`
+- [x] Implement `server.leave()`
+- [ ] Implement `bot.getInvite()` and "invited through invite.inviter's invite"   
+~~Drop `request` in `osu sig` in favor of using the URL in `sendFile`~~
+- [x] COMMAND ALIASES AWWWWW YEEEAAAHHHHHHH
+	- [x] Replace the alias so it doesn't break hardcoded substrings
+- [ ] Re-write `_announce`

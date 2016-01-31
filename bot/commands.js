@@ -87,6 +87,25 @@ Commands (Check https://github.com/brussell98/BrussellBot/wiki/New-Command-Guide
 ====================
 */
 
+var aliases = {
+	"h": "help",
+	"server": "botserver",
+	"p": "ping",
+	"j": "join", "joins": "join",
+	"lp": "letsplay", "play": "playing",
+	"i": "info",
+	"pick": "choose", "c": "choose",
+	"v": "vote",
+	"coin": "coinflip", "flip": "coinflip",
+	"poll": "strawpoll", "straw": "strawpoll",
+	"8": "8ball", "ball": "8ball",
+	"w": "weather",
+	"g": "google", "lmgtfy": "google",
+	"number": "numberfacts", "num": "numberfacts",
+	"cat": "catfacts", "meow": "catfacts",
+	"r": "ratewaifu", "rate": "ratewaifu", "waifu": "ratewaifu"
+};
+
 var commands = {
 	"help": {
 		desc: "Sends a DM containing all of the commands. If a command is specified gives info on that command.",
@@ -165,7 +184,7 @@ var commands = {
 								console.log(colors.cWarn(" WARN ") + "Error joining server. Didn't receive all data.");
 								bot.sendMessage(msg, "⚠ Failed to receive all data, please try again.");
 								try {
-									bot.leaveServer(server);
+									server.leave();
 								} catch (error) { /*how did it get here?*/ }
 							} else if (cServers.indexOf(server.id) > -1) {
 								console.log("Already in server");
@@ -386,7 +405,7 @@ var commands = {
 
 				if (msg.channel.isPrivate) { bot.sendMessage(msg, "Can't do that in a direct message"); return; }
 				if (LottoDB.hasOwnProperty(msg.channel.id)) { bot.sendMessage(msg, "There is already a lottery running!", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
-				bot.sendMessage(msg, "Out of " + msg.channel.server.members.length + " members on this server, " + msg.channel.server.members[Math.floor(Math.random() * msg.channel.server.members.length)] + " is the winner!");
+				bot.sendMessage(msg, "Out of " + msg.channel.server.members.length + " members on this server, " + msg.channel.server.members.random() + " is the winner!");
 
 			} else if (suffix.split(" ")[0] == "new") {
 
@@ -516,7 +535,7 @@ var commands = {
 		cooldown: 15,
 		process: function(bot, msg, suffix) {
 			if (suffix && /^[^, ](.*), ?(.*)[^, ]$/.test(suffix)) {
-				suffix = suffix.split(/, ?/);
+				suffix = msg.cleanContent.substring(msg.cleanContent.indexOf(" ") + 1).split(/, ?/);
 				request.post(
 					{
 						"url": "https://strawpoll.me/api/v2/polls",
@@ -863,3 +882,4 @@ var commands = {
 };
 
 exports.commands = commands;
+exports.aliases = aliases;
