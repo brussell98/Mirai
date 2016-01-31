@@ -102,7 +102,7 @@ var aliases = {
 	"w": "weather",
 	"g": "google", "lmgtfy": "google",
 	"number": "numberfacts", "num": "numberfacts",
-	"cat": "catfacts", "meow": "catfacts",
+	"cat": "catfacts", "meow": "catfacts", "neko": "catfacts",
 	"r": "ratewaifu", "rate": "ratewaifu", "waifu": "ratewaifu"
 };
 

@@ -106,7 +106,7 @@ function execCommand(msg, cmd, suffix, type) {
 					if (lastExecTime[cmd][id] != undefined) {
 						var cTime = new Date();
 						var leTime = new Date(lastExecTime[cmd][id]);
-						leTime.setSeconds(leTime.getSeconds() + mod[cmd].cooldown);
+						leTime.setSeconds(leTime.getSeconds() + mod.commands[cmd].cooldown);
 						if (cTime < leTime) { //if it is still on cooldown
 							var left = (leTime.valueOf() - cTime.valueOf()) / 1000;
 							if (msg.author.id != config.admin_id) { //admin bypass
