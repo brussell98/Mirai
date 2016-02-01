@@ -1,6 +1,6 @@
 # BrussellBot 1.3
 
-A multipurpose bot for Discord using the [Discord.js](https://github.com/hydrabolt/discord.js/) unofficial API.
+A multipurpose bot for Discord using [Discord.js](https://github.com/hydrabolt/discord.js/)
 
 [Website](http://brussell98.github.io/BrussellBot)   
 [Discord Server](https://discord.gg/0kvLlwb7slG3XCCQ)   

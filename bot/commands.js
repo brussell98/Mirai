@@ -26,13 +26,13 @@ function correctUsage(cmd) {
 }
 
 function autoEndVote(bot, msg) {
-	setTimeout(function() {
+	setTimeout(() => {
 		if (VoteDB.hasOwnProperty(msg.channel.id)) { commands["vote"].process(bot, msg, "end"); }
 	}, 600000); //10 minutes = 600,000
 }
 
 function autoEndLotto(bot, msg) {
-	setTimeout(function() {
+	setTimeout(() => {
 		if (LottoDB.hasOwnProperty(msg.channel.id)) { commands["lotto"].process(bot, msg, "end"); }
 	}, 600000);
 }
@@ -51,12 +51,12 @@ function generateRandomRating(fullName, storeRating) {
 
 function generateUserRating(bot, msg, fullName) {
 	var user = msg.channel.server.members.get("username", fullName);
-	var score = generateRandomRating() - 1;
+	var score = generateRandomRating();
 	var joined = new Date(msg.channel.server.detailsOfUser(user).joinedAt), now = new Date();
 	if (now.valueOf() - joined.valueOf() >= 2592000000) { score += 1; } //if user has been on the server for at least one month +1
 	if (msg.channel.permissionsOf(user).hasPermission("manageServer")) { score += 1; } //admins get +1 ;)
 	var count = 0;
-	bot.servers.map(function(server) { if (server.members.get("id", user.id)) { count += 1; } }); //how many servers does the bot share with them
+	bot.servers.map((server) => { if (server.members.get("id", user.id)) { count += 1; } }); //how many servers does the bot share with them
 	if (count > 2) { score += 1; } //if we share at least 3 servers
 	if (!user.avatarURL) { score -= 1; } //gotta have an avatar
 	if (user.username.length > 22) { score -= 1; } //long usernames are hard to type so -1
@@ -92,7 +92,7 @@ var aliases = {
 	"server": "botserver",
 	"p": "ping",
 	"j": "join", "joins": "join",
-	"lp": "letsplay", "play": "playing",
+	"lp": "letsplay", "play": "letsplay",
 	"i": "info",
 	"pick": "choose", "c": "choose",
 	"v": "vote",
