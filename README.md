@@ -35,4 +35,4 @@ A multipurpose bot for Discord using [Discord.js](https://github.com/hydrabolt/d
 - [x] COMMAND ALIASES AWWWWW YEEEAAAHHHHHHH
 	- [x] Replace the alias so it doesn't break hardcoded substrings
 - [ ] Re-write `_announce`
-- [ ] Make things case-insensitive in avatar and info and ratewaifu
+- [x] Make things case-insensitive in avatar and info and ratewaifu

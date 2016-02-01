@@ -295,7 +295,7 @@ var commands = {
 							var msgArray = [], count = 0;
 							msgArray.push("ℹ **Info on** " + usr.username);
 							msgArray.push("**User ID:** " + usr.id);
-							if (usr.game != null) { msgArray.push("Status: " + usr.status + " last playing " + usr.game.name);
+							if (usr.game != null) { msgArray.push("**Status:** " + usr.status + " **last playing** " + usr.game.name);
 							} else { msgArray.push("**Status:** " + usr.status); }
 							var jDate = new Date(msg.channel.server.detailsOfUser(usr).joinedAt);
 							msgArray.push("**Joined this server on:** " + jDate.toUTCString());
@@ -312,12 +312,12 @@ var commands = {
 						var users = suffix.split(/, ?/);
 						if (users.length > 4) { bot.sendMessage(msg, "Limit of 4 users", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 						users.map(function(user) {
-							var usr = msg.channel.server.members.get("username", user);
+							var usr = msg.channel.server.members.find((member) => { return member.username.toLowerCase() == user.toLowerCase() });
 							if (usr) {
 								var msgArray = [], count = 0;
 								msgArray.push("ℹ **Info on** " + usr.username);
 								msgArray.push("**User ID:** " + usr.id);
-								if (usr.game != null) { msgArray.push("Status: " + usr.status + " last playing " + usr.game.name);
+								if (usr.game != null) { msgArray.push("**Status:** " + usr.status + " **last playing** " + usr.game.name);
 								} else { msgArray.push("**Status:** " + usr.status); }
 								var jDate = new Date(msg.channel.server.detailsOfUser(usr).joinedAt);
 								msgArray.push("**Joined this server on:** " + jDate.toUTCString());
@@ -372,7 +372,7 @@ var commands = {
 				var users = suffix.split(/, ?/);
 				if (users.length > 6) { bot.sendMessage(msg, "Limit of 6 users", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 				users.map(function(user) {
-					var usr = msg.channel.server.members.get("username", user);
+					var usr = msg.channel.server.members.find((member) => { return member.username.toLowerCase() == user.toLowerCase() });
 					if (usr) { (usr.avatarURL != null) ? bot.sendMessage(msg, usr.username + "'s avatar is: " + usr.avatarURL + "") : bot.sendMessage(msg, usr.username + " has no avatar", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); });
 					} else { bot.sendMessage(msg, "User \"" + user + "\" not found. If you want to get the avatar of multiple users separate them with a comma.", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 20000}); }); }
 				});
@@ -858,7 +858,7 @@ var commands = {
 			if (msg.mentions.length > 1) { bot.sendMessage(msg, "Multiple mentions aren't allowed!", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
 			if (suffix.toLowerCase().replace("-", " ") == bot.user.username.toLowerCase().replace("-", " ")) { bot.sendMessage(msg, "I'd rate myself 10/10"); return; }
 			var fullName = "";
-			if (!msg.channel.isPrivate) { var user = (msg.channel.server.members.get("username", suffix)) ? msg.channel.server.members.get("username", suffix) : false; } else { var user = false; }
+			if (!msg.channel.isPrivate) { var user = msg.channel.server.members.find((member) => { return member.username.toLowerCase() == suffix.toLowerCase() }); } else { var user = false; }
 			if (!user && msg.mentions.length < 1) {
 				Object.keys(waifus).map(function(name) {if (name.toLowerCase() == suffix.toLowerCase()) { fullName = name; return; }});
 				if (!fullName) { Object.keys(waifus).map(function(name) {if (name.split(" ")[0].toLowerCase() == suffix.toLowerCase()) {fullName = name; return;}}); }
