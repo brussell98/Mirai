@@ -88,7 +88,7 @@ function execCommand(msg, cmd, suffix, type) {
 						if (cTime < leTime) { //if it is still on cooldown
 							var left = (leTime.valueOf() - cTime.valueOf()) / 1000;
 							if (msg.author.id != config.admin_id) { //admin bypass
-								bot.sendMessage(msg, msg.author.username + ", you can't use this command for " + Math.round(left) + " more seconds", function(erro, message) { bot.deleteMessage(message, {"wait": 6000}); });
+								bot.sendMessage(msg, msg.author.username + ", you can't use this command for **" + Math.round(left) + "** more years. Get rekt son.", function(erro, message) { bot.deleteMessage(message, {"wait": 6000}); });
 								return;
 							}
 						} else { lastExecTime[cmd][id] = cTime; }
@@ -110,7 +110,7 @@ function execCommand(msg, cmd, suffix, type) {
 						if (cTime < leTime) { //if it is still on cooldown
 							var left = (leTime.valueOf() - cTime.valueOf()) / 1000;
 							if (msg.author.id != config.admin_id) { //admin bypass
-								bot.sendMessage(msg, msg.author.username + ", you can't use this command for " + Math.round(left) + " more seconds", function(erro, message) { bot.deleteMessage(message, {"wait": 6000}); });
+								bot.sendMessage(msg, msg.author.username + ", you can't use this command for **" + Math.round(left) + "** more seconds", function(erro, message) { bot.deleteMessage(message, {"wait": 6000}); });
 								return;
 							}
 						} else { lastExecTime[cmd][id] = cTime; }

@@ -183,11 +183,11 @@ var commands = {
 		process: function(bot, msg, suffix) {
 			if (msg.channel.server) {
 				if (msg.channel.permissionsOf(msg.author).hasPermission("kickMembers") || msg.author.id == config.admin_id) {
-					bot.sendMessage(msg, "It's not like I wanted to be here or anything, baka").then(
+					bot.sendMessage(msg, "It's not like I wanted to be here or anything, *baka*").then(
 					msg.channel.server.leave());
 					console.log(colors.cYellow("I've left a server on request of " + msg.sender.username + ". ") + "I'm only in " + bot.servers.length + " servers now.");
 				} else {
-					bot.sendMessage(msg, "You can't tell me what to do! (You need permission to kick users in this channel)");
+					bot.sendMessage(msg, "You can't tell me what to do! *(You need permission to kick users in this channel)*");
 					console.log(colors.cYellow("Non-privileged user: " + msg.sender.username) + " tried to make me leave a server.");
 				}
 			} else { bot.sendMessage(msg, "⚠ I can't leave a DM.", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
@@ -207,7 +207,7 @@ var commands = {
 								if (i == confirmCodes.length - 1) { bot.sendMessage(msg, "Confirmation code not found", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); continue;
 								} else { continue; }
 							}
-							bot.sendMessage(msg, "Announcing to all servers...");
+							bot.sendMessage(msg, "**Announcing to all servers...**");
 							bot.servers.forEach(function(ser) {
 								if (ser.members.length <= 500) { //only if less than 501 members
 									setTimeout(function() {
@@ -215,7 +215,6 @@ var commands = {
 									}, 1000); //1 message per second
 								}
 							});
-							delete announceMessages[i];
 							delete confirmCodes[i];
 							if (config.debug) { console.log(colors.cDebug(" DEBUG ") + "Announced \"" + announceMessages[i] + "\" to servers"); }
 							return;
@@ -224,7 +223,7 @@ var commands = {
 						announceMessages.push(msg.cleanContent.substring(10));
 						var code = Math.floor(Math.random() * 100000000);
 						confirmCodes.push(Math.floor(code));
-						bot.sendMessage(msg, "⚠ This will send a private message to **all** of the servers I'm in. If you're sure you want to do this say `" + config.mod_command_prefix + "announce " + code + "`");
+						bot.sendMessage(msg, "⚠ This will send a message to **all** of the servers I'm in. If you're sure you want to do this say `" + config.mod_command_prefix + "announce " + code + "`");
 					}
 				} else if (!msg.channel.isPrivate && msg.channel.permissionsOf(msg.author).hasPermission("manageServer")) {
 					if (/^\d+$/.test(suffix)) {
@@ -233,13 +232,12 @@ var commands = {
 								if (i == confirmCodes.length - 1) { bot.sendMessage(msg, "Confirmation code not found", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); continue;
 								} else { continue; }
 							}
-							bot.sendMessage(msg, "Announcing to all users, this may take a while...");
+							bot.sendMessage(msg, "**Announcing to all users, this may take a while...**");
 							msg.channel.server.members.forEach(function(usr) {
 								setTimeout(function() {
 									bot.sendMessage(usr, "📣 " + announceMessages[i] + " - from " + msg.author + " on " + msg.channel.server.name);
 								}, 1000);
 							});
-							delete announceMessages[i];
 							delete confirmCodes[i];
 							if (config.debug) { console.log(colors.cDebug(" DEBUG ") + "Announced \"" + announceMessages[i] + "\" to members of " + msg.channel.server.name); }
 							return;
