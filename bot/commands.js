@@ -314,6 +314,7 @@ var commands = {
 						if (users.length > 4) { bot.sendMessage(msg, "Limit of 4 users", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 						users.map(function(user) {
 							var usr = msg.channel.server.members.find((member) => { return member.username.toLowerCase() == user.toLowerCase() });
+							if (!usr) { usr = msg.channel.server.members.find((member) => { return member.username.toLowerCase().indexOf(user.toLowerCase()) == 0 }); }
 							if (!usr) { usr = msg.channel.server.members.find((member) => { return member.username.toLowerCase().indexOf(user.toLowerCase()) > -1 }); }
 							if (usr) {
 								var msgArray = [], count = 0;
@@ -375,6 +376,7 @@ var commands = {
 				if (users.length > 6) { bot.sendMessage(msg, "Limit of 6 users", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 				users.map(function(user) {
 					var usr = msg.channel.server.members.find((member) => { return member.username.toLowerCase() == user.toLowerCase() });
+					if (!usr) { usr = msg.channel.server.members.find((member) => { return member.username.toLowerCase().indexOf(user.toLowerCase()) == 0 }); }
 					if (!usr) { usr = msg.channel.server.members.find((member) => { return member.username.toLowerCase().indexOf(user.toLowerCase()) > -1 }); }
 					if (usr) { (usr.avatarURL != null) ? bot.sendMessage(msg, usr.username + "'s avatar is: " + usr.avatarURL + "") : bot.sendMessage(msg, usr.username + " has no avatar", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); });
 					} else { bot.sendMessage(msg, "User \"" + user + "\" not found. If you want to get the avatar of multiple users separate them with a comma.", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 20000}); }); }

@@ -27,12 +27,5 @@
 		"osu-api": "*",
 		"chalk": "*",
 		"entities": ">=1.1.1"
-	},
-	"optionalDependencies": {
-		"pg": "*",
-		"ytdl-core": "*",
-		"feedparser": "*",
-		"url": "*",
-		"path": "*"
 	}
 }
