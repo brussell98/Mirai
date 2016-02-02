@@ -50,7 +50,7 @@ bot.on("message", (msg) => {
 	if (msg.mentions.length !== 0) { //cleverbot
 		msg.mentions.forEach((usr) => {
 			if (usr.id == bot.user.id && msg.content.startsWith("<@" + bot.user.id + ">")) { cleverbot(bot, msg); talkedToTimes += 1; if (!msg.channel.isPrivate) { console.log(colors.cServer(msg.channel.server.name) + " > " + colors.cGreen(msg.author.username) + " > " + colors.cYellow("@Bot-chan") + " " + msg.content.substring(22).replace(/\n/g, " ")); } else { console.log(colors.cGreen(msg.author.username) + " > " + colors.cYellow("@Bot-chan") + " " + msg.content.substring(22).replace(/\n/g, " ")); } return; }
-			if (usr.id == config.admin_id && config.send_mentions && usr.status != "online") { bot.sendMessage(usr, msg.channel.server.name + " > " + msg.author.username + ": " + msg.content); }
+			if (usr.id == config.admin_id && config.send_mentions && usr.status != "online" && !msg.channel.isPrivate) { bot.sendMessage(usr, msg.channel.server.name + " > " + msg.author.username + ": " + msg.content); }
 		});
 	}
 	if (!msg.content.startsWith(config.command_prefix) && !msg.content.startsWith(config.mod_command_prefix)) { return; } //if not a command
@@ -60,14 +60,14 @@ bot.on("message", (msg) => {
 	if (msg.content.startsWith(config.command_prefix)) { //normal commands
 		if (commands.commands.hasOwnProperty(cmd)) { execCommand(msg, cmd, suffix, "normal");
 		} else if (commands.aliases.hasOwnProperty(cmd)) {
-			msg.content = msg.content.replace(/[^ ]+ /, commands.aliases[cmd] + " ");
+			msg.content = msg.content.replace(/[^ ]+ /, config.command_prefix + commands.aliases[cmd] + " ");
 			execCommand(msg, commands.aliases[cmd], suffix, "normal");
 		}
 	} else if (msg.content.startsWith(config.mod_command_prefix)) { //mod commands
 		if (cmd == "reload" && msg.author.id == config.admin_id) { reload(); bot.deleteMessage(msg); return; } //reload the .json files and modules
 		if (mod.commands.hasOwnProperty(cmd)) { execCommand(msg, cmd, suffix, "mod");
 		} else if (mod.aliases.hasOwnProperty(cmd)) {
-			msg.content = msg.content.replace(/[^ ]+ /, mod.aliases[cmd] + " ");
+			msg.content = msg.content.replace(/[^ ]+ /, config.mod_command_prefix + mod.aliases[cmd] + " ");
 			execCommand(msg, mod.aliases[cmd], suffix, "mod");
 		}
 	}
