@@ -16,6 +16,7 @@ exports.cleverbot = function(bot, msg) {
 						});
 					}
 					bot.sendMessage(msg, '💬 ' + ent.decodeHTML(resp.message));
+					if (!resp.message) { Slave = new Cleverbot(); }
 				});
 			} catch (error) { bot.sendMessage(msg, '⚠ There was an error', function(erro, wMessage) { bot.deleteMessage(wMessage, {'wait': 8000}); }); }
 		});

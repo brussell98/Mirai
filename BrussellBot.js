@@ -291,8 +291,10 @@ function checkConfig() {
 function evaluateString(msg) {
 	if (msg.author.id != config.admin_id) { console.log(colors.cWarn(" WARN ") + "Somehow an unauthorized user got into eval!"); return; }
 	console.log("Running eval");
-	var result = eval("try{" + msg.content.substring(7).replace(/\n/g, "") + "}catch(err){console.log(colors.cError(\" ERROR \")+err);bot.sendMessage(msg, \"```\"+err+\"```\");}");
-	if (typeof result !== "object") {
+	var result;
+	try { result = eval("try{" + msg.content.substring(7).replace(/\n/g, "") + "}catch(err){console.log(colors.cError(\" ERROR \")+err);bot.sendMessage(msg, \"```\"+err+\"```\");}");
+	} catch (e) { console.log(colors.cError(" ERROR ") + e); bot.sendMessage(msg, "```" + e + "```"); }
+	if (result && typeof result !== "object") {
 		bot.sendMessage(msg, result);
 		console.log("Result: " + result);
 	}

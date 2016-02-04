@@ -215,7 +215,7 @@ var commands = {
 									msgArray.push("If I shouldn't be here someone with the `Kick Members` permission can use `" + config.mod_command_prefix + "leaves` to make me leave");
 									msgArray.push("For help / feedback / bugs / testing / announcements / changelogs / etc. go to **discord.gg/0kvLlwb7slG3XCCQ**");
 									bot.sendMessage(server.defaultChannel, msgArray);
-								} else { setTimeout(function() { bot.sendMessage(server.defaultChannel, "*Quietly walks in*"); }, 2000); }
+								} else { setTimeout(function() { bot.sendMessage(server.defaultChannel, "*Joined on request of " + msg.author + "*"); }, 2000); }
 							}
 						});
 					}
@@ -324,7 +324,7 @@ var commands = {
 								} else { msgArray.push("**Status:** " + usr.status); }
 								var jDate = new Date(msg.channel.server.detailsOfUser(usr).joinedAt);
 								msgArray.push("**Joined this server on:** " + jDate.toUTCString());
-								var roles = msg.channel.server.rolesOfUser(usr.id).map(function(role) { return role.name; });
+								var roles = msg.channel.server.rolesOfUser(usr.id).map((role) => { return role.name; });
 								roles = roles.join(", ").replace("@", "");
 								if (roles.length <= 1500) { msgArray.push("**Roles:** " + roles); } else { msgArray.push("**Roles:** Too many to display"); }
 								bot.servers.map(function(server) { if (server.members.indexOf(usr) > -1) { count += 1; } });
@@ -342,8 +342,9 @@ var commands = {
 					msgArray.push("**Owner:** " + msg.channel.server.owner.username + " (**id:** " + msg.channel.server.owner.id);
 					msgArray.push("**Region:** " + msg.channel.server.region);
 					msgArray.push("**Members:** " + msg.channel.server.members.length);
-					var roles = msg.channel.server.roles.map(function(role) { return role.name; });
+					var roles = msg.channel.server.roles.map((role) => { return role.name; });
 					roles = roles.join(", ").replace("@", "");
+					msgArray.push("**Channels:** " + msg.channel.server.channels.length);
 					if (roles.length <= 1500) { msgArray.push("**Roles:** " + roles); } else { msgArray.push("**Roles:** Too many to display"); }
 					msgArray.push("**Default channel:** " + msg.channel.server.defaultChannel);
 					msgArray.push("**This channel's id:** " + msg.channel.id);

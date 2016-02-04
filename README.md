@@ -16,6 +16,8 @@ A multipurpose bot for Discord using [Discord.js](https://github.com/hydrabolt/d
 
 ### TO DO
 
+### 1.4
+
 - [ ] Music commands
 	- [ ] Audio help
 	- [ ] Queue song from YouTube
@@ -27,13 +29,3 @@ A multipurpose bot for Discord using [Discord.js](https://github.com/hydrabolt/d
 	- [ ] List of queues songs
 	- [ ] Set playing to song name
 	- [ ] Bot owner gets priority
-- [x] Implement `message.cleanContent`
-- [x] Implement `cache.random()`
-- [x] Implement `server.leave()`
-- [ ] Implement `bot.getInvite()` and "invited through invite.inviter's invite"   
-~~Drop `request` in `osu sig` in favor of using the URL in `sendFile`~~
-- [x] COMMAND ALIASES AWWWWW YEEEAAAHHHHHHH
-	- [x] Replace the alias so it doesn't break hardcoded substrings
-- [ ] Re-write `_announce`
-- [x] Make things case-insensitive in avatar and info and ratewaifu
-	- [x] If a name isn't found use `.indexOf()`
