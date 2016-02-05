@@ -90,6 +90,7 @@ Commands (Check https://github.com/brussell98/BrussellBot/wiki/New-Command-Guide
 var aliases = {
 	"h": "help", "commands": "help",
 	"server": "botserver",
+	"backwards": "reverse",
 	"p": "ping",
 	"j": "join", "joins": "join",
 	"lp": "letsplay", "play": "letsplay",
@@ -149,6 +150,16 @@ var commands = {
 		usage: "",
 		process: function(bot, msg, suffix) {
 			bot.sendMessage(msg, "Here's an invite to my server: **discord.gg/0kvLlwb7slG3XCCQ**");
+		}
+	},
+	"reverse": {
+		desc: "Return's the input backwards",
+		usage: "<text>",
+		deleteCommand: true,
+		cooldown: 5,
+		shouldDisplay: false,
+		process: function(bot, msg, suffix) {
+			if (suffix) { bot.sendMessage(msg, "\u202e " + suffix); }
 		}
 	},
 	"ping": {
