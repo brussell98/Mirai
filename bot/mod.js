@@ -201,7 +201,8 @@ var commands = {
 	cooldown: 1,
 	process: function(bot, msg, suffix) {
 		if (!suffix) { bot.sendMessage(msg, "You must specify a message to announce", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
-		if (!msg.channel.permissionsOf(msg.author).hasPermission("manageServer") && msg.author.id != config.admin_id) { bot.sendMessage(msg, "Server admins only", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
+		if (msg.channel.isPrivate && msg.author.id != config.admin_id) { bot.sendMessage(msg, "You can't do this outside of a server",function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 10000}); return; }); }
+		if (!msg.channel.isPrivate) { if (!msg.channel.permissionsOf(msg.author).hasPermission("manageServer") && msg.author.id != config.admin_id) { bot.sendMessage(msg, "Server admins only", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; } }
 		if (!msg.channel.isPrivate) {
 			if (/^\d+$/.test(suffix)) {
 				var index = confirmCodes.indexOf(parseInt(suffix));
