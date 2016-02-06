@@ -3,12 +3,9 @@ var Slave = new Cleverbot();
 var ent = require('entities');
 
 exports.cleverbot = function(bot, msg) {
-	var text = msg.content.substring(22);
-	if (text){
+	var text = (msg.cleanContent.split(' ').length > 1) ? msg.cleanContent.substring(msg.cleanContent.indexOf(' ') + 1).replace('@', '') : false;
+	if (text) {
 		bot.startTyping(msg.channel);
-		for (var i = 0; i < msg.mentions.length; i++){
-			if (msg.mentions[i].id != bot.user.id) { text = text.replace('<@' + msg.mentions[i].id + '>', msg.mentions[i].username); }
-		}
 		Cleverbot.prepare(function() {
 			try {
 				Slave.write(text, function(resp) {
@@ -19,6 +16,7 @@ exports.cleverbot = function(bot, msg) {
 						});
 					}
 					bot.sendMessage(msg, '💬 ' + ent.decodeHTML(resp.message));
+					if (!resp.message) { Slave = new Cleverbot(); }
 				});
 			} catch (error) { bot.sendMessage(msg, '⚠ There was an error', function(erro, wMessage) { bot.deleteMessage(wMessage, {'wait': 8000}); }); }
 		});

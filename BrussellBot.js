@@ -4,8 +4,8 @@ This is a multipurpose bot
 Run this with node to run the bot.
 //===================================================*/
 
-var commands = require("./bot/commands.js").commands;
-var mod = require("./bot/mod.js").commands;
+var commands = require("./bot/commands.js");
+var mod = require("./bot/mod.js");
 var config = require("./bot/config.json");
 var games = require("./bot/games.json").games;
 var versioncheck = require("./bot/versioncheck.js");
@@ -20,22 +20,22 @@ var shouldCarbonAnnounce = true; //set if the bot should announce when joining a
 var commandsProcessed = 0, talkedToTimes = 0;
 
 var bot = new discord.Client();
-bot.on("warn", function(m) { console.log(colors.cWarn(" WARN ") + m); });
-bot.on("debug", function(m) { if (config.debug) { console.log(colors.cDebug(" DEBUG ") + m); } });
+bot.on("warn", (m) => { if (config.show_warn) { console.log(colors.cWarn(" WARN ") + m); } });
+bot.on("debug", (m) => { if (config.debug) { console.log(colors.cDebug(" DEBUG ") + m); } });
 
-bot.on("ready", function() {
+bot.on("ready", () => {
 	bot.setPlayingGame(games[Math.floor(Math.random() * (games.length))]); //set game to a random game from games.json
 	console.log(colors.cGreen("BrussellBot is ready!") + " Listening to " + bot.channels.length + " channels on " + bot.servers.length + " servers");
-	versioncheck.checkForUpdate(function(resp) {
+	versioncheck.checkForUpdate((resp) => {
 		if (resp !== null) { console.log(resp); }
 	});
 });
 
-bot.on("disconnected", function() {
+bot.on("disconnected", () => {
 	console.log(colors.cRed("Disconnected") + " from Discord");
 	if (!config.is_heroku_version) { process.exit(0);
 	} else { //if on heroku try to re-connect
-		setTimeout(function() {
+		setTimeout(() => {
 			console.log("Attempting to log in...");
 			bot.login(process.env.email, process.env.password, function(err, token) {
 				if (err) { console.log(err); process.exit(0); }
@@ -44,99 +44,107 @@ bot.on("disconnected", function() {
 	}
 });
 
-bot.on("message", function(msg) {
+bot.on("message", (msg) => {
 	if (msg.channel.isPrivate && msg.author.id != bot.user.id && (/(^https?:\/\/discord\.gg\/[A-Za-z0-9]+$|^https?:\/\/discordapp\.com\/invite\/[A-Za-z0-9]+$)/.test(msg.content))) { carbonInvite(msg); } //accept invites sent in a DM
 	if (msg.author.id == config.admin_id && msg.content.indexOf("(eval) ") > -1 && msg.content.indexOf("(eval) ") <= 1) { evaluateString(msg); return; } //bot owner eval command
 	if (msg.mentions.length !== 0) { //cleverbot
-		msg.mentions.forEach(function(usr) {
-			if (usr.id == bot.user.id && msg.content.startsWith("<@" + bot.user.id + ">")) { cleverbot(bot, msg); talkedToTimes += 1; if (!msg.channel.isPrivate) { console.log(colors.cServer(msg.channel.server.name) + " > " + colors.cGreen(msg.author.username) + " > " + colors.cYellow("@Bot-chan") + " " + msg.content.substring(22).replace(/\n/g, " ")); } else { console.log(colors.cGreen(msg.author.username) + " > " + colors.cYellow("@Bot-chan") + " " + msg.content.substring(22).replace(/\n/g, " ")); } return; }
-			if (usr.id == config.admin_id && config.send_mentions && usr.status != "online") { bot.sendMessage(usr, msg.channel.server.name + " > " + msg.author.username + ": " + msg.content); }
+		msg.mentions.forEach((usr) => {
+			if (usr.id == bot.user.id && msg.content.startsWith("<@" + bot.user.id + ">")) { cleverbot(bot, msg); talkedToTimes += 1; if (!msg.channel.isPrivate) { console.log(colors.cServer(msg.channel.server.name) + " > " + colors.cGreen(msg.author.username) + " > " + colors.cYellow("@" + bot.user.username) + " " + msg.content.substring(22).replace(/\n/g, " ")); } else { console.log(colors.cGreen(msg.author.username) + " > " + colors.cYellow("@Bot-chan") + " " + msg.content.substring(22).replace(/\n/g, " ")); } return; }
+			if (usr.id == config.admin_id && config.send_mentions && usr.status != "online" && !msg.channel.isPrivate) { bot.sendMessage(usr, msg.channel.server.name + " > " + msg.author.username + ": " + msg.content); }
 		});
 	}
-	if (msg.content[0] != config.command_prefix && msg.content[0] != config.mod_command_prefix) { return; } //if not a command
+	if (!msg.content.startsWith(config.command_prefix) && !msg.content.startsWith(config.mod_command_prefix)) { return; } //if not a command
 	if (msg.author.id == bot.user.id) { return; } //stop from replying to itself
 	var cmd = msg.content.split(" ")[0].replace(/\n/g, " ").substring(1).toLowerCase();
 	var suffix = msg.content.replace(/\n/g, " ").substring(cmd.length + 2); //seperate the command and suffix
 	if (msg.content.startsWith(config.command_prefix)) { //normal commands
-		if (commands.hasOwnProperty(cmd)) {
-			try {
-				if (!msg.channel.isPrivate) { console.log(colors.cServer(msg.channel.server.name) + " > " + colors.cGreen(msg.author.username) + " > " + msg.content.replace(/\n/g, " ")); } else { console.log(colors.cGreen(msg.author.username) + " > " + msg.content.replace(/\n/g, " ")); }
-				commandsProcessed += 1;
-				if (commands[cmd].hasOwnProperty("cooldown")) {
-					if (lastExecTime.hasOwnProperty(cmd)) {
-						var id = msg.author.id;
-						if (lastExecTime[cmd][id] != undefined) {
-							var cTime = new Date();
-							var leTime = new Date(lastExecTime[cmd][id]);
-							leTime.setSeconds(leTime.getSeconds() + commands[cmd].cooldown);
-							if (cTime < leTime) { //if it is still on cooldown
-								var left = (leTime.valueOf() - cTime.valueOf()) / 1000;
-								if (msg.author.id != config.admin_id) { //admin bypass
-									bot.sendMessage(msg, msg.author.username + ", you can't use this command for " + Math.round(left) + " more seconds", function(erro, message) { bot.deleteMessage(message, {"wait": 6000}); });
-									return;
-								}
-							} else { lastExecTime[cmd][id] = cTime; }
-						} else { lastExecTime[cmd][id] = new Date(); }
-					} else { lastExecTime[cmd] = {}; }
-				}
-				commands[cmd].process(bot, msg, suffix);
-				if (commands[cmd].hasOwnProperty("deleteCommand")) {
-					if (commands[cmd].deleteCommand === true) { bot.deleteMessage(msg, {"wait": 8000}); } //delete command after 3.5 seconds
-				}
-			} catch (err) { console.log(err); }
+		if (commands.commands.hasOwnProperty(cmd)) { execCommand(msg, cmd, suffix, "normal");
+		} else if (commands.aliases.hasOwnProperty(cmd)) {
+			msg.content = msg.content.replace(/[^ ]+ /, config.command_prefix + commands.aliases[cmd] + " ");
+			execCommand(msg, commands.aliases[cmd], suffix, "normal");
 		}
 	} else if (msg.content.startsWith(config.mod_command_prefix)) { //mod commands
 		if (cmd == "reload" && msg.author.id == config.admin_id) { reload(); bot.deleteMessage(msg); return; } //reload the .json files and modules
-		if (mod.hasOwnProperty(cmd)) {
-			try {
-				if (!msg.channel.isPrivate) { console.log(colors.cServer(msg.channel.server.name) + " > " + colors.cGreen(msg.author.username) + " > " + msg.content.replace(/\n/g, " ")); } else { console.log(colors.cGreen(msg.author.username) + " > " + msg.content.replace(/\n/g, " ")); }
-				commandsProcessed += 1;
-				if (mod[cmd].hasOwnProperty("cooldown")) {
-					if (lastExecTime.hasOwnProperty(cmd)) {
-						var id = msg.author.id;
-						if (lastExecTime[cmd][id] != undefined) {
-							var cTime = new Date();
-							var leTime = new Date(lastExecTime[cmd][id]);
-							leTime.setSeconds(leTime.getSeconds() + mod[cmd].cooldown);
-							if (cTime < leTime) { //if it is still on cooldown
-								var left = (leTime.valueOf() - cTime.valueOf()) / 1000;
-								if (msg.author.id != config.admin_id) { //admin bypass
-									bot.sendMessage(msg, msg.author.username + ", you can't use this command for " + Math.round(left) + " more seconds", function(erro, message) { bot.deleteMessage(message, {"wait": 6000}); });
-									return;
-								}
-							} else { lastExecTime[cmd][id] = cTime; }
-						} else { lastExecTime[cmd][id] = new Date(); }
-					} else { lastExecTime[cmd] = {}; }
-				}
-				mod[cmd].process(bot, msg, suffix, commandsProcessed, talkedToTimes);
-				if (mod[cmd].hasOwnProperty("deleteCommand")) {
-					if (mod[cmd].deleteCommand === true) { bot.deleteMessage(msg, {"wait": 6000}); }
-				}
-			} catch (err) { console.log(err); }
+		if (mod.commands.hasOwnProperty(cmd)) { execCommand(msg, cmd, suffix, "mod");
+		} else if (mod.aliases.hasOwnProperty(cmd)) {
+			msg.content = msg.content.replace(/[^ ]+ /, config.mod_command_prefix + mod.aliases[cmd] + " ");
+			execCommand(msg, mod.aliases[cmd], suffix, "mod");
 		}
 	}
 });
 
+function execCommand(msg, cmd, suffix, type) {
+	try {
+		if (!msg.channel.isPrivate) { console.log(colors.cServer(msg.channel.server.name) + " > " + colors.cGreen(msg.author.username) + " > " + msg.content.replace(/\n/g, " ")); } else { console.log(colors.cGreen(msg.author.username) + " > " + msg.content.replace(/\n/g, " ")); }
+		commandsProcessed += 1;
+		if (type == "normal") {
+			if (commands.commands[cmd].hasOwnProperty("cooldown")) {
+				if (lastExecTime.hasOwnProperty(cmd)) {
+					var id = msg.author.id;
+					if (lastExecTime[cmd][id] != undefined) {
+						var cTime = new Date();
+						var leTime = new Date(lastExecTime[cmd][id]);
+						leTime.setSeconds(leTime.getSeconds() + commands.commands[cmd].cooldown);
+						if (cTime < leTime) { //if it is still on cooldown
+							var left = (leTime.valueOf() - cTime.valueOf()) / 1000;
+							if (msg.author.id != config.admin_id) { //admin bypass
+								bot.sendMessage(msg, msg.author.username + ", you can't use this command for **" + Math.round(left) + "** more years. Get rekt son.", function(erro, message) { bot.deleteMessage(message, {"wait": 6000}); });
+								return;
+							}
+						} else { lastExecTime[cmd][id] = cTime; }
+					} else { lastExecTime[cmd][id] = new Date(); }
+				} else { lastExecTime[cmd] = {}; }
+			}
+			commands.commands[cmd].process(bot, msg, suffix);
+			if (commands.commands[cmd].hasOwnProperty("deleteCommand")) {
+				if (commands.commands[cmd].deleteCommand === true) { bot.deleteMessage(msg, {"wait": 8000}); }
+			}
+		} else if (type == "mod") {
+			if (mod.commands[cmd].hasOwnProperty("cooldown")) {
+				if (lastExecTime.hasOwnProperty(cmd)) {
+					var id = msg.author.id;
+					if (lastExecTime[cmd][id] != undefined) {
+						var cTime = new Date();
+						var leTime = new Date(lastExecTime[cmd][id]);
+						leTime.setSeconds(leTime.getSeconds() + mod.commands[cmd].cooldown);
+						if (cTime < leTime) { //if it is still on cooldown
+							var left = (leTime.valueOf() - cTime.valueOf()) / 1000;
+							if (msg.author.id != config.admin_id) { //admin bypass
+								bot.sendMessage(msg, msg.author.username + ", you can't use this command for **" + Math.round(left) + "** more seconds", function(erro, message) { bot.deleteMessage(message, {"wait": 6000}); });
+								return;
+							}
+						} else { lastExecTime[cmd][id] = cTime; }
+					} else { lastExecTime[cmd][id] = new Date(); }
+				} else { lastExecTime[cmd] = {}; }
+			}
+			mod.commands[cmd].process(bot, msg, suffix, commandsProcessed, talkedToTimes);
+			if (mod.commands[cmd].hasOwnProperty("deleteCommand")) {
+				if (mod.commands[cmd].deleteCommand === true) { bot.deleteMessage(msg, {"wait": 8000}); }
+			}
+		} else { return; }
+	} catch (err) { console.log(err.stack); }
+}
+
 //event listeners
-bot.on("serverNewMember", function(objServer, objUser) {
+bot.on("serverNewMember", (objServer, objUser) => {
 	if (objServer.members.length < 71 && config.non_essential_event_listeners) {
 		if (config.greet_new_memebrs) { console.log("New member on " + objServer.name + ": " + objUser.username); bot.sendMessage(objServer.defaultChannel, "Welcome to " + objServer.name + " " + objUser.username); }
 	}
 });
 
-bot.on("channelCreated", function(objChannel) {
+bot.on("channelCreated", (objChannel) => {
 	if (config.non_essential_event_listeners) {
 		if (!objChannel.isPrivate) { if (config.debug) { console.log(colors.cDebug(" DEBUG ") + "New channel created. Type: " + objChannel.type + ". Name: " + objChannel.name + ". Server: " + objChannel.server.name); } }
 	}
 });
 
-bot.on("channelDeleted", function(objChannel) {
+bot.on("channelDeleted", (objChannel) => {
 	if (config.non_essential_event_listeners) {
 		if (!objChannel.isPrivate) { if (config.debug) { console.log(colors.cDebug(" DEBUG ") + "Channel deleted. Type: " + objChannel.type + ". Name: " + objChannel.name + ". Server: " + objChannel.server.name); } }
 	}
 });
 
-bot.on("userBanned", function(objUser, objServer) {
+bot.on("userBanned", (objUser, objServer) => {
 	if (objServer.members.length < 301 && config.non_essential_event_listeners) {
 		console.log(objUser.username + colors.cRed(" banned on ") + objServer.name);
 		bot.sendMessage(objServer.defaultChannel, "⚠ " + objUser.username + " was banned");
@@ -144,16 +152,16 @@ bot.on("userBanned", function(objUser, objServer) {
 	}
 });
 
-bot.on("userUnbanned", function(objUser, objServer) {
+bot.on("userUnbanned", (objUser, objServer) => {
 	if (objServer.members.length < 301 && config.non_essential_event_listeners) { console.log(objUser.username + " unbanned on " + objServer.name); }
 });
 
-bot.on("userUpdated", function(objUser, objNewUser) {
+bot.on("userUpdated", (objUser, objNewUser) => {
 	if (config.non_essential_event_listeners) {
 		if (objUser.username != objNewUser.username) { //if new username
 			if (config.username_changes) {
 				if (config.debug) { console.log(colors.cDebug(" DEBUG ") + objUser.username + " changed their name to " + objNewUser.username); }
-				bot.servers.forEach(function(ser) {
+				bot.servers.forEach((ser) => {
 					if (ser.members.has("id", objUser.id) && ser.members.length < 101) { bot.sendMessage(ser, "⚠ User in this server: `" + objUser.username + "`. changed their name to: `" + objNewUser.username + "`."); }
 				});
 			}
@@ -161,14 +169,14 @@ bot.on("userUpdated", function(objUser, objNewUser) {
 	}
 });
 
-bot.on("presence", function(userOld, userNew) { //check if game and also it's now oldUser newUser
+bot.on("presence", (userOld, userNew) => { //check if game and also it's now oldUser newUser
 	if (config.log_presence) {
 		if (userNew.game === null) { console.log(colors.cDebug(" PRESENCE ") + userNew.username + " is now " + userNew.status);
 		} else { console.log(colors.cDebug(" PRESENCE ") + userNew.username + " is now " + userNew.status + " playing " + userNew.game.name); }
 	}
 });
 
-bot.on("serverDeleted", function(objServer) { //detect when the bot leaves a server
+bot.on("serverDeleted", (objServer) => { //detect when the bot leaves a server
 	console.log(colors.cUYellow("Left server") + " " + objServer.name);
 });
 
@@ -176,13 +184,13 @@ bot.on("serverDeleted", function(objServer) { //detect when the bot leaves a ser
 console.log("Logging in...");
 if (config.is_heroku_version) {
 	bot.login(process.env.email, process.env.password, function(err, token) {
-		if (err) { console.log(err); setTimeout(function() { process.exit(0); }, 2000); }
-		if (!token) { console.log(colors.cWarn(" WARN ") + "failed to connect"); setTimeout(function() { process.exit(0); }, 2000); } //make sure it logged in successfully
+		if (err) { console.log(err); setTimeout(() => { process.exit(0); }, 2000); }
+		if (!token) { console.log(colors.cWarn(" WARN ") + "failed to connect"); setTimeout(() => { process.exit(0); }, 2000); } //make sure it logged in successfully
 	});
 } else {
 	bot.login(config.email, config.password, function(err, token) {
-		if (err) { console.log(err); setTimeout(function() { process.exit(1); }, 2000); }
-		if (!token) { console.log(colors.cWarn(" WARN ") + "failed to connect"); setTimeout(function() { process.exit(1); }, 2000); }
+		if (err) { console.log(err); setTimeout(() => { process.exit(1); }, 2000); }
+		if (!token) { console.log(colors.cWarn(" WARN ") + "failed to connect"); setTimeout(() => { process.exit(1); }, 2000); }
 	});
 }
 
@@ -191,7 +199,7 @@ function carbonInvite(msg) {
 		try {
 			if (config.debug) { console.log(colors.cDebug(" DEBUG ") + "Attempting to join: " + msg.content); }
 			var cServers = [];
-			bot.servers.map(function(srvr) { cServers.push(srvr.id); });
+			bot.servers.map((srvr) => { cServers.push(srvr.id); });
 			bot.joinServer(msg.content, function(err, server) {
 				if (err) {
 					bot.sendMessage(msg, "Failed to join: " + err);
@@ -200,7 +208,7 @@ function carbonInvite(msg) {
 					console.log(colors.cWarn(" WARN ") + "Error joining server. Didn't receive all data.");
 					bot.sendMessage(msg, "Failed to receive all data, please try again.");
 					try {
-						bot.leaveServer(server);
+						server.leave();
 					} catch (error) { /*how did it get here?*/ }
 				} else if (cServers.indexOf(server.id) > -1) {
 					console.log("Already in server " + server.name);
@@ -241,10 +249,10 @@ function reload() {
 	delete require.cache[require.resolve("./bot/games.json")];
 	games = require("./bot/games.json").games;
 	delete require.cache[require.resolve("./bot/commands.js")];
-	try { commands = require("./bot/commands.js").commands;
+	try { commands = require("./bot/commands.js");
 	} catch (err) { console.log(colors.cError(" ERROR ") + "Problem loading commands.js: " + err); }
 	delete require.cache[require.resolve("./bot/mod.js")];
-	try {mod = require("./bot/mod.js").commands;
+	try {mod = require("./bot/mod.js");
 	} catch (err) { console.log(colors.cError(" ERROR ") + "Problem loading mod.js: " + err); }
 	delete require.cache[require.resolve("./bot/config.json")];
 	delete require.cache[require.resolve("./bot/versioncheck.js")];
@@ -281,17 +289,19 @@ function checkConfig() {
 }
 
 function evaluateString(msg) {
-	/*EXTREMELY DANGEROUS so lets check again*/if (msg.author.id != config.admin_id) { console.log(colors.cWarn(" WARN ") + "Somehow an unauthorized user got into eval!"); return; }
+	if (msg.author.id != config.admin_id) { console.log(colors.cWarn(" WARN ") + "Somehow an unauthorized user got into eval!"); return; }
 	console.log("Running eval");
-	var result = eval("try{" + msg.content.substring(7).replace(/\n/g, "") + "}catch(err){console.log(colors.cError(\" ERROR \")+err);bot.sendMessage(msg, \"```\"+err+\"```\");}");
-	if (typeof result !== "object") {
+	var result;
+	try { result = eval("try{" + msg.content.substring(7).replace(/\n/g, "") + "}catch(err){console.log(colors.cError(\" ERROR \")+err);bot.sendMessage(msg, \"```\"+err+\"```\");}");
+	} catch (e) { console.log(colors.cError(" ERROR ") + e); bot.sendMessage(msg, "```" + e + "```"); }
+	if (result && typeof result !== "object") {
 		bot.sendMessage(msg, result);
 		console.log("Result: " + result);
 	}
 
 }
 
-setInterval(function() {
+setInterval(() => {
 	bot.setPlayingGame(games[Math.floor(Math.random() * (games.length))]);
 	if (config.debug) { console.log(colors.cDebug(" DEBUG ") + "Updated bot's game"); }
 }, 800000); //change playing game every 12 minutes
