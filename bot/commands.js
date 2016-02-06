@@ -112,9 +112,7 @@ var commands = {
 	"help": {
 		desc: "Sends a DM containing all of the commands. If a command is specified gives info on that command.",
 		usage: "[command]",
-		deleteCommand: true,
-		shouldDisplay: false,
-		cooldown: 1,
+		deleteCommand: true, shouldDisplay: false, cooldown: 1,
 		process: function(bot, msg, suffix) {
 			var msgArray = [];
 			if (!suffix) {
@@ -146,27 +144,21 @@ var commands = {
 	},
 	"botserver": {
 		desc: "Get a link to the BrussellBot / Bot-chan server.",
-		cooldown: 10,
-		usage: "",
+		cooldown: 10, usage: "",
 		process: function(bot, msg, suffix) {
 			bot.sendMessage(msg, "Here's an invite to my server: **discord.gg/0kvLlwb7slG3XCCQ**");
 		}
 	},
 	"reverse": {
 		desc: "Return's the input backwards",
-		usage: "<text>",
-		deleteCommand: true,
-		cooldown: 5,
-		shouldDisplay: false,
+		usage: "<text>", deleteCommand: true, cooldown: 5, shouldDisplay: false,
 		process: function(bot, msg, suffix) {
 			if (suffix) { bot.sendMessage(msg, "\u202e " + suffix); }
 		}
 	},
 	"ping": {
 		desc: "Replies with pong.",
-		cooldown: 2,
-		shouldDisplay: false,
-		usage: "",
+		cooldown: 2, shouldDisplay: false, usage: "",
 		process: function(bot, msg) {
 			var n = Math.floor(Math.random() * 6);
 			if (n === 0) { bot.sendMessage(msg, "pong");
@@ -236,9 +228,7 @@ var commands = {
 	},
 	"about": {
 		desc: "About me",
-		deleteCommand: true,
-		cooldown: 10,
-		usage: "",
+		deleteCommand: true, cooldown: 10, usage: "",
 		process: function(bot, msg, suffix) {
 			var msgArray = [];
 			msgArray.push("I'm " + bot.user.username + " and ~~I was made by brussell98.~~ I'm a strong independent bot who don't need no creator.");
@@ -422,7 +412,7 @@ var commands = {
 
 				if (msg.channel.isPrivate) { bot.sendMessage(msg, "Can't do that in a direct message"); return; }
 				if (LottoDB.hasOwnProperty(msg.channel.id)) { bot.sendMessage(msg, "There is already a lottery running!", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
-				bot.sendMessage(msg, "Out of " + msg.channel.server.members.length + " members on this server, " + msg.channel.server.members.random() + " is the winner!");
+				bot.sendMessage(msg, "Out of " + msg.channel.server.members.length + " members on this server, " + msg.channel.server.members.random().username + " is the winner!");
 
 			} else if (suffix.split(" ")[0] == "new") {
 

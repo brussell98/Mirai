@@ -40,9 +40,7 @@ var aliases = {
 var commands = {
 	"help": {
 		desc: "Sends a DM containing all of the commands. If a command is specified gives info on that command.",
-		usage: "[command]",
-		deleteCommand: true,
-		shouldDisplay: false,
+		usage: "[command]", deleteCommand: true, shouldDisplay: false,
 		process: function(bot, msg, suffix) {
 			var msgArray = [];
 			if (!suffix) {
@@ -68,9 +66,7 @@ var commands = {
 	},
 	"stats": {
 		desc: "Get the stats of the bot",
-		usage: "",
-		cooldown: 30,
-		deleteCommand: true,
+		usage: "", cooldown: 30, deleteCommand: true,
 		process: function(bot, msg, suffix, commandsProcessed, talkedToTimes) {
 			if (msg.author.id == config.admin_id || msg.channel.isPrivate || msg.channel.permissionsOf(msg.author).hasPermission("manageChannel")) {
 				var msgArray = [];
@@ -88,10 +84,7 @@ var commands = {
 	},
 	"playing": {
 		desc: "Allows the bot owner to set the game.",
-		usage: "[game]",
-		cooldown: 10,
-		shouldDisplay: false,
-		deleteCommand: true,
+		usage: "[game]", cooldown: 10, shouldDisplay: false, deleteCommand: true,
 		process: function(bot, msg, suffix) {
 			if (msg.author.id == config.admin_id) {
 				if (!suffix) { bot.setPlayingGame(games[Math.floor(Math.random() * (games.length))]);
@@ -102,8 +95,7 @@ var commands = {
 	"clean": {
 		desc: "Cleans the specified number of bot messages from the channel.",
 		usage: "<number of bot messages 1-100>",
-		cooldown: 10,
-		deleteCommand: true,
+		cooldown: 10, deleteCommand: true,
 		process: function(bot, msg, suffix) {
 			if (suffix && /^\d+$/.test(suffix)) { //if suffix has digits
 				if (msg.channel.isPrivate || msg.channel.permissionsOf(msg.author).hasPermission("manageMessages") || msg.author.id == config.admin_id) {
@@ -131,12 +123,11 @@ var commands = {
 	"prune": {
 		desc: "Cleans the specified number of messages from the channel.",
 		usage: "<1-100> [if it contains this] | <1-100> user <username>",
-		cooldown: 10,
-		deleteCommand: true,
+		cooldown: 10, deleteCommand: true,
 		process: function(bot, msg, suffix) {
 			if (suffix && /^\d+$/.test(suffix.split(" ")[0])) {
 				if (!msg.channel.isPrivate) {
-					if (msg.channel.permissionsOf(msg.author).hasPermission("manageMessages")) {
+					if (msg.channel.permissionsOf(msg.author).hasPermission("manageMessages") || msg.author.id == config.admin_id) {
 						if (msg.channel.permissionsOf(bot.user).hasPermission("manageMessages")) {
 							bot.getChannelLogs(msg.channel, 100, function(error, messages) {
 								if (error) { console.log(colors.cWarn(" WARN ") + "Something went wrong while fetching logs."); return; }
@@ -179,8 +170,7 @@ var commands = {
 	},
 	"leave": {
 		desc: "Leaves the server.",
-		usage: "",
-		deleteCommand: true,
+		usage: "", deleteCommand: true,
 		process: function(bot, msg, suffix) {
 			if (msg.channel.server) {
 				if (msg.channel.permissionsOf(msg.author).hasPermission("kickMembers") || msg.author.id == config.admin_id) {
@@ -196,9 +186,7 @@ var commands = {
 	},
 	"announce": {
 	desc: "Send a PM to all users in a server. Admin only",
-	deleteCommand: false,
-	usage: "<message>",
-	cooldown: 1,
+	deleteCommand: false, usage: "<message>", cooldown: 1,
 	process: function(bot, msg, suffix) {
 		if (!suffix) { bot.sendMessage(msg, "You must specify a message to announce", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 		if (msg.channel.isPrivate && msg.author.id != config.admin_id) { bot.sendMessage(msg, "You can't do this outside of a server",function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 10000}); return; }); }
@@ -227,7 +215,7 @@ var commands = {
 				bot.sendMessage(msg, "Announcing to all servers, this may take a while...");
 				bot.servers.forEach((svr) => {
 					setTimeout(() => {
-						bot.sendMessage(svr.defaultChannel, "📣 " + announceMessages[index] + " - from " + msg.author + " on " + msg.channel.server.name);
+						bot.sendMessage(svr.defaultChannel, "📣 " + announceMessages[index] + " - from your lord and savior " + msg.author.username);
 					}, 1000);
 				});
 				if (config.debug) { console.log(colors.cDebug(" DEBUG ") + "Announced \"" + announceMessages[index] + "\" to all servers"); }
@@ -242,9 +230,7 @@ var commands = {
 },
 	"changelog": {
 		desc: "See recent changes to the bot",
-		deleteCommand: true,
-		usage: "",
-		cooldown: 30,
+		deleteCommand: true, usage: "", cooldown: 30,
 		process: function(bot, msg, suffix) {
 			var chanelogChannel = bot.channels.get("id", "135527608564580353");
 			if (!chanelogChannel) { bot.sendMessage(msg, "The bot is not in the BrussellBot Official Server", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); });
@@ -264,8 +250,7 @@ var commands = {
 	"color": {
 		desc: "Change a role's color",
 		usage: "<role name> <color in hex>",
-		deleteCommand: true,
-		cooldown: 5,
+		deleteCommand: true, cooldown: 5,
 		process: function(bot, msg, suffix) {
 			if (/^(.*) #?[A-F0-9]{6}$/i.test(suffix)) {
 				if (msg.channel.isPrivate) { bot.sendMessage(msg, "Must be done in a server!",function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }

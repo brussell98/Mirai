@@ -2,7 +2,7 @@
 	"email": "",
 	"password": "",
 	"command_prefix": "]",
-	"mod_command_prefix": "_",
+	"mod_command_prefix": "}",
 	"non_essential_event_listeners": true,
 	"log_presence": false,
 	"debug": false,
