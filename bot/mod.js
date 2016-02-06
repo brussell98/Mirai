@@ -34,7 +34,9 @@ var aliases = {
 	"l": "leave", "leaves": "leave",
 	"a": "announce", "ann": "announce",
 	"change": "changelog", "logs": "changelog", "changelogs": "changelog",
-	"rolec": "color", "rolecolor": "color"
+	"rolec": "color", "rolecolor": "color",
+	"gc": "givecolor", "setcolor": "givecolor",
+	"rmcolor": "removecolor", "takecolor": "removecolor", "rc": "removecolor"
 };
 
 var commands = {
@@ -260,6 +262,58 @@ var commands = {
 				if (role) { bot.updateRole(role, {color: parseInt(suffix.replace(/(.*) #?/, ""), 16)});
 				} else { bot.sendMessage(msg, "Role \"" + suffix.replace(/ #?[a-f0-9]{6}/i, "") + "\" not found",function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 10000}); }); }
 			} else { bot.sendMessage(msg, correctUsage("color"),function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 10000}); }); }
+		}
+	},
+	"givecolor": {
+		desc: "Give a user a color",
+		usage: "<@users> <color as hex>",
+		deleteCommand: true,
+		cooldown: 2,
+		process: function(bot, msg, suffix) {
+			if (msg.channel.isPrivate) { bot.sendMessage(msg, "Can't do this in a PM!",function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 10000}); return; }); }
+			if (!msg.channel.permissionsOf(msg.author).hasPermission("manageRoles") && msg.author.id != config.admin_id) { bot.sendMessage(msg, "You can't edit roles!",function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
+			if (!msg.channel.permissionsOf(bot.user).hasPermission("manageRoles")) { bot.sendMessage(msg, "I can't manage roles!",function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
+			if (msg.mentions.length < 1) { bot.sendMessage(msg, "You must mention the users you want to change the color of!",function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
+			var role = msg.channel.server.roles.get("name", suffix.replace(/(.*) #?/, "").toLowerCase());
+			var roleExists = false;
+			if (role) { roleExists = true; }
+			msg.mentions.map((user) => {
+				msg.channel.server.rolesOfUser(user).map((r) => {
+					if (/#?[a-f0-9]{6}/i.test(r.name)) {
+						bot.removeMemberFromRole(user, r,() => {if (msg.channel.server.usersWithRole(r, user).length < 1) { bot.deleteRole(r, (e) => { if (e) { bot.sendMessage(msg, "Error deleting role: " + e,function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 10000}); }); } }) }});
+					}
+				});
+				if (roleExists) {
+					bot.addMemberToRole(user, role, (e) => { if (e) { bot.sendMessage(msg, "Error giving member role: " + e); } });
+				} else {
+					msg.channel.server.createRole({color: parseInt(suffix.replace(/(.*) #?/, ""), 16), hoist: false, permissions: [], name: suffix.replace(/(.*) #?/, "").toLowerCase()}, (e, rl) => {
+						if (e) { bot.sendMessage(msg, "Error creating role: " + e); return; }
+						role = rl;
+						roleExists = true;
+						bot.addMemberToRole(user, role, (e) => { if (e) { bot.sendMessage(msg, "Error giving member role: " + e); } });
+					});
+				}
+			});
+		}
+	},
+	"removecolor": {
+		desc: "Remove a user's color",
+		usage: "<@users> <color as hex>",
+		deleteCommand: true,
+		cooldown: 2,
+		process: function(bot, msg, suffix) {
+			if (msg.channel.isPrivate) { bot.sendMessage(msg, "Can't do this in a PM!",function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 10000}); return; }); }
+			if (!msg.channel.permissionsOf(msg.author).hasPermission("manageRoles") && msg.author.id != config.admin_id) { bot.sendMessage(msg, "You can't edit roles!",function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
+			if (!msg.channel.permissionsOf(bot.user).hasPermission("manageRoles")) { bot.sendMessage(msg, "I can't manage roles!",function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
+			if (msg.mentions.length < 1) { bot.sendMessage(msg, "You must mention the users you want to change the color of!",function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
+			var role = msg.channel.server.roles.get("name", suffix.replace(/(.*) #?/, "").toLowerCase());
+			if (!role) { bot.sendMessage(msg, "Color not found",function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
+			msg.mentions.map((user) => {
+				msg.channel.server.rolesOfUser(user).map((r) => {
+					if (/#?[a-f0-9]{6}/i.test(r.name)) { bot.removeMemberFromRole(user, r); }
+				});
+				setTimeout(() => {if (msg.channel.server.usersWithRole(role, user).length < 1) { bot.deleteRole(role, (e) => { if (e) { bot.sendMessage(msg, "Error deleting role: " + e,function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 10000}); }); } }) }},500);
+			});
 		}
 	}
 }

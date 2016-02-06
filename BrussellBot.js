@@ -49,7 +49,7 @@ bot.on("message", (msg) => {
 	if (msg.author.id == config.admin_id && msg.content.indexOf("(eval) ") > -1 && msg.content.indexOf("(eval) ") <= 1) { evaluateString(msg); return; } //bot owner eval command
 	if (msg.mentions.length !== 0) { //cleverbot
 		msg.mentions.forEach((usr) => {
-			if (usr.id == bot.user.id && msg.content.startsWith("<@" + bot.user.id + ">")) { cleverbot(bot, msg); talkedToTimes += 1; if (!msg.channel.isPrivate) { console.log(colors.cServer(msg.channel.server.name) + " > " + colors.cGreen(msg.author.username) + " > " + colors.cYellow("@Bot-chan") + " " + msg.content.substring(22).replace(/\n/g, " ")); } else { console.log(colors.cGreen(msg.author.username) + " > " + colors.cYellow("@Bot-chan") + " " + msg.content.substring(22).replace(/\n/g, " ")); } return; }
+			if (usr.id == bot.user.id && msg.content.startsWith("<@" + bot.user.id + ">")) { cleverbot(bot, msg); talkedToTimes += 1; if (!msg.channel.isPrivate) { console.log(colors.cServer(msg.channel.server.name) + " > " + colors.cGreen(msg.author.username) + " > " + colors.cYellow("@" + bot.user.username) + " " + msg.content.substring(22).replace(/\n/g, " ")); } else { console.log(colors.cGreen(msg.author.username) + " > " + colors.cYellow("@Bot-chan") + " " + msg.content.substring(22).replace(/\n/g, " ")); } return; }
 			if (usr.id == config.admin_id && config.send_mentions && usr.status != "online" && !msg.channel.isPrivate) { bot.sendMessage(usr, msg.channel.server.name + " > " + msg.author.username + ": " + msg.content); }
 		});
 	}
