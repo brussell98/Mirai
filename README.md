@@ -16,7 +16,7 @@ A multipurpose bot for Discord using [Discord.js](https://github.com/hydrabolt/d
 
 ### TO DO
 
-### 1.4
+### Music Update?
 
 - [ ] Music commands
 	- [ ] Audio help
