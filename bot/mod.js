@@ -280,7 +280,7 @@ var commands = {
 			msg.mentions.map((user) => {
 				msg.channel.server.rolesOfUser(user).map((r) => {
 					if (/^#[a-f0-9]{6}$/i.test(r.name)) {
-						bot.removeMemberFromRole(user, r,() => {setTimeout(() => {if (msg.channel.server.usersWithRole(r).length < 1) { bot.deleteRole(r, (e) => { if (e) { bot.sendMessage(msg, "Error deleting role: " + e,function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 10000}); }); } }) }},500);});
+						if (r.name != "#" + suffix.replace(/(.*) #?/, "").toLowerCase()) { bot.removeMemberFromRole(user, r,() => {setTimeout(() => {if (msg.channel.server.usersWithRole(r).length < 1) { bot.deleteRole(r, (e) => { if (e) { bot.sendMessage(msg, "Error deleting role: " + e,function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 10000}); }); } }) }},500);}); }
 					}
 				});
 				if (roleExists) {
