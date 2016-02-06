@@ -13,7 +13,7 @@
 	"send_mentions": true,
 	"mal_user": "",
 	"mal_pass": "",
-	"is_heroku_version": true,
+	"is_heroku_version": false,
 	"weather_api_key": "",
 	"osu_api_key": "",
 	"banned_server_ids": [""]
