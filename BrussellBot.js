@@ -20,7 +20,7 @@ var shouldCarbonAnnounce = true; //set if the bot should announce when joining a
 var commandsProcessed = 0, talkedToTimes = 0;
 
 var bot = new discord.Client();
-bot.on("warn", (m) => { console.log(colors.cWarn(" WARN ") + m); });
+bot.on("warn", (m) => { if (config.show_warn) { console.log(colors.cWarn(" WARN ") + m); } });
 bot.on("debug", (m) => { if (config.debug) { console.log(colors.cDebug(" DEBUG ") + m); } });
 
 bot.on("ready", () => {
