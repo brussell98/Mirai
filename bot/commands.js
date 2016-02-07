@@ -291,15 +291,15 @@ var commands = {
 						if (msg.mentions.length > 4) { bot.sendMessage(msg, "Limit of 4 users", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 						msg.mentions.map(function(usr) {
 							var msgArray = [], count = 0;
-							msgArray.push("ℹ **Info on** " + usr.username);
-							msgArray.push("**User ID:** " + usr.id);
-							if (usr.game != null) { msgArray.push("**Status:** " + usr.status + " **last playing** " + usr.game.name);
+							msgArray.push("ℹ **Info on** " + usr.username + " (" + usr.discriminator + ")");
+							msgArray.push("**ID:** " + usr.id);
+							if (usr.game != null && usr.game != "null") { msgArray.push("**Status:** " + usr.status + " **last playing** " + usr.game.name);
 							} else { msgArray.push("**Status:** " + usr.status); }
 							var jDate = new Date(msg.channel.server.detailsOfUser(usr).joinedAt);
-							msgArray.push("**Joined this server on:** " + jDate.toUTCString());
+							msgArray.push("**Joined on:** " + jDate.toUTCString());
 							var roles = msg.channel.server.rolesOfUser(usr.id).map(function(role) { return role.name; });
 							roles = roles.join(", ").replace("@", "");
-							if (roles.length <= 1500) { msgArray.push("**Roles:** " + roles); } else { msgArray.push("**Roles:** Too many to display"); }
+							if (roles.length <= 1500) { msgArray.push("**Roles:** `" + roles + "`"); } else { msgArray.push("**Roles:** `Too many to display`"); }
 							bot.servers.map(function(server) { if (server.members.indexOf(usr) > -1) { count += 1; } });
 							if (count > 1) { msgArray.push("**Shared servers:** " + count); }
 							if (usr.avatarURL != null) { msgArray.push("**Avatar URL:** `" + usr.avatarURL + "`"); }
@@ -315,15 +315,15 @@ var commands = {
 							if (!usr) { usr = msg.channel.server.members.find((member) => { return member.username.toLowerCase().indexOf(user.toLowerCase()) > -1 }); }
 							if (usr) {
 								var msgArray = [], count = 0;
-								msgArray.push("ℹ **Info on** " + usr.username);
-								msgArray.push("**User ID:** " + usr.id);
-								if (usr.game != null) { msgArray.push("**Status:** " + usr.status + " **last playing** " + usr.game.name);
+								msgArray.push("ℹ **Info on** " + usr.username + " (" + usr.discriminator + ")");
+								msgArray.push("**ID:** " + usr.id);
+								if (usr.game != null && usr.game != "null") { msgArray.push("**Status:** " + usr.status + " **last playing** " + usr.game.name);
 								} else { msgArray.push("**Status:** " + usr.status); }
 								var jDate = new Date(msg.channel.server.detailsOfUser(usr).joinedAt);
-								msgArray.push("**Joined this server on:** " + jDate.toUTCString());
+								msgArray.push("**Joined on:** " + jDate.toUTCString());
 								var roles = msg.channel.server.rolesOfUser(usr.id).map((role) => { return role.name; });
 								roles = roles.join(", ").replace("@", "");
-								if (roles.length <= 1500) { msgArray.push("**Roles:** " + roles); } else { msgArray.push("**Roles:** Too many to display"); }
+								if (roles.length <= 1500) { msgArray.push("**Roles:** `" + roles + "`"); } else { msgArray.push("**Roles:** `Too many to display`"); }
 								bot.servers.map(function(server) { if (server.members.indexOf(usr) > -1) { count += 1; } });
 								if (count > 1) { msgArray.push("**Shared servers:** " + count); }
 								if (usr.avatarURL != null) { msgArray.push("**Avatar URL:** `" + usr.avatarURL + "`"); }
@@ -336,13 +336,12 @@ var commands = {
 					var msgArray = [];
 					msgArray.push("ℹ **Info on** " + msg.channel.server.name);
 					msgArray.push("**Server ID:** " + msg.channel.server.id);
-					msgArray.push("**Owner:** " + msg.channel.server.owner.username + " (**id:** " + msg.channel.server.owner.id);
+					msgArray.push("**Owner:** " + msg.channel.server.owner.username + " (**ID:** " + msg.channel.server.owner.id + ")");
 					msgArray.push("**Region:** " + msg.channel.server.region);
-					msgArray.push("**Members:** " + msg.channel.server.members.length);
+					msgArray.push("**Members:** " + msg.channel.server.members.length + " **Channels:** " + msg.channel.server.channels.length);
 					var roles = msg.channel.server.roles.map((role) => { return role.name; });
 					roles = roles.join(", ").replace("@", "");
-					msgArray.push("**Channels:** " + msg.channel.server.channels.length);
-					if (roles.length <= 1500) { msgArray.push("**Roles:** " + roles); } else { msgArray.push("**Roles:** Too many to display"); }
+					if (roles.length <= 1500) { msgArray.push("**Roles:** `" + roles + "`"); } else { msgArray.push("**Roles:** `Too many to display`"); }
 					msgArray.push("**Default channel:** " + msg.channel.server.defaultChannel);
 					msgArray.push("**This channel's id:** " + msg.channel.id);
 					msgArray.push("**Icon URL:** `" + msg.channel.server.iconURL + "`");
@@ -668,17 +667,17 @@ var commands = {
 
 				var color = "ff66aa",
 					username = msg.author.username;
-				suffix = suffix.split(" ");
-				if (suffix.length >= 2) {
-					if (/sig (.*) #?[A-Fa-f0-9]{6}$/.test(suffix.join(" "))) {
-						username = suffix.join("%20").substring(6, suffix.join("%20").lastIndexOf("%20"));
+				suffix = suffix.trim().split(" ").shift();
+				if (suffix && suffix.length >= 1) {
+					if (/(.*) #?[A-Fa-f0-9]{6}$/.test(suffix.join(" "))) {
+						username = suffix.join("%20").substring(0, suffix.join("%20").lastIndexOf("%20"));
 						if (suffix[suffix.length - 1].length == 6) { color = suffix[suffix.length - 1];
 						} else if (suffix[suffix.length - 1].length == 7) { color = suffix[suffix.length - 1].substring(1); }
-					} else if (/sig #?[A-Fa-f0-9]{6}$/.test(suffix.join(" "))) {
+					} else if (/#?[A-Fa-f0-9]{6}$/.test(suffix.join(" "))) {
 						username = msg.author.username;
-						if (suffix[1].length == 6) { color = suffix[1];
-						} else if (suffix[1].length == 7) { color = suffix[1].substring(1); }
-					} else { username = suffix.shift.join("%20"); }
+						if (suffix[0].length == 6) { color = suffix[0];
+						} else if (suffix[0].length == 7) { color = suffix[0].substring(1); }
+					} else { username = suffix.join("%20"); }
 				}
 				request({url: "https://lemmmy.pw/osusig/sig.php?colour=hex" + color + "&uname=" + username + "&pp=2&flagshadow&xpbar&xpbarhex&darktriangles", encoding: null}, function(err, response, body) {
 					if (err) { bot.sendMessage(msg, "⚠ Error: " + err, function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
