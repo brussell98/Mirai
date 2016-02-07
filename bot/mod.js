@@ -2,8 +2,8 @@
 var config = require("./config.json");
 var games = require("./games.json").games;
 var version = require("../package.json").version;
-var fs = require("fs");
 var colors = require("./styles.js");
+var db = require("./db.js");
 
 var confirmCodes = []; //stuff for announce
 var announceMessages = [];
@@ -40,6 +40,14 @@ var aliases = {
 };
 
 var commands = {
+	"sql": {
+		desc: "Query the PostgreSQL database",
+		usage: "<query>",
+		deleteCommand: false, shouldDisplay: false,
+		process: function(bot, msg, suffix) {
+			if (msg.author.id == config.admin_id) { db.sql(bot, msg, suffix); }
+		}
+	},
 	"help": {
 		desc: "Sends a DM containing all of the commands. If a command is specified gives info on that command.",
 		usage: "[command]", deleteCommand: true, shouldDisplay: false,
@@ -187,49 +195,49 @@ var commands = {
 		}
 	},
 	"announce": {
-	desc: "Send a PM to all users in a server. Admin only",
-	deleteCommand: false, usage: "<message>", cooldown: 1,
-	process: function(bot, msg, suffix) {
-		if (!suffix) { bot.sendMessage(msg, "You must specify a message to announce", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
-		if (msg.channel.isPrivate && msg.author.id != config.admin_id) { bot.sendMessage(msg, "You can't do this outside of a server",function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 10000}); return; }); }
-		if (!msg.channel.isPrivate) { if (!msg.channel.permissionsOf(msg.author).hasPermission("manageServer") && msg.author.id != config.admin_id) { bot.sendMessage(msg, "Server admins only", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; } }
-		if (!msg.channel.isPrivate) {
-			if (/^\d+$/.test(suffix)) {
-				var index = confirmCodes.indexOf(parseInt(suffix));
-				if (index == -1) { bot.sendMessage(msg, "Code not found", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
-				bot.sendMessage(msg, "Announcing to all users, this may take a while...");
-				msg.channel.server.members.forEach((usr) => {
-					setTimeout(() => {
-						bot.sendMessage(usr, "📣 " + announceMessages[index] + " - from " + msg.author + " on " + msg.channel.server.name);
-					}, 1000);
-				});
-				if (config.debug) { console.log(colors.cDebug(" DEBUG ") + "Announced \"" + announceMessages[index] + "\" to members of " + msg.channel.server.name); }
-			} else {
-				announceMessages.push(suffix);
-				var code = Math.floor(Math.random() * 100000);
-				confirmCodes.push(code);
-				bot.sendMessage(msg, "⚠ This will send a message to **all** users in this server. If you're sure you want to do this say `" + config.mod_command_prefix + "announce " + code + "`");
-			}
-		} else if (msg.channel.isPrivate && msg.author.id == config.admin_id) {
-			if (/^\d+$/.test(suffix)) {
-				var index = confirmCodes.indexOf(parseInt(suffix));
-				if (index == -1) { bot.sendMessage(msg, "Code not found", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
-				bot.sendMessage(msg, "Announcing to all servers, this may take a while...");
-				bot.servers.forEach((svr) => {
-					setTimeout(() => {
-						bot.sendMessage(svr.defaultChannel, "📣 " + announceMessages[index] + " - from your lord and savior " + msg.author.username);
-					}, 1000);
-				});
-				if (config.debug) { console.log(colors.cDebug(" DEBUG ") + "Announced \"" + announceMessages[index] + "\" to all servers"); }
-			} else {
-				announceMessages.push(suffix);
-				var code = Math.floor(Math.random() * 100000);
-				confirmCodes.push(code);
-				bot.sendMessage(msg, "⚠ This will send a message to **all** servers where I can speak in general. If you're sure you want to do this say `" + config.mod_command_prefix + "announce " + code + "`");
+		desc: "Send a PM to all users in a server. Admin only",
+		deleteCommand: false, usage: "<message>", cooldown: 1,
+		process: function(bot, msg, suffix) {
+			if (!suffix) { bot.sendMessage(msg, "You must specify a message to announce", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
+			if (msg.channel.isPrivate && msg.author.id != config.admin_id) { bot.sendMessage(msg, "You can't do this outside of a server",function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 10000}); return; }); }
+			if (!msg.channel.isPrivate) { if (!msg.channel.permissionsOf(msg.author).hasPermission("manageServer") && msg.author.id != config.admin_id) { bot.sendMessage(msg, "Server admins only", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; } }
+			if (!msg.channel.isPrivate) {
+				if (/^\d+$/.test(suffix)) {
+					var index = confirmCodes.indexOf(parseInt(suffix));
+					if (index == -1) { bot.sendMessage(msg, "Code not found", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
+					bot.sendMessage(msg, "Announcing to all users, this may take a while...");
+					msg.channel.server.members.forEach((usr) => {
+						setTimeout(() => {
+							bot.sendMessage(usr, "📣 " + announceMessages[index] + " - from " + msg.author + " on " + msg.channel.server.name);
+						}, 1000);
+					});
+					if (config.debug) { console.log(colors.cDebug(" DEBUG ") + "Announced \"" + announceMessages[index] + "\" to members of " + msg.channel.server.name); }
+				} else {
+					announceMessages.push(suffix);
+					var code = Math.floor(Math.random() * 100000);
+					confirmCodes.push(code);
+					bot.sendMessage(msg, "⚠ This will send a message to **all** users in this server. If you're sure you want to do this say `" + config.mod_command_prefix + "announce " + code + "`");
+				}
+			} else if (msg.channel.isPrivate && msg.author.id == config.admin_id) {
+				if (/^\d+$/.test(suffix)) {
+					var index = confirmCodes.indexOf(parseInt(suffix));
+					if (index == -1) { bot.sendMessage(msg, "Code not found", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
+					bot.sendMessage(msg, "Announcing to all servers, this may take a while...");
+					bot.servers.forEach((svr) => {
+						setTimeout(() => {
+							bot.sendMessage(svr.defaultChannel, "📣 " + announceMessages[index] + " - from your lord and savior " + msg.author.username);
+						}, 1000);
+					});
+					if (config.debug) { console.log(colors.cDebug(" DEBUG ") + "Announced \"" + announceMessages[index] + "\" to all servers"); }
+				} else {
+					announceMessages.push(suffix);
+					var code = Math.floor(Math.random() * 100000);
+					confirmCodes.push(code);
+					bot.sendMessage(msg, "⚠ This will send a message to **all** servers where I can speak in general. If you're sure you want to do this say `" + config.mod_command_prefix + "announce " + code + "`");
+				}
 			}
 		}
-	}
-},
+	},
 	"changelog": {
 		desc: "See recent changes to the bot",
 		deleteCommand: true, usage: "", cooldown: 30,
@@ -280,7 +288,7 @@ var commands = {
 			msg.mentions.map((user) => {
 				msg.channel.server.rolesOfUser(user).map((r) => {
 					if (/^#[a-f0-9]{6}$/i.test(r.name)) {
-						if (r.name != "#" + suffix.replace(/(.*) #?/, "").toLowerCase()) { bot.removeMemberFromRole(user, r,() => {setTimeout(() => {if (msg.channel.server.usersWithRole(r).length < 1) { bot.deleteRole(r, (e) => { if (e) { bot.sendMessage(msg, "Error deleting role: " + e,function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 10000}); }); } }) }},500);}); }
+						if (r.name != "#" + suffix.replace(/(.*) #?/, "").toLowerCase()) { bot.removeMemberFromRole(user, r, () => {setTimeout(() => {if (msg.channel.server.usersWithRole(r).length < 1) { bot.deleteRole(r, (e) => { if (e) { bot.sendMessage(msg, "Error deleting role: " + e,function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 10000}); }); } }) }},500);}); }
 					}
 				});
 				if (roleExists) {

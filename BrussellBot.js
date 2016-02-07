@@ -9,7 +9,6 @@ var mod = require("./bot/mod.js");
 var config = require("./bot/config.json");
 var games = require("./bot/games.json").games;
 var versioncheck = require("./bot/versioncheck.js");
-var fs = require("fs");
 var discord = require("discord.js");
 var cleverbot = require("./bot/cleverbot.js").cleverbot;
 var colors = require("./bot/styles.js");
@@ -97,7 +96,7 @@ function execCommand(msg, cmd, suffix, type) {
 			}
 			commands.commands[cmd].process(bot, msg, suffix);
 			if (commands.commands[cmd].hasOwnProperty("deleteCommand")) {
-				if (commands.commands[cmd].deleteCommand === true) { bot.deleteMessage(msg, {"wait": 8000}); }
+				if (commands.commands[cmd].deleteCommand === true) { bot.deleteMessage(msg, {"wait": 10000}); }
 			}
 		} else if (type == "mod") {
 			if (mod.commands[cmd].hasOwnProperty("cooldown")) {
@@ -119,7 +118,7 @@ function execCommand(msg, cmd, suffix, type) {
 			}
 			mod.commands[cmd].process(bot, msg, suffix, commandsProcessed, talkedToTimes);
 			if (mod.commands[cmd].hasOwnProperty("deleteCommand")) {
-				if (mod.commands[cmd].deleteCommand === true) { bot.deleteMessage(msg, {"wait": 8000}); }
+				if (mod.commands[cmd].deleteCommand === true) { bot.deleteMessage(msg, {"wait": 10000}); }
 			}
 		} else { return; }
 	} catch (err) { console.log(err.stack); }

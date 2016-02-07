@@ -5,7 +5,6 @@ var version = require("../package.json").version;
 var colors = require("./styles.js");
 var request = require("request");
 var xml2js = require("xml2js");
-var fs = require("fs");
 var osuapi = require("osu-api");
 var ent = require("entities");
 var waifus = require("./waifus.json");
