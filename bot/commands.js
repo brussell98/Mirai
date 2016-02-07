@@ -50,7 +50,7 @@ function generateRandomRating(fullName, storeRating) {
 
 function generateUserRating(bot, msg, fullName) {
 	var user = msg.channel.server.members.get("username", fullName);
-	var score = generateRandomRating();
+	var score = generateRandomRating() - 1;
 	var joined = new Date(msg.channel.server.detailsOfUser(user).joinedAt), now = new Date();
 	if (now.valueOf() - joined.valueOf() >= 2592000000) { score += 1; } //if user has been on the server for at least one month +1
 	if (msg.channel.permissionsOf(user).hasPermission("manageServer")) { score += 1; } //admins get +1 ;)
@@ -229,10 +229,7 @@ var commands = {
 		desc: "About me",
 		deleteCommand: true, cooldown: 10, usage: "",
 		process: function(bot, msg, suffix) {
-			var msgArray = [];
-			msgArray.push("I'm " + bot.user.username + " and ~~I was made by brussell98.~~ I'm a strong independent bot who don't need no creator.");
-			msgArray.push("I run on `discord.js` and my website is **brussell98.github.io/BrussellBot/**");
-			bot.sendMessage(msg, msgArray);
+			bot.sendMessage(msg, "I'm " + bot.user.username + " and ~~I was made by brussell98.~~ I'm a strong independent bot who don't need no creator.\nI run on `discord.js` and my website is **brussell98.github.io/BrussellBot/**");
 		}
 	},
 	"letsplay": {
@@ -681,7 +678,7 @@ var commands = {
 						username = msg.author.username;
 						if (suffix[1].length == 6) { color = suffix[1];
 						} else if (suffix[1].length == 7) { color = suffix[1].substring(1); }
-					}
+					} else { username = suffix.shift.join("%20"); }
 				}
 				request({url: "https://lemmmy.pw/osusig/sig.php?colour=hex" + color + "&uname=" + username + "&pp=2&flagshadow&xpbar&xpbarhex&darktriangles", encoding: null}, function(err, response, body) {
 					if (err) { bot.sendMessage(msg, "⚠ Error: " + err, function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
@@ -811,9 +808,9 @@ var commands = {
 		desc: "Let me Google that for you",
 		deleteCommand: true,
 		usage: "<search>",
-		cooldown: 4,
+		cooldown: 3,
 		process: function(bot, msg, suffix) {
-			if (!suffix) { bot.sendMessage(msg, "**http://www.lmgtfy.com/?q=brussellbot+commands**"); return; }
+			if (!suffix) { bot.sendMessage(msg, "**http://www.lmgtfy.com/?q=lmgtfy**"); return; }
 			suffix = suffix.split(" ");
 			for (var i = 0; i < suffix.length; i++) { suffix[i] = encodeURIComponent(suffix[i]); }
 			bot.sendMessage(msg, "🔍 **http://www.lmgtfy.com/?q=" + suffix.join("+") + "**");
@@ -844,8 +841,8 @@ var commands = {
 		cooldown: 2,
 		process: function(bot, msg, suffix) {
 			request("http://catfacts-api.appspot.com/api/facts", function(error, response, body) {
-				if (error) { bot.sendMessage(msg, "Error: " + error, function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 10000}); }); }
-				if (response.statusCode != 200) { bot.sendMessage(msg, "Got status code " + response.statusCode, function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 10000}); }); }
+				if (error) { bot.sendMessage(msg, "Error: " + error, function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
+				if (response.statusCode != 200) { bot.sendMessage(msg, "Got status code " + response.statusCode, function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
 				if (!error && response.statusCode == 200) {
 					body = JSON.parse(body);
 					bot.sendMessage(msg, "🐱 **" + msg.author.username + "**, did you know that " + body.facts[0]);
@@ -857,7 +854,7 @@ var commands = {
 		desc: "I'll rate your waifu",
 		usage: "<name>",
 		deleteCommand: false,
-		cooldown: 5,
+		cooldown: 4,
 		process: function(bot, msg, suffix) {
 			if (!suffix) { bot.sendMessage(msg, correctUsage("ratewaifu"), function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
 			if (msg.everyoneMentioned) { bot.sendMessage(msg, "Hey, " + msg.author.username + ", don't do that ok?", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
