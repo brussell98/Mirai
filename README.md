@@ -1,5 +1,7 @@
 # BrussellBot 1.3
 
+## Want to download this and run it? Get the latest release or download the **public** branch, not master.
+
 A multipurpose bot for Discord using [Discord.js](https://github.com/hydrabolt/discord.js/)
 
 [Website](http://brussell98.github.io/BrussellBot)   
