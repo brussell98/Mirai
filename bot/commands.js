@@ -667,7 +667,8 @@ var commands = {
 
 				var color = "ff66aa",
 					username = msg.author.username;
-				suffix = suffix.trim().split(" ").shift();
+				suffix = suffix.trim().split(" ");
+				suffix.shift();
 				if (suffix && suffix.length >= 1) {
 					if (/(.*) #?[A-Fa-f0-9]{6}$/.test(suffix.join(" "))) {
 						username = suffix.join("%20").substring(0, suffix.join("%20").lastIndexOf("%20"));
