@@ -144,7 +144,7 @@ bot.on("channelDeleted", (objChannel) => {
 });
 
 bot.on("userBanned", (objUser, objServer) => {
-	if (objServer.members.length < 301 && config.non_essential_event_listeners) {
+	if (objServer.members.length <= 175 && config.non_essential_event_listeners) {
 		console.log(objUser.username + colors.cRed(" banned on ") + objServer.name);
 		bot.sendMessage(objServer.defaultChannel, "⚠ " + objUser.username + " was banned");
 		bot.sendMessage(objUser, "⚠ You were banned from " + objServer.name);

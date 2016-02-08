@@ -131,11 +131,12 @@ var commands = {
 				bot.sendMessage(msg.author, helpPart1);
 				bot.sendMessage(msg.author, helpPart2);
 			} else {
+				suffix = suffix.trim().toLowerCase();
 				if (commands.hasOwnProperty(suffix)) {
-					msgArray.push("**" + config.command_prefix + "" + suffix + ": **" + commands[suffix].desc);
+					msgArray.push("**" + config.command_prefix + "" + suffix + ":** " + commands[suffix].desc);
 					if (commands[suffix].hasOwnProperty("usage")) { msgArray.push("**Usage:** `" + config.command_prefix + "" + suffix + " " + commands[suffix].usage + "`"); }
 					if (commands[suffix].hasOwnProperty("cooldown")) { msgArray.push("**Cooldown:** " + commands[suffix].cooldown + " seconds"); }
-					if (commands[suffix].hasOwnProperty("deleteCommand")) { msgArray.push("*This command will delete the message that activates it*"); }
+					if (commands[suffix].hasOwnProperty("deleteCommand")) { msgArray.push("*Delete Command: true*"); }
 					bot.sendMessage(msg, msgArray);
 				} else { bot.sendMessage(msg, "Command `" + suffix + "` not found.", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
 			}
@@ -293,7 +294,7 @@ var commands = {
 							var msgArray = [], count = 0;
 							msgArray.push("ℹ **Info on** " + usr.username + " (" + usr.discriminator + ")");
 							msgArray.push("**ID:** " + usr.id);
-							if (usr.game != null && usr.game != "null") { msgArray.push("**Status:** " + usr.status + " **last playing** " + usr.game.name);
+							if (usr.game && usr.game !== undefined && usr.game !== null && usr.game !== "null") { msgArray.push("**Status:** " + usr.status + " **last playing** " + usr.game.name);
 							} else { msgArray.push("**Status:** " + usr.status); }
 							var jDate = new Date(msg.channel.server.detailsOfUser(usr).joinedAt);
 							msgArray.push("**Joined on:** " + jDate.toUTCString());
@@ -307,6 +308,7 @@ var commands = {
 							if (config.debug) { console.log(colors.cDebug(" DEBUG ") + "Got info on " + usr.username); }
 						});
 					} else {
+						if (msg.everyoneMentioned) { bot.sendMessage(msg, "Hey, " + msg.author.username + ", don't do that ok?", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 						var users = suffix.split(/, ?/);
 						if (users.length > 4) { bot.sendMessage(msg, "Limit of 4 users", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 						users.map(function(user) {
@@ -317,7 +319,7 @@ var commands = {
 								var msgArray = [], count = 0;
 								msgArray.push("ℹ **Info on** " + usr.username + " (" + usr.discriminator + ")");
 								msgArray.push("**ID:** " + usr.id);
-								if (usr.game != null && usr.game != "null") { msgArray.push("**Status:** " + usr.status + " **last playing** " + usr.game.name);
+								if (usr.game && usr.game !== undefined && usr.game !== null && usr.game !== "null") { msgArray.push("**Status:** " + usr.status + " **last playing** " + usr.game.name);
 								} else { msgArray.push("**Status:** " + usr.status); }
 								var jDate = new Date(msg.channel.server.detailsOfUser(usr).joinedAt);
 								msgArray.push("**Joined on:** " + jDate.toUTCString());
@@ -369,6 +371,7 @@ var commands = {
 					(usr.avatarURL != null) ? bot.sendMessage(msg, "**" + usr.username + "**'s avatar is: " + usr.avatarURL + "") : bot.sendMessage(msg, "**" + usr.username + "** has no avatar", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); });
 				});
 			} else {
+				if (msg.everyoneMentioned) { bot.sendMessage(msg, "Hey, " + msg.author.username + ", don't do that ok?", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 				var users = suffix.split(/, ?/);
 				if (users.length > 6) { bot.sendMessage(msg, "Limit of 6 users", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 				users.map(function(user) {
