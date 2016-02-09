@@ -46,11 +46,18 @@ bot.on("disconnected", () => {
 bot.on("message", (msg) => {
 	if (msg.channel.isPrivate && msg.author.id != bot.user.id && (/(^https?:\/\/discord\.gg\/[A-Za-z0-9]+$|^https?:\/\/discordapp\.com\/invite\/[A-Za-z0-9]+$)/.test(msg.content))) { carbonInvite(msg); } //accept invites sent in a DM
 	if (msg.author.id == config.admin_id && msg.content.indexOf("(eval) ") > -1 && msg.content.indexOf("(eval) ") <= 1) { evaluateString(msg); return; } //bot owner eval command
-	if (msg.mentions.length !== 0) { //cleverbot
-		msg.mentions.forEach((usr) => {
-			if (usr.id == bot.user.id && msg.content.startsWith("<@" + bot.user.id + ">")) { cleverbot(bot, msg); talkedToTimes += 1; if (!msg.channel.isPrivate) { console.log(colors.cServer(msg.channel.server.name) + " > " + colors.cGreen(msg.author.username) + " > " + colors.cYellow("@" + bot.user.username) + " " + msg.content.substring(22).replace(/\n/g, " ")); } else { console.log(colors.cGreen(msg.author.username) + " > " + colors.cYellow("@Bot-chan") + " " + msg.content.substring(22).replace(/\n/g, " ")); } return; }
-			if (usr.id == config.admin_id && config.send_mentions && usr.status != "online" && !msg.channel.isPrivate) { bot.sendMessage(usr, msg.channel.server.name + " > " + msg.author.username + ": " + msg.content); }
-		});
+	if (msg.mentions.length !== 0) {
+		if (msg.isMentioned(bot.user) && msg.content.startsWith("<@" + bot.user.id + ">")) {
+			cleverbot(bot, msg); talkedToTimes += 1; if (!msg.channel.isPrivate) {
+				console.log(colors.cServer(msg.channel.server.name) + " > " + colors.cGreen(msg.author.username) + " > " + colors.cYellow("@" + bot.user.username) + " " + msg.content.substring(22).replace(/\n/g, " "));
+			} else { console.log(colors.cGreen(msg.author.username) + " > " + colors.cYellow("@Bot-chan") + " " + msg.content.substring(22).replace(/\n/g, " ")); }
+		}
+		if (msg.content.indexOf("<@" + config.admin_id + ">") > -1) {
+			if (config.send_mentions && !msg.channel.isPrivate) {
+				var owner = bot.users.get("id", config.admin_id);
+				if (owner.status != "online") { bot.sendMessage(owner, msg.channel.server.name + " > " + msg.author.username + ": " + msg.cleanContent); }
+			}
+		}
 	}
 	if (!msg.content.startsWith(config.command_prefix) && !msg.content.startsWith(config.mod_command_prefix)) { return; } //if not a command
 	if (msg.author.id == bot.user.id) { return; } //stop from replying to itself
@@ -232,7 +239,7 @@ function carbonInvite(msg) {
 						var msgArray = [];
 						msgArray.push("Hi! I'm **" + bot.user.username + "** and I was invited to this server through carbonitex.net.");
 						msgArray.push("You can use `" + config.command_prefix + "help` to see what I can do. Mods can use `" + config.mod_command_prefix + "help` for mod commands.");
-						msgArray.push("If I shouldn't be here someone with the `Kick Members` permission can use `" + config.mod_command_prefix + "leaves` to make me leave");
+						msgArray.push("Mod/Admin commands ~~including bot settings~~ (WIP) can be viewed with `" + config.mod_command_prefix + "`help ");
 						msgArray.push("For help / feedback / bugs/ testing / info / changelogs / etc. go to **discord.gg/0kvLlwb7slG3XCCQ**");
 						bot.sendMessage(server.defaultChannel, msgArray);
 					}

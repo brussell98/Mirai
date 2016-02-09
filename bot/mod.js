@@ -334,6 +334,15 @@ var commands = {
 				});
 			} else { bot.sendMessage(msg, correctUsage("removecolor"),function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 10000}); }); }
 		}
+	},
+	"settings": {
+		desc: "Server settings. Read about them here: https://github.com/brussell98/BrussellBot/wiki/Server-Settings",
+		usage: "(WIP)",
+		deleteCommand: false,
+		cooldown: 3,
+		process: function(bot, msg, suffix) {
+			bot.sendMessage(msg, "WIP");
+		}
 	}
 }
 

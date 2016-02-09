@@ -215,7 +215,7 @@ var commands = {
 									var msgArray = [];
 									msgArray.push("Hi! I'm **" + bot.user.username + "** and I was invited to this server by " + msg.author + ".");
 									msgArray.push("Use `" + config.command_prefix + "help` to get a list of normal commands.");
-									msgArray.push("If I shouldn't be here someone with the `Kick Members` permission can use `" + config.mod_command_prefix + "leaves` to make me leave");
+									msgArray.push("Mod/Admin commands ~~including bot settings~~ (WIP) can be viewed with `" + config.mod_command_prefix + "`help ");
 									msgArray.push("For help / feedback / bugs / testing / announcements / changelogs / etc. go to **discord.gg/0kvLlwb7slG3XCCQ**");
 									bot.sendMessage(server.defaultChannel, msgArray);
 								} else { setTimeout(function() { bot.sendMessage(server.defaultChannel, "*Joined on request of " + msg.author + "*"); }, 2000); }
