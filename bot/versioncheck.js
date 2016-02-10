@@ -3,7 +3,7 @@ var version = require("../package.json").version;
 var colors = require("./styles.js");
 
 exports.checkForUpdate = function(callback) {
-	request("https://raw.githubusercontent.com/brussell98/BrussellBot/master/package.json", function(err, response, body) {
+	request("https://raw.githubusercontent.com/brussell98/BrussellBot/public/package.json", function(err, response, body) {
 		if (err) {
 			console.log(colors.cWarn(" WARN ") + "Version check error: " + err);
 			return callback(null);

@@ -90,6 +90,7 @@ var aliases = {
 	"h": "help", "commands": "help",
 	"server": "botserver",
 	"backwards": "reverse",
+	"myid": "id",
 	"p": "ping",
 	"j": "join", "joins": "join",
 	"lp": "letsplay", "play": "letsplay",
@@ -150,10 +151,18 @@ var commands = {
 		}
 	},
 	"reverse": {
-		desc: "Return's the input backwards",
+		desc: "Returns the input backwards",
 		usage: "<text>", deleteCommand: true, cooldown: 5, shouldDisplay: false,
 		process: function(bot, msg, suffix) {
 			if (suffix) { bot.sendMessage(msg, "\u202e " + suffix); }
+		}
+	},
+	"id": {
+		desc: "Returns your ID (or the channel's)",
+		usage: "[\"channel\"]", deleteCommand: true, cooldown: 2, shouldDisplay: false,
+		process: function(bot, msg, suffix) {
+			if (suffix && suffix.trim().replace("\"", "") === "channel") { bot.sendMessage(msg, "This channel's ID is: " + msg.channel.id); }
+			else { bot.sendMessage(msg, "Your ID is: " + msg.author.id); }
 		}
 	},
 	"ping": {
@@ -298,9 +307,9 @@ var commands = {
 							} else { msgArray.push("**Status:** " + usr.status); }
 							var jDate = new Date(msg.channel.server.detailsOfUser(usr).joinedAt);
 							msgArray.push("**Joined on:** " + jDate.toUTCString());
-							var roles = msg.channel.server.rolesOfUser(usr.id).map(function(role) { return role.name; });
+							var roles = msg.channel.server.rolesOfUser(usr.id).map((role) => { return role.name; });
 							roles = roles.join(", ").replace("@", "");
-							if (roles.length <= 1500) { msgArray.push("**Roles:** `" + roles + "`"); } else { msgArray.push("**Roles:** `Too many to display`"); }
+							if (roles) { if (roles.length <= 1500) { msgArray.push("**Roles:** `" + roles + "`"); } else { msgArray.push("**Roles:** `Too many to display`"); } }
 							bot.servers.map(function(server) { if (server.members.indexOf(usr) > -1) { count += 1; } });
 							if (count > 1) { msgArray.push("**Shared servers:** " + count); }
 							if (usr.avatarURL != null) { msgArray.push("**Avatar URL:** `" + usr.avatarURL + "`"); }
@@ -325,7 +334,7 @@ var commands = {
 								msgArray.push("**Joined on:** " + jDate.toUTCString());
 								var roles = msg.channel.server.rolesOfUser(usr.id).map((role) => { return role.name; });
 								roles = roles.join(", ").replace("@", "");
-								if (roles.length <= 1500) { msgArray.push("**Roles:** `" + roles + "`"); } else { msgArray.push("**Roles:** `Too many to display`"); }
+								if (roles) { if (roles.length <= 1500) { msgArray.push("**Roles:** `" + roles + "`"); } else { msgArray.push("**Roles:** `Too many to display`"); } }
 								bot.servers.map(function(server) { if (server.members.indexOf(usr) > -1) { count += 1; } });
 								if (count > 1) { msgArray.push("**Shared servers:** " + count); }
 								if (usr.avatarURL != null) { msgArray.push("**Avatar URL:** `" + usr.avatarURL + "`"); }

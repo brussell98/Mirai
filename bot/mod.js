@@ -132,7 +132,7 @@ var commands = {
 	},
 	"prune": {
 		desc: "Cleans the specified number of messages from the channel.",
-		usage: "<1-100> [if it contains this] | <1-100> user <username>",
+		usage: "<1-100> [if it contains this] | <1-100> user <username> | <1-100> images",
 		cooldown: 10, deleteCommand: true,
 		process: function(bot, msg, suffix) {
 			if (suffix && /^\d+$/.test(suffix.split(" ")[0])) {
@@ -143,14 +143,15 @@ var commands = {
 								if (error) { console.log(colors.cWarn(" WARN ") + "Something went wrong while fetching logs."); return; }
 								if (config.debug) { console.log(colors.cDebug(" DEBUG ") + "Pruning messages..."); }
 								var todo = parseInt(suffix.split(" ")[0]);
-								var hasTerm = false, hasUser = false;
+								var hasTerm = false, hasUser = false, hasImages = false;
 								var term = "", username = "";
-								if (suffix.split(" ").length > 1 && suffix.split(" ")[1].toLowerCase() != "user") { todo += 1; hasTerm = true; term = suffix.substring(suffix.indexOf(" ") + 1);
-								} else if (suffix.split(" ").length > 2 && suffix.split(" ")[1].toLowerCase() == "user") {
+								if (suffix.split(" ").length > 1 && suffix.split(" ")[1].toLowerCase() !== "user" && suffix.split(" ")[1].toLowerCase() !== "images") { todo += 1; hasTerm = true; term = suffix.substring(suffix.indexOf(" ") + 1);
+								} else if (suffix.split(" ").length > 2 && suffix.split(" ")[1].toLowerCase() === "user") {
 									if (msg.mentions.length < 1) { hasUser = true; username = suffix.replace(/\d+ user /, "").toLowerCase();
 									} else if (msg.mentions.length > 1) { bot.sendMessage(msg, "⚠ Can only prune one user at a time", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 15000}); }); return;
 									} else { username = msg.mentions[0].username.toLowerCase(); hasUser = true; }
-								} else if (suffix.split(" ").length > 2) { bot.sendMessage(msg, correctUsage("prune"), function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 15000}); }); return; }
+								} else if (suffix.split(" ").length == 2 && suffix.split(" ")[1].toLowerCase() === "images") { hasImages = true;
+								} else if (suffix.split(" ").length > 1) { bot.sendMessage(msg, correctUsage("prune"), function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 15000}); }); return; }
 								var delcount = 0;
 								for (var i = 0; i < 100; i++) {
 									if (todo <= 0) {
@@ -161,6 +162,10 @@ var commands = {
 										delcount++;
 										todo--;
 									} else if (hasUser && messages[i].author.username.toLowerCase() == username) {
+										bot.deleteMessage(messages[i]);
+										delcount++;
+										todo--;
+									} else if (hasImages && messages[i].attachments && JSON.stringify(messages[i].attachments) !== "[]") {
 										bot.deleteMessage(messages[i]);
 										delcount++;
 										todo--;

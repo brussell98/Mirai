@@ -29,3 +29,19 @@ A multipurpose bot for Discord using [Discord.js](https://github.com/hydrabolt/d
 	- [ ] List of queues songs
 	- [ ] Set playing to song name
 	- [ ] Bot owner gets priority
+
+----
+
+### Per-Server Settings
+
+- [ ] Ignore channel
+- [x] Admin SQL command
+- [x] Format local copy so it's easy to use
+- [x] Function for fetching DB
+- [x] Function for updating DB
+- [ ] Work when DB is down
+- [ ] `}leave` will remove the server entry
+- [ ] Admin command to clean up leftovers
+- [ ] Complete the `}settings` command
+	- [ ] Info about it and init generator on website
+	- [ ] Don't let users inject SQL with the welcome message
