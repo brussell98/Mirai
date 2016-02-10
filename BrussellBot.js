@@ -23,7 +23,7 @@ bot.on("warn", (m) => { if (config.show_warn) { console.log(colors.cWarn(" WARN 
 bot.on("debug", (m) => { if (config.debug) { console.log(colors.cDebug(" DEBUG ") + m); } });
 
 bot.on("ready", () => {
-	bot.setPlayingGame(games[Math.floor(Math.random() * (games.length))]); //set game to a random game from games.json
+	bot.setPlayingGame(games[Math.floor(Math.random() * (games.length))]);
 	console.log(colors.cGreen("BrussellBot is ready!") + " Listening to " + bot.channels.length + " channels on " + bot.servers.length + " servers");
 	versioncheck.checkForUpdate((resp) => {
 		if (resp !== null) { console.log(resp); }

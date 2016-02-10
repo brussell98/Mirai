@@ -303,7 +303,7 @@ var commands = {
 							var msgArray = [], count = 0;
 							msgArray.push("ℹ **Info on** " + usr.username + " (" + usr.discriminator + ")");
 							msgArray.push("**ID:** " + usr.id);
-							if (usr.game && usr.game !== undefined && usr.game !== null && usr.game !== "null") { msgArray.push("**Status:** " + usr.status + " **last playing** " + usr.game.name);
+							if (usr.game && usr.game.name !== undefined && usr.game.name !== null && usr.game.name !== "null") { msgArray.push("**Status:** " + usr.status + " **last playing** " + usr.game.name);
 							} else { msgArray.push("**Status:** " + usr.status); }
 							var jDate = new Date(msg.channel.server.detailsOfUser(usr).joinedAt);
 							msgArray.push("**Joined on:** " + jDate.toUTCString());
@@ -328,7 +328,7 @@ var commands = {
 								var msgArray = [], count = 0;
 								msgArray.push("ℹ **Info on** " + usr.username + " (" + usr.discriminator + ")");
 								msgArray.push("**ID:** " + usr.id);
-								if (usr.game && usr.game !== undefined && usr.game !== null && usr.game !== "null") { msgArray.push("**Status:** " + usr.status + " **last playing** " + usr.game.name);
+								if (usr.game && usr.game.name !== undefined && usr.game.name !== null && usr.game.name !== "null") { msgArray.push("**Status:** " + usr.status + " **last playing** " + usr.game.name);
 								} else { msgArray.push("**Status:** " + usr.status); }
 								var jDate = new Date(msg.channel.server.detailsOfUser(usr).joinedAt);
 								msgArray.push("**Joined on:** " + jDate.toUTCString());

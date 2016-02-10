@@ -8,7 +8,7 @@ exports.sql = function(bot, msg, query) {
 		if (err) { console.log(err);
 		} else {
 			var q = client.query(query);
-			q.on('error', (e) => { bot.sendMessage(msg, '```' + e + '```'); return; });
+			q.on('error', (e) => { bot.sendMessage(msg, '```' + e.message + '```'); return; });
 			q.on('row', (row, result) => {
 				result.addRow(row);
 			});
@@ -26,14 +26,16 @@ function fetchDB(tableName) {
 	pg.connect(process.env.DATABASE_URL + '?ssl=true', function(err, client, done) {
 		if (!err) {
 			var q = client.query('SELECT * FROM ' + tableName);
-			q.on('error', (e) => { console.log(e); return; });
+			q.on('error', (e) => { console.log(e.message); return; });
 			q.on('row', (row, result) => {
 				result.addRow(row);
 			});
 			q.on('end', (result) => {
+				ServerSettings = {};
 				result.rows.map((data) => {
-					ServerSettings = {};
-					ServerSettings[data.ID] = {'deleteCmds': data.deleteCmds, 'welcomeMsg': data.welcomeMsg, 'banAlerts': data.banAlerts, 'nameChanges': data.nameChanges};
+					if (data && data.ID && data.deleteCmds && data.welcomeMsg && data.banAlerts && data.nameChanges) {
+						ServerSettings[data.ID] = {'deleteCmds': data.deleteCmds, 'welcomeMsg': data.welcomeMsg, 'banAlerts': data.banAlerts, 'nameChanges': data.nameChanges};
+					}
 				});
 			});
 			done();
@@ -46,12 +48,12 @@ function updateServerDB(sID) {
 		pg.connect(process.env.DATABASE_URL + '?ssl=true', function(err, client, done) {
 			if (!err) {
 				var q = client.query('SELECT * FROM ' + SERVER_DB_NAME + ' WHERE ID = ' + sID);
-				q.on('error', (e) => { console.log(e); done(); return false; });
+				q.on('error', (e) => { console.log(e.message); done(); return false; });
 				q.on('end', (result) => {
 					var checkData = new Promise((resolve, reject) => {
 						if (!result) { reject('No data returned from query') }
 						var updateQ = client.query('UPDATE ' + SERVER_DB_NAME + ' SET DeleteCmds = $1,     !\!!\Th\E \Re\St o\F T\hE\m!\!!     WHERE ID = ' + sID, [ServerSettings[sID].DeleteCmds]);
-						updateQ.on('error', (e) => { console.log(e); done(); return false; });
+						updateQ.on('error', (e) => { console.log(e.message); done(); return false; });
 						updateQ.on('end', (result) => { done(); resolve(); });
 					});
 					checkData.then(() => {
