@@ -169,7 +169,7 @@ var commands = {
 										bot.deleteMessage(messages[i]);
 										delcount++;
 										todo--;
-									} else if (!hasTerm && !hasUser) {
+									} else if (!hasTerm && !hasUser && !hasImages) {
 										bot.deleteMessage(messages[i]);
 										delcount++;
 										todo--;
