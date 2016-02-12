@@ -118,7 +118,7 @@ var commands = {
 			if (!suffix) {
 				msgArray.push("Use `" + config.command_prefix + "help <command name>` to get info on a specific command.");
 				msgArray.push("Mod commands can be found with `" + config.mod_command_prefix + "help [command]`.");
-				msgArray.push("You can also find examples and more at __github.com/brussell98/BrussellBot/wiki/Commands__");
+				msgArray.push("You can also find examples and more at **https://github.com/brussell98/BrussellBot/wiki/Commands**");
 				msgArray.push("**Commands:**\n");
 				msgArray.push("`@" + bot.user.username + " text`\n		Talk to the bot (cleverbot)");
 				Object.keys(commands).forEach(function(cmd) {
@@ -397,6 +397,7 @@ var commands = {
 		desc: "Makes a choice for you.",
 		usage: "<option 1>, <option 2>, [option], [option]",
 		cooldown: 4,
+		deleteCommand: false,
 		process: function(bot, msg, suffix) {
 			if (!suffix || /(.*), ?(.*)/.test(suffix) == false) { bot.sendMessage(msg, correctUsage("choose"), function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 			var choices = suffix.split(/, ?/);

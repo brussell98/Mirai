@@ -283,10 +283,11 @@ var commands = {
 		deleteCommand: true,
 		cooldown: 2,
 		process: function(bot, msg, suffix) {
-			if (msg.channel.isPrivate) { bot.sendMessage(msg, "Can't do this in a PM!",function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 10000}); return; }); }
-			if (!msg.channel.permissionsOf(msg.author).hasPermission("manageRoles") && msg.author.id != config.admin_id) { bot.sendMessage(msg, "You can't edit roles!",function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
-			if (!msg.channel.permissionsOf(bot.user).hasPermission("manageRoles")) { bot.sendMessage(msg, "I can't manage roles!",function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
-			if (msg.mentions.length < 1) { bot.sendMessage(msg, "You must mention the users you want to change the color of!",function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
+			if (msg.channel.isPrivate) { bot.sendMessage(msg, "Can't do this in a PM!", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); return; }); }
+			if (!/^<@(.*)> #?[a-f0-9]{6}$/i.test(suffix)) { bot.sendMessage(msg, correctUsage("givecolor"), (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
+			if (!msg.channel.permissionsOf(msg.author).hasPermission("manageRoles") && msg.author.id != config.admin_id) { bot.sendMessage(msg, "You can't edit roles!", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
+			if (!msg.channel.permissionsOf(bot.user).hasPermission("manageRoles")) { bot.sendMessage(msg, "I can't manage roles!", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
+			if (msg.mentions.length < 1) { bot.sendMessage(msg, "You must mention the users you want to change the color of!",(erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
 			var role = msg.channel.server.roles.get("name", "#" + suffix.replace(/(.*) #?/, "").toLowerCase());
 			var roleExists = false;
 			if (role) { roleExists = true; }
@@ -341,8 +342,8 @@ var commands = {
 		}
 	},
 	"settings": {
-		desc: "Server settings. Read about them here: https://github.com/brussell98/BrussellBot/wiki/Server-Settings",
-		usage: "(WIP)",
+		desc: "(BETA) Server settings. Read about them here: **http://brussell98.github.io/bot/serversettings.html**",
+		usage: "<command> <value>",
 		deleteCommand: false,
 		cooldown: 3,
 		process: function(bot, msg, suffix) {

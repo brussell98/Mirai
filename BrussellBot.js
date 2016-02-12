@@ -12,6 +12,7 @@ var versioncheck = require("./bot/versioncheck.js");
 var discord = require("discord.js");
 var cleverbot = require("./bot/cleverbot.js").cleverbot;
 var colors = require("./bot/styles.js");
+var db = require("./bot/db.js");
 checkConfig(); //notify user if they are missing things in the config
 
 var lastExecTime = {}; //for cooldown
@@ -162,23 +163,19 @@ bot.on("userUnbanned", (objUser, objServer) => {
 	if (objServer.members.length < 301 && config.non_essential_event_listeners) { console.log(objUser.username + " unbanned on " + objServer.name); }
 });
 
-bot.on("userUpdated", (objUser, objNewUser) => {
-	if (config.non_essential_event_listeners) {
-		if (objUser.username != objNewUser.username) { //if new username
-			if (config.username_changes) {
-				if (config.debug) { console.log(colors.cDebug(" DEBUG ") + objUser.username + " changed their name to " + objNewUser.username); }
-				bot.servers.forEach((ser) => {
-					if (ser.members.has("id", objUser.id) && ser.members.length < 101) { bot.sendMessage(ser, "⚠ User in this server: `" + objUser.username + "`. changed their name to: `" + objNewUser.username + "`."); }
-				});
-			}
-		}
-	}
-});
-
-bot.on("presence", (userOld, userNew) => { //check if game and also it's now oldUser newUser
+bot.on("presence", (userOld, userNew) => {
 	if (config.log_presence) {
 		if (userNew.game === null) { console.log(colors.cDebug(" PRESENCE ") + userNew.username + " is now " + userNew.status);
 		} else { console.log(colors.cDebug(" PRESENCE ") + userNew.username + " is now " + userNew.status + " playing " + userNew.game.name); }
+	}
+	if (config.non_essential_event_listeners) {
+		if (userOld.username != userNew.username) {
+			if (config.username_changes) {
+				bot.servers.map((ser) => {
+					if (ser.members.has("id", userOld.id) && ser.members.length < 101) { bot.sendMessage(ser, "`" + userOld.username + "` is now known as `" + userNew.username + "`"); }
+				});
+			}
+		}
 	}
 });
 
@@ -306,6 +303,8 @@ function evaluateString(msg) {
 	}
 
 }
+
+db.fetchServerDB("servers");
 
 setInterval(() => {
 	bot.setPlayingGame(games[Math.floor(Math.random() * (games.length))]);

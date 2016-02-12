@@ -32,6 +32,8 @@ A multipurpose bot for Discord using [Discord.js](https://github.com/hydrabolt/d
 
 ----
 
+- [ ] Catch space between `]` and command
+
 ### Per-Server Settings
 
 - [ ] Ignore channel
@@ -43,5 +45,5 @@ A multipurpose bot for Discord using [Discord.js](https://github.com/hydrabolt/d
 - [ ] `}leave` will remove the server entry
 - [ ] Admin command to clean up leftovers
 - [ ] Complete the `}settings` command
-	- [ ] Info about it and init generator on website
-	- [ ] Don't let users inject SQL with the welcome message
+	- [x] Info about it and init generator on website
+	- [x] Don't let users inject SQL with the welcome message

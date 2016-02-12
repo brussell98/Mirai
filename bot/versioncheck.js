@@ -1,3 +1,4 @@
+/// <reference path="../typings/main.d.ts" />
 var request = require("request");
 var version = require("../package.json").version;
 var colors = require("./styles.js");

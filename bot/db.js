@@ -1,7 +1,8 @@
+/* global ServerSettings */
 /// <reference path="../typings/main.d.ts" />
 var pg = require('pg');
-const SERVER_DB_NAME = 'Servers';
-var ServerSettings = {};
+const SERVER_DB_NAME = 'servers';
+ServerSettings = {};
 
 exports.sql = function(bot, msg, query) {
 	pg.connect(process.env.DATABASE_URL + '?ssl=true', function(err, client, done) {
@@ -27,16 +28,11 @@ function fetchDB(tableName) {
 		if (!err) {
 			var q = client.query('SELECT * FROM ' + tableName);
 			q.on('error', (e) => { console.log(e.message); return; });
-			q.on('row', (row, result) => {
-				result.addRow(row);
+			ServerSettings = {};
+			q.on('row', (row) => {
+				ServerSettings[row.id] = {'deletecmds': row.deletecmds, 'welcomemsg': row.welcomemsg, 'banalerts': row.banalerts, 'namechanges': row.namechanges};
 			});
 			q.on('end', (result) => {
-				ServerSettings = {};
-				result.rows.map((data) => {
-					if (data && data.ID && data.deleteCmds && data.welcomeMsg && data.banAlerts && data.nameChanges) {
-						ServerSettings[data.ID] = {'deleteCmds': data.deleteCmds, 'welcomeMsg': data.welcomeMsg, 'banAlerts': data.banAlerts, 'nameChanges': data.nameChanges};
-					}
-				});
 			});
 			done();
 		} else { console.log(err); return; }
@@ -47,12 +43,12 @@ function updateServerDB(sID) {
 	if (sID && ServerSettings.hasOwnProperty(sID)) {
 		pg.connect(process.env.DATABASE_URL + '?ssl=true', function(err, client, done) {
 			if (!err) {
-				var q = client.query('SELECT * FROM ' + SERVER_DB_NAME + ' WHERE ID = ' + sID);
+				var q = client.query('SELECT * FROM ' + SERVER_DB_NAME + ' WHERE id = ' + sID);
 				q.on('error', (e) => { console.log(e.message); done(); return false; });
 				q.on('end', (result) => {
 					var checkData = new Promise((resolve, reject) => {
 						if (!result) { reject('No data returned from query') }
-						var updateQ = client.query('UPDATE ' + SERVER_DB_NAME + ' SET DeleteCmds = $1,     !\!!\Th\E \Re\St o\F T\hE\m!\!!     WHERE ID = ' + sID, [ServerSettings[sID].DeleteCmds]);
+						var updateQ = client.query('UPDATE ' + SERVER_DB_NAME + ' SET deletecmds = $1, welcomemsg = $2, banalerts = $3, namechanges = $4 WHERE id = ' + sID, [ServerSettings[sID].deletecmds, ServerSettings[sID].welcomemsg, ServerSettings[sID].banalerts, ServerSettings[sID].namechanges]);
 						updateQ.on('error', (e) => { console.log(e.message); done(); return false; });
 						updateQ.on('end', (result) => { done(); resolve(); });
 					});
@@ -70,6 +66,44 @@ function updateServerDB(sID) {
 	} else { return false; }
 }
 
-fetchDB(SERVER_DB_NAME);
-exports.fetchServerDB = fetchDB(SERVER_DB_NAME);
-exports.updateServerDB = updateServerDB();
+exports.fetchServerDB = function(tableName) {
+	pg.connect(process.env.DATABASE_URL + '?ssl=true', function(err, client, done) {
+		if (!err) {
+			var q = client.query('SELECT * FROM ' + tableName);
+			q.on('error', (e) => { console.log(e.message); return; });
+			ServerSettings = {};
+			q.on('row', (row) => {
+				ServerSettings[row.id] = {'deletecmds': row.deletecmds, 'welcomemsg': row.welcomemsg, 'banalerts': row.banalerts, 'namechanges': row.namechanges};
+			});
+			q.on('end', (result) => {
+			});
+			done();
+		} else { console.log(err); return; }
+	});
+};
+exports.updateServerDB = function(sID) {
+	if (sID && ServerSettings.hasOwnProperty(sID)) {
+		pg.connect(process.env.DATABASE_URL + '?ssl=true', function(err, client, done) {
+			if (!err) {
+				var q = client.query('SELECT * FROM ' + SERVER_DB_NAME + ' WHERE id = ' + sID);
+				q.on('error', (e) => { console.log(e.message); done(); return false; });
+				q.on('end', (result) => {
+					var checkData = new Promise((resolve, reject) => {
+						if (!result) { reject('No data returned from query') }
+						var updateQ = client.query('UPDATE ' + SERVER_DB_NAME + ' SET deletecmds = $1, welcomemsg = $2, banalerts = $3, namechanges = $4 WHERE id = ' + sID, [ServerSettings[sID].deletecmds, ServerSettings[sID].welcomemsg, ServerSettings[sID].banalerts, ServerSettings[sID].namechanges]);
+						updateQ.on('error', (e) => { console.log(e.message); done(); return false; });
+						updateQ.on('end', (result) => { done(); resolve(); });
+					});
+					checkData.then(() => {
+						done();
+						return true;
+					}).catch((er) => {
+						done();
+						console.log('Error updating server settings: ' + er);
+						return false;
+					});
+				});
+			} else { console.log(err); return false; }
+		});
+	} else { return false; }
+};
