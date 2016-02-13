@@ -1,3 +1,5 @@
+/* global talkedToTimes */
+/* global commandsProcessed */
 /// <reference path="typings/main.d.ts" />
 /*
 This is a multipurpose bot
@@ -16,14 +18,15 @@ var db = require("./bot/db.js");
 checkConfig(); //notify user if they are missing things in the config
 
 var lastExecTime = {}; //for cooldown
-var shouldCarbonAnnounce = true; //set if the bot should announce when joining an invite sent without a command
-var commandsProcessed = 0, talkedToTimes = 0;
+var shouldCarbonAnnounce = true;
+commandsProcessed = 0, talkedToTimes = 0;
 
 var bot = new discord.Client();
 bot.on("warn", (m) => { if (config.show_warn) { console.log(colors.cWarn(" WARN ") + m); } });
 bot.on("debug", (m) => { if (config.debug) { console.log(colors.cDebug(" DEBUG ") + m); } });
 
 bot.on("ready", () => {
+	bot.forceFetchUsers();
 	bot.setPlayingGame(games[Math.floor(Math.random() * (games.length))]);
 	console.log(colors.cGreen("BrussellBot is ready!") + " Listening to " + bot.channels.length + " channels on " + bot.servers.length + " servers");
 	versioncheck.checkForUpdate((resp) => {
@@ -124,7 +127,7 @@ function execCommand(msg, cmd, suffix, type) {
 					} else { lastExecTime[cmd][id] = new Date(); }
 				} else { lastExecTime[cmd] = {}; }
 			}
-			mod.commands[cmd].process(bot, msg, suffix, commandsProcessed, talkedToTimes);
+			mod.commands[cmd].process(bot, msg, suffix);
 			if (mod.commands[cmd].hasOwnProperty("deleteCommand")) {
 				if (mod.commands[cmd].deleteCommand === true) { bot.deleteMessage(msg, {"wait": 10000}); }
 			}

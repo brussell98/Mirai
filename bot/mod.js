@@ -1,3 +1,5 @@
+/* global talkedToTimes */
+/* global commandsProcessed */
 /// <reference path="../typings/main.d.ts" />
 var config = require("./config.json");
 var games = require("./games.json").games;
@@ -77,16 +79,15 @@ var commands = {
 	"stats": {
 		desc: "Get the stats of the bot",
 		usage: "", cooldown: 30, deleteCommand: true,
-		process: function(bot, msg, suffix, commandsProcessed, talkedToTimes) {
+		process: function(bot, msg, suffix) {
 			if (msg.author.id == config.admin_id || msg.channel.isPrivate || msg.channel.permissionsOf(msg.author).hasPermission("manageChannel")) {
 				var msgArray = [];
 				msgArray.push("```");
 				msgArray.push("Uptime (may be inaccurate): " + (Math.round(bot.uptime / (1000 * 60 * 60))) + " hours, " + (Math.round(bot.uptime / (1000 * 60)) % 60) + " minutes, and " + (Math.round(bot.uptime / 1000) % 60) + " seconds.");
-				msgArray.push("Connected to " + bot.servers.length + " servers, " + bot.channels.length + " channels, and " + bot.users.length + " users.");
+				msgArray.push("Connected to " + bot.servers.length + " servers with " + bot.channels.length + " channels. I'm aware of " + bot.users.length + " users.");
 				msgArray.push("Memory Usage: " + Math.round(process.memoryUsage().rss / 1024 / 1000) + "MB");
 				msgArray.push("Running BrussellBot v" + version);
-				msgArray.push("Commands processed this session: " + commandsProcessed);
-				msgArray.push("Users talked to me " + talkedToTimes + " times");
+				msgArray.push("Commands this session: " + commandsProcessed + " + " + talkedToTimes + " cleverbot");
 				msgArray.push("```");
 				bot.sendMessage(msg, msgArray);
 			} else { bot.sendMessage(msg, "Only server admins/mods can do this.", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
@@ -115,7 +116,8 @@ var commands = {
 						var todo = parseInt(suffix),
 						delcount = 0;
 						for (var i = 0; i < 100; i++) {
-							if (todo <= 0) {
+							if (todo <= 0 || i == 99) {
+								bot.sendMessage(msg, msg.author.username + " 👍");
 								return;
 							}
 							if (messages[i].author == bot.user) {
@@ -154,7 +156,8 @@ var commands = {
 								} else if (suffix.split(" ").length > 1) { bot.sendMessage(msg, correctUsage("prune"), function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 15000}); }); return; }
 								var delcount = 0;
 								for (var i = 0; i < 100; i++) {
-									if (todo <= 0) {
+									if (todo <= 0 || i == 99) {
+										bot.sendMessage(msg, msg.author.username + " 👍");
 										return;
 									}
 									if (hasTerm && messages[i].content.indexOf(term) > -1) {
@@ -211,11 +214,14 @@ var commands = {
 					var index = confirmCodes.indexOf(parseInt(suffix));
 					if (index == -1) { bot.sendMessage(msg, "Code not found", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 					bot.sendMessage(msg, "Announcing to all users, this may take a while...");
-					msg.channel.server.members.forEach((usr) => {
-						setTimeout(() => {
-							bot.sendMessage(usr, "📣 " + announceMessages[index] + " - from " + msg.author + " on " + msg.channel.server.name);
-						}, 1000);
-					});
+					var loopIndex = 0;
+					function annLoopS() {
+						if (loopIndex >= msg.channel.server.members.length) { clearInterval(annTimerS); return; }
+						bot.sendMessage(msg.channel.server.members[loopIndex], "📣 " + announceMessages[index] + " - from " + msg.author + " on " + msg.channel.server.name);
+						loopIndex++;
+					}
+					var annTimerS = setInterval(() => { annLoopS() }, 1100);
+					delete confirmCodes[index];
 					if (config.debug) { console.log(colors.cDebug(" DEBUG ") + "Announced \"" + announceMessages[index] + "\" to members of " + msg.channel.server.name); }
 				} else {
 					announceMessages.push(suffix);
@@ -228,11 +234,14 @@ var commands = {
 					var index = confirmCodes.indexOf(parseInt(suffix));
 					if (index == -1) { bot.sendMessage(msg, "Code not found", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 					bot.sendMessage(msg, "Announcing to all servers, this may take a while...");
-					bot.servers.forEach((svr) => {
-						setTimeout(() => {
-							bot.sendMessage(svr.defaultChannel, "📣 " + announceMessages[index] + " - from your lord and savior " + msg.author.username);
-						}, 1000);
-					});
+					var loopIndex = 0;
+					function annLoop() {
+						if (loopIndex >= bot.servers.length) { clearInterval(annTimer); return; }
+						bot.sendMessage(bot.servers[loopIndex].defaultChannel, "📣 " + announceMessages[index] + " - from your lord and savior " + msg.author.username);
+						loopIndex++;
+					}
+					var annTimer = setInterval(() => { annLoop() }, 1100);
+					delete confirmCodes[index];
 					if (config.debug) { console.log(colors.cDebug(" DEBUG ") + "Announced \"" + announceMessages[index] + "\" to all servers"); }
 				} else {
 					announceMessages.push(suffix);
@@ -272,7 +281,7 @@ var commands = {
 				if (!msg.channel.permissionsOf(msg.author).hasPermission("manageRoles") && msg.author.id != config.admin_id) { bot.sendMessage(msg, "You can't edit roles!",function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
 				if (!msg.channel.permissionsOf(bot.user).hasPermission("manageRoles")) { bot.sendMessage(msg, "I can't edit roles!",function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
 				var role = msg.channel.server.roles.get("name", suffix.replace(/ #?[a-f0-9]{6}/i, ""));
-				if (role) { bot.updateRole(role, {color: parseInt(suffix.replace(/(.*) #?/, ""), 16)});
+				if (role) { bot.updateRole(role, {color: parseInt(suffix.replace(/(.*) #?/, ""), 16)}); bot.sendMessage(msg, msg.author.username + " 👍");
 				} else { bot.sendMessage(msg, "Role \"" + suffix.replace(/ #?[a-f0-9]{6}/i, "") + "\" not found",function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 10000}); }); }
 			} else { bot.sendMessage(msg, correctUsage("color"),function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 10000}); }); }
 		}
@@ -298,13 +307,15 @@ var commands = {
 					}
 				});
 				if (roleExists) {
-					bot.addMemberToRole(user, role, (e) => { if (e) { bot.sendMessage(msg, "Error giving member role: " + e); } });
+					bot.addMemberToRole(user, role, (e) => { if (e) { bot.sendMessage(msg, "Error giving member role: " + e); return; } });
+					bot.sendMessage(msg, msg.author.username + " 👍");
 				} else {
 					msg.channel.server.createRole({color: parseInt(suffix.replace(/(.*) #?/, ""), 16), hoist: false, permissions: [], name: "#" + suffix.replace(/(.*) #?/, "").toLowerCase()}, (e, rl) => {
 						if (e) { bot.sendMessage(msg, "Error creating role: " + e); return; }
 						role = rl;
 						roleExists = true;
-						bot.addMemberToRole(user, role, (e) => { if (e) { bot.sendMessage(msg, "Error giving member role: " + e); } });
+						bot.addMemberToRole(user, role, (e) => { if (e) { bot.sendMessage(msg, "Error giving member role: " + e); return; } });
+						bot.sendMessage(msg, msg.author.username + " 👍");
 					});
 				}
 			});
@@ -328,16 +339,19 @@ var commands = {
 						}
 					});
 				});
+				bot.sendMessage(msg, msg.author.username + " 👍");
 			} else if (/^#?[a-f0-9]{6}$/i.test(suffix.trim())) {
 				var role = msg.channel.server.roles.get("name", "#" + suffix.trim().replace(/(.*) #?/, "").toLowerCase());
 				if (!role) { bot.sendMessage(msg, "Color not found",function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
-				bot.deleteRole(role, (e) => { if (e) { bot.sendMessage(msg, "Error deleting role: " + e,function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 10000}); }); } });
+				bot.deleteRole(role, (e) => { if (e) { bot.sendMessage(msg, "Error deleting role: " + e,function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; } });
+				bot.sendMessage(msg, msg.author.username + " 👍");
 			} else if (suffix.trim() == "clean") {
 				msg.channel.server.roles.map((role) => {
 					if (/^#?[a-f0-9]{6}$/.test(role.name)) {
 						if (msg.channel.server.usersWithRole(role).length < 1) { bot.deleteRole(role, (e) => { if (e) { bot.sendMessage(msg, "Error deleting role: " + e,function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 10000}); }); } }); }
 					}
 				});
+				bot.sendMessage(msg, msg.author.username + " 👍");
 			} else { bot.sendMessage(msg, correctUsage("removecolor"),function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 10000}); }); }
 		}
 	},
