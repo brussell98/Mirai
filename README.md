@@ -34,7 +34,8 @@ A multipurpose bot for Discord using [Discord.js](https://github.com/hydrabolt/d
 
 - [ ] Catch space between `]` and command
 - [x] Add 👍 (:thumbsup:) confirmation messages
-- [ ] Work after the new API update -- *needs testing*
+- [x] Work after the new API update
+- [ ] `]beep`
 
 ### Per-Server Settings
 

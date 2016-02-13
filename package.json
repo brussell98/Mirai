@@ -19,7 +19,7 @@
 	},
 	"license": "MIT",
 	"dependencies": {
-		"discord.js": "hydrabolt/discord.js#54045de5f1552551b56a85fc428a21279cd27ddd",
+		"discord.js": "hydrabolt/discord.js#indev",
 		"request": "*",
 		"xml2js": "*",
 		"cleverbot-node": "*",
