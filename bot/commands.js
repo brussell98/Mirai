@@ -321,9 +321,9 @@ var commands = {
 						var users = suffix.split(/, ?/);
 						if (users.length > 4) { bot.sendMessage(msg, "Limit of 4 users", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 						users.map(function(user) {
-							var usr = msg.channel.server.members.find((member) => { return member.username.toLowerCase() == user.toLowerCase() });
-							if (!usr) { usr = msg.channel.server.members.find((member) => { return member.username.toLowerCase().indexOf(user.toLowerCase()) == 0 }); }
-							if (!usr) { usr = msg.channel.server.members.find((member) => { return member.username.toLowerCase().indexOf(user.toLowerCase()) > -1 }); }
+							var usr = msg.channel.server.members.find((member) => { if (member === undefined) { return false; } return member.username.toLowerCase() == user.toLowerCase() });
+							if (!usr) { usr = msg.channel.server.members.find((member) => { if (member === undefined) { return false; } return member.username.toLowerCase().indexOf(user.toLowerCase()) == 0 }); }
+							if (!usr) { usr = msg.channel.server.members.find((member) => { if (member === undefined) { return false; } return member.username.toLowerCase().indexOf(user.toLowerCase()) > -1 }); }
 							if (usr) {
 								var msgArray = [], count = 0;
 								msgArray.push("ℹ **Info on** " + usr.username + " (" + usr.discriminator + ")");
@@ -340,7 +340,7 @@ var commands = {
 								if (usr.avatarURL != null) { msgArray.push("**Avatar URL:** `" + usr.avatarURL + "`"); }
 								bot.sendMessage(msg, msgArray);
 								if (config.debug) { console.log(colors.cDebug(" DEBUG ") + "Got info on " + usr.username); }
-							} else { bot.sendMessage(msg, "User \"" + user + "\" not found. If you want to get info on multiple users separate them with a comma.", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 15000}); }); }
+							} else { bot.sendMessage(msg, "User \"" + user + "\" not found. (Blame *Better*Discord) If you want to get info on multiple users separate them with a comma.", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 15000}); }); }
 						});
 					}
 				} else {
@@ -384,11 +384,11 @@ var commands = {
 				var users = suffix.split(/, ?/);
 				if (users.length > 6) { bot.sendMessage(msg, "Limit of 6 users", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 				users.map(function(user) {
-					var usr = msg.channel.server.members.find((member) => { return member.username.toLowerCase() == user.toLowerCase() });
-					if (!usr) { usr = msg.channel.server.members.find((member) => { return member.username.toLowerCase().indexOf(user.toLowerCase()) == 0 }); }
-					if (!usr) { usr = msg.channel.server.members.find((member) => { return member.username.toLowerCase().indexOf(user.toLowerCase()) > -1 }); }
+					var usr = msg.channel.server.members.find((member) => { if (member === undefined) { return false; } return member.username.toLowerCase() == user.toLowerCase() });
+					if (!usr) { usr = msg.channel.server.members.find((member) => { if (member === undefined) { return false; } return member.username.toLowerCase().indexOf(user.toLowerCase()) == 0 }); }
+					if (!usr) { usr = msg.channel.server.members.find((member) => { if (member === undefined) { return false; } return member.username.toLowerCase().indexOf(user.toLowerCase()) > -1 }); }
 					if (usr) { (usr.avatarURL != null) ? bot.sendMessage(msg, "**" + usr.username + "**'s avatar is: " + usr.avatarURL + "") : bot.sendMessage(msg, "**" + usr.username + "** has no avatar", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); });
-					} else { bot.sendMessage(msg, "User \"" + user + "\" not found. If you want to get the avatar of multiple users separate them with a comma.", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 20000}); }); }
+					} else { bot.sendMessage(msg, "User \"" + user + "\" not found. (Blame *Better*Discord) If you want to get the avatar of multiple users separate them with a comma.", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 20000}); }); }
 				});
 			}
 		}
@@ -873,8 +873,8 @@ var commands = {
 			if (msg.everyoneMentioned) { bot.sendMessage(msg, "Hey, " + msg.author.username + ", don't do that ok?", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 			if (msg.mentions.length > 1) { bot.sendMessage(msg, "Multiple mentions aren't allowed!", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
 			if (suffix.toLowerCase().replace("-", " ") == bot.user.username.toLowerCase().replace("-", " ")) { bot.sendMessage(msg, "I'd rate myself **10/10**"); return; }
-			var fullName = "";
-			if (!msg.channel.isPrivate) { var user = msg.channel.server.members.find((member) => { return member.username.toLowerCase() == suffix.toLowerCase() }); } else { var user = false; }
+			var fullName = "", user = false;
+			if (!msg.channel.isPrivate) { user = msg.channel.server.members.find((member) => { if (member === undefined) { return false; } return member.username.toLowerCase() == suffix.toLowerCase() }); } else { user = false; }
 			if (!user && msg.mentions.length < 1) {
 				Object.keys(waifus).map(function(name) {if (name.toLowerCase() == suffix.toLowerCase()) { fullName = name; return; }});
 				if (!fullName) { Object.keys(waifus).map(function(name) {if (name.split(" ")[0].toLowerCase() == suffix.toLowerCase()) {fullName = name; return;}}); }
