@@ -39,7 +39,7 @@ function fetchDB(tableName) {
 	});
 }
 
-function updateServerDB(sID) {
+function updateServerDB(sID) { //fix this like exported version
 	if (sID && ServerSettings.hasOwnProperty(sID)) {
 		pg.connect(process.env.DATABASE_URL + '?ssl=true', function(err, client, done) {
 			if (!err) {
@@ -97,15 +97,15 @@ exports.updateServerDB = function(sID, callback) {
 		});
 	} else { return; }
 };
-exports.addToDB = function(sID) {
+exports.addToDB = function(sID, callback) {
 	pg.connect(process.env.DATABASE_URL + '?ssl=true', function(err, client, done) {
 		if (!err) {
 			var q = client.query('INSERT INTO ' + SERVER_DB_NAME + ' VALUES ($1, $2, $3, $4, $5)', [sID, ServerSettings[sID].deletecmds, ServerSettings[sID].welcomemsg, ServerSettings[sID].banalerts, ServerSettings[sID].namechanges]);
-			q.on('error', (e) => { console.log(e.message); return false; });
-			q.on('end', (result) => {
-				return true;
+			q.on('error', (e) => { console.log(e.message); done(); return; });
+			q.on('end', () => {
+				done();
+				callback();
 			});
-			done();
-		} else { console.log(err); return false; }
+		} else { console.log(err); return; }
 	});
 };
