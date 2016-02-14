@@ -108,7 +108,7 @@ function execCommand(msg, cmd, suffix, type) {
 				} else { lastExecTime[cmd] = {}; }
 			}
 			commands.commands[cmd].process(bot, msg, suffix);
-			if (commands.commands[cmd].hasOwnProperty("deleteCommand")) {
+			if (!msg.channel.isPrivate && commands.commands[cmd].hasOwnProperty("deleteCommand")) {
 				if (commands.commands[cmd].deleteCommand === true && ServerSettings.hasOwnProperty(msg.channel.server.id) && ServerSettings[msg.channel.server.id].deletecmds == true) { bot.deleteMessage(msg, {"wait": 10000}); }
 			}
 		} else if (type == "mod") {
@@ -130,7 +130,7 @@ function execCommand(msg, cmd, suffix, type) {
 				} else { lastExecTime[cmd] = {}; }
 			}
 			mod.commands[cmd].process(bot, msg, suffix);
-			if (mod.commands[cmd].hasOwnProperty("deleteCommand")) {
+			if (!msg.channel.isPrivate && mod.commands[cmd].hasOwnProperty("deleteCommand")) {
 				if (mod.commands[cmd].deleteCommand === true && ServerSettings.hasOwnProperty(msg.channel.server.id) && ServerSettings[msg.channel.server.id].deletecmds == true) { bot.deleteMessage(msg, {"wait": 10000}); }
 			}
 		} else { return; }

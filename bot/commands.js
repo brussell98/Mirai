@@ -891,11 +891,11 @@ var commands = {
 				if (Ratings.hasOwnProperty(fullName.toLowerCase())) { bot.sendMessage(msg, "I gave " + fullName + " a **" + Ratings[fullName.toLowerCase()] + "/10**"); } //already rated
 				else {
 					if (user || msg.mentions.length > 0) { bot.sendMessage(msg, "I'd rate " + fullName + " **" + generateUserRating(bot, msg, fullName) + "/10**");
-					} else { bot.sendMessage(msg, fullName + " is a **" + generateJSONRating(fullName) + "/10**"); }
+					} else { bot.sendMessage(msg, "I'd rate " + fullName + " **" + generateJSONRating(fullName) + "/10**"); }
 				}
 			} else {
 				if (Ratings.hasOwnProperty(suffix.toLowerCase())) { bot.sendMessage(msg, "I gave " + suffix + " a **" + Ratings[suffix.toLowerCase()] + "/10**"); return; } //already rated
-				bot.sendMessage(msg, "I'd say " + suffix + " is a **" + generateRandomRating(suffix.toLowerCase(), true) + "/10**");
+				bot.sendMessage(msg, "I give " + suffix + " a **" + generateRandomRating(suffix.toLowerCase(), true) + "/10**");
 			}
 		}
 	}

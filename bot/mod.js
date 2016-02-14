@@ -39,7 +39,8 @@ var aliases = {
 	"change": "changelog", "logs": "changelog", "changelogs": "changelog",
 	"rolec": "color", "rolecolor": "color",
 	"gc": "givecolor", "setcolor": "givecolor",
-	"rmcolor": "removecolor", "takecolor": "removecolor", "rc": "removecolor", "deletecolor": "removecolor"
+	"rmcolor": "removecolor", "takecolor": "removecolor", "rc": "removecolor", "deletecolor": "removecolor",
+	"config": "settings"
 };
 
 var commands = {
@@ -193,6 +194,7 @@ var commands = {
 		process: function(bot, msg, suffix) {
 			if (msg.channel.server) {
 				if (msg.channel.permissionsOf(msg.author).hasPermission("kickMembers") || msg.author.id == config.admin_id) {
+					db.removeFromDB(msg.channel.server.id);
 					bot.sendMessage(msg, "It's not like I wanted to be here or anything, *baka*").then(
 					msg.channel.server.leave());
 					console.log(colors.cYellow("I've left a server on request of " + msg.sender.username + ". ") + "I'm only in " + bot.servers.length + " servers now.");
@@ -358,12 +360,12 @@ var commands = {
 	},
 	"settings": {
 		desc: "(OPEN-BETA) Server settings. Read about them here: **http://brussell98.github.io/bot/serversettings.html**",
-		usage: "TODO",
+		usage: "<enable|disable|welcomemsg|init> <command|message>",
 		deleteCommand: false,
 		cooldown: 3,
 		process: function(bot, msg, suffix) {
 			if (msg.channel.isPrivate) { bot.sendMessage(msg, "Can't do this in a PM!", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); return; }); }
-			if (!msg.channel.permissionsOf(msg.author).hasPermission("manageServer") && msg.author.id != config.admin_id) { bot.sendMessage(msg, "You can't edit roles!", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
+			if (!msg.channel.permissionsOf(msg.author).hasPermission("manageServer") && msg.author.id != config.admin_id) { bot.sendMessage(msg, "You must have permission to manage the server!", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
 			if (!suffix) { bot.sendMessage(msg, correctUsage("settings"), (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
 			if (suffix.startsWith("enable")) {
 
@@ -436,12 +438,14 @@ var commands = {
 			} else if (suffix.startsWith("init")) {
 
 				if (!ServerSettings.hasOwnProperty(msg.channel.server.id)) {
-					if (/^init (true|false):::(true|false):::(true|false):::.*/i.test(suffix)) {
+					if (/^init (true|false):::(true|false):::(true|false):::.*/i.test(suffix) && suffix.split(":::").length == 4) {
+						suffix = suffix.split(":::");
+						suffix[0] = suffix[0].replace(/^init /i, "");
 						var stngs = {
-										"deletecmds": (suffix.replace(/init (true|false):::/i, "").replace(/:::(true|false):::.*/, "") == "true") ? true : false,
-										"welcomemsg": (suffix.replace(/init (true|false):::(true|false):::(true|false):::/i, "") == "false") ? "false" : suffix.replace(/init (true|false):::(true|false):::(true|false):::/i, ""),
-										"banalerts": (suffix.replace(/init /i, "").replace(/:::(true|false):::(true|false):::.*/, "") == "true") ? true : false,
-										"namechanges": (suffix.replace(/init (true|false):::(true|false):::/i, "").replace(/:::.*/, "") == "true") ? true : false
+										"deletecmds": (suffix[1] == "true") ? true : false,
+										"welcomemsg": (suffix[3] == "false") ? "false" : suffix[3],
+										"banalerts": (suffix[0] == "true") ? true : false,
+										"namechanges": (suffix[2] == "true") ? true : false
 									};
 						ServerSettings[msg.channel.server.id] = stngs;
 						db.addToDB(msg.channel.server.id, () => { bot.sendMessage(msg, "Server added to settings database with the following settings:\n**Delete Commands:** " + ServerSettings[msg.channel.server.id].deletecmds + "\n**Ban Alerts:** " + ServerSettings[msg.channel.server.id].banalerts + "\n**Name Change Alerts:** " + ServerSettings[msg.channel.server.id].namechanges + "\n**Welcome Message:** " + ServerSettings[msg.channel.server.id].welcomemsg); });

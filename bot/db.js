@@ -24,7 +24,7 @@ exports.sql = function(bot, msg, query) {
 };
 
 function fetchDB(tableName) {
-	pg.connect(process.env.DATABASE_URL + '?ssl=true', function(err, client, done) {
+	pg.connect(process.env.DATABASE_URL + '?ssl=true', (err, client, done) => {
 		if (!err) {
 			var q = client.query('SELECT * FROM ' + tableName);
 			q.on('error', (e) => { console.log(e.message); return; });
@@ -32,42 +32,30 @@ function fetchDB(tableName) {
 			q.on('row', (row) => {
 				ServerSettings[row.id] = {'deletecmds': row.deletecmds, 'welcomemsg': row.welcomemsg, 'banalerts': row.banalerts, 'namechanges': row.namechanges};
 			});
-			q.on('end', (result) => {
-			});
 			done();
-		} else { console.log(err); return; }
+		} else { console.log(err); setTimeout(() => { fetchDB(SERVER_DB_NAME); }, 300000); return; }
 	});
 }
 
-function updateServerDB(sID) { //fix this like exported version
+function updateServerDB(sID) {
 	if (sID && ServerSettings.hasOwnProperty(sID)) {
-		pg.connect(process.env.DATABASE_URL + '?ssl=true', function(err, client, done) {
+		pg.connect(process.env.DATABASE_URL + '?ssl=true', (err, client, done) => {
 			if (!err) {
 				var q = client.query('SELECT * FROM ' + SERVER_DB_NAME + ' WHERE id = ' + sID);
-				q.on('error', (e) => { console.log(e.message); done(); return false; });
+				q.on('error', (e) => { console.log(e.message); done(); return; });
 				q.on('end', (result) => {
-					var checkData = new Promise((resolve, reject) => {
-						if (!result) { reject('No data returned from query') }
-						var updateQ = client.query('UPDATE ' + SERVER_DB_NAME + ' SET deletecmds = $1, welcomemsg = $2, banalerts = $3, namechanges = $4 WHERE id = ' + sID, [ServerSettings[sID].deletecmds, ServerSettings[sID].welcomemsg, ServerSettings[sID].banalerts, ServerSettings[sID].namechanges]);
-						updateQ.on('error', (e) => { console.log(e.message); done(); return false; });
-						updateQ.on('end', (result) => { done(); resolve(); });
-					});
-					checkData.then(() => {
-						done();
-						return true;
-					}).catch((er) => {
-						done();
-						console.log('Error updating server settings: ' + er);
-						return false;
-					});
+					if (!result) { console.log('No data returned from query'); return; done(); }
+					var updateQ = client.query('UPDATE ' + SERVER_DB_NAME + ' SET deletecmds = $1, welcomemsg = $2, banalerts = $3, namechanges = $4 WHERE id = ' + sID, [ServerSettings[sID].deletecmds, ServerSettings[sID].welcomemsg, ServerSettings[sID].banalerts, ServerSettings[sID].namechanges]);
+					updateQ.on('error', (e) => { console.log('Error updating server settings: ' + e.message); done(); return; });
+					updateQ.on('end', (result) => { done(); });
 				});
-			} else { console.log(err); return false; }
+			} else { console.log(err); return; }
 		});
-	} else { return false; }
+	} else { return; }
 }
 
 exports.fetchServerDB = function(tableName) {
-	pg.connect(process.env.DATABASE_URL + '?ssl=true', function(err, client, done) {
+	pg.connect(process.env.DATABASE_URL + '?ssl=true', (err, client, done) => {
 		if (!err) {
 			var q = client.query('SELECT * FROM ' + tableName);
 			q.on('error', (e) => { console.log(e.message); return; });
@@ -75,15 +63,13 @@ exports.fetchServerDB = function(tableName) {
 			q.on('row', (row) => {
 				ServerSettings[row.id] = {'deletecmds': row.deletecmds, 'welcomemsg': row.welcomemsg, 'banalerts': row.banalerts, 'namechanges': row.namechanges};
 			});
-			q.on('end', (result) => {
-			});
 			done();
-		} else { console.log(err); return; }
+		} else { console.log(err); setTimeout(() => { fetchDB(SERVER_DB_NAME); }, 300000); return; }
 	});
 };
 exports.updateServerDB = function(sID, callback) {
 	if (sID && ServerSettings.hasOwnProperty(sID)) {
-		pg.connect(process.env.DATABASE_URL + '?ssl=true', function(err, client, done) {
+		pg.connect(process.env.DATABASE_URL + '?ssl=true', (err, client, done) => {
 			if (!err) {
 				var q = client.query('SELECT * FROM ' + SERVER_DB_NAME + ' WHERE id = ' + sID);
 				q.on('error', (e) => { console.log(e.message); done(); return; });
@@ -98,7 +84,7 @@ exports.updateServerDB = function(sID, callback) {
 	} else { return; }
 };
 exports.addToDB = function(sID, callback) {
-	pg.connect(process.env.DATABASE_URL + '?ssl=true', function(err, client, done) {
+	pg.connect(process.env.DATABASE_URL + '?ssl=true', (err, client, done) => {
 		if (!err) {
 			var q = client.query('INSERT INTO ' + SERVER_DB_NAME + ' VALUES ($1, $2, $3, $4, $5)', [sID, ServerSettings[sID].deletecmds, ServerSettings[sID].welcomemsg, ServerSettings[sID].banalerts, ServerSettings[sID].namechanges]);
 			q.on('error', (e) => { console.log(e.message); done(); return; });
@@ -106,6 +92,16 @@ exports.addToDB = function(sID, callback) {
 				done();
 				callback();
 			});
+		} else { console.log(err); return; }
+	});
+};
+
+exports.removeFromDB = function(sID) {
+	pg.connect(process.env.DATABASE_URL + '?ssl=true', (err, client, done) => {
+		if (!err) {
+			var q = client.query('DELETE FROM ' + SERVER_DB_NAME + ' WHERE id = ' + sID);
+			q.on('error', (e) => { console.log(e.message); done(); return; });
+			q.on('end', () => { done(); });
 		} else { console.log(err); return; }
 	});
 };
