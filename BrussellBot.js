@@ -168,11 +168,9 @@ bot.on("presence", (userOld, userNew) => {
 	}
 	if (config.non_essential_event_listeners) {
 		if (userOld.username != userNew.username) {
-			if (config.username_changes) {
-				bot.servers.map((ser) => {
-					if (ser.members.has("id", userOld.id) && ServerSettings.hasOwnProperty(ser.id) && ServerSettings[ser.id].namechanges == true) { bot.sendMessage(ser, "`" + userOld.username + "` is now known as `" + userNew.username + "`"); }
-				});
-			}
+			bot.servers.map((ser) => {
+				if (ser.members.has("id", userOld.id) && ServerSettings.hasOwnProperty(ser.id) && ServerSettings[ser.id].namechanges == true) { bot.sendMessage(ser, "`" + userOld.username + "` is now known as `" + userNew.username + "`"); }
+			});
 		}
 	}
 });
@@ -234,7 +232,7 @@ function carbonInvite(msg) {
 						var msgArray = [];
 						msgArray.push("Hi! I'm **" + bot.user.username + "** and I was invited to this server through carbonitex.net.");
 						msgArray.push("You can use `" + config.command_prefix + "help` to see what I can do. Mods can use `" + config.mod_command_prefix + "help` for mod commands.");
-						msgArray.push("Mod/Admin commands ~~including bot settings~~ (WIP) can be viewed with `" + config.mod_command_prefix + "`help ");
+						msgArray.push("Mod/Admin commands __including bot settings__ can be viewed with `" + config.mod_command_prefix + "`help ");
 						msgArray.push("For help / feedback / bugs/ testing / info / changelogs / etc. go to **discord.gg/0kvLlwb7slG3XCCQ**");
 						bot.sendMessage(server.defaultChannel, msgArray);
 					}
