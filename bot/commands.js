@@ -165,6 +165,10 @@ var commands = {
 			else { bot.sendMessage(msg, "Your ID is: " + msg.author.id); }
 		}
 	},
+	"beep": {
+		desc: "boop", usage: "", deleteCommand: false, cooldown: 2,
+		process: (bot, msg, suffix) => { bot.sendMessage(msg, "boop"); }
+	},
 	"ping": {
 		desc: "Replies with pong.",
 		cooldown: 2, shouldDisplay: false, usage: "",

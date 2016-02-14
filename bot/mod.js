@@ -1,3 +1,4 @@
+/* global ServerSettings */
 /* global talkedToTimes */
 /* global commandsProcessed */
 /// <reference path="../typings/main.d.ts" />
@@ -356,12 +357,98 @@ var commands = {
 		}
 	},
 	"settings": {
-		desc: "(BETA) Server settings. Read about them here: **http://brussell98.github.io/bot/serversettings.html**",
-		usage: "<command> <value>",
+		desc: "(OPEN-BETA) Server settings. Read about them here: **http://brussell98.github.io/bot/serversettings.html**",
+		usage: "TODO",
 		deleteCommand: false,
 		cooldown: 3,
 		process: function(bot, msg, suffix) {
-			bot.sendMessage(msg, "WIP");
+			if (msg.channel.isPrivate) { bot.sendMessage(msg, "Can't do this in a PM!", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); return; }); }
+			if (!msg.channel.permissionsOf(msg.author).hasPermission("manageServer") && msg.author.id != config.admin_id) { bot.sendMessage(msg, "You can't edit roles!", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
+			if (!suffix) { bot.sendMessage(msg, correctUsage("settings"), (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
+			if (suffix.startsWith("enable")) {
+
+				if (!ServerSettings.hasOwnProperty(msg.channel.server.id)) { bot.sendMessage(msg, "You need to initialize per-server settings on this server! Go to this page to generate the comamnd: **http://brussell98.github.io/bot/serversettings.html**"); return; }
+				suffix = suffix.split(" ");
+				if (suffix.length == 1) { bot.sendMessage(msg, "You must specify a setting to enable", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
+				suffix.shift();
+				if (suffix[0].toLowerCase() == "deletecmds") {
+					if (ServerSettings[msg.channel.server.id].deletecmds == false) {
+						ServerSettings[msg.channel.server.id].deletecmds = true;
+						db.updateServerDB(msg.channel.server.id, () => { bot.sendMessage(msg, msg.author.username + " 👍"); });
+					} else { bot.sendMessage(msg, "__Delete Commands__ is already enabled!", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
+				} else if (suffix[0].toLowerCase() == "banalerts") {
+					if (ServerSettings[msg.channel.server.id].banalerts == false) {
+						ServerSettings[msg.channel.server.id].banalerts = true;
+						db.updateServerDB(msg.channel.server.id, () => { bot.sendMessage(msg, msg.author.username + " 👍"); });
+					} else { bot.sendMessage(msg, "__Ban Alerts__ are already enabled!", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
+				} else if (suffix[0].toLowerCase() == "namechanges") {
+					if (ServerSettings[msg.channel.server.id].namechanges == false) {
+						ServerSettings[msg.channel.server.id].namechanges = true;
+						db.updateServerDB(msg.channel.server.id, () => { bot.sendMessage(msg, msg.author.username + " 👍"); });
+					} else { bot.sendMessage(msg, "__Name Change Alerts__ are already enabled!", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
+				} else if (suffix[0].toLowerCase() == "welcomemsg") {
+					if (ServerSettings[msg.channel.server.id].welcomemsg == "false") {
+						ServerSettings[msg.channel.server.id].welcomemsg = "Hi $USER$! Welcome to $SERVER$";
+						bot.sendMessage(msg, "__Welcome Messages__ enabled! Use `" + config.mod_command_prefix + "settings welcomemsg <message>` to edit the message");
+						db.updateServerDB(msg.channel.server.id, () => { bot.sendMessage(msg, msg.author.username + " 👍"); });
+					} else { bot.sendMessage(msg, "__Welcome Messages__ are already enabled!", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
+				}
+
+			} else if (suffix.startsWith("disable")) {
+
+				if (!ServerSettings.hasOwnProperty(msg.channel.server.id)) { bot.sendMessage(msg, "You need to initialize per-server settings on this server! Go to this page to generate the comamnd: **http://brussell98.github.io/bot/serversettings.html**"); return; }
+				suffix = suffix.split(" ");
+				if (suffix.length == 1) { bot.sendMessage(msg, "You must specify a setting to disable", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
+				suffix.shift();
+				if (suffix[0].toLowerCase() == "deletecmds") {
+					if (ServerSettings[msg.channel.server.id].deletecmds == true) {
+						ServerSettings[msg.channel.server.id].deletecmds = false;
+						db.updateServerDB(msg.channel.server.id, () => { bot.sendMessage(msg, msg.author.username + " 👍"); });
+					} else { bot.sendMessage(msg, "__Delete Commands__ is already disabled!", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
+				} else if (suffix[0].toLowerCase() == "banalerts") {
+					if (ServerSettings[msg.channel.server.id].banalerts == true) {
+						ServerSettings[msg.channel.server.id].banalerts = false;
+						db.updateServerDB(msg.channel.server.id, () => { bot.sendMessage(msg, msg.author.username + " 👍"); });
+					} else { bot.sendMessage(msg, "__Ban Alerts__ are already disabled!", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
+				} else if (suffix[0].toLowerCase() == "namechanges") {
+					if (ServerSettings[msg.channel.server.id].namechanges == true) {
+						ServerSettings[msg.channel.server.id].namechanges = false;
+						db.updateServerDB(msg.channel.server.id, () => { bot.sendMessage(msg, msg.author.username + " 👍"); });
+					} else { bot.sendMessage(msg, "__Name Change Alerts__ are already disabled!", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
+				} else if (suffix[0].toLowerCase() == "welcomemsg") {
+					if (ServerSettings[msg.channel.server.id].welcomemsg != "false") {
+						ServerSettings[msg.channel.server.id].welcomemsg = "false";
+						db.updateServerDB(msg.channel.server.id, () => { bot.sendMessage(msg, msg.author.username + " 👍"); });
+					} else { bot.sendMessage(msg, "__Welcome Messages__ are already disabled!", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
+				}
+
+			} else if (suffix.startsWith("welcomemsg")) {
+
+				if (!ServerSettings.hasOwnProperty(msg.channel.server.id)) { bot.sendMessage(msg, "You need to initialize per-server settings on this server! Go to this page to generate the comamnd: **http://brussell98.github.io/bot/serversettings.html**"); return; }
+				if (ServerSettings[msg.channel.server.id].welcomemsg == "false") { bot.sendMessage(msg, "You need to enable welcome messages first!", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
+				if (/^welcomemsg .*/i.test(suffix)) {
+					suffix = suffix.substring(11);
+					//should probably filter some stuff out
+					ServerSettings[msg.channel.server.id].welcomemsg = suffix;
+					db.updateServerDB(msg.channel.server.id, () => { bot.sendMessage(msg, msg.author.username + " 👍"); });
+				} else { bot.sendMessage(msg, "You need to provide a welcome message!", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
+
+			} else if (suffix.startsWith("init")) {
+
+				if (!ServerSettings.hasOwnProperty(msg.channel.server.id)) {
+					if (/^init (true|false):::(true|false):::(true|false):::.*/i.test(suffix)) {
+						var stngs = {
+										"deletecmds": (suffix.replace(/init (true|false):::/i, "").replace(/:::(true|false):::.*/, "") == "true") ? true : false,
+										"welcomemsg": (suffix.replace(/init (true|false):::(true|false):::(true|false):::/i, "") == "false") ? "false" : suffix.replace(/init (true|false):::(true|false):::(true|false):::/i, ""),
+										"banalerts": (suffix.replace(/init /i, "").replace(/:::(true|false):::(true|false):::.*/, "") == "true") ? true : false,
+										"namechanges": (suffix.replace(/init (true|false):::(true|false):::/i, "").replace(/:::.*/, "") == "true") ? true : false
+									};
+						ServerSettings[msg.channel.server.id] = stngs;
+						db.updateServerDB(msg.channel.server.id, () => { bot.sendMessage(msg, "Server added to settings database with the following settings:\n**Delete Commands:** " + ServerSettings[msg.channel.server.id].deletecmds + "\n**Ban Alerts:** " + ServerSettings[msg.channel.server.id].banalerts + "\n**Name Change Alerts:** " + ServerSettings[msg.channel.server.id].namechanges + "\n**Welcome Message:** " + ServerSettings[msg.channel.server.id].welcomemsg); });
+					} else { bot.sendMessage(msg, "Your init command isn't formatted correctly! Go here to generate one: **http://brussell98.github.io/bot/serversettings.html**", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
+				} else { bot.sendMessage(msg, "This server is already in the database", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
+
+			} else { bot.sendMessage(msg, correctUsage("settings"), (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); }
 		}
 	}
 }

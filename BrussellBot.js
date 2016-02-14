@@ -1,3 +1,4 @@
+/* global ServerSettings */
 /* global talkedToTimes */
 /* global commandsProcessed */
 /// <reference path="typings/main.d.ts" />
@@ -65,6 +66,7 @@ bot.on("message", (msg) => {
 	}
 	if (!msg.content.startsWith(config.command_prefix) && !msg.content.startsWith(config.mod_command_prefix)) { return; } //if not a command
 	if (msg.author.id == bot.user.id) { return; } //stop from replying to itself
+	if (msg.content.indexOf(" ") == 1 && msg.content.length > 2) { msg.content = msg.content.replace(" ", ""); }
 	var cmd = msg.content.split(" ")[0].replace(/\n/g, " ").substring(1).toLowerCase();
 	var suffix = msg.content.replace(/\n/g, " ").substring(cmd.length + 2); //seperate the command and suffix
 	if (msg.content.startsWith(config.command_prefix)) { //normal commands
@@ -107,7 +109,7 @@ function execCommand(msg, cmd, suffix, type) {
 			}
 			commands.commands[cmd].process(bot, msg, suffix);
 			if (commands.commands[cmd].hasOwnProperty("deleteCommand")) {
-				if (commands.commands[cmd].deleteCommand === true) { bot.deleteMessage(msg, {"wait": 10000}); }
+				if (commands.commands[cmd].deleteCommand === true && ServerSettings.hasOwnProperty(msg.channel.server.id) && ServerSettings[msg.channel.server.id].deletecmds == true) { bot.deleteMessage(msg, {"wait": 10000}); }
 			}
 		} else if (type == "mod") {
 			if (mod.commands[cmd].hasOwnProperty("cooldown")) {
@@ -129,33 +131,26 @@ function execCommand(msg, cmd, suffix, type) {
 			}
 			mod.commands[cmd].process(bot, msg, suffix);
 			if (mod.commands[cmd].hasOwnProperty("deleteCommand")) {
-				if (mod.commands[cmd].deleteCommand === true) { bot.deleteMessage(msg, {"wait": 10000}); }
+				if (mod.commands[cmd].deleteCommand === true && ServerSettings.hasOwnProperty(msg.channel.server.id) && ServerSettings[msg.channel.server.id].deletecmds == true) { bot.deleteMessage(msg, {"wait": 10000}); }
 			}
 		} else { return; }
 	} catch (err) { console.log(err.stack); }
 }
 
-//event listeners
+/* Event Listeners */
 bot.on("serverNewMember", (objServer, objUser) => {
-	if (objServer.members.length < 71 && config.non_essential_event_listeners) {
-		if (config.greet_new_memebrs) { console.log("New member on " + objServer.name + ": " + objUser.username); bot.sendMessage(objServer.defaultChannel, "Welcome to " + objServer.name + " " + objUser.username); }
-	}
-});
-
-bot.on("channelCreated", (objChannel) => {
-	if (config.non_essential_event_listeners) {
-		if (!objChannel.isPrivate) { if (config.debug) { console.log(colors.cDebug(" DEBUG ") + "New channel created. Type: " + objChannel.type + ". Name: " + objChannel.name + ". Server: " + objChannel.server.name); } }
+	if (config.non_essential_event_listeners && ServerSettings.hasOwnProperty(objServer.id) && ServerSettings[objServer.id].welcomemsg != "false") {
+		if (config.debug) { console.log("New member on " + objServer.name + ": " + objUser.username); }
+		bot.sendMessage(objServer.defaultChannel, ServerSettings[objServer.id].welcomemsg.replace(/\$USER\$/gi, objUser.username).replace(/\$SERVER\$/gi, objServer.name));
 	}
 });
 
 bot.on("channelDeleted", (objChannel) => {
-	if (config.non_essential_event_listeners) {
-		if (!objChannel.isPrivate) { if (config.debug) { console.log(colors.cDebug(" DEBUG ") + "Channel deleted. Type: " + objChannel.type + ". Name: " + objChannel.name + ". Server: " + objChannel.server.name); } }
-	}
+	//check if it is an ignored channel and remove it if it is (objChannel.server remember)
 });
 
 bot.on("userBanned", (objUser, objServer) => {
-	if (objServer.members.length <= 175 && config.non_essential_event_listeners) {
+	if (config.non_essential_event_listeners && ServerSettings.hasOwnProperty(objServer.id) && ServerSettings[objServer.id].banalerts == true) {
 		console.log(objUser.username + colors.cRed(" banned on ") + objServer.name);
 		bot.sendMessage(objServer.defaultChannel, "⚠ " + objUser.username + " was banned");
 		bot.sendMessage(objUser, "⚠ You were banned from " + objServer.name);
@@ -163,30 +158,30 @@ bot.on("userBanned", (objUser, objServer) => {
 });
 
 bot.on("userUnbanned", (objUser, objServer) => {
-	if (objServer.members.length < 301 && config.non_essential_event_listeners) { console.log(objUser.username + " unbanned on " + objServer.name); }
+	if (objServer.members.length <= 250 && config.non_essential_event_listeners) { console.log(objUser.username + " unbanned on " + objServer.name); }
 });
 
 bot.on("presence", (userOld, userNew) => {
 	if (config.log_presence) {
-		if (userNew.game === null) { console.log(colors.cDebug(" PRESENCE ") + userNew.username + " is now " + userNew.status);
+		if (userNew.game === null || userNew.game === undefined) { console.log(colors.cDebug(" PRESENCE ") + userNew.username + " is now " + userNew.status);
 		} else { console.log(colors.cDebug(" PRESENCE ") + userNew.username + " is now " + userNew.status + " playing " + userNew.game.name); }
 	}
 	if (config.non_essential_event_listeners) {
 		if (userOld.username != userNew.username) {
 			if (config.username_changes) {
 				bot.servers.map((ser) => {
-					if (ser.members.has("id", userOld.id) && ser.members.length < 101) { bot.sendMessage(ser, "`" + userOld.username + "` is now known as `" + userNew.username + "`"); }
+					if (ser.members.has("id", userOld.id) && ServerSettings.hasOwnProperty(ser.id) && ServerSettings[ser.id].namechanges == true) { bot.sendMessage(ser, "`" + userOld.username + "` is now known as `" + userNew.username + "`"); }
 				});
 			}
 		}
 	}
 });
 
-bot.on("serverDeleted", (objServer) => { //detect when the bot leaves a server
+bot.on("serverDeleted", (objServer) => {
 	console.log(colors.cUYellow("Left server") + " " + objServer.name);
 });
 
-//login
+/* Login */
 console.log("Logging in...");
 if (config.is_heroku_version) {
 	bot.login(process.env.email, process.env.password, function(err, token) {

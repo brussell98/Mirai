@@ -8,8 +8,6 @@
 	"debug": false,
 	"show_warn": false,
 	"admin_id": 95286900801146880,
-	"greet_new_members": false,
-	"username_changes": false,
 	"send_mentions": true,
 	"mal_user": "",
 	"mal_pass": "",

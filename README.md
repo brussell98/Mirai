@@ -1,4 +1,4 @@
-# BrussellBot 1.3
+# BrussellBot 1.4-beta
 
 A multipurpose bot for Discord using [Discord.js](https://github.com/hydrabolt/discord.js/)
 
@@ -32,10 +32,10 @@ A multipurpose bot for Discord using [Discord.js](https://github.com/hydrabolt/d
 
 ----
 
-- [ ] Catch space between `]` and command
+- [x] Catch space between `]` and command
 - [x] Add 👍 (:thumbsup:) confirmation messages
 - [x] Work after the new API update
-- [ ] `]beep`
+- [x] `]beep` boop
 
 ### Per-Server Settings
 
@@ -44,9 +44,13 @@ A multipurpose bot for Discord using [Discord.js](https://github.com/hydrabolt/d
 - [x] Format local copy so it's easy to use
 - [x] Function for fetching DB
 - [x] Function for updating DB
-- [ ] Work when DB is down
+- [x] Work when DB is down
+	- [ ] Try to re-fetch it if fail after x minutes
+- [ ] No problems with adding a new column leaving undefined entries
 - [ ] `}leave` will remove the server entry
 - [ ] Admin command to clean up leftovers
-- [ ] Complete the `}settings` command
+- [x] Complete the `}settings` command -- *in testing*
 	- [x] Info about it and init generator on website
 	- [x] Don't let users inject SQL with the welcome message
+- [x] Event listeners switched to using the DB settings
+- [ ] No cooldown option
