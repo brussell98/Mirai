@@ -169,7 +169,7 @@ bot.on("presence", (userOld, userNew) => {
 	if (config.non_essential_event_listeners) {
 		if (userOld.username != userNew.username) {
 			bot.servers.map((ser) => {
-				if (ser.members.has("id", userOld.id) && ServerSettings.hasOwnProperty(ser.id) && ServerSettings[ser.id].namechanges == true) { bot.sendMessage(ser, "`" + userOld.username + "` is now known as `" + userNew.username + "`"); }
+				if (ser.members.get("id", userOld.id) && ServerSettings.hasOwnProperty(ser.id) && ServerSettings[ser.id].namechanges == true) { bot.sendMessage(ser, "`" + userOld.username + "` is now known as `" + userNew.username + "`"); }
 			});
 		}
 	}
