@@ -27,12 +27,12 @@ bot.on("warn", (m) => { if (config.show_warn) { console.log(colors.cWarn(" WARN 
 bot.on("debug", (m) => { if (config.debug) { console.log(colors.cDebug(" DEBUG ") + m); } });
 
 bot.on("ready", () => {
-	bot.forceFetchUsers();
 	bot.setPlayingGame(games[Math.floor(Math.random() * (games.length))]);
 	console.log(colors.cGreen("BrussellBot is ready!") + " Listening to " + bot.channels.length + " channels on " + bot.servers.length + " servers");
 	versioncheck.checkForUpdate((resp) => {
 		if (resp !== null) { console.log(resp); }
 	});
+	bot.forceFetchUsers();
 });
 
 bot.on("disconnected", () => {
