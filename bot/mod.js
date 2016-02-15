@@ -21,6 +21,16 @@ function correctUsage(cmd) {
 	return (commands.hasOwnProperty(cmd)) ? "Usage: `" + config.mod_command_prefix + "" + cmd + " " + commands[cmd].usage + "`": "This should display the correct usage but the bot maker made a mistake";
 }
 
+function unMute(bot, msg, users, time, role) {
+	setTimeout(() => {
+		users.map((user) => {
+			if (msg.channel.server.get("name", user.username) && msg.channel.server.roles.get("name", role.name) && bot.memberHasRole(user, role)) {
+				bot.removeMemberFromRole(user, role);
+			}
+		});
+	}, time * 60000);
+}
+
 /*
 =====================
 Commands
@@ -158,25 +168,20 @@ var commands = {
 								var delcount = 0;
 								for (var i = 0; i < 100; i++) {
 									if (todo <= 0 || i == 99) {
-										bot.sendMessage(msg, msg.author.username + " 👍", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); });
-										return;
+										bot.sendMessage(msg, msg.author.username + " 👍", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); return;
 									}
 									if (hasTerm && messages[i].content.indexOf(term) > -1) {
 										bot.deleteMessage(messages[i]);
-										delcount++;
-										todo--;
+										delcount++; todo--;
 									} else if (hasUser && messages[i].author.username.toLowerCase() == username) {
 										bot.deleteMessage(messages[i]);
-										delcount++;
-										todo--;
+										delcount++; todo--;
 									} else if (hasImages && messages[i].attachments && JSON.stringify(messages[i].attachments) !== "[]") {
 										bot.deleteMessage(messages[i]);
-										delcount++;
-										todo--;
+										delcount++; todo--;
 									} else if (!hasTerm && !hasUser && !hasImages) {
 										bot.deleteMessage(messages[i]);
-										delcount++;
-										todo--;
+										delcount++; todo--;
 									}
 								}
 								if (config.debug) { console.log(colors.cDebug(" DEBUG ") + "Done! Deleted " + delcount + " messages."); }
@@ -221,6 +226,48 @@ var commands = {
 				});
 				bot.sendMessage(msg, msg.author.username + " 👍", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); });
 			} else { bot.sendMessage(msg, correctUsage("ban"), (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); }
+		}
+	},
+	"mute": {
+		desc: "Mute users for the specified time",
+		usage: "<@users> <minutes>",
+		deleteCommand: true,
+		cooldown: 3,
+		process: function(bot, msg, suffix) {
+			if (!msg.channel.permissionsOf(msg.author).hasPermission("manageRoles") && msg.author.id != config.admin_id) { bot.sendMessage(msg, "You don't have permission (manage roles)", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); });
+			} else if (!msg.channel.permissionsOf(bot.user).hasPermission("manageRoles")) { bot.sendMessage(msg, "I don't have permission (manage roles)", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); });
+			} else if (suffix && msg.mentions.length > 0 && /(<@\d+>( ?)*)*( ?)*(\d+.?\d+)?/.test(suffix)) {
+				var time = parseFloat(suffix.replace(/<@\d+>/g, "").trim());
+				var role = msg.channel.server.roles.find((r) => { return r.name.toLowerCase() === "muted" });
+				if (role) {
+					msg.mentions.map((user) => {
+						if (!bot.memberHasRole(user, role)) {
+							bot.addMemberToRole(user, role);
+						}
+					});
+					unMute(bot, msg, msg.mentions, time, role);
+				} else { bot.sendMessage(msg, "Please create a role named `muted` that denies send messages in all channels", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); }
+			} else { bot.sendMessage(msg, correctUsage("mute"), (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); }
+		}
+	},
+	"unmute": {
+		desc: "Unmute users",
+		usage: "<@users>",
+		deleteCommand: true,
+		cooldown: 3,
+		process: function(bot, msg, suffix) {
+			if (!msg.channel.permissionsOf(msg.author).hasPermission("manageRoles") && msg.author.id != config.admin_id) { bot.sendMessage(msg, "You don't have permission (manage roles)", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); });
+			} else if (!msg.channel.permissionsOf(bot.user).hasPermission("manageRoles")) { bot.sendMessage(msg, "I don't have permission (manage roles)", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); });
+			} else if (suffix && msg.mentions.length > 0) {
+				var role = msg.channel.server.roles.find((r) => { return r.name.toLowerCase() === "muted" });
+				if (role) {
+					msg.mentions.map((user) => {
+						if (bot.memberHasRole(user, role)) {
+							bot.removeMemberFromRole(user, role);
+						}
+					});
+				} else { bot.sendMessage(msg, "`muted` role not found", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); }
+			} else { bot.sendMessage(msg, correctUsage("unmute"), (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); }
 		}
 	},
 	"leave": {

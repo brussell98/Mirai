@@ -42,6 +42,7 @@ A multipurpose bot for Discord using [Discord.js](https://github.com/hydrabolt/d
 - [x] Ban with message
 - [x] Kick with message
 - [x] Use `before` in prune
+- [x] Mod mute command and unmute
 
 ### Per-Server Settings
 
@@ -62,4 +63,5 @@ A multipurpose bot for Discord using [Discord.js](https://github.com/hydrabolt/d
 	- [x] Don't let users inject SQL with the welcome message
 	- [x] Check current settings
 	- [ ] Command for admin to check a server's settings by name or id
+	- [ ] Add fail callback
 - [x] Event listeners switched to using the DB settings
