@@ -353,8 +353,7 @@ var commands = {
 					msgArray.push("**Server ID:** " + msg.channel.server.id);
 					msgArray.push("**Owner:** " + msg.channel.server.owner.username + " (**ID:** " + msg.channel.server.owner.id + ")");
 					msgArray.push("**Region:** " + msg.channel.server.region);
-					var bans = msg.channel.server.getBans((e, u) => { return u.length; });
-					msgArray.push("**Members:** " + msg.channel.server.members.length + " (" + bans + " bans) **Channels:** " + msg.channel.server.channels.length);
+					msgArray.push("**Members:** " + msg.channel.server.members.length + " **Channels:** " + msg.channel.server.channels.length);
 					var roles = msg.channel.server.roles.map((role) => { return role.name; });
 					roles = roles.join(", ").replace("@", "");
 					if (roles.length <= 1500) { msgArray.push("**Roles:** `" + roles + "`"); } else { msgArray.push("**Roles:** `Too many to display`"); }
