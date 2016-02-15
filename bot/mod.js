@@ -398,7 +398,7 @@ var commands = {
 	},
 	"settings": {
 		desc: "(OPEN-BETA) Server settings. Read about them here: **http://brussell98.github.io/bot/serversettings.html**",
-		usage: "<enable|disable|welcomemsg|init> <command|message>",
+		usage: "<enable|disable|welcomemsg|init|check> <command|message>",
 		deleteCommand: false,
 		cooldown: 3,
 		process: function(bot, msg, suffix) {
@@ -489,6 +489,12 @@ var commands = {
 						db.addToDB(msg.channel.server.id, () => { bot.sendMessage(msg, "Server added to settings database with the following settings:\n**Delete Commands:** " + ServerSettings[msg.channel.server.id].deletecmds + "\n**Ban Alerts:** " + ServerSettings[msg.channel.server.id].banalerts + "\n**Name Change Alerts:** " + ServerSettings[msg.channel.server.id].namechanges + "\n**Welcome Message:** " + ServerSettings[msg.channel.server.id].welcomemsg); });
 					} else { bot.sendMessage(msg, "Your init command isn't formatted correctly! Go here to generate one: **http://brussell98.github.io/bot/serversettings.html**", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
 				} else { bot.sendMessage(msg, "This server is already in the database! Use `" + config.mod_command_prefix + "settings enable/disable/welcomemsg`", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
+
+			} else if (suffix.startsWith("check")) {
+
+				if (ServerSettings.hasOwnProperty(msg.channel.server.id)) {
+					bot.sendMessage(msg, "__Current settings__:\n**Delete Commands:** " + ServerSettings[msg.channel.server.id].deletecmds + "\n**Ban Alerts:** " + ServerSettings[msg.channel.server.id].banalerts + "\n**Name Change Alerts:** " + ServerSettings[msg.channel.server.id].namechanges + "\n**Welcome Message:** " + ServerSettings[msg.channel.server.id].welcomemsg);
+				} else { bot.sendMessage(msg, "This server isn't set up for per-server settings."); }
 
 			} else { bot.sendMessage(msg, correctUsage("settings"), (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); }
 		}

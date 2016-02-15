@@ -60,4 +60,6 @@ A multipurpose bot for Discord using [Discord.js](https://github.com/hydrabolt/d
 - [x] Complete the `}settings` command
 	- [x] Info about it and init generator on website
 	- [x] Don't let users inject SQL with the welcome message
+	- [x] Check current settings
+	- [ ] Command for admin to check a server's settings by name or id
 - [x] Event listeners switched to using the DB settings
