@@ -19,9 +19,10 @@ exports.sql = function(bot, msg, query) {
 					result.rows.map((row) => {
 						formatted += '\n━━━━━━━━━━━━━━━━━━━';
 						for (var key in row) {
-							formatted += '\n**' + key + ':** `' + row[key].replace(/@/g, '') + '`';
+							formatted += '\n**' + key + ':** `' + row[key] + '`';
 						}
 					});
+					formatted = formatted.replace(/@/g, '');
 					if (formatted.length < 2000) { bot.sendMessage(msg, formatted);
 					} else { bot.sendMessage(msg, formatted.substr(0, 2000)); }
 				}
