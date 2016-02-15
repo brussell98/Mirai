@@ -17,9 +17,9 @@ exports.sql = function(bot, msg, query) {
 				if (result.rowCount > 0 && result !== undefined) {
 					var formatted = '**Command:** ' + result.command;
 					result.rows.map((row) => {
-						formatted += '\n━━━━━━━━━━━━━━━━━━━';
+						formatted += '\n━━━━━━━━━━━━━';
 						for (var key in row) {
-							formatted += '\n**' + key + ':** `' + row[key] + '`';
+							if (row[key] !== null && row[key] !== '') { formatted += '\n**' + key + ':** `' + row[key] + '`'; }
 						}
 					});
 					formatted = formatted.replace(/@/g, '');

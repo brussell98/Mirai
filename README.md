@@ -39,6 +39,8 @@ A multipurpose bot for Discord using [Discord.js](https://github.com/hydrabolt/d
 - [x] Work after the new API update
 - [x] `]beep` boop
 - [x] Re-word `]ratewaifu`
+- [x] Ban with message
+- [x] Kick with message
 
 ### Per-Server Settings
 

@@ -353,7 +353,7 @@ var commands = {
 					msgArray.push("**Server ID:** " + msg.channel.server.id);
 					msgArray.push("**Owner:** " + msg.channel.server.owner.username + " (**ID:** " + msg.channel.server.owner.id + ")");
 					msgArray.push("**Region:** " + msg.channel.server.region);
-					msgArray.push("**Members:** " + msg.channel.server.members.length + " **Channels:** " + msg.channel.server.channels.length);
+					msgArray.push("**Members:** " + msg.channel.server.members.length + "(" + msg.channel.server.getBans((e, u) => { return u.length; }) + " bans) **Channels:** " + msg.channel.server.channels.length);
 					var roles = msg.channel.server.roles.map((role) => { return role.name; });
 					roles = roles.join(", ").replace("@", "");
 					if (roles.length <= 1500) { msgArray.push("**Roles:** `" + roles + "`"); } else { msgArray.push("**Roles:** `Too many to display`"); }
@@ -817,7 +817,7 @@ var commands = {
 					if (body.weather[0].description.indexOf("cloud") > -1) { emoji = "☁"; }
 					if (body.weather[0].description.indexOf("snow") > -1) { emoji = "❄"; }
 					if (body.weather[0].description.indexOf("rain") > -1 || body.weather[0].description.indexOf("storm") > -1 || body.weather[0].description.indexOf("drizzle") > -1) { emoji = "☔"; }
-					bot.sendMessage(msg, emoji + " __Weather for " + body.name + "__:\n**Conditions:** " + body.weather[0].description + " **Temp:** " + tempF + " / " + tempC + "\n**Humidity:** " + body.main.humidity + "% **Wind:** " + windspeed + " / " + windspeedUS + " **Cloudiness:** " + body.clouds.all + "%");
+					bot.sendMessage(msg, emoji + " __Weather for " + body.name + "__:\n**Conditions:** " + body.weather[0].description + " **Temp:** " + tempF + " / " + tempC + "\n**Humidity:** " + body.main.humidity + "% **Wind:** " + windspeedUS + " / " + windspeed + " **Cloudiness:** " + body.clouds.all + "%");
 				} else { console.log(error); }
 			});
 		}

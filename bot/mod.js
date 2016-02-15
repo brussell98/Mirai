@@ -188,6 +188,40 @@ var commands = {
 			} else { bot.sendMessage(msg, correctUsage("prune"), function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
 		}
 	},
+	"kick": {
+		desc: "Kick a user with a message",
+		usage: "<@users> [message]",
+		deleteCommand: true,
+		cooldown: 3,
+		process: function(bot, msg, suffix) {
+			if (!msg.channel.permissionsOf(msg.author).hasPermission("kickMembers") || msg.author.id != config.admin_id) { bot.sendMessage(msg, "You don't have permission", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); });
+			} else if (!msg.channel.permissionsOf(bot.user).hasPermission("kickMembers")) { bot.sendMessage(msg, "I don't have permission", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); });
+			} else if (suffix && msg.mentions.length > 0) {
+				var kickMessage = suffix.replace(/<@\d+>/g, "").trim();
+				msg.mentions.map((unlucky) => {
+					msg.channel.server.kickMember(unlucky);
+					if (kickMessage) { bot.sendMessage(unlucky, kickMessage); }
+				});
+			} else { bot.sendMessage(msg, correctUsage("kick"), (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); }
+		}
+	},
+	"ban": {
+		desc: "Ban a user with a message (deletes their messages)",
+		usage: "<@users> [message]",
+		deleteCommand: true,
+		cooldown: 3,
+		process: function(bot, msg, suffix) {
+			if (!msg.channel.permissionsOf(msg.author).hasPermission("banMembers") || msg.author.id != config.admin_id) { bot.sendMessage(msg, "You don't have permission", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); });
+			} else if (!msg.channel.permissionsOf(bot.user).hasPermission("banMembers")) { bot.sendMessage(msg, "I don't have permission", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); });
+			} else if (suffix && msg.mentions.length > 0) {
+				var banMessage = suffix.replace(/<@\d+>/g, "").trim();
+				msg.mentions.map((unlucky) => {
+					msg.channel.server.banMember(unlucky, 1);
+					if (banMessage) { bot.sendMessage(unlucky, banMessage); }
+				});
+			} else { bot.sendMessage(msg, correctUsage("ban"), (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); }
+		}
+	},
 	"leave": {
 		desc: "Leaves the server.",
 		usage: "", deleteCommand: true,
