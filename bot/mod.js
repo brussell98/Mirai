@@ -18,8 +18,7 @@ Functions
 */
 
 function correctUsage(cmd) {
-	var msg = "Usage: `" + config.mod_command_prefix + "" + cmd + " " + commands[cmd].usage + "`";
-	return msg;
+	return (commands.hasOwnProperty(cmd)) ? "Usage: `" + config.mod_command_prefix + "" + cmd + " " + commands[cmd].usage + "`": "This should display the correct usage but the bot maker made a mistake";
 }
 
 /*
@@ -112,7 +111,7 @@ var commands = {
 		process: function(bot, msg, suffix) {
 			if (suffix && /^\d+$/.test(suffix)) { //if suffix has digits
 				if (msg.channel.isPrivate || msg.channel.permissionsOf(msg.author).hasPermission("manageMessages") || msg.author.id == config.admin_id) {
-					bot.getChannelLogs(msg.channel, 100, function(error, messages) {
+					bot.getChannelLogs(msg.channel, 100, (error, messages) => {
 						if (error) { console.log(colors.cWarn(" WARN ") + "Something went wrong while fetching logs."); return; }
 						if (config.debug) { console.log(colors.cDebug(" DEBUG ") + "Cleaning bot messages..."); }
 						var todo = parseInt(suffix),
@@ -139,17 +138,17 @@ var commands = {
 		usage: "<1-100> [if it contains this] | <1-100> user <username> | <1-100> images",
 		cooldown: 10, deleteCommand: true,
 		process: function(bot, msg, suffix) {
-			if (suffix && /^\d+$/.test(suffix.split(" ")[0])) {
+			if (suffix && /^\d+$/.test(suffix.split(" ")[0]) && suffix.split(" ")[0].length < 4) {
 				if (!msg.channel.isPrivate) {
 					if (msg.channel.permissionsOf(msg.author).hasPermission("manageMessages") || msg.author.id == config.admin_id) {
 						if (msg.channel.permissionsOf(bot.user).hasPermission("manageMessages")) {
-							bot.getChannelLogs(msg.channel, 100, function(error, messages) {
+							bot.getChannelLogs(msg.channel, 100, { "before": msg }, (error, messages) => {
 								if (error) { console.log(colors.cWarn(" WARN ") + "Something went wrong while fetching logs."); return; }
 								if (config.debug) { console.log(colors.cDebug(" DEBUG ") + "Pruning messages..."); }
 								var todo = parseInt(suffix.split(" ")[0]);
 								var hasTerm = false, hasUser = false, hasImages = false;
 								var term = "", username = "";
-								if (suffix.split(" ").length > 1 && suffix.split(" ")[1].toLowerCase() !== "user" && suffix.split(" ")[1].toLowerCase() !== "images") { todo += 1; hasTerm = true; term = suffix.substring(suffix.indexOf(" ") + 1);
+								if (suffix.split(" ").length > 1 && suffix.split(" ")[1].toLowerCase() !== "user" && suffix.split(" ")[1].toLowerCase() !== "images") { hasTerm = true; term = suffix.substring(suffix.indexOf(" ") + 1);
 								} else if (suffix.split(" ").length > 2 && suffix.split(" ")[1].toLowerCase() === "user") {
 									if (msg.mentions.length < 1) { hasUser = true; username = suffix.replace(/\d+ user /, "").toLowerCase();
 									} else if (msg.mentions.length > 1) { bot.sendMessage(msg, "⚠ Can only prune one user at a time", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 15000}); }); return;
@@ -194,7 +193,7 @@ var commands = {
 		deleteCommand: true,
 		cooldown: 3,
 		process: function(bot, msg, suffix) {
-			if (!msg.channel.permissionsOf(msg.author).hasPermission("kickMembers") || msg.author.id != config.admin_id) { bot.sendMessage(msg, "You don't have permission", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); });
+			if (!msg.channel.permissionsOf(msg.author).hasPermission("kickMembers") && msg.author.id != config.admin_id) { bot.sendMessage(msg, "You don't have permission", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); });
 			} else if (!msg.channel.permissionsOf(bot.user).hasPermission("kickMembers")) { bot.sendMessage(msg, "I don't have permission", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); });
 			} else if (suffix && msg.mentions.length > 0) {
 				var kickMessage = suffix.replace(/<@\d+>/g, "").trim();
@@ -211,7 +210,7 @@ var commands = {
 		deleteCommand: true,
 		cooldown: 3,
 		process: function(bot, msg, suffix) {
-			if (!msg.channel.permissionsOf(msg.author).hasPermission("banMembers") || msg.author.id != config.admin_id) { bot.sendMessage(msg, "You don't have permission", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); });
+			if (!msg.channel.permissionsOf(msg.author).hasPermission("banMembers") && msg.author.id != config.admin_id) { bot.sendMessage(msg, "You don't have permission", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); });
 			} else if (!msg.channel.permissionsOf(bot.user).hasPermission("banMembers")) { bot.sendMessage(msg, "I don't have permission", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); });
 			} else if (suffix && msg.mentions.length > 0) {
 				var banMessage = suffix.replace(/<@\d+>/g, "").trim();

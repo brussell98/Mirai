@@ -20,8 +20,7 @@ Functions
 */
 
 function correctUsage(cmd) {
-	var msg = "Usage: `" + config.command_prefix + "" + cmd + " " + commands[cmd].usage + "`";
-	return msg;
+	return (commands.hasOwnProperty(cmd)) ? "Usage: `" + config.command_prefix + "" + cmd + " " + commands[cmd].usage + "`": "This should display the correct usage but the bot maker made a mistake";
 }
 
 function autoEndVote(bot, msg) {
@@ -161,8 +160,8 @@ var commands = {
 		desc: "Returns your ID (or the channel's)",
 		usage: "[\"channel\"]", deleteCommand: true, cooldown: 2, shouldDisplay: false,
 		process: function(bot, msg, suffix) {
-			if (suffix && suffix.trim().replace("\"", "") === "channel") { bot.sendMessage(msg, "This channel's ID is: " + msg.channel.id); }
-			else { bot.sendMessage(msg, "Your ID is: " + msg.author.id); }
+			if (suffix && suffix.trim().replace("\"", "") === "channel") { bot.sendMessage(msg, "This channel's ID is: " + msg.channel.id);
+			} else { bot.sendMessage(msg, "Your ID is: " + msg.author.id); }
 		}
 	},
 	"beep": {

@@ -41,6 +41,7 @@ A multipurpose bot for Discord using [Discord.js](https://github.com/hydrabolt/d
 - [x] Re-word `]ratewaifu`
 - [x] Ban with message
 - [x] Kick with message
+- [x] Use `before` in prune
 
 ### Per-Server Settings
 
