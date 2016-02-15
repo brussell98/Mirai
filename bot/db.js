@@ -15,7 +15,15 @@ exports.sql = function(bot, msg, query) {
 			});
 			q.on('end', (result) => {
 				if (result.rowCount > 0 && result !== undefined) {
-					bot.sendMessage(msg, '```\nCommand: ' + result.command + '\n' + JSON.stringify(result.rows) + '```');
+					var formatted = '**Command:** ' + result.command;
+					result.rows.map((row) => {
+						formatted += '\n━━━━━━━━━━━━━━━━━━━';
+						for (var key in row) {
+							formatted += '\n**' + key + ':** `' + row[key].replace(/@/g, '') + '`';
+						}
+					});
+					if (formatted.length < 2000) { bot.sendMessage(msg, formatted);
+					} else { bot.sendMessage(msg, formatted.substr(0, 2000)); }
 				}
 			});
 			done();

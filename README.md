@@ -43,6 +43,7 @@ A multipurpose bot for Discord using [Discord.js](https://github.com/hydrabolt/d
 ### Per-Server Settings
 
 - [ ] Ignore channel
+	- [ ] Remove ignored channels on `channelDeleted` event
 - [x] Admin SQL command
 - [x] Format local copy so it's easy to use
 - [x] Function for fetching DB
