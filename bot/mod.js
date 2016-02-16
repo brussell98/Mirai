@@ -236,7 +236,7 @@ var commands = {
 		process: function(bot, msg, suffix) {
 			if (!msg.channel.permissionsOf(msg.author).hasPermission("manageRoles") && msg.author.id != config.admin_id) { bot.sendMessage(msg, "You don't have permission (manage roles)", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); });
 			} else if (!msg.channel.permissionsOf(bot.user).hasPermission("manageRoles")) { bot.sendMessage(msg, "I don't have permission (manage roles)", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); });
-			} else if (suffix && msg.mentions.length > 0 && /(<@\d+>( ?)*)*( ?)*(\d+.?\d+)?/.test(suffix)) {
+			} else if (suffix && msg.mentions.length > 0 && /^(<@\d+>( ?)*)*( ?)*(\d+.?\d+)$/.test(suffix.trim())) {
 				var time = parseFloat(suffix.replace(/<@\d+>/g, "").trim());
 				var role = msg.channel.server.roles.find((r) => { return r.name.toLowerCase() === "muted" });
 				if (role) {
@@ -246,6 +246,7 @@ var commands = {
 						}
 					});
 					unMute(bot, msg, msg.mentions, time, role);
+					bot.sendMessage(msg, msg.author.username + " 👍", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); });
 				} else { bot.sendMessage(msg, "Please create a role named `muted` that denies send messages in all channels", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); }
 			} else { bot.sendMessage(msg, correctUsage("mute"), (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); }
 		}
@@ -266,6 +267,7 @@ var commands = {
 							bot.removeMemberFromRole(user, role);
 						}
 					});
+					bot.sendMessage(msg, msg.author.username + " 👍", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); });
 				} else { bot.sendMessage(msg, "`muted` role not found", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); }
 			} else { bot.sendMessage(msg, correctUsage("unmute"), (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); }
 		}
