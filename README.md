@@ -20,6 +20,8 @@ A multipurpose bot for Discord using [Discord.js](https://github.com/hydrabolt/d
 
 ### Music Update?
 
+- [ ] CAUSE I FEEL audio test
+
 - [ ] Music commands
 	- [ ] Audio help
 	- [ ] Queue song from YouTube

@@ -24,7 +24,7 @@ function correctUsage(cmd) {
 function unMute(bot, msg, users, time, role) {
 	setTimeout(() => {
 		users.map((user) => {
-			if (msg.channel.server.get("name", user.username) && msg.channel.server.roles.get("name", role.name) && bot.memberHasRole(user, role)) {
+			if (msg.channel.server.members.get("name", user.username) && msg.channel.server.roles.get("name", role.name) && bot.memberHasRole(user, role)) {
 				bot.removeMemberFromRole(user, role);
 			}
 		});
