@@ -69,39 +69,34 @@ exports.fetchServerDB = function(tableName) {
 			var q = client.query('SELECT * FROM ' + tableName);
 			q.on('error', (e) => { console.log(e.message); return; });
 			ServerSettings = {};
-			q.on('row', (row) => {
-				ServerSettings[row.id] = {'deletecmds': row.deletecmds, 'welcomemsg': row.welcomemsg, 'banalerts': row.banalerts, 'namechanges': row.namechanges};
-			});
+			q.on('row', (row) => { ServerSettings[row.id] = {'deletecmds': row.deletecmds, 'welcomemsg': row.welcomemsg, 'banalerts': row.banalerts, 'namechanges': row.namechanges, 'ignored': row.ignored}; });
 			done();
 		} else { console.log(err); setTimeout(() => { fetchDB(SERVER_DB_NAME); }, 300000); return; }
 	});
 };
-exports.updateServerDB = function(sID, callback) {
+exports.updateServerDB = function(sID, callback, onFail) {
 	if (sID && ServerSettings.hasOwnProperty(sID)) {
 		pg.connect(process.env.DATABASE_URL + '?ssl=true', (err, client, done) => {
 			if (!err) {
 				var q = client.query('SELECT * FROM ' + SERVER_DB_NAME + ' WHERE id = ' + sID);
-				q.on('error', (e) => { console.log(e.message); done(); return; });
+				q.on('error', (e) => { console.log(e.message); done(); if(onFail){onFail();} return; });
 				q.on('end', (result) => {
 					if (!result) { console.log('No data returned from query'); return; done(); }
-					var updateQ = client.query('UPDATE ' + SERVER_DB_NAME + ' SET deletecmds = $1, welcomemsg = $2, banalerts = $3, namechanges = $4 WHERE id = ' + sID, [ServerSettings[sID].deletecmds, ServerSettings[sID].welcomemsg, ServerSettings[sID].banalerts, ServerSettings[sID].namechanges]);
-					updateQ.on('error', (e) => { console.log('Error updating server settings: ' + e.message); done(); return; });
+					var updateQ = client.query('UPDATE ' + SERVER_DB_NAME + ' SET deletecmds = $1, welcomemsg = $2, banalerts = $3, namechanges = $4, ignored = $5 WHERE id = ' + sID, [ServerSettings[sID].deletecmds, ServerSettings[sID].welcomemsg, ServerSettings[sID].banalerts, ServerSettings[sID].namechanges, ServerSettings[sID].ignored]);
+					updateQ.on('error', (e) => { console.log('Error updating server settings: ' + e.message); done(); if(onFail){onFail();} return; });
 					updateQ.on('end', (result) => { done(); callback(); });
 				});
-			} else { console.log(err); return; }
+			} else { console.log(err); if(onFail){onFail();} return; }
 		});
 	} else { return; }
 };
-exports.addToDB = function(sID, callback) {
+exports.addToDB = function(sID, callback, onFail) {
 	pg.connect(process.env.DATABASE_URL + '?ssl=true', (err, client, done) => {
 		if (!err) {
-			var q = client.query('INSERT INTO ' + SERVER_DB_NAME + ' VALUES ($1, $2, $3, $4, $5)', [sID, ServerSettings[sID].deletecmds, ServerSettings[sID].welcomemsg, ServerSettings[sID].banalerts, ServerSettings[sID].namechanges]);
-			q.on('error', (e) => { console.log(e.message); done(); return; });
-			q.on('end', () => {
-				done();
-				callback();
-			});
-		} else { console.log(err); return; }
+			var q = client.query('INSERT INTO ' + SERVER_DB_NAME + ' VALUES ($1, $2, $3, $4, $5, $6)', [sID, ServerSettings[sID].deletecmds, ServerSettings[sID].welcomemsg, ServerSettings[sID].banalerts, ServerSettings[sID].namechanges, 'none']);
+			q.on('error', (e) => { console.log(e.message); done(); if(onFail){onFail();} return; });
+			q.on('end', () => { done(); callback(); });
+		} else { console.log(err); if(onFail){onFail();} return; }
 	});
 };
 

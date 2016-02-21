@@ -49,9 +49,12 @@ function generateRandomRating(fullName, storeRating) {
 
 function generateUserRating(bot, msg, fullName) {
 	var user = msg.channel.server.members.get("username", fullName);
+	if (user === undefined) { return generateRandomRating(); }
 	var score = generateRandomRating() - 1;
-	var joined = new Date(msg.channel.server.detailsOfUser(user).joinedAt), now = new Date();
-	if (now.valueOf() - joined.valueOf() >= 2592000000) { score += 1; } //if user has been on the server for at least one month +1
+	try {
+		var joined = new Date(msg.channel.server.detailsOfUser(user).joinedAt), now = new Date();
+		if (now.valueOf() - joined.valueOf() >= 2592000000) { score += 1; } //if user has been on the server for at least one month +1
+	} catch (e) { console.log(colors.cError(" ERROR ") + e.stack); }
 	if (msg.channel.permissionsOf(user).hasPermission("manageServer")) { score += 1; } //admins get +1 ;)
 	var count = 0;
 	bot.servers.map((server) => { if (server.members.get("id", user.id)) { count += 1; } }); //how many servers does the bot share with them
@@ -113,19 +116,19 @@ var commands = {
 		usage: "[command]",
 		deleteCommand: true, shouldDisplay: false, cooldown: 1,
 		process: function(bot, msg, suffix) {
-			var msgArray = [];
+			var toSend = [];
 			if (!suffix) {
-				msgArray.push("Use `" + config.command_prefix + "help <command name>` to get info on a specific command.");
-				msgArray.push("Mod commands can be found with `" + config.mod_command_prefix + "help [command]`.");
-				msgArray.push("You can also find examples and more at **https://github.com/brussell98/BrussellBot/wiki/Commands**");
-				msgArray.push("**Commands:**\n");
-				msgArray.push("`@" + bot.user.username + " text`\n		Talk to the bot (cleverbot)");
+				toSend.push("Use `" + config.command_prefix + "help <command name>` to get info on a specific command.");
+				toSend.push("Mod commands can be found with `" + config.mod_command_prefix + "help [command]`.");
+				toSend.push("You can also find examples and more at **https://github.com/brussell98/BrussellBot/wiki/Commands**");
+				toSend.push("**Commands:**\n");
+				toSend.push("`@" + bot.user.username + " text`\n		Talk to the bot (cleverbot)");
 				Object.keys(commands).forEach(function(cmd) {
 					if (commands[cmd].hasOwnProperty("shouldDisplay")) {
-						if (commands[cmd].shouldDisplay) { msgArray.push("`" + config.command_prefix + cmd + " " + commands[cmd].usage + "`\n		" + commands[cmd].desc); }
-					} else { msgArray.push("`" + config.command_prefix + cmd + " " + commands[cmd].usage + "`\n		" + commands[cmd].desc); }
+						if (commands[cmd].shouldDisplay) { toSend.push("`" + config.command_prefix + cmd + " " + commands[cmd].usage + "`\n		" + commands[cmd].desc); }
+					} else { toSend.push("`" + config.command_prefix + cmd + " " + commands[cmd].usage + "`\n		" + commands[cmd].desc); }
 				});
-				var helpMessage = msgArray.join("\n");
+				var helpMessage = toSend.join("\n");
 				var helpPart2 = helpMessage.substring(helpMessage.indexOf("`]lotto`"));
 				var helpPart1 = helpMessage.substring(0, helpMessage.indexOf("`]lotto`") - 1);
 				bot.sendMessage(msg.author, helpPart1);
@@ -133,11 +136,11 @@ var commands = {
 			} else {
 				suffix = suffix.trim().toLowerCase();
 				if (commands.hasOwnProperty(suffix)) {
-					msgArray.push("**" + config.command_prefix + "" + suffix + ":** " + commands[suffix].desc);
-					if (commands[suffix].hasOwnProperty("usage")) { msgArray.push("**Usage:** `" + config.command_prefix + "" + suffix + " " + commands[suffix].usage + "`"); }
-					if (commands[suffix].hasOwnProperty("cooldown")) { msgArray.push("**Cooldown:** " + commands[suffix].cooldown + " seconds"); }
-					if (commands[suffix].hasOwnProperty("deleteCommand")) { msgArray.push("*Delete Command: true*"); }
-					bot.sendMessage(msg, msgArray);
+					toSend.push("**" + config.command_prefix + "" + suffix + ":** " + commands[suffix].desc);
+					if (commands[suffix].hasOwnProperty("usage")) { toSend.push("**Usage:** `" + config.command_prefix + "" + suffix + " " + commands[suffix].usage + "`"); }
+					if (commands[suffix].hasOwnProperty("cooldown")) { toSend.push("**Cooldown:** " + commands[suffix].cooldown + " seconds"); }
+					if (commands[suffix].hasOwnProperty("deleteCommand")) { toSend.push("*Delete Command: true*"); }
+					bot.sendMessage(msg, toSend);
 				} else { bot.sendMessage(msg, "Command `" + suffix + "` not found.", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
 			}
 		}
@@ -224,12 +227,12 @@ var commands = {
 								console.log(colors.cGreen("Joined server: ") + server.name);
 								bot.sendMessage(msg, "✅ Successfully joined ***" + server.name + "***");
 								if (suffix.indexOf("-a") != -1) {
-									var msgArray = [];
-									msgArray.push("Hi! I'm **" + bot.user.username + "** and I was invited to this server by " + msg.author + ".");
-									msgArray.push("Use `" + config.command_prefix + "help` to get a list of normal commands.");
-									msgArray.push("Mod/Admin commands __including bot settings__ can be viewed with `" + config.mod_command_prefix + "`help ");
-									msgArray.push("For help / feedback / bugs / testing / announcements / changelogs / etc. go to **discord.gg/0kvLlwb7slG3XCCQ**");
-									bot.sendMessage(server.defaultChannel, msgArray);
+									var toSend = [];
+									toSend.push("Hi! I'm **" + bot.user.username + "** and I was invited to this server by " + msg.author + ".");
+									toSend.push("Use `" + config.command_prefix + "help` to get a list of normal commands.");
+									toSend.push("Mod/Admin commands __including bot settings__ can be viewed with `" + config.mod_command_prefix + "`help ");
+									toSend.push("For help / feedback / bugs / testing / announcements / changelogs / etc. go to **discord.gg/0kvLlwb7slG3XCCQ**");
+									bot.sendMessage(server.defaultChannel, toSend);
 								} else { setTimeout(function() { bot.sendMessage(server.defaultChannel, "*Joined on request of " + msg.author + "*"); }, 2000); }
 							}
 						});
@@ -267,7 +270,7 @@ var commands = {
 		cooldown: 3,
 		process: function(bot, msg, suffix) {
 			var dice = "1d6";
-			if (suffix && /\d+d\d+/.test(suffix)) { dice = suffix; }
+			if (suffix && /\d+d\d+/.test(suffix) && suffix.indexOf(".") == -1) { dice = suffix; }
 			request("https://rolz.org/api/?" + dice + ".json", function(err, response, body) {
 				if (!err && response.statusCode == 200) {
 					var roll = JSON.parse(body);
@@ -303,20 +306,23 @@ var commands = {
 						if (msg.everyoneMentioned) { bot.sendMessage(msg, "Hey, " + msg.author.username + ", don't do that ok?", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 						if (msg.mentions.length > 4) { bot.sendMessage(msg, "Limit of 4 users", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 						msg.mentions.map(function(usr) {
-							var msgArray = [], count = 0;
-							msgArray.push("ℹ **Info on** " + usr.username + " (" + usr.discriminator + ")");
-							msgArray.push("**ID:** " + usr.id);
-							if (usr.game && usr.game.name !== undefined && usr.game.name !== null && usr.game.name !== "null") { msgArray.push("**Status:** " + usr.status + " **last playing** " + usr.game.name);
-							} else { msgArray.push("**Status:** " + usr.status); }
-							var jDate = new Date(msg.channel.server.detailsOfUser(usr).joinedAt);
-							msgArray.push("**Joined on:** " + jDate.toUTCString());
+							var toSend = [], count = 0;
+							toSend.push("ℹ **Info on** " + usr.username + " (" + usr.discriminator + ")");
+							toSend.push("**ID:** " + usr.id);
+							if (usr.game && usr.game.name !== undefined && usr.game.name !== null && usr.game.name !== "null") toSend.push("**Status:** " + usr.status + " **last playing** " + usr.game.name);
+							else toSend.push("**Status:** " + usr.status);
+							var detailsOf = msg.channel.server.detailsOfUser(usr);
+							if (detailsOf) toSend.push("**Joined on:** " + new Date(msg.channel.server.detailsOfUser(usr).joinedAt).toUTCString());
+							else toSend.push("**Joined on:** Error");
 							var roles = msg.channel.server.rolesOfUser(usr.id).map((role) => { return role.name; });
-							roles = roles.join(", ").replace("@", "");
-							if (roles) { if (roles.length <= 1500) { msgArray.push("**Roles:** `" + roles + "`"); } else { msgArray.push("**Roles:** `Too many to display`"); } }
+							if (roles) {
+								roles = roles.join(", ").replace("@", "");
+								if (roles.length <= 1500) { toSend.push("**Roles:** `" + roles + "`"); } else { toSend.push("**Roles:** `" + roles.split(", ").length + "`"); }
+							} else toSend.push("**Roles:** Error");
 							bot.servers.map(function(server) { if (server.members.indexOf(usr) > -1) { count += 1; } });
-							if (count > 1) { msgArray.push("**Shared servers:** " + count); }
-							if (usr.avatarURL != null) { msgArray.push("**Avatar URL:** `" + usr.avatarURL + "`"); }
-							bot.sendMessage(msg, msgArray);
+							if (count > 1) { toSend.push("**Shared servers:** " + count); }
+							if (usr.avatarURL != null) { toSend.push("**Avatar URL:** `" + usr.avatarURL + "`"); }
+							bot.sendMessage(msg, toSend);
 							if (config.debug) { console.log(colors.cDebug(" DEBUG ") + "Got info on " + usr.username); }
 						});
 					} else {
@@ -324,45 +330,49 @@ var commands = {
 						var users = suffix.split(/, ?/);
 						if (users.length > 4) { bot.sendMessage(msg, "Limit of 4 users", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 						users.map(function(user) {
-							var usr = msg.channel.server.members.find((member) => { if (member === undefined || member.username == undefined) { return false; } return member.username.toLowerCase() == user.toLowerCase() });
-							if (!usr) { usr = msg.channel.server.members.find((member) => { if (member === undefined || member.username == undefined) { return false; } return member.username.toLowerCase().indexOf(user.toLowerCase()) == 0 }); }
-							if (!usr) { usr = msg.channel.server.members.find((member) => { if (member === undefined || member.username == undefined) { return false; } return member.username.toLowerCase().indexOf(user.toLowerCase()) > -1 }); }
+							var usr = msg.channel.server.members.find((member) => { return (member === undefined || member.username == undefined) ? false : member.username.toLowerCase() == user.toLowerCase() });
+							if (!usr) { usr = msg.channel.server.members.find((member) => { return (member === undefined || member.username == undefined) ? false : member.username.toLowerCase().indexOf(user.toLowerCase()) > -1 }); }
+							if (!usr) { usr = msg.channel.server.members.find((member) => { return (member === undefined || member.username == undefined) ? false : member.username.toLowerCase().indexOf(user.toLowerCase()) == 0 }); }
 							if (usr) {
-								var msgArray = [], count = 0;
-								msgArray.push("ℹ **Info on** " + usr.username + " (" + usr.discriminator + ")");
-								msgArray.push("**ID:** " + usr.id);
-								if (usr.game && usr.game.name !== undefined && usr.game.name !== null && usr.game.name !== "null") { msgArray.push("**Status:** " + usr.status + " **last playing** " + usr.game.name);
-								} else { msgArray.push("**Status:** " + usr.status); }
-								var jDate = new Date(msg.channel.server.detailsOfUser(usr).joinedAt);
-								msgArray.push("**Joined on:** " + jDate.toUTCString());
+								var toSend = [], count = 0;
+								toSend.push("ℹ **Info on** " + usr.username + " (" + usr.discriminator + ")");
+								toSend.push("**ID:** " + usr.id);
+								if (usr.game && usr.game.name !== undefined && usr.game.name !== null && usr.game.name !== "null") toSend.push("**Status:** " + usr.status + " **last playing** " + usr.game.name);
+								else toSend.push("**Status:** " + usr.status);
+								var detailsOf = msg.channel.server.detailsOfUser(usr);
+								if (detailsOf) toSend.push("**Joined on:** " + new Date(msg.channel.server.detailsOfUser(usr).joinedAt).toUTCString());
+								else toSend.push("**Joined on:** Error");
 								var roles = msg.channel.server.rolesOfUser(usr.id).map((role) => { return role.name; });
-								roles = roles.join(", ").replace("@", "");
-								if (roles) { if (roles.length <= 1500) { msgArray.push("**Roles:** `" + roles + "`"); } else { msgArray.push("**Roles:** `Too many to display`"); } }
+								if (roles) {
+									roles = roles.join(", ").replace("@", "");
+									if (roles.length <= 1500) { toSend.push("**Roles:** `" + roles + "`"); } else { toSend.push("**Roles:** `" + roles.split(", ").length + "`"); }
+								} else toSend.push("**Roles:** Error");
 								bot.servers.map(function(server) { if (server.members.indexOf(usr) > -1) { count += 1; } });
-								if (count > 1) { msgArray.push("**Shared servers:** " + count); }
-								if (usr.avatarURL != null) { msgArray.push("**Avatar URL:** `" + usr.avatarURL + "`"); }
-								bot.sendMessage(msg, msgArray);
+								if (count > 1) { toSend.push("**Shared servers:** " + count); }
+								if (usr.avatarURL != null) { toSend.push("**Avatar URL:** `" + usr.avatarURL + "`"); }
+								bot.sendMessage(msg, toSend);
 								if (config.debug) { console.log(colors.cDebug(" DEBUG ") + "Got info on " + usr.username); }
-							} else { bot.sendMessage(msg, "User \"" + user + "\" not found. (Blame *Better*Discord) If you want to get info on multiple users separate them with a comma.", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 15000}); }); }
+							} else bot.sendMessage(msg, "User \"" + user + "\" not found. If you want to get info on multiple users separate them with a comma.", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 15000}); });
 						});
 					}
 				} else {
-					var msgArray = [];
-					msgArray.push("ℹ **Info on** " + msg.channel.server.name);
-					msgArray.push("**Server ID:** " + msg.channel.server.id);
-					msgArray.push("**Owner:** " + msg.channel.server.owner.username + " (**ID:** " + msg.channel.server.owner.id + ")");
-					msgArray.push("**Region:** " + msg.channel.server.region);
-					msgArray.push("**Members:** " + msg.channel.server.members.length + " **Channels:** " + msg.channel.server.channels.length);
+					var toSend = [];
+					toSend.push("ℹ **Info on** " + msg.channel.server.name);
+					toSend.push("**Server ID:** " + msg.channel.server.id);
+					toSend.push("**Owner:** " + msg.channel.server.owner.username + " (**ID:** " + msg.channel.server.owner.id + ")");
+					toSend.push("**Region:** " + msg.channel.server.region);
+					toSend.push("**Members:** " + msg.channel.server.members.length + " **Channels:** " + msg.channel.server.channels.length);
 					var roles = msg.channel.server.roles.map((role) => { return role.name; });
 					roles = roles.join(", ").replace("@", "");
-					if (roles.length <= 1500) { msgArray.push("**Roles:** `" + roles + "`"); } else { msgArray.push("**Roles:** `Too many to display`"); }
-					msgArray.push("**Default channel:** " + msg.channel.server.defaultChannel);
-					msgArray.push("**This channel's id:** " + msg.channel.id);
-					msgArray.push("**Icon URL:** `" + msg.channel.server.iconURL + "`");
-					bot.sendMessage(msg, msgArray);
-					if (config.debug) { console.log(colors.cDebug(" DEBUG ") + "Got info on " + msg.channel.server.name); }
+					if (roles.length <= 1500) toSend.push("**Roles:** `" + roles + "`");
+					else toSend.push("**Roles:** `" + roles.split(", ").length + "`");
+					toSend.push("**Default channel:** " + msg.channel.server.defaultChannel);
+					toSend.push("**This channel's id:** " + msg.channel.id);
+					toSend.push("**Icon URL:** `" + msg.channel.server.iconURL + "`");
+					bot.sendMessage(msg, toSend);
+					if (config.debug) console.log(colors.cDebug(" DEBUG ") + "Got info on " + msg.channel.server.name);
 				}
-			} else { bot.sendMessage(msg, "⚠ Can't do that in a DM.", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
+			} else bot.sendMessage(msg, "⚠ Can't do that in a DM.", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); });
 		}
 	},
 	"avatar": {
@@ -387,9 +397,9 @@ var commands = {
 				var users = suffix.split(/, ?/);
 				if (users.length > 6) { bot.sendMessage(msg, "Limit of 6 users", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 				users.map(function(user) {
-					var usr = msg.channel.server.members.find((member) => { if (member === undefined || member.username == undefined) { return false; } return member.username.toLowerCase() == user.toLowerCase() });
-					if (!usr) { usr = msg.channel.server.members.find((member) => { if (member === undefined || member.username == undefined) { return false; } return member.username.toLowerCase().indexOf(user.toLowerCase()) == 0 }); }
-					if (!usr) { usr = msg.channel.server.members.find((member) => { if (member === undefined || member.username == undefined) { return false; } return member.username.toLowerCase().indexOf(user.toLowerCase()) > -1 }); }
+					var usr = msg.channel.server.members.find((member) => { return (member === undefined || member.username == undefined) ? false : member.username.toLowerCase() == user.toLowerCase() });
+					if (!usr) { usr = msg.channel.server.members.find((member) => { return (member === undefined || member.username == undefined) ? false : member.username.toLowerCase().indexOf(user.toLowerCase()) > -1 }); }
+					if (!usr) { usr = msg.channel.server.members.find((member) => { return (member === undefined || member.username == undefined) ? false : member.username.toLowerCase().indexOf(user.toLowerCase()) == 0 }); }
 					if (usr) { (usr.avatarURL != null) ? bot.sendMessage(msg, "**" + usr.username + "**'s avatar is: " + usr.avatarURL + "") : bot.sendMessage(msg, "**" + usr.username + "** has no avatar", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); });
 					} else { bot.sendMessage(msg, "User \"" + user + "\" not found. (Blame *Better*Discord) If you want to get the avatar of multiple users separate them with a comma.", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 20000}); }); }
 				});
@@ -712,14 +722,14 @@ var commands = {
 				osu.getUser(username, function(err, data) {
 					if (err) { bot.sendMessage(msg, "⚠ Error: " + err, function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 					if (!data) { bot.sendMessage(msg, "⚠ User \"" + username + "\" not found", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
-					var msgArray = [];
+					var toSend = [];
 					if (data.playcount === null) { bot.sendMessage(msg, "User has no data", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
-					msgArray.push("Osu stats for: **" + data.username + "**:");
-					msgArray.push("━━━━━━━━━━━━━━━━━━━");
-					msgArray.push("**Play Count**: " + data.playcount.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " | **Ranked Score**: " + data.ranked_score.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " | **Total Score**: " + data.total_score.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " | **Level**: " + data.level.substring(0, data.level.split(".")[0].length + 3));
-					msgArray.push("**PP**: " + data.pp_raw.split(".")[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " | **Rank**: #" + data.pp_rank.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " | **Country Rank**: #" + data.pp_country_rank.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " | **Accuracy**: " + data.accuracy.substring(0, data.accuracy.split(".")[0].length + 3) + "%");
-					msgArray.push("**300**: " + data.count300.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " | **100**: " + data.count100.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " | **50**: " + data.count50.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " | **SS**: " + data.count_rank_ss + " | **S**: " + data.count_rank_s + " | **A**: " + data.count_rank_a.replace(/\B(?=(\d{3})+(?!\d))/g, ","));
-					bot.sendMessage(msg, msgArray);
+					toSend.push("Osu stats for: **" + data.username + "**:");
+					toSend.push("━━━━━━━━━━━━━━━━━━━");
+					toSend.push("**Play Count**: " + data.playcount.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " | **Ranked Score**: " + data.ranked_score.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " | **Total Score**: " + data.total_score.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " | **Level**: " + data.level.substring(0, data.level.split(".")[0].length + 3));
+					toSend.push("**PP**: " + data.pp_raw.split(".")[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " | **Rank**: #" + data.pp_rank.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " | **Country Rank**: #" + data.pp_country_rank.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " | **Accuracy**: " + data.accuracy.substring(0, data.accuracy.split(".")[0].length + 3) + "%");
+					toSend.push("**300**: " + data.count300.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " | **100**: " + data.count100.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " | **50**: " + data.count50.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " | **SS**: " + data.count_rank_ss + " | **S**: " + data.count_rank_s + " | **A**: " + data.count_rank_a.replace(/\B(?=(\d{3})+(?!\d))/g, ","));
+					bot.sendMessage(msg, toSend);
 				});
 
 			} else if (suffix.split(" ")[0] === "best") {
@@ -731,20 +741,20 @@ var commands = {
 				osu.getUserBest(username, function(err, data) {
 					if (err) { bot.sendMessage(msg, "⚠ Error: " + err, function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 					if (!data || !data[0] || !data[1] || !data[2] || !data[3] || !data[4]) { bot.sendMessage(msg, "⚠ User \"" + username + "\" not found or user doesn't have 5 plays", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
-					var msgArray = [];
-					msgArray.push("Top 5 osu scores for: **" + username + "**:");
-					msgArray.push("━━━━━━━━━━━━━━━━━━━");
+					var toSend = [];
+					toSend.push("Top 5 osu scores for: **" + username + "**:");
+					toSend.push("━━━━━━━━━━━━━━━━━━━");
 					osu.getBeatmap(data[0].beatmap_id, function(err, map1) {
-						msgArray.push("**1.** *" + map1.title + "* *(☆" + map1.difficultyrating.substring(0, map1.difficultyrating.split(".")[0].length + 3) + ")*: **PP:** " + Math.round(data[0].pp.split(".")[0]) + " **| Score:** " + data[0].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " **| Max Combo:** " + data[0].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " **| Misses:** " + data[0].countmiss + " **| Date:** " + data[0].date);
+						toSend.push("**1.** *" + map1.title + "* *(☆" + map1.difficultyrating.substring(0, map1.difficultyrating.split(".")[0].length + 3) + ")*: **PP:** " + Math.round(data[0].pp.split(".")[0]) + " **| Score:** " + data[0].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " **| Max Combo:** " + data[0].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " **| Misses:** " + data[0].countmiss + " **| Date:** " + data[0].date);
 						osu.getBeatmap(data[1].beatmap_id, function(err, map2) {
-							msgArray.push("**2.** *" + map2.title + "* *(☆" + map2.difficultyrating.substring(0, map2.difficultyrating.split(".")[0].length + 3) + ")*: **PP:** " + Math.round(data[1].pp.split(".")[0]) + " **| Score:** " + data[1].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " **| Max Combo:** " + data[1].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " **| Misses:** " + data[1].countmiss + " **| Date:** " + data[1].date);
+							toSend.push("**2.** *" + map2.title + "* *(☆" + map2.difficultyrating.substring(0, map2.difficultyrating.split(".")[0].length + 3) + ")*: **PP:** " + Math.round(data[1].pp.split(".")[0]) + " **| Score:** " + data[1].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " **| Max Combo:** " + data[1].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " **| Misses:** " + data[1].countmiss + " **| Date:** " + data[1].date);
 							osu.getBeatmap(data[2].beatmap_id, function(err, map3) {
-								msgArray.push("**3.** *" + map3.title + "* *(☆" + map3.difficultyrating.substring(0, map3.difficultyrating.split(".")[0].length + 3) + ")*: **PP:** " + Math.round(data[2].pp.split(".")[0]) + " **| Score:** " + data[2].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " **| Max Combo:** " + data[2].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " **| Misses:** " + data[2].countmiss + " **| Date:** " + data[2].date);
+								toSend.push("**3.** *" + map3.title + "* *(☆" + map3.difficultyrating.substring(0, map3.difficultyrating.split(".")[0].length + 3) + ")*: **PP:** " + Math.round(data[2].pp.split(".")[0]) + " **| Score:** " + data[2].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " **| Max Combo:** " + data[2].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " **| Misses:** " + data[2].countmiss + " **| Date:** " + data[2].date);
 								osu.getBeatmap(data[3].beatmap_id, function(err, map4) {
-									msgArray.push("**4.** *" + map4.title + "* *(☆" + map4.difficultyrating.substring(0, map4.difficultyrating.split(".")[0].length + 3) + ")*: **PP:** " + Math.round(data[3].pp.split(".")[0]) + " **| Score:** " + data[3].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " **| Max Combo:** " + data[3].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " **| Misses:** " + data[3].countmiss + " **| Date:** " + data[3].date);
+									toSend.push("**4.** *" + map4.title + "* *(☆" + map4.difficultyrating.substring(0, map4.difficultyrating.split(".")[0].length + 3) + ")*: **PP:** " + Math.round(data[3].pp.split(".")[0]) + " **| Score:** " + data[3].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " **| Max Combo:** " + data[3].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " **| Misses:** " + data[3].countmiss + " **| Date:** " + data[3].date);
 									osu.getBeatmap(data[4].beatmap_id, function(err, map5) {
-										msgArray.push("**5.** *" + map5.title + "* *(☆" + map5.difficultyrating.substring(0, map5.difficultyrating.split(".")[0].length + 3) + ")*: **PP:** " + Math.round(data[4].pp.split(".")[0]) + " **| Score:** " + data[4].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " **| Max Combo:** " + data[4].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " **| Misses:** " + data[4].countmiss + " **| Date:** " + data[4].date);
-										bot.sendMessage(msg, msgArray);
+										toSend.push("**5.** *" + map5.title + "* *(☆" + map5.difficultyrating.substring(0, map5.difficultyrating.split(".")[0].length + 3) + ")*: **PP:** " + Math.round(data[4].pp.split(".")[0]) + " **| Score:** " + data[4].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " **| Max Combo:** " + data[4].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " **| Misses:** " + data[4].countmiss + " **| Date:** " + data[4].date);
+										bot.sendMessage(msg, toSend);
 					});});});});});
 				});
 
@@ -757,24 +767,24 @@ var commands = {
 				osu.getUserRecent(username, function(err, data) {
 					if (err) { bot.sendMessage(msg, "⚠ Error: " + err, function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 					if (!data || !data[0]) { bot.sendMessage(msg, "⚠ User \"" + username + "\" not found or no recent plays", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
-					var msgArray = [];
-					msgArray.push("5 most recent plays for: **" + username + "**:");
-					msgArray.push("━━━━━━━━━━━━━━━━━━━");
+					var toSend = [];
+					toSend.push("5 most recent plays for: **" + username + "**:");
+					toSend.push("━━━━━━━━━━━━━━━━━━━");
 					osu.getBeatmap(data[0].beatmap_id, function(err, map1) {
-						msgArray.push("**1.** *" + map1.title + "* *(☆" + map1.difficultyrating.substring(0, map1.difficultyrating.split(".")[0].length + 3) + ")*: **Score:** " + data[0].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " **| Max Combo:** " + data[0].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " **| Misses:** " + data[0].countmiss);
-						if (!data[1]) { bot.sendMessage(msg, msgArray); return; }
+						toSend.push("**1.** *" + map1.title + "* *(☆" + map1.difficultyrating.substring(0, map1.difficultyrating.split(".")[0].length + 3) + ")*: **Score:** " + data[0].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " **| Max Combo:** " + data[0].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " **| Misses:** " + data[0].countmiss);
+						if (!data[1]) { bot.sendMessage(msg, toSend); return; }
 						osu.getBeatmap(data[1].beatmap_id, function(err, map2) {
-							msgArray.push("**2.** *" + map2.title + "* *(☆" + map2.difficultyrating.substring(0, map2.difficultyrating.split(".")[0].length + 3) + ")*: **Score:** " + data[1].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " **| Max Combo:** " + data[1].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " **| Misses:** " + data[1].countmiss);
-							if (!data[2]) { bot.sendMessage(msg, msgArray); return; }
+							toSend.push("**2.** *" + map2.title + "* *(☆" + map2.difficultyrating.substring(0, map2.difficultyrating.split(".")[0].length + 3) + ")*: **Score:** " + data[1].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " **| Max Combo:** " + data[1].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " **| Misses:** " + data[1].countmiss);
+							if (!data[2]) { bot.sendMessage(msg, toSend); return; }
 							osu.getBeatmap(data[2].beatmap_id, function(err, map3) {
-								msgArray.push("**3.** *" + map3.title + "* *(☆" + map3.difficultyrating.substring(0, map3.difficultyrating.split(".")[0].length + 3) + ")*: **Score:** " + data[2].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " **| Max Combo:** " + data[2].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " **| Misses:** " + data[2].countmiss);
-								if (!data[3]) { bot.sendMessage(msg, msgArray); return; }
+								toSend.push("**3.** *" + map3.title + "* *(☆" + map3.difficultyrating.substring(0, map3.difficultyrating.split(".")[0].length + 3) + ")*: **Score:** " + data[2].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " **| Max Combo:** " + data[2].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " **| Misses:** " + data[2].countmiss);
+								if (!data[3]) { bot.sendMessage(msg, toSend); return; }
 								osu.getBeatmap(data[3].beatmap_id, function(err, map4) {
-									msgArray.push("**4.** *" + map4.title + "* *(☆" + map4.difficultyrating.substring(0, map4.difficultyrating.split(".")[0].length + 3) + ")*: **Score:** " + data[3].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " **| Max Combo:** " + data[3].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " **| Misses:** " + data[3].countmiss);
-									if (!data[4]) { bot.sendMessage(msg, msgArray); return; }
+									toSend.push("**4.** *" + map4.title + "* *(☆" + map4.difficultyrating.substring(0, map4.difficultyrating.split(".")[0].length + 3) + ")*: **Score:** " + data[3].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " **| Max Combo:** " + data[3].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " **| Misses:** " + data[3].countmiss);
+									if (!data[4]) { bot.sendMessage(msg, toSend); return; }
 									osu.getBeatmap(data[4].beatmap_id, function(err, map5) {
-										msgArray.push("**5.** *" + map5.title + "* *(☆" + map5.difficultyrating.substring(0, map5.difficultyrating.split(".")[0].length + 3) + ")*: **Score:** " + data[4].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " **| Max Combo:** " + data[4].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " **| Misses:** " + data[4].countmiss);
-										bot.sendMessage(msg, msgArray);
+										toSend.push("**5.** *" + map5.title + "* *(☆" + map5.difficultyrating.substring(0, map5.difficultyrating.split(".")[0].length + 3) + ")*: **Score:** " + data[4].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " **| Max Combo:** " + data[4].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " **| Misses:** " + data[4].countmiss);
+										bot.sendMessage(msg, toSend);
 					});});});});});
 				});
 
@@ -878,7 +888,7 @@ var commands = {
 			if (msg.mentions.length > 1) { bot.sendMessage(msg, "Multiple mentions aren't allowed!", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
 			if (suffix.toLowerCase().replace("-", " ") == bot.user.username.toLowerCase().replace("-", " ")) { bot.sendMessage(msg, "I'd rate myself **10/10**"); return; }
 			var fullName = "", user = false;
-			if (!msg.channel.isPrivate) { user = msg.channel.server.members.find((member) => { if (member === undefined || member.username == undefined) { return false; } return member.username.toLowerCase() == suffix.toLowerCase() }); } else { user = false; }
+			if (!msg.channel.isPrivate) { user = msg.channel.server.members.find((member) => { return (member === undefined || member.username == undefined) ? false : member.username.toLowerCase() == suffix.toLowerCase() }); } else { user = false; }
 			if (!user && msg.mentions.length < 1) {
 				Object.keys(waifus).map(function(name) {if (name.toLowerCase() == suffix.toLowerCase()) { fullName = name; return; }});
 				if (!fullName) { Object.keys(waifus).map(function(name) {if (name.split(" ")[0].toLowerCase() == suffix.toLowerCase()) {fullName = name; return;}}); }
@@ -898,7 +908,29 @@ var commands = {
 				bot.sendMessage(msg, "I give " + suffix + " a **" + generateRandomRating(suffix.toLowerCase(), true) + "/10**");
 			}
 		}
-	}
+	}/*,
+	"database": {
+		desc: "WE'RE IN THE DATABASE WHOA OHH", usage: "",
+		deleteCommand: false, cooldown: 300, shouldDisplay: false,
+		process: function(bot, msg, suffix) {
+			if (!bot.voiceChannel && msg.author.voiceChannel) {
+				bot.joinVoiceChannel(msg.author.voiceChannel, (e, connection) => {
+					if (e) console.log(colors.cError(" ERROR ") + e.stack);
+					else {
+						connection.playFile("./Log Horizon OP Full - Database.mp3", {"volume": 0.25}, (er, intent) => {
+							if (er) console.log(colors.cError(" ERROR ") + e.stack);
+							else {
+								intent.on("error", (error) => { console.log(colors.cError(" ERROR ") + e.stack); })
+								intent.on("end", () => { setTimeout(() => {
+									bot.leaveVoiceChannel();
+								}, 6000); })
+							}
+						});
+					}
+				});
+			}
+		}
+	}*/
 };
 
 exports.commands = commands;

@@ -1,6 +1,4 @@
-/* global ServerSettings */
-/* global talkedToTimes */
-/* global commandsProcessed */
+/* global ServerSettings *//* global talkedToTimes *//* global commandsProcessed */
 /// <reference path="typings/main.d.ts" />
 /*
 This is a multipurpose bot
@@ -51,14 +49,20 @@ bot.on("disconnected", () => {
 bot.on("message", (msg) => {
 	if (msg.channel.isPrivate && msg.author.id != bot.user.id && (/(^https?:\/\/discord\.gg\/[A-Za-z0-9]+$|^https?:\/\/discordapp\.com\/invite\/[A-Za-z0-9]+$)/.test(msg.content))) { carbonInvite(msg); } //accept invites sent in a DM
 	if (msg.author.id == config.admin_id && msg.content.indexOf("(eval) ") > -1 && msg.content.indexOf("(eval) ") <= 1) { evaluateString(msg); return; } //bot owner eval command
-	if (msg.mentions.length !== 0) {
+	if (msg.mentions.length !== 0 && !msg.channel.isPrivate) {
 		if (msg.isMentioned(bot.user) && msg.content.startsWith("<@" + bot.user.id + ">")) {
-			cleverbot(bot, msg); talkedToTimes += 1; if (!msg.channel.isPrivate) {
-				console.log(colors.cServer(msg.channel.server.name) + " > " + colors.cGreen(msg.author.username) + " > " + colors.cYellow("@" + bot.user.username) + " " + msg.content.substring(22).replace(/\n/g, " "));
-			} else { console.log(colors.cGreen(msg.author.username) + " > " + colors.cYellow("@Bot-chan") + " " + msg.content.substring(22).replace(/\n/g, " ")); }
+			if (ServerSettings.hasOwnProperty(msg.channel.server.id)) { if (ServerSettings[msg.channel.server.id].ignored.indexOf(msg.channel.id) === -1) {
+				cleverbot(bot, msg); talkedToTimes += 1; if (!msg.channel.isPrivate) {
+					console.log(colors.cServer(msg.channel.server.name) + " > " + colors.cGreen(msg.author.username) + " > " + colors.cYellow("@" + bot.user.username) + " " + msg.content.substring(22).replace(/\n/g, " "));
+				} else { console.log(colors.cGreen(msg.author.username) + " > " + colors.cYellow("@Bot-chan") + " " + msg.content.substring(22).replace(/\n/g, " ")); }
+			} } else {
+				cleverbot(bot, msg); talkedToTimes += 1; if (!msg.channel.isPrivate) {
+					console.log(colors.cServer(msg.channel.server.name) + " > " + colors.cGreen(msg.author.username) + " > " + colors.cYellow("@" + bot.user.username) + " " + msg.content.substring(22).replace(/\n/g, " "));
+				} else { console.log(colors.cGreen(msg.author.username) + " > " + colors.cYellow("@Bot-chan") + " " + msg.content.substring(22).replace(/\n/g, " ")); }
+			}
 		}
 		if (msg.content.indexOf("<@" + config.admin_id + ">") > -1) {
-			if (config.send_mentions && !msg.channel.isPrivate) {
+			if (config.send_mentions) {
 				var owner = bot.users.get("id", config.admin_id);
 				if (owner.status != "online") { bot.sendMessage(owner, msg.channel.server.name + " > " + msg.author.username + ": " + msg.cleanContent); }
 			}
@@ -67,6 +71,9 @@ bot.on("message", (msg) => {
 	if (!msg.content.startsWith(config.command_prefix) && !msg.content.startsWith(config.mod_command_prefix)) { return; } //if not a command
 	if (msg.author.id == bot.user.id) { return; } //stop from replying to itself
 	if (msg.content.indexOf(" ") == 1 && msg.content.length > 2) { msg.content = msg.content.replace(" ", ""); }
+	if (!msg.channel.isPrivate && !msg.content.startsWith(config.mod_command_prefix + "unignore") && ServerSettings.hasOwnProperty(msg.channel.server.id)) {
+		if (ServerSettings[msg.channel.server.id].ignored.indexOf(msg.channel.id) > -1) { return; }
+	}
 	var cmd = msg.content.split(" ")[0].replace(/\n/g, " ").substring(1).toLowerCase();
 	var suffix = msg.content.replace(/\n/g, " ").substring(cmd.length + 2); //seperate the command and suffix
 	if (msg.content.startsWith(config.command_prefix)) { //normal commands
@@ -87,9 +94,9 @@ bot.on("message", (msg) => {
 
 function execCommand(msg, cmd, suffix, type) {
 	try {
-		if (!msg.channel.isPrivate) { console.log(colors.cServer(msg.channel.server.name) + " > " + colors.cGreen(msg.author.username) + " > " + msg.content.replace(/\n/g, " ")); } else { console.log(colors.cGreen(msg.author.username) + " > " + msg.content.replace(/\n/g, " ")); }
 		commandsProcessed += 1;
 		if (type == "normal") {
+			if (!msg.channel.isPrivate) { console.log(colors.cServer(msg.channel.server.name) + " > " + colors.cGreen(msg.author.username) + " > " + msg.cleanContent.replace(/\n/g, " ")); } else { console.log(colors.cGreen(msg.author.username) + " > " + msg.cleanContent.replace(/\n/g, " ")); }
 			if (commands.commands[cmd].hasOwnProperty("cooldown")) {
 				if (lastExecTime.hasOwnProperty(cmd)) {
 					var id = msg.author.id;
@@ -112,6 +119,9 @@ function execCommand(msg, cmd, suffix, type) {
 				if (commands.commands[cmd].deleteCommand === true && ServerSettings.hasOwnProperty(msg.channel.server.id) && ServerSettings[msg.channel.server.id].deletecmds == true) { bot.deleteMessage(msg, {"wait": 10000}); }
 			}
 		} else if (type == "mod") {
+			if (!msg.channel.isPrivate) {
+				console.log(colors.cServer(msg.channel.server.name) + " > " + colors.cGreen(msg.author.username) + " > " + colors.cBlue(msg.cleanContent.replace(/\n/g, " ").split(" ")[0]) + msg.cleanContent.replace(/\n/g, " ").substr(msg.cleanContent.replace(/\n/g, " ").split(" ")[0].length));
+			} else { console.log(colors.cGreen(msg.author.username) + " > " + colors.cBlue(msg.cleanContent.replace(/\n/g, " ").split(" ")[0]) + msg.cleanContent.replace(/\n/g, " ").substr(msg.cleanContent.replace(/\n/g, " ").split(" ")[0].length)); }
 			if (mod.commands[cmd].hasOwnProperty("cooldown")) {
 				if (lastExecTime.hasOwnProperty(cmd)) {
 					var id = msg.author.id;
@@ -229,12 +239,12 @@ function carbonInvite(msg) {
 					console.log(colors.cGreen("Joined server: ") + " " + server.name);
 					bot.sendMessage(msg, "Successfully joined " + server.name);
 					if (shouldCarbonAnnounce) {
-						var msgArray = [];
-						msgArray.push("Hi! I'm **" + bot.user.username + "** and I was invited to this server through carbonitex.net.");
-						msgArray.push("You can use `" + config.command_prefix + "help` to see what I can do. Mods can use `" + config.mod_command_prefix + "help` for mod commands.");
-						msgArray.push("Mod/Admin commands __including bot settings__ can be viewed with `" + config.mod_command_prefix + "`help ");
-						msgArray.push("For help / feedback / bugs/ testing / info / changelogs / etc. go to **discord.gg/0kvLlwb7slG3XCCQ**");
-						bot.sendMessage(server.defaultChannel, msgArray);
+						var toSend = [];
+						toSend.push("Hi! I'm **" + bot.user.username + "** and I was invited to this server through carbonitex.net.");
+						toSend.push("You can use `" + config.command_prefix + "help` to see what I can do. Mods can use `" + config.mod_command_prefix + "help` for mod commands.");
+						toSend.push("Mod/Admin commands __including bot settings__ can be viewed with `" + config.mod_command_prefix + "`help ");
+						toSend.push("For help / feedback / bugs/ testing / info / changelogs / etc. go to **discord.gg/0kvLlwb7slG3XCCQ**");
+						bot.sendMessage(server.defaultChannel, toSend);
 					}
 				}
 			});

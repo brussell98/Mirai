@@ -8,7 +8,7 @@ exports.cWarn = function(text) {
 	text +
 	chalk.styles.black.close +
 	chalk.styles.bgYellow.close +
-	chalk.styles.white.open + chalk.styles.bgBlack.open +" ";
+	chalk.styles.white.open + chalk.styles.bgBlack.open + " ";
 };
 
 exports.cError = function(text) {
@@ -50,6 +50,14 @@ exports.cYellow = function(text) {
 	chalk.styles.bold.open +
 	text +
 	chalk.styles.yellow.close +
+	chalk.styles.bold.close + chalk.styles.white.open;
+};
+
+exports.cBlue = function(text) {
+	return chalk.styles.blue.open +
+	chalk.styles.bold.open +
+	text +
+	chalk.styles.blue.close +
 	chalk.styles.bold.close + chalk.styles.white.open;
 };
 
