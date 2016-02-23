@@ -1,5 +1,3 @@
-/* global ServerSettings *//* global talkedToTimes *//* global commandsProcessed */
-/// <reference path="typings/main.d.ts" />
 /*
 This is a multipurpose bot
 Run this with node to run the bot.
@@ -17,7 +15,6 @@ var db = require("./bot/db.js");
 checkConfig(); //notify user if they are missing things in the config
 
 var lastExecTime = {}; //for cooldown
-var shouldCarbonAnnounce = true;
 commandsProcessed = 0, talkedToTimes = 0;
 
 var bot = new discord.Client();
@@ -71,7 +68,7 @@ bot.on("message", (msg) => {
 	if (!msg.content.startsWith(config.command_prefix) && !msg.content.startsWith(config.mod_command_prefix)) { return; } //if not a command
 	if (msg.author.id == bot.user.id) { return; } //stop from replying to itself
 	if (msg.content.indexOf(" ") == 1 && msg.content.length > 2) { msg.content = msg.content.replace(" ", ""); }
-	if (!msg.channel.isPrivate && !msg.content.startsWith(config.mod_command_prefix + "unignore") && ServerSettings.hasOwnProperty(msg.channel.server.id)) {
+	if (!msg.channel.isPrivate && !msg.content.startsWith(config.mod_command_prefix) && ServerSettings.hasOwnProperty(msg.channel.server.id)) {
 		if (ServerSettings[msg.channel.server.id].ignored.indexOf(msg.channel.id) > -1) { return; }
 	}
 	var cmd = msg.content.split(" ")[0].replace(/\n/g, " ").substring(1).toLowerCase();
@@ -151,18 +148,21 @@ function execCommand(msg, cmd, suffix, type) {
 bot.on("serverNewMember", (objServer, objUser) => {
 	if (config.non_essential_event_listeners && ServerSettings.hasOwnProperty(objServer.id) && ServerSettings[objServer.id].welcomemsg != "false") {
 		if (config.debug) { console.log("New member on " + objServer.name + ": " + objUser.username); }
-		bot.sendMessage(objServer.defaultChannel, ServerSettings[objServer.id].welcomemsg.replace(/\$USER\$/gi, objUser.username).replace(/\$SERVER\$/gi, objServer.name));
+		bot.sendMessage(objServer.defaultChannel, ServerSettings[objServer.id].welcomemsg.replace(/\$USER\$/gi, objUser.username.replace(/@/g, "")).replace(/\$SERVER\$/gi, objServer.name.replace(/@/g, "")));
 	}
 });
 
-bot.on("channelDeleted", (objChannel) => {
-	//check if it is an ignored channel and remove it if it is (objChannel.server remember)
+bot.on("channelDeleted", (channel) => {
+	if (ServerSettings.hasOwnProperty(channel.server.id)) {
+		if (ServerSettings[channel.server.id].ignored.indexOf(channel.id) !== -1) ServerSettings[channel.server.id].ignored = ServerSettings[channel.server.id].ignored.replace("," + channel.server.id, "");
+		db.updateServerDB(channel.server.id, () => { console.log("Ignored channel was deleted and removed from DB"); }, () => { console.log("Something went wrong when removing a deleted channel from the database"); });
+	}
 });
 
 bot.on("userBanned", (objUser, objServer) => {
 	if (config.non_essential_event_listeners && ServerSettings.hasOwnProperty(objServer.id) && ServerSettings[objServer.id].banalerts == true) {
 		console.log(objUser.username + colors.cRed(" banned on ") + objServer.name);
-		bot.sendMessage(objServer.defaultChannel, "⚠ " + objUser.username + " was banned");
+		bot.sendMessage(objServer.defaultChannel, "⚠ " + objUser.username.replace(/@/g, "@ ") + " was banned");
 		bot.sendMessage(objUser, "⚠ You were banned from " + objServer.name);
 	}
 });
@@ -179,7 +179,8 @@ bot.on("presence", (userOld, userNew) => {
 	if (config.non_essential_event_listeners) {
 		if (userOld.username != userNew.username) {
 			bot.servers.map((ser) => {
-				if (ser.members.get("id", userOld.id) && ServerSettings.hasOwnProperty(ser.id) && ServerSettings[ser.id].namechanges == true) { bot.sendMessage(ser, "`" + userOld.username + "` is now known as `" + userNew.username + "`"); }
+				if (ser.members.get("id", userOld.id) && ServerSettings.hasOwnProperty(ser.id) && ServerSettings[ser.id].namechanges == true) {
+					bot.sendMessage(ser, "`" + userOld.username.replace(/@/g, "@ ") + "` is now known as `" + userNew.username.replace(/@/g, "@ ")); }
 			});
 		}
 	}
@@ -238,14 +239,12 @@ function carbonInvite(msg) {
 					}
 					console.log(colors.cGreen("Joined server: ") + " " + server.name);
 					bot.sendMessage(msg, "Successfully joined " + server.name);
-					if (shouldCarbonAnnounce) {
-						var toSend = [];
-						toSend.push("Hi! I'm **" + bot.user.username + "** and I was invited to this server through carbonitex.net.");
-						toSend.push("You can use `" + config.command_prefix + "help` to see what I can do. Mods can use `" + config.mod_command_prefix + "help` for mod commands.");
-						toSend.push("Mod/Admin commands __including bot settings__ can be viewed with `" + config.mod_command_prefix + "`help ");
-						toSend.push("For help / feedback / bugs/ testing / info / changelogs / etc. go to **discord.gg/0kvLlwb7slG3XCCQ**");
-						bot.sendMessage(server.defaultChannel, toSend);
-					}
+					var toSend = [];
+					toSend.push("Hi! I'm **" + bot.user.username + "** and I was invited to this server through carbonitex.net.");
+					toSend.push("You can use `" + config.command_prefix + "help` to see what I can do. Mods can use `" + config.mod_command_prefix + "help` for mod commands.");
+					toSend.push("Mod/Admin commands __including bot settings__ can be viewed with `" + config.mod_command_prefix + "`help ");
+					toSend.push("For help / feedback / bugs/ testing / info / changelogs / etc. go to **discord.gg/0kvLlwb7slG3XCCQ**");
+					bot.sendMessage(server.defaultChannel, toSend);
 				}
 			});
 		} catch (err) { bot.sendMessage(msg, "Bot encountered an error while joining"); console.log(err); }
@@ -299,12 +298,13 @@ function checkConfig() {
 
 function evaluateString(msg) {
 	if (msg.author.id != config.admin_id) { console.log(colors.cWarn(" WARN ") + "Somehow an unauthorized user got into eval!"); return; }
+	var timeTaken = new Date();
 	console.log("Running eval");
 	var result;
 	try { result = eval("try{" + msg.content.substring(7).replace(/\n/g, "") + "}catch(err){console.log(colors.cError(\" ERROR \")+err);bot.sendMessage(msg, \"```\"+err+\"```\");}");
 	} catch (e) { console.log(colors.cError(" ERROR ") + e); bot.sendMessage(msg, "```" + e + "```"); }
 	if (result && typeof result !== "object") {
-		bot.sendMessage(msg, result);
+		bot.sendMessage(msg,  "`Time taken: " + (timeTaken - msg.timestamp) + "ms`\n" + result);
 		console.log("Result: " + result);
 	}
 

@@ -1,4 +1,3 @@
-/// <reference path="../typings/main.d.ts" />
 var chalk = require('chalk');
 var enabled = new chalk.constructor({enabled: true});
 
@@ -37,7 +36,7 @@ exports.cGreen = function(text) {
 	chalk.styles.green.close + chalk.styles.white.open;
 };
 
-exports.cGrey = function(text) { 
+exports.cGrey = function(text) {
 	return chalk.styles.grey.open +
 	chalk.styles.bold.open +
 	text +

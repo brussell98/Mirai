@@ -1,4 +1,3 @@
-/// <reference path="../typings/main.d.ts" />
 var config = require("./config.json");
 var games = require("./games.json").games;
 var version = require("../package.json").version;
@@ -169,19 +168,20 @@ var commands = {
 	},
 	"beep": {
 		desc: "boop", usage: "", deleteCommand: false, cooldown: 2,
-		process: (bot, msg, suffix) => { bot.sendMessage(msg, "boop"); }
+		process: (bot, msg, suffix) => { bot.sendMessage(msg, "boop | Time taken: " + (new Date() - msg.timestamp) + "ms"); }
 	},
 	"ping": {
 		desc: "Replies with pong.",
 		cooldown: 2, shouldDisplay: false, usage: "",
 		process: function(bot, msg) {
+			var timeTaken = new Date();
 			var n = Math.floor(Math.random() * 6);
-			if (n === 0) { bot.sendMessage(msg, "pong");
-			} else if (n === 1) { bot.sendMessage(msg, "You thought I'd say pong, *didn't you?*");
-			} else if (n === 2) { bot.sendMessage(msg, "pong!");
-			} else if (n === 3) { bot.sendMessage(msg, "Yeah, I'm still here");
-			} else if (n === 4) { bot.sendMessage(msg, "...");
-			} else if (n === 5) { bot.sendMessage(msg, config.command_prefix + "ping"); }
+			if (n === 0) { bot.sendMessage(msg, "pong    | Time taken: " + (timeTaken - msg.timestamp) + "ms");
+			} else if (n === 1) { bot.sendMessage(msg, "You thought I'd say pong, *didn't you?*    | Time taken: " + (timeTaken - msg.timestamp) + "ms");
+			} else if (n === 2) { bot.sendMessage(msg, "pong!    | Time taken: " + (timeTaken - msg.timestamp) + "ms");
+			} else if (n === 3) { bot.sendMessage(msg, "Yeah, I'm still here    | Time taken: " + (timeTaken - msg.timestamp) + "ms");
+			} else if (n === 4) { bot.sendMessage(msg, "...    | Time taken: " + (timeTaken - msg.timestamp) + "ms");
+			} else if (n === 5) { bot.sendMessage(msg, config.command_prefix + "ping    | Time taken: " + (timeTaken - msg.timestamp) + "ms"); }
 		}
 	},
 	"join": {
@@ -245,7 +245,7 @@ var commands = {
 		desc: "About me",
 		deleteCommand: true, cooldown: 10, usage: "",
 		process: function(bot, msg, suffix) {
-			bot.sendMessage(msg, "I'm " + bot.user.username + " and ~~I was made by brussell98.~~ I'm a strong independent bot who don't need no creator.\nI run on `discord.js` and my website is **brussell98.github.io/BrussellBot/**");
+			bot.sendMessage(msg, "I'm " + bot.user.username + " and ~~I was made by brussell98.~~ I'm a strong independent bot who don't need no creator.\nI run on `discord.js` and my website is **brussell98.github.io/bot/main.html**");
 		}
 	},
 	"letsplay": {
@@ -317,7 +317,10 @@ var commands = {
 							var roles = msg.channel.server.rolesOfUser(usr.id).map((role) => { return role.name; });
 							if (roles) {
 								roles = roles.join(", ").replace("@", "");
-								if (roles.length <= 1500) { toSend.push("**Roles:** `" + roles + "`"); } else { toSend.push("**Roles:** `" + roles.split(", ").length + "`"); }
+								if (roles && roles !== "")
+									if (roles.length <= 1500) { toSend.push("**Roles:** `" + roles + "`"); } else { toSend.push("**Roles:** `" + roles.split(", ").length + "`"); }
+								else
+									toSend.push("**Roles:** `none`");
 							} else toSend.push("**Roles:** Error");
 							bot.servers.map(function(server) { if (server.members.indexOf(usr) > -1) { count += 1; } });
 							if (count > 1) { toSend.push("**Shared servers:** " + count); }
@@ -345,7 +348,10 @@ var commands = {
 								var roles = msg.channel.server.rolesOfUser(usr.id).map((role) => { return role.name; });
 								if (roles) {
 									roles = roles.join(", ").replace("@", "");
-									if (roles.length <= 1500) { toSend.push("**Roles:** `" + roles + "`"); } else { toSend.push("**Roles:** `" + roles.split(", ").length + "`"); }
+									if (roles && roles !== "")
+										if (roles.length <= 1500) { toSend.push("**Roles:** `" + roles + "`"); } else { toSend.push("**Roles:** `" + roles.split(", ").length + "`"); }
+									else
+										toSend.push("**Roles:** `none`");
 								} else toSend.push("**Roles:** Error");
 								bot.servers.map(function(server) { if (server.members.indexOf(usr) > -1) { count += 1; } });
 								if (count > 1) { toSend.push("**Shared servers:** " + count); }
@@ -908,29 +914,7 @@ var commands = {
 				bot.sendMessage(msg, "I give " + suffix + " a **" + generateRandomRating(suffix.toLowerCase(), true) + "/10**");
 			}
 		}
-	}/*,
-	"database": {
-		desc: "WE'RE IN THE DATABASE WHOA OHH", usage: "",
-		deleteCommand: false, cooldown: 300, shouldDisplay: false,
-		process: function(bot, msg, suffix) {
-			if (!bot.voiceChannel && msg.author.voiceChannel) {
-				bot.joinVoiceChannel(msg.author.voiceChannel, (e, connection) => {
-					if (e) console.log(colors.cError(" ERROR ") + e.stack);
-					else {
-						connection.playFile("./Log Horizon OP Full - Database.mp3", {"volume": 0.25}, (er, intent) => {
-							if (er) console.log(colors.cError(" ERROR ") + e.stack);
-							else {
-								intent.on("error", (error) => { console.log(colors.cError(" ERROR ") + e.stack); })
-								intent.on("end", () => { setTimeout(() => {
-									bot.leaveVoiceChannel();
-								}, 6000); })
-							}
-						});
-					}
-				});
-			}
-		}
-	}*/
+	}
 };
 
 exports.commands = commands;

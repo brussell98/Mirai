@@ -34,6 +34,12 @@ A multipurpose bot for Discord using [Discord.js](https://github.com/hydrabolt/d
 
 ----
 
+### Twitter Update?
+
+- [ ] Look into it
+
+----
+
 - [x] Catch space between `]` and command
 - [x] Add 👍 (:thumbsup:) confirmation messages
 - [x] Work after the new API update
@@ -50,13 +56,17 @@ A multipurpose bot for Discord using [Discord.js](https://github.com/hydrabolt/d
 - [x] Stop crash in info caused by large_threashold
 - [ ] Remind me
 	- [ ] Only allow max length of 3 days for storage reasons
+- [x] Make `info` not break on no roles
+- [x] Processing time
+- [ ] Admin command to clean up leftover server entries
+- [ ] Set channel for notifications `}settings send-here` (doesn't affect welcome message)
 
 ### Per-Server Settings
 
+- [x] Welcomemsg @ everyone
 - [x] Ignore channel
-	- [ ] Remove ignored channels on `channelDeleted` event
-	- [x] Make sure it can still hear unignore!
-	- [ ] allow mod command anyways
+	- [x] Remove ignored channels on `channelDeleted` event
+	- [x] allow mod commands anyways
 - [x] Admin SQL command
 - [x] Format local copy so it's easy to use
 - [x] Function for fetching DB
@@ -66,12 +76,10 @@ A multipurpose bot for Discord using [Discord.js](https://github.com/hydrabolt/d
 - [x] No problems with adding a new column leaving undefined entries
 - [x] `}leave` will remove the server entry
 	- [x] Make user aware they need to do this on init form
-- [ ] Admin command to clean up leftovers
 - [x] Complete the `}settings` command
 	- [x] Info about it and init generator on website
 	- [x] Don't let users inject SQL with the welcome message
 	- [x] Check current settings
-	- [ ] Command for admin to check a server's settings by name or id
-	- [ ] Add fail callback -- *code in place already*
-	- [ ] Set channel for notifications `}settings send-here` (doesn't affect welcomemsg)
+		- [x] Ignored channels
+	- [x] Add fail callback
 - [x] Event listeners switched to using the DB settings

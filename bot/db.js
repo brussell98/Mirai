@@ -1,30 +1,26 @@
-/* global ServerSettings */
-/// <reference path="../typings/main.d.ts" />
 var pg = require('pg');
 const SERVER_DB_NAME = 'servers';
 ServerSettings = {};
 
 exports.sql = function(bot, msg, query) {
+	var timeTaken = new Date();
 	pg.connect(process.env.DATABASE_URL + '?ssl=true', function(err, client, done) {
-		if (err) { console.log(err);
-		} else {
+		if (err) console.log(err);
+		else {
 			var q = client.query(query);
 			q.on('error', (e) => { bot.sendMessage(msg, '```' + e.message + '```'); return; });
-			q.on('row', (row, result) => {
-				result.addRow(row);
-			});
+			q.on('row', (row, result) => { result.addRow(row); });
 			q.on('end', (result) => {
 				if (result.rowCount > 0 && result !== undefined) {
-					var formatted = '**Command:** ' + result.command;
+					var formatted = '**Command:** ' + result.command + " **| Time taken:** " + (timeTaken - msg.timestamp) + "ms";
 					result.rows.map((row) => {
 						formatted += '\n━━━━━━━━━━━━━';
-						for (var key in row) {
-							if (row[key] !== null && row[key] !== '') { formatted += '\n**' + key + ':** `' + row[key] + '`'; }
-						}
+						for (var key in row)
+							if (row[key] !== null && row[key] !== '') formatted += '\n**' + key + ':** `' + row[key] + '`';
 					});
 					formatted = formatted.replace(/@/g, '');
-					if (formatted.length < 2000) { bot.sendMessage(msg, formatted);
-					} else { bot.sendMessage(msg, formatted.substr(0, 2000)); }
+					if (formatted.length < 2000) bot.sendMessage(msg, formatted);
+					else { bot.sendMessage(msg, formatted.substr(0, 2000)); bot.sendMessage(msg, formatted.substr(2000)); }
 				}
 			});
 			done();
@@ -60,7 +56,7 @@ function updateServerDB(sID) {
 				});
 			} else { console.log(err); return; }
 		});
-	} else { return; }
+	} else return;
 }
 
 exports.fetchServerDB = function(tableName) {
@@ -88,7 +84,7 @@ exports.updateServerDB = function(sID, callback, onFail) {
 				});
 			} else { console.log(err); if(onFail){onFail();} return; }
 		});
-	} else { return; }
+	} else return;
 };
 exports.addToDB = function(sID, callback, onFail) {
 	pg.connect(process.env.DATABASE_URL + '?ssl=true', (err, client, done) => {
