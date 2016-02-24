@@ -168,7 +168,7 @@ var commands = {
 	},
 	"beep": {
 		desc: "boop", usage: "", deleteCommand: false, cooldown: 2,
-		process: (bot, msg, suffix) => { bot.sendMessage(msg, "boop | Time taken: " + (new Date() - msg.timestamp) + "ms"); }
+		process: (bot, msg, suffix) => { bot.sendMessage(msg, "boop    |    Time taken: " + (new Date() - msg.timestamp) + "ms"); }
 	},
 	"ping": {
 		desc: "Replies with pong.",
@@ -176,12 +176,12 @@ var commands = {
 		process: function(bot, msg) {
 			var timeTaken = new Date();
 			var n = Math.floor(Math.random() * 6);
-			if (n === 0) { bot.sendMessage(msg, "pong    | Time taken: " + (timeTaken - msg.timestamp) + "ms");
-			} else if (n === 1) { bot.sendMessage(msg, "You thought I'd say pong, *didn't you?*    | Time taken: " + (timeTaken - msg.timestamp) + "ms");
-			} else if (n === 2) { bot.sendMessage(msg, "pong!    | Time taken: " + (timeTaken - msg.timestamp) + "ms");
-			} else if (n === 3) { bot.sendMessage(msg, "Yeah, I'm still here    | Time taken: " + (timeTaken - msg.timestamp) + "ms");
-			} else if (n === 4) { bot.sendMessage(msg, "...    | Time taken: " + (timeTaken - msg.timestamp) + "ms");
-			} else if (n === 5) { bot.sendMessage(msg, config.command_prefix + "ping    | Time taken: " + (timeTaken - msg.timestamp) + "ms"); }
+			if (n === 0) { bot.sendMessage(msg, "pong    |    Time taken: " + (timeTaken - msg.timestamp) + "ms");
+			} else if (n === 1) { bot.sendMessage(msg, "You thought I'd say pong, *didn't you?*    |    Time taken: " + (timeTaken - msg.timestamp) + "ms");
+			} else if (n === 2) { bot.sendMessage(msg, "pong!    |    Time taken: " + (timeTaken - msg.timestamp) + "ms");
+			} else if (n === 3) { bot.sendMessage(msg, "Yeah, I'm still here    |    Time taken: " + (timeTaken - msg.timestamp) + "ms");
+			} else if (n === 4) { bot.sendMessage(msg, "...    |    Time taken: " + (timeTaken - msg.timestamp) + "ms");
+			} else if (n === 5) { bot.sendMessage(msg, config.command_prefix + "ping    |    Time taken: " + (timeTaken - msg.timestamp) + "ms"); }
 		}
 	},
 	"join": {

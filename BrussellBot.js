@@ -180,7 +180,7 @@ bot.on("presence", (userOld, userNew) => {
 		if (userOld.username != userNew.username) {
 			bot.servers.map((ser) => {
 				if (ser.members.get("id", userOld.id) && ServerSettings.hasOwnProperty(ser.id) && ServerSettings[ser.id].namechanges == true) {
-					bot.sendMessage(ser, "`" + userOld.username.replace(/@/g, "@ ") + "` is now known as `" + userNew.username.replace(/@/g, "@ ")); }
+					bot.sendMessage(ser, "`" + userOld.username.replace(/@/g, "@ ") + "` is now known as `" + userNew.username.replace(/@/g, "@ ") + "`"); }
 			});
 		}
 	}

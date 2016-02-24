@@ -445,7 +445,7 @@ var commands = {
 		}
 	},
 	"settings": {
-		desc: "(OPEN-BETA) Server settings. Read about them here: **http://brussell98.github.io/bot/serversettings.html**",
+		desc: "Server settings. Docs: **http://brussell98.github.io/bot/serversettings.html**",
 		usage: "<enable|disable|welcomemsg|init|check> <command|message>",
 		deleteCommand: false,
 		cooldown: 3,
@@ -513,7 +513,6 @@ var commands = {
 			} else if (suffix.startsWith("welcomemsg")) {
 
 				if (!ServerSettings.hasOwnProperty(msg.channel.server.id)) { bot.sendMessage(msg, "You need to initialize per-server settings on this server! Go to this page to generate the comamnd: **http://brussell98.github.io/bot/serversettings.html**"); return; }
-				if (ServerSettings[msg.channel.server.id].welcomemsg == "false") { bot.sendMessage(msg, "You need to enable welcome messages first!", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
 				if (/^welcomemsg .*/i.test(suffix)) {
 					suffix = suffix.substring(11);
 					//should probably filter some stuff out
