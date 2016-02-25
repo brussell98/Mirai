@@ -625,13 +625,14 @@ var commands = {
 							var type = result.anime.entry[0].type;
 							var status = result.anime.entry[0].status;
 							var synopsis = result.anime.entry[0].synopsis.toString();
+							var id = result.anime.entry[0].id;
 							synopsis = synopsis.replace(/<br \/>/g, " "); synopsis = synopsis.replace(/\[(.{1,10})\]/g, "");
 							synopsis = synopsis.replace(/\r?\n|\r/g, " "); synopsis = synopsis.replace(/\[(i|\/i)\]/g, "*"); synopsis = synopsis.replace(/\[(b|\/b)\]/g, "**");
 							synopsis = ent.decodeHTML(synopsis);
 							if (!msg.channel.isPrivate) {
 								if (synopsis.length > 400) { synopsis = synopsis.substring(0, 400); synopsis += "..."; }
 							}
-							bot.sendMessage(msg, "**" + title + " / " + english + "**\n**Type:** " + type + " **| Episodes:** " + ep + " **| Status:** " + status + " **| Score:** " + score + "\n" + synopsis);
+							bot.sendMessage(msg, "**" + title + " / " + english + "**\n**Type:** " + type + " **| Episodes:** " + ep + " **| Status:** " + status + " **| Score:** " + score + "\n" + synopsis + "\n**www.myanimelist.net/anime/" + id + "**");
 						});
 					} else { bot.sendMessage(msg, "\"" + suffix + "\" not found. Blame the MAL search API", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
 				});
@@ -665,13 +666,14 @@ var commands = {
 							var type = result.manga.entry[0].type;
 							var status = result.manga.entry[0].status;
 							var synopsis = result.manga.entry[0].synopsis.toString();
+							var id = result.manga.entry[0].id;
 							synopsis = synopsis.replace(/<br \/>/g, " "); synopsis = synopsis.replace(/\[(.{1,10})\]/g, "");
 							synopsis = synopsis.replace(/\r?\n|\r/g, " "); synopsis = synopsis.replace(/\[(i|\/i)\]/g, "*"); synopsis = synopsis.replace(/\[(b|\/b)\]/g, "**");
 							synopsis = ent.decodeHTML(synopsis);
 							if (!msg.channel.isPrivate) {
 								if (synopsis.length > 400) { synopsis = synopsis.substring(0, 400); }
 							}
-							bot.sendMessage(msg, "**" + title + " / " + english + "**\n**Type:** " + type + " **| Chapters:** " + chapters + " **| Volumes: **" + volumes + " **| Status:** " + status + " **| Score:** " + score + "\n" + synopsis);
+							bot.sendMessage(msg, "**" + title + " / " + english + "**\n**Type:** " + type + " **| Chapters:** " + chapters + " **| Volumes: **" + volumes + " **| Status:** " + status + " **| Score:** " + score + "\n" + synopsis + "\n**www.myanimelist.net/manga/" + id + "**");
 						});
 					} else { bot.sendMessage(msg, "\"" + suffix + "\" not found", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
 				});
