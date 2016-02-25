@@ -610,6 +610,7 @@ var commands = {
 				var USER = (config.is_heroku_version) ? process.env.mal_user : config.mal_user;
 				var PASS = (config.is_heroku_version) ? process.env.mal_pass : config.mal_pass;
 				if (!USER || !PASS) { bot.sendMessage(msg, "MAL login not configured by bot owner", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
+				if (/[\uD000-\uF8FF]/g.test(suffix)) { bot.sendMessage(msg, "Search cannot contain unicode characters.", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 				bot.startTyping(msg.channel);
 				var tags = suffix.split(" ").join("+");
 				var rUrl = "http://myanimelist.net/api/anime/search.xml?q=" + tags;
@@ -648,6 +649,7 @@ var commands = {
 				var USER = (config.is_heroku_version) ? process.env.mal_user : config.mal_user;
 				var PASS = (config.is_heroku_version) ? process.env.mal_pass : config.mal_pass;
 				if (!USER || !PASS) { bot.sendMessage(msg, "MAL login not configured by bot owner", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
+				if (/[\uD000-\uF8FF]/g.test(suffix)) { bot.sendMessage(msg, "Search cannot contain unicode characters.", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 				bot.startTyping(msg.channel);
 				var tags = suffix.split(" ").join("+");
 				var rUrl = "http://myanimelist.net/api/manga/search.xml?q=" + tags;
@@ -777,18 +779,23 @@ var commands = {
 					toSend.push("5 most recent plays for: **" + username + "**:");
 					toSend.push("━━━━━━━━━━━━━━━━━━━");
 					osu.getBeatmap(data[0].beatmap_id, function(err, map1) {
+						if (!map1 || !map1.title) { bot.sendMessage(msg, toSend); return; }
 						toSend.push("**1.** *" + map1.title + "* *(☆" + map1.difficultyrating.substring(0, map1.difficultyrating.split(".")[0].length + 3) + ")*: **Score:** " + data[0].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " **| Max Combo:** " + data[0].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " **| Misses:** " + data[0].countmiss);
 						if (!data[1]) { bot.sendMessage(msg, toSend); return; }
 						osu.getBeatmap(data[1].beatmap_id, function(err, map2) {
+							if (!map2 || !map2.title) { bot.sendMessage(msg, toSend); return; }
 							toSend.push("**2.** *" + map2.title + "* *(☆" + map2.difficultyrating.substring(0, map2.difficultyrating.split(".")[0].length + 3) + ")*: **Score:** " + data[1].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " **| Max Combo:** " + data[1].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " **| Misses:** " + data[1].countmiss);
 							if (!data[2]) { bot.sendMessage(msg, toSend); return; }
 							osu.getBeatmap(data[2].beatmap_id, function(err, map3) {
+								if (!map3 || !map3.title) { bot.sendMessage(msg, toSend); return; }
 								toSend.push("**3.** *" + map3.title + "* *(☆" + map3.difficultyrating.substring(0, map3.difficultyrating.split(".")[0].length + 3) + ")*: **Score:** " + data[2].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " **| Max Combo:** " + data[2].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " **| Misses:** " + data[2].countmiss);
 								if (!data[3]) { bot.sendMessage(msg, toSend); return; }
 								osu.getBeatmap(data[3].beatmap_id, function(err, map4) {
+									if (!map4 || !map4.title) { bot.sendMessage(msg, toSend); return; }
 									toSend.push("**4.** *" + map4.title + "* *(☆" + map4.difficultyrating.substring(0, map4.difficultyrating.split(".")[0].length + 3) + ")*: **Score:** " + data[3].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " **| Max Combo:** " + data[3].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " **| Misses:** " + data[3].countmiss);
 									if (!data[4]) { bot.sendMessage(msg, toSend); return; }
 									osu.getBeatmap(data[4].beatmap_id, function(err, map5) {
+										if (!map5 || !map5.title) { bot.sendMessage(msg, toSend); return; }
 										toSend.push("**5.** *" + map5.title + "* *(☆" + map5.difficultyrating.substring(0, map5.difficultyrating.split(".")[0].length + 3) + ")*: **Score:** " + data[4].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " **| Max Combo:** " + data[4].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " **| Misses:** " + data[4].countmiss);
 										bot.sendMessage(msg, toSend);
 					});});});});});
@@ -802,7 +809,6 @@ var commands = {
 		usage: "<rock/paper/scissors>",
 		cooldown: 2,
 		process: function(bot, msg, suffix) {
-			//if (!suffix) { bot.sendMessage(msg, correctUsage("rps")); return; }
 			var choice = Math.floor(Math.random() * 3);
 			if (choice == 0) { bot.sendMessage(msg, "I picked **rock**");
 			} else if (choice == 1) { bot.sendMessage(msg, "I picked **paper**");

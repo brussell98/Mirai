@@ -240,7 +240,8 @@ function carbonInvite(msg) {
 					console.log(colors.cGreen("Joined server: ") + " " + server.name);
 					bot.sendMessage(msg, "Successfully joined " + server.name);
 					var toSend = [];
-					toSend.push("Hi! I'm **" + bot.user.username + "** and I was invited to this server through carbonitex.net.");
+					if (msg.author.id == '109338686889476096') { toSend.push("Hi! I'm **" + bot.user.username + "** and I was invited to this server through carbonitex.net."); }
+					else { toSend.push("Hi! I'm **" + bot.user.username + "** and I was invited to this server by " + msg.author.username + "."); }
 					toSend.push("You can use `" + config.command_prefix + "help` to see what I can do. Mods can use `" + config.mod_command_prefix + "help` for mod commands.");
 					toSend.push("Mod/Admin commands __including bot settings__ can be viewed with `" + config.mod_command_prefix + "`help ");
 					toSend.push("For help / feedback / bugs/ testing / info / changelogs / etc. go to **discord.gg/0kvLlwb7slG3XCCQ**");

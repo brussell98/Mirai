@@ -56,3 +56,8 @@ A multipurpose bot for Discord using [Discord.js](https://github.com/hydrabolt/d
 - [ ] Admin command to clean up leftover server entries
 - [ ] Set channel for notifications `}settings send-here` (doesn't affect welcome message)
 - [ ] Look into twitter notifications
+- [ ] Anime/manga give www.myanimelist.net/anime|manga/:id links
+- [ ] Change `is_heroku_version` to `use_env`
+- [ ] Add debug stuff all over the place
+	- [ ] Toggle debug temporarily without restart
+- [x] Stop bad characters in anime and manga query
