@@ -322,7 +322,7 @@ var commands = {
 								else
 									toSend.push("**Roles:** `none`");
 							} else toSend.push("**Roles:** Error");
-							bot.servers.map(function(server) { if (server.members.indexOf(usr) > -1) { count += 1; } });
+							bot.servers.map((server) => { if (server.members.indexOf(usr) > -1) { count += 1; } });
 							if (count > 1) { toSend.push("**Shared servers:** " + count); }
 							if (usr.avatarURL != null) { toSend.push("**Avatar URL:** `" + usr.avatarURL + "`"); }
 							bot.sendMessage(msg, toSend);
@@ -334,8 +334,8 @@ var commands = {
 						if (users.length > 4) { bot.sendMessage(msg, "Limit of 4 users", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 						users.map(function(user) {
 							var usr = msg.channel.server.members.find((member) => { return (member === undefined || member.username == undefined) ? false : member.username.toLowerCase() == user.toLowerCase() });
-							if (!usr) { usr = msg.channel.server.members.find((member) => { return (member === undefined || member.username == undefined) ? false : member.username.toLowerCase().indexOf(user.toLowerCase()) > -1 }); }
 							if (!usr) { usr = msg.channel.server.members.find((member) => { return (member === undefined || member.username == undefined) ? false : member.username.toLowerCase().indexOf(user.toLowerCase()) == 0 }); }
+							if (!usr) { usr = msg.channel.server.members.find((member) => { return (member === undefined || member.username == undefined) ? false : member.username.toLowerCase().indexOf(user.toLowerCase()) > -1 }); }
 							if (usr) {
 								var toSend = [], count = 0;
 								toSend.push("ℹ **Info on** " + usr.username + " (" + usr.discriminator + ")");
@@ -353,7 +353,7 @@ var commands = {
 									else
 										toSend.push("**Roles:** `none`");
 								} else toSend.push("**Roles:** Error");
-								bot.servers.map(function(server) { if (server.members.indexOf(usr) > -1) { count += 1; } });
+								bot.servers.map((server) => { if (server.members.indexOf(usr) > -1) { count += 1; } });
 								if (count > 1) { toSend.push("**Shared servers:** " + count); }
 								if (usr.avatarURL != null) { toSend.push("**Avatar URL:** `" + usr.avatarURL + "`"); }
 								bot.sendMessage(msg, toSend);
@@ -404,8 +404,8 @@ var commands = {
 				if (users.length > 6) { bot.sendMessage(msg, "Limit of 6 users", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 				users.map(function(user) {
 					var usr = msg.channel.server.members.find((member) => { return (member === undefined || member.username == undefined) ? false : member.username.toLowerCase() == user.toLowerCase() });
-					if (!usr) { usr = msg.channel.server.members.find((member) => { return (member === undefined || member.username == undefined) ? false : member.username.toLowerCase().indexOf(user.toLowerCase()) > -1 }); }
 					if (!usr) { usr = msg.channel.server.members.find((member) => { return (member === undefined || member.username == undefined) ? false : member.username.toLowerCase().indexOf(user.toLowerCase()) == 0 }); }
+					if (!usr) { usr = msg.channel.server.members.find((member) => { return (member === undefined || member.username == undefined) ? false : member.username.toLowerCase().indexOf(user.toLowerCase()) > -1 }); }
 					if (usr) { (usr.avatarURL != null) ? bot.sendMessage(msg, "**" + usr.username + "**'s avatar is: " + usr.avatarURL + "") : bot.sendMessage(msg, "**" + usr.username + "** has no avatar", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); });
 					} else { bot.sendMessage(msg, "User \"" + user + "\" not found. (Blame *Better*Discord) If you want to get the avatar of multiple users separate them with a comma.", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 20000}); }); }
 				});
@@ -921,6 +921,31 @@ var commands = {
 				if (Ratings.hasOwnProperty(suffix.toLowerCase())) { bot.sendMessage(msg, "I gave " + suffix + " a **" + Ratings[suffix.toLowerCase()] + "/10**"); return; } //already rated
 				bot.sendMessage(msg, "I give " + suffix + " a **" + generateRandomRating(suffix.toLowerCase(), true) + "/10**");
 			}
+		}
+	},
+	"shared": {
+		desc: "Get a list of servers that the bot sees a user in.",
+		usage: "<user>",
+		deleteCommand: true, cooldown: 7,
+		process: function(bot, msg, suffix) {
+			if (!msg.channel.isPrivate) {
+				if (msg.mentions.length > 0) {
+					var ss = "none";
+					bot.servers.map((server) => { if (server.members.indexOf(msg.mentions[0]) > -1) ss += ", " + server.name; });
+					if (ss != "none") bot.sendMessage(msg, "**Shared Servers for " + msg.mentions[0].username.replace("@", "@ ") + ":** `" + ss.substring(6).replace("@", "@ ") + "`");
+					else bost.sendMessage(msg, "Somehow I don't share any servers with that user", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); });
+				} else if (suffix) {
+					var usr = msg.channel.server.members.find((member) => { return (member === undefined || member.username == undefined) ? false : member.username.toLowerCase() == suffix.toLowerCase() });
+					if (!usr) { usr = msg.channel.server.members.find((member) => { return (member === undefined || member.username == undefined) ? false : member.username.toLowerCase().indexOf(suffix.toLowerCase()) == 0 }); }
+					if (!usr) { usr = msg.channel.server.members.find((member) => { return (member === undefined || member.username == undefined) ? false : member.username.toLowerCase().indexOf(suffix.toLowerCase()) > -1 }); }
+					if (usr) {
+						var ss = "none";
+						bot.servers.map((server) => { if (server.members.indexOf(usr) > -1) ss += ", " + server.name; });
+						if (ss != "none") bot.sendMessage(msg, "**Shared Servers for " + usr.username.replace("@", "@ ") + ":** `" + ss.substring(6).replace("@", "@ ") + "`");
+						else bost.sendMessage(msg, "Somehow I don't share any servers with that user", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); });
+					} else bot.sendMessage(msg, "User not found", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); });
+				} else bot.sendMessage(msg, correctUsage("shared"), (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); });
+			} else bot.sendMessage(msg, "This command can't be used in a PM", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); });
 		}
 	}
 };
