@@ -11,8 +11,9 @@
 	"send_mentions": true,
 	"mal_user": "",
 	"mal_pass": "",
-	"is_heroku_version": true,
+	"use_env": true,
 	"weather_api_key": "",
 	"osu_api_key": "",
+	"imgur_client_id": "",
 	"banned_server_ids": [""]
 }

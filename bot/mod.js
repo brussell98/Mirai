@@ -34,8 +34,8 @@ Commands
 */
 
 var aliases = {
-	"h": "help",
-	"s": "stats", "stat": "stats",
+	"h": "help", "commands": "help",
+	"s": "stats", "stat": "stats", "status": "stats",
 	"play": "playing",
 	"c": "clean",
 	"p": "prune",

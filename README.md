@@ -1,6 +1,6 @@
 # BrussellBot 1.4
 
-## Want to download this and run it? Get the latest release or download the public branch, not master.
+### Want to download this and run it? Get the latest release or download the public branch, not master.
 
 A multipurpose bot for Discord using [Discord.js](https://github.com/hydrabolt/discord.js/)
 
@@ -9,7 +9,7 @@ A multipurpose bot for Discord using [Discord.js](https://github.com/hydrabolt/d
 [Get the latest version here](https://github.com/brussell98/BrussellBot/releases/latest)
 
 [Wiki](https://github.com/brussell98/BrussellBot/wiki)   
-[Commands](https://github.com/brussell98/bot/commands)   
+[Command List](http://brussell98.github.io/bot/commands)   
 [Setup Guide](https://github.com/brussell98/BrussellBot/wiki/Setup-Guide)   
 [Making new commands](https://github.com/brussell98/BrussellBot/wiki/New-Command-Guide)   
 [Discord.js Documentation](http://discordjs.readthedocs.org/en/latest/)   

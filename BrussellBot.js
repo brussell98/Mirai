@@ -32,7 +32,7 @@ bot.on("ready", () => {
 
 bot.on("disconnected", () => {
 	console.log(colors.cRed("Disconnected") + " from Discord");
-	if (!config.is_heroku_version) { process.exit(0);
+	if (!config.use_env) { process.exit(0);
 	} else { //if on heroku try to re-connect
 		setTimeout(() => {
 			console.log("Attempting to log in...");
@@ -192,7 +192,7 @@ bot.on("serverDeleted", (objServer) => {
 
 /* Login */
 console.log("Logging in...");
-if (config.is_heroku_version) {
+if (config.use_env) {
 	bot.login(process.env.email, process.env.password, function(err, token) {
 		if (err) { console.log(err); setTimeout(() => { process.exit(0); }, 2000); }
 		if (!token) { console.log(colors.cWarn(" WARN ") + "failed to connect"); setTimeout(() => { process.exit(0); }, 2000); } //make sure it logged in successfully
@@ -224,7 +224,7 @@ function carbonInvite(msg) {
 					console.log("Already in server " + server.name);
 					bot.sendMessage(msg, "I'm already in that server!");
 				} else {
-					if (config.is_heroku_version) {
+					if (config.use_env) {
 						if (process.env.banned_server_ids && process.env.banned_server_ids.indexOf(server.id) > -1) {
 							console.log(colors.cRed("Joined server but it was on the ban list") + ": " + server.name);
 							bot.sendMessage(msg, "This server is on the ban list");
@@ -274,7 +274,7 @@ function reload() {
 }
 
 function checkConfig() {
-	if (config.is_heroku_version) {
+	if (config.use_env) {
 		if (process.env.email === null) { console.log(colors.cWarn(" WARN ") + "Email not defined"); }
 		if (process.env.password === null) { console.log(colors.cWarn(" WARN ") + "Password not defined"); }
 		if (config.command_prefix === null || config.command_prefix.length !== 1) { console.log(colors.cWarn(" WARN ") + "Prefix either not defined or more than one character"); }
