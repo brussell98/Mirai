@@ -1,4 +1,3 @@
-/// <reference path="typings/main.d.ts" />
 /*
 This is a multipurpose bot
 Run this with node to run the bot.
@@ -9,31 +8,31 @@ var mod = require("./bot/mod.js");
 var config = require("./bot/config.json");
 var games = require("./bot/games.json").games;
 var versioncheck = require("./bot/versioncheck.js");
-var fs = require("fs");
 var discord = require("discord.js");
 var cleverbot = require("./bot/cleverbot.js").cleverbot;
 var colors = require("./bot/styles.js");
+var db = require("./bot/db.js");
 checkConfig(); //notify user if they are missing things in the config
 
 var lastExecTime = {}; //for cooldown
-var shouldCarbonAnnounce = true; //set if the bot should announce when joining an invite sent without a command
-var commandsProcessed = 0, talkedToTimes = 0;
+commandsProcessed = 0, talkedToTimes = 0;
 
 var bot = new discord.Client();
 bot.on("warn", (m) => { if (config.show_warn) { console.log(colors.cWarn(" WARN ") + m); } });
 bot.on("debug", (m) => { if (config.debug) { console.log(colors.cDebug(" DEBUG ") + m); } });
 
 bot.on("ready", () => {
-	bot.setPlayingGame(games[Math.floor(Math.random() * (games.length))]); //set game to a random game from games.json
+	bot.setPlayingGame(games[Math.floor(Math.random() * (games.length))]);
 	console.log(colors.cGreen("BrussellBot is ready!") + " Listening to " + bot.channels.length + " channels on " + bot.servers.length + " servers");
 	versioncheck.checkForUpdate((resp) => {
 		if (resp !== null) { console.log(resp); }
 	});
+	bot.forceFetchUsers();
 });
 
 bot.on("disconnected", () => {
 	console.log(colors.cRed("Disconnected") + " from Discord");
-	if (!config.is_heroku_version) { process.exit(0);
+	if (!config.use_env) { process.exit(0);
 	} else { //if on heroku try to re-connect
 		setTimeout(() => {
 			console.log("Attempting to log in...");
@@ -47,14 +46,31 @@ bot.on("disconnected", () => {
 bot.on("message", (msg) => {
 	if (msg.channel.isPrivate && msg.author.id != bot.user.id && (/(^https?:\/\/discord\.gg\/[A-Za-z0-9]+$|^https?:\/\/discordapp\.com\/invite\/[A-Za-z0-9]+$)/.test(msg.content))) { carbonInvite(msg); } //accept invites sent in a DM
 	if (msg.author.id == config.admin_id && msg.content.indexOf("(eval) ") > -1 && msg.content.indexOf("(eval) ") <= 1) { evaluateString(msg); return; } //bot owner eval command
-	if (msg.mentions.length !== 0) { //cleverbot
-		msg.mentions.forEach((usr) => {
-			if (usr.id == bot.user.id && msg.content.startsWith("<@" + bot.user.id + ">")) { cleverbot(bot, msg); talkedToTimes += 1; if (!msg.channel.isPrivate) { console.log(colors.cServer(msg.channel.server.name) + " > " + colors.cGreen(msg.author.username) + " > " + colors.cYellow("@" + bot.user.username) + " " + msg.content.substring(22).replace(/\n/g, " ")); } else { console.log(colors.cGreen(msg.author.username) + " > " + colors.cYellow("@Bot-chan") + " " + msg.content.substring(22).replace(/\n/g, " ")); } return; }
-			if (usr.id == config.admin_id && config.send_mentions && usr.status != "online" && !msg.channel.isPrivate) { bot.sendMessage(usr, msg.channel.server.name + " > " + msg.author.username + ": " + msg.content); }
-		});
+	if (msg.mentions.length !== 0 && !msg.channel.isPrivate) {
+		if (msg.isMentioned(bot.user) && msg.content.startsWith("<@" + bot.user.id + ">")) {
+			if (ServerSettings.hasOwnProperty(msg.channel.server.id)) { if (ServerSettings[msg.channel.server.id].ignored.indexOf(msg.channel.id) === -1) {
+				cleverbot(bot, msg); talkedToTimes += 1; if (!msg.channel.isPrivate) {
+					console.log(colors.cServer(msg.channel.server.name) + " > " + colors.cGreen(msg.author.username) + " > " + colors.cYellow("@" + bot.user.username) + " " + msg.content.substring(22).replace(/\n/g, " "));
+				} else { console.log(colors.cGreen(msg.author.username) + " > " + colors.cYellow("@Bot-chan") + " " + msg.content.substring(22).replace(/\n/g, " ")); }
+			} } else {
+				cleverbot(bot, msg); talkedToTimes += 1; if (!msg.channel.isPrivate) {
+					console.log(colors.cServer(msg.channel.server.name) + " > " + colors.cGreen(msg.author.username) + " > " + colors.cYellow("@" + bot.user.username) + " " + msg.content.substring(22).replace(/\n/g, " "));
+				} else { console.log(colors.cGreen(msg.author.username) + " > " + colors.cYellow("@Bot-chan") + " " + msg.content.substring(22).replace(/\n/g, " ")); }
+			}
+		}
+		if (msg.content.indexOf("<@" + config.admin_id + ">") > -1) {
+			if (config.send_mentions) {
+				var owner = bot.users.get("id", config.admin_id);
+				if (owner.status != "online") { bot.sendMessage(owner, msg.channel.server.name + " > " + msg.author.username + ": " + msg.cleanContent); }
+			}
+		}
 	}
 	if (!msg.content.startsWith(config.command_prefix) && !msg.content.startsWith(config.mod_command_prefix)) { return; } //if not a command
 	if (msg.author.id == bot.user.id) { return; } //stop from replying to itself
+	if (msg.content.indexOf(" ") == 1 && msg.content.length > 2) { msg.content = msg.content.replace(" ", ""); }
+	if (!msg.channel.isPrivate && !msg.content.startsWith(config.mod_command_prefix) && ServerSettings.hasOwnProperty(msg.channel.server.id)) {
+		if (ServerSettings[msg.channel.server.id].ignored.indexOf(msg.channel.id) > -1) { return; }
+	}
 	var cmd = msg.content.split(" ")[0].replace(/\n/g, " ").substring(1).toLowerCase();
 	var suffix = msg.content.replace(/\n/g, " ").substring(cmd.length + 2); //seperate the command and suffix
 	if (msg.content.startsWith(config.command_prefix)) { //normal commands
@@ -75,9 +91,9 @@ bot.on("message", (msg) => {
 
 function execCommand(msg, cmd, suffix, type) {
 	try {
-		if (!msg.channel.isPrivate) { console.log(colors.cServer(msg.channel.server.name) + " > " + colors.cGreen(msg.author.username) + " > " + msg.content.replace(/\n/g, " ")); } else { console.log(colors.cGreen(msg.author.username) + " > " + msg.content.replace(/\n/g, " ")); }
 		commandsProcessed += 1;
 		if (type == "normal") {
+			if (!msg.channel.isPrivate) { console.log(colors.cServer(msg.channel.server.name) + " > " + colors.cGreen(msg.author.username) + " > " + msg.cleanContent.replace(/\n/g, " ")); } else { console.log(colors.cGreen(msg.author.username) + " > " + msg.cleanContent.replace(/\n/g, " ")); }
 			if (commands.commands[cmd].hasOwnProperty("cooldown")) {
 				if (lastExecTime.hasOwnProperty(cmd)) {
 					var id = msg.author.id;
@@ -88,7 +104,7 @@ function execCommand(msg, cmd, suffix, type) {
 						if (cTime < leTime) { //if it is still on cooldown
 							var left = (leTime.valueOf() - cTime.valueOf()) / 1000;
 							if (msg.author.id != config.admin_id) { //admin bypass
-								bot.sendMessage(msg, msg.author.username + ", you can't use this command for **" + Math.round(left) + "** more years. Get rekt son.", function(erro, message) { bot.deleteMessage(message, {"wait": 6000}); });
+								bot.sendMessage(msg, msg.author.username + ", you need to *cooldown* (" + Math.round(left) + " seconds)", function(erro, message) { bot.deleteMessage(message, {"wait": 6000}); });
 								return;
 							}
 						} else { lastExecTime[cmd][id] = cTime; }
@@ -96,10 +112,13 @@ function execCommand(msg, cmd, suffix, type) {
 				} else { lastExecTime[cmd] = {}; }
 			}
 			commands.commands[cmd].process(bot, msg, suffix);
-			if (commands.commands[cmd].hasOwnProperty("deleteCommand")) {
-				if (commands.commands[cmd].deleteCommand === true) { bot.deleteMessage(msg, {"wait": 8000}); }
+			if (!msg.channel.isPrivate && commands.commands[cmd].hasOwnProperty("deleteCommand")) {
+				if (commands.commands[cmd].deleteCommand === true && ServerSettings.hasOwnProperty(msg.channel.server.id) && ServerSettings[msg.channel.server.id].deletecmds == true) { bot.deleteMessage(msg, {"wait": 10000}); }
 			}
 		} else if (type == "mod") {
+			if (!msg.channel.isPrivate) {
+				console.log(colors.cServer(msg.channel.server.name) + " > " + colors.cGreen(msg.author.username) + " > " + colors.cBlue(msg.cleanContent.replace(/\n/g, " ").split(" ")[0]) + msg.cleanContent.replace(/\n/g, " ").substr(msg.cleanContent.replace(/\n/g, " ").split(" ")[0].length));
+			} else { console.log(colors.cGreen(msg.author.username) + " > " + colors.cBlue(msg.cleanContent.replace(/\n/g, " ").split(" ")[0]) + msg.cleanContent.replace(/\n/g, " ").substr(msg.cleanContent.replace(/\n/g, " ").split(" ")[0].length)); }
 			if (mod.commands[cmd].hasOwnProperty("cooldown")) {
 				if (lastExecTime.hasOwnProperty(cmd)) {
 					var id = msg.author.id;
@@ -110,79 +129,70 @@ function execCommand(msg, cmd, suffix, type) {
 						if (cTime < leTime) { //if it is still on cooldown
 							var left = (leTime.valueOf() - cTime.valueOf()) / 1000;
 							if (msg.author.id != config.admin_id) { //admin bypass
-								bot.sendMessage(msg, msg.author.username + ", you can't use this command for **" + Math.round(left) + "** more seconds", function(erro, message) { bot.deleteMessage(message, {"wait": 6000}); });
+								bot.sendMessage(msg, msg.author.username + ", you need to *cooldown* (" + Math.round(left) + " seconds)", function(erro, message) { bot.deleteMessage(message, {"wait": 6000}); });
 								return;
 							}
 						} else { lastExecTime[cmd][id] = cTime; }
 					} else { lastExecTime[cmd][id] = new Date(); }
 				} else { lastExecTime[cmd] = {}; }
 			}
-			mod.commands[cmd].process(bot, msg, suffix, commandsProcessed, talkedToTimes);
-			if (mod.commands[cmd].hasOwnProperty("deleteCommand")) {
-				if (mod.commands[cmd].deleteCommand === true) { bot.deleteMessage(msg, {"wait": 8000}); }
+			mod.commands[cmd].process(bot, msg, suffix);
+			if (!msg.channel.isPrivate && mod.commands[cmd].hasOwnProperty("deleteCommand")) {
+				if (mod.commands[cmd].deleteCommand === true && ServerSettings.hasOwnProperty(msg.channel.server.id) && ServerSettings[msg.channel.server.id].deletecmds == true) { bot.deleteMessage(msg, {"wait": 10000}); }
 			}
 		} else { return; }
 	} catch (err) { console.log(err.stack); }
 }
 
-//event listeners
+/* Event Listeners */
 bot.on("serverNewMember", (objServer, objUser) => {
-	if (objServer.members.length < 71 && config.non_essential_event_listeners) {
-		if (config.greet_new_memebrs) { console.log("New member on " + objServer.name + ": " + objUser.username); bot.sendMessage(objServer.defaultChannel, "Welcome to " + objServer.name + " " + objUser.username); }
+	if (config.non_essential_event_listeners && ServerSettings.hasOwnProperty(objServer.id) && ServerSettings[objServer.id].welcomemsg != "false") {
+		if (config.debug) { console.log("New member on " + objServer.name + ": " + objUser.username); }
+		bot.sendMessage(objServer.defaultChannel, ServerSettings[objServer.id].welcomemsg.replace(/\$USER\$/gi, objUser.username.replace(/@/g, "")).replace(/\$SERVER\$/gi, objServer.name.replace(/@/g, "")));
 	}
 });
 
-bot.on("channelCreated", (objChannel) => {
-	if (config.non_essential_event_listeners) {
-		if (!objChannel.isPrivate) { if (config.debug) { console.log(colors.cDebug(" DEBUG ") + "New channel created. Type: " + objChannel.type + ". Name: " + objChannel.name + ". Server: " + objChannel.server.name); } }
-	}
-});
-
-bot.on("channelDeleted", (objChannel) => {
-	if (config.non_essential_event_listeners) {
-		if (!objChannel.isPrivate) { if (config.debug) { console.log(colors.cDebug(" DEBUG ") + "Channel deleted. Type: " + objChannel.type + ". Name: " + objChannel.name + ". Server: " + objChannel.server.name); } }
+bot.on("channelDeleted", (channel) => {
+	if (ServerSettings.hasOwnProperty(channel.server.id)) {
+		if (ServerSettings[channel.server.id].ignored.indexOf(channel.id) !== -1) ServerSettings[channel.server.id].ignored = ServerSettings[channel.server.id].ignored.replace("," + channel.server.id, "");
+		db.updateServerDB(channel.server.id, () => { console.log("Ignored channel was deleted and removed from DB"); }, () => { console.log("Something went wrong when removing a deleted channel from the database"); });
 	}
 });
 
 bot.on("userBanned", (objUser, objServer) => {
-	if (objServer.members.length < 301 && config.non_essential_event_listeners) {
+	if (config.non_essential_event_listeners && ServerSettings.hasOwnProperty(objServer.id) && ServerSettings[objServer.id].banalerts == true) {
 		console.log(objUser.username + colors.cRed(" banned on ") + objServer.name);
-		bot.sendMessage(objServer.defaultChannel, "⚠ " + objUser.username + " was banned");
+		bot.sendMessage(objServer.defaultChannel, "⚠ " + objUser.username.replace(/@/g, "@ ") + " was banned");
 		bot.sendMessage(objUser, "⚠ You were banned from " + objServer.name);
 	}
 });
 
 bot.on("userUnbanned", (objUser, objServer) => {
-	if (objServer.members.length < 301 && config.non_essential_event_listeners) { console.log(objUser.username + " unbanned on " + objServer.name); }
+	if (objServer.members.length <= 250 && config.non_essential_event_listeners) { console.log(objUser.username + " unbanned on " + objServer.name); }
 });
 
-bot.on("userUpdated", (objUser, objNewUser) => {
+bot.on("presence", (userOld, userNew) => {
+	if (config.log_presence) {
+		if (userNew.game === null || userNew.game === undefined) { console.log(colors.cDebug(" PRESENCE ") + userNew.username + " is now " + userNew.status);
+		} else { console.log(colors.cDebug(" PRESENCE ") + userNew.username + " is now " + userNew.status + " playing " + userNew.game.name); }
+	}
 	if (config.non_essential_event_listeners) {
-		if (objUser.username != objNewUser.username) { //if new username
-			if (config.username_changes) {
-				if (config.debug) { console.log(colors.cDebug(" DEBUG ") + objUser.username + " changed their name to " + objNewUser.username); }
-				bot.servers.forEach((ser) => {
-					if (ser.members.has("id", objUser.id) && ser.members.length < 101) { bot.sendMessage(ser, "⚠ User in this server: `" + objUser.username + "`. changed their name to: `" + objNewUser.username + "`."); }
-				});
-			}
+		if (userOld.username != userNew.username) {
+			bot.servers.map((ser) => {
+				if (ser.members.get("id", userOld.id) && ServerSettings.hasOwnProperty(ser.id) && ServerSettings[ser.id].namechanges == true) {
+					bot.sendMessage(ser, "`" + userOld.username.replace(/@/g, "@ ") + "` is now known as `" + userNew.username.replace(/@/g, "@ ") + "`"); }
+			});
 		}
 	}
 });
 
-bot.on("presence", (userOld, userNew) => { //check if game and also it's now oldUser newUser
-	if (config.log_presence) {
-		if (userNew.game === null) { console.log(colors.cDebug(" PRESENCE ") + userNew.username + " is now " + userNew.status);
-		} else { console.log(colors.cDebug(" PRESENCE ") + userNew.username + " is now " + userNew.status + " playing " + userNew.game.name); }
-	}
-});
-
-bot.on("serverDeleted", (objServer) => { //detect when the bot leaves a server
+bot.on("serverDeleted", (objServer) => {
 	console.log(colors.cUYellow("Left server") + " " + objServer.name);
 });
 
-//login
+/* Login */
 console.log("Logging in...");
-if (config.is_heroku_version) {
+if (config.use_env) {
 	bot.login(process.env.email, process.env.password, function(err, token) {
 		if (err) { console.log(err); setTimeout(() => { process.exit(0); }, 2000); }
 		if (!token) { console.log(colors.cWarn(" WARN ") + "failed to connect"); setTimeout(() => { process.exit(0); }, 2000); } //make sure it logged in successfully
@@ -214,7 +224,7 @@ function carbonInvite(msg) {
 					console.log("Already in server " + server.name);
 					bot.sendMessage(msg, "I'm already in that server!");
 				} else {
-					if (config.is_heroku_version) {
+					if (config.use_env) {
 						if (process.env.banned_server_ids && process.env.banned_server_ids.indexOf(server.id) > -1) {
 							console.log(colors.cRed("Joined server but it was on the ban list") + ": " + server.name);
 							bot.sendMessage(msg, "This server is on the ban list");
@@ -229,14 +239,13 @@ function carbonInvite(msg) {
 					}
 					console.log(colors.cGreen("Joined server: ") + " " + server.name);
 					bot.sendMessage(msg, "Successfully joined " + server.name);
-					if (shouldCarbonAnnounce) {
-						var msgArray = [];
-						msgArray.push("Hi! I'm **" + bot.user.username + "** and I was invited to this server through carbonitex.net.");
-						msgArray.push("You can use `" + config.command_prefix + "help` to see what I can do. Mods can use `" + config.mod_command_prefix + "help` for mod commands.");
-						msgArray.push("If I shouldn't be here someone with the `Kick Members` permission can use `" + config.mod_command_prefix + "leaves` to make me leave");
-						msgArray.push("For help / feedback / bugs/ testing / info / changelogs / etc. go to **discord.gg/0kvLlwb7slG3XCCQ**");
-						bot.sendMessage(server.defaultChannel, msgArray);
-					}
+					var toSend = [];
+					if (msg.author.id == '109338686889476096') { toSend.push("Hi! I'm **" + bot.user.username + "** and I was invited to this server through carbonitex.net."); }
+					else { toSend.push("Hi! I'm **" + bot.user.username + "** and I was invited to this server by " + msg.author.username + "."); }
+					toSend.push("You can use `" + config.command_prefix + "help` to see what I can do. Mods can use `" + config.mod_command_prefix + "help` for mod commands.");
+					toSend.push("Mod/Admin commands __including bot settings__ can be viewed with `" + config.mod_command_prefix + "`help ");
+					toSend.push("For help / feedback / bugs/ testing / info / changelogs / etc. go to **discord.gg/0kvLlwb7slG3XCCQ**");
+					bot.sendMessage(server.defaultChannel, toSend);
 				}
 			});
 		} catch (err) { bot.sendMessage(msg, "Bot encountered an error while joining"); console.log(err); }
@@ -265,7 +274,7 @@ function reload() {
 }
 
 function checkConfig() {
-	if (config.is_heroku_version) {
+	if (config.use_env) {
 		if (process.env.email === null) { console.log(colors.cWarn(" WARN ") + "Email not defined"); }
 		if (process.env.password === null) { console.log(colors.cWarn(" WARN ") + "Password not defined"); }
 		if (config.command_prefix === null || config.command_prefix.length !== 1) { console.log(colors.cWarn(" WARN ") + "Prefix either not defined or more than one character"); }
@@ -290,16 +299,19 @@ function checkConfig() {
 
 function evaluateString(msg) {
 	if (msg.author.id != config.admin_id) { console.log(colors.cWarn(" WARN ") + "Somehow an unauthorized user got into eval!"); return; }
+	var timeTaken = new Date();
 	console.log("Running eval");
 	var result;
 	try { result = eval("try{" + msg.content.substring(7).replace(/\n/g, "") + "}catch(err){console.log(colors.cError(\" ERROR \")+err);bot.sendMessage(msg, \"```\"+err+\"```\");}");
 	} catch (e) { console.log(colors.cError(" ERROR ") + e); bot.sendMessage(msg, "```" + e + "```"); }
 	if (result && typeof result !== "object") {
-		bot.sendMessage(msg, result);
+		bot.sendMessage(msg,  "`Time taken: " + (timeTaken - msg.timestamp) + "ms`\n" + result);
 		console.log("Result: " + result);
 	}
 
 }
+
+db.fetchServerDB("servers");
 
 setInterval(() => {
 	bot.setPlayingGame(games[Math.floor(Math.random() * (games.length))]);

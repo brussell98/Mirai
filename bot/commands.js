@@ -1,28 +1,28 @@
-/// <reference path="../typings/main.d.ts" />
 var config = require("./config.json");
 var games = require("./games.json").games;
 var version = require("../package.json").version;
 var colors = require("./styles.js");
 var request = require("request");
 var xml2js = require("xml2js");
-var fs = require("fs");
 var osuapi = require("osu-api");
 var ent = require("entities");
 var waifus = require("./waifus.json");
 
-var VoteDB = {};
-var LottoDB = {};
-var Ratings = {};
+var VoteDB = {}
+	,LottoDB = {}
+	,Ratings = {};
+const IMGUR_CLIENT_ID = (config.use_env) ? process.env.IMGUR_CLIENT_ID: config.imgur_client_id;
+const OSU_API_KEY = (config.use_env) ? process.env.osu_api_key : config.osu_api_key;
+const OWM_API_KEY = (config.use_env) ? process.env.weather_api_key : config.weather_api_key;
+const MAL_USER = (config.use_env) ? process.env.mal_user : config.mal_user;
+const MAL_PASS = (config.use_env) ? process.env.mal_pass : config.mal_pass;
 
-/*
-====================
-Functions
-====================
-*/
+/*****************************\
+		   Functions
+\*****************************/
 
 function correctUsage(cmd) {
-	var msg = "Usage: `" + config.command_prefix + "" + cmd + " " + commands[cmd].usage + "`";
-	return msg;
+	return (commands.hasOwnProperty(cmd)) ? "Usage: `" + config.command_prefix + "" + cmd + " " + commands[cmd].usage + "`": "This should display the correct usage but the bot maker made a mistake";
 }
 
 function autoEndVote(bot, msg) {
@@ -35,6 +35,13 @@ function autoEndLotto(bot, msg) {
 	setTimeout(() => {
 		if (LottoDB.hasOwnProperty(msg.channel.id)) { commands["lotto"].process(bot, msg, "end"); }
 	}, 600000);
+}
+
+function findUser(members, query) {
+	var usr = members.find((member) => { return (member === undefined || member.username == undefined) ? false : member.username.toLowerCase() == query.toLowerCase() });
+	if (!usr) { usr = members.find((member) => { return (member === undefined || member.username == undefined) ? false : member.username.toLowerCase().indexOf(query.toLowerCase()) == 0 }); }
+	if (!usr) { usr = members.find((member) => { return (member === undefined || member.username == undefined) ? false : member.username.toLowerCase().indexOf(query.toLowerCase()) > -1 }); }
+	return usr || false;
 }
 
 function generateRandomRating(fullName, storeRating) {
@@ -51,9 +58,12 @@ function generateRandomRating(fullName, storeRating) {
 
 function generateUserRating(bot, msg, fullName) {
 	var user = msg.channel.server.members.get("username", fullName);
-	var score = generateRandomRating();
-	var joined = new Date(msg.channel.server.detailsOfUser(user).joinedAt), now = new Date();
-	if (now.valueOf() - joined.valueOf() >= 2592000000) { score += 1; } //if user has been on the server for at least one month +1
+	if (user === undefined) { return generateRandomRating(); }
+	var score = generateRandomRating() - 1;
+	try {
+		var joined = new Date(msg.channel.server.detailsOfUser(user).joinedAt), now = new Date();
+		if (now.valueOf() - joined.valueOf() >= 2592000000) { score += 1; } //if user has been on the server for at least one month +1
+	} catch (e) { console.log(colors.cError(" ERROR ") + e.stack); }
 	if (msg.channel.permissionsOf(user).hasPermission("manageServer")) { score += 1; } //admins get +1 ;)
 	var count = 0;
 	bot.servers.map((server) => { if (server.members.get("id", user.id)) { count += 1; } }); //how many servers does the bot share with them
@@ -74,26 +84,24 @@ function generateJSONRating(fullName) {
 		"7": "7-10", "8": "8-10",
 		"9": "10-10",
 	};
-	var score = Math.floor((Math.random() * ((parseInt(ranges[ranking].split("-")[1], 10) + 1 - parseInt(ranges[ranking].split("-")[0], 10)))) + parseInt(ranges[ranking].split("-")[0], 10)); //(floor of rand * ((max+1)-min)) - min
+	var score = Math.floor((Math.random() * ((parseInt(ranges[ranking].split("-")[1], 10) + 1 - parseInt(ranges[ranking].split("-")[0], 10)))) + parseInt(ranges[ranking].split("-")[0], 10))
 	var moreRandom = Math.floor(Math.random() * 4); //0-3
 	if (score > 1 && moreRandom === 0) { score -= 1; } else if (score < 10 && moreRandom == 3) { score += 1; }
 	Ratings[fullName.toLowerCase()] = score;
 	return score;
 }
 
-/*
-====================
+/*****************************\
 Commands (Check https://github.com/brussell98/BrussellBot/wiki/New-Command-Guide for how to make new ones)
-====================
-*/
+\*****************************/
 
 var aliases = {
 	"h": "help", "commands": "help",
 	"server": "botserver",
 	"backwards": "reverse",
+	"myid": "id",
 	"p": "ping",
 	"j": "join", "joins": "join",
-	"lp": "letsplay", "play": "letsplay",
 	"i": "info",
 	"a": "avatar",
 	"pick": "choose", "c": "choose",
@@ -105,7 +113,8 @@ var aliases = {
 	"g": "google", "lmgtfy": "google",
 	"number": "numberfacts", "num": "numberfacts",
 	"cat": "catfacts", "meow": "catfacts", "neko": "catfacts",
-	"r": "ratewaifu", "rate": "ratewaifu", "waifu": "ratewaifu"
+	"r": "ratewaifu", "rate": "ratewaifu", "waifu": "ratewaifu",
+	"imgur": "image", "im": "image"
 };
 
 var commands = {
@@ -114,30 +123,31 @@ var commands = {
 		usage: "[command]",
 		deleteCommand: true, shouldDisplay: false, cooldown: 1,
 		process: function(bot, msg, suffix) {
-			var msgArray = [];
+			var toSend = [];
 			if (!suffix) {
-				msgArray.push("Use `" + config.command_prefix + "help <command name>` to get info on a specific command.");
-				msgArray.push("Mod commands can be found with `" + config.mod_command_prefix + "help [command]`.");
-				msgArray.push("You can also find examples and more at __github.com/brussell98/BrussellBot/wiki/Commands__");
-				msgArray.push("**Commands:**\n");
-				msgArray.push("`@" + bot.user.username + " text`\n		Talk to the bot (cleverbot)");
+				toSend.push("Use `" + config.command_prefix + "help <command name>` to get info on a specific command.");
+				toSend.push("Mod commands can be found with `" + config.mod_command_prefix + "help [command]`.");
+				toSend.push("You can also find examples and more at **http://brussell98.github.io/bot/commands.html**");
+				toSend.push("**Commands:**\n");
+				toSend.push("`@" + bot.user.username + " text`\n		Talk to the bot (cleverbot)");
 				Object.keys(commands).forEach(function(cmd) {
 					if (commands[cmd].hasOwnProperty("shouldDisplay")) {
-						if (commands[cmd].shouldDisplay) { msgArray.push("`" + config.command_prefix + cmd + " " + commands[cmd].usage + "`\n		" + commands[cmd].desc); }
-					} else { msgArray.push("`" + config.command_prefix + cmd + " " + commands[cmd].usage + "`\n		" + commands[cmd].desc); }
+						if (commands[cmd].shouldDisplay) { toSend.push("`" + config.command_prefix + cmd + " " + commands[cmd].usage + "`\n		" + commands[cmd].desc); }
+					} else { toSend.push("`" + config.command_prefix + cmd + " " + commands[cmd].usage + "`\n		" + commands[cmd].desc); }
 				});
-				var helpMessage = msgArray.join("\n");
+				var helpMessage = toSend.join("\n");
 				var helpPart2 = helpMessage.substring(helpMessage.indexOf("`]lotto`"));
 				var helpPart1 = helpMessage.substring(0, helpMessage.indexOf("`]lotto`") - 1);
 				bot.sendMessage(msg.author, helpPart1);
 				bot.sendMessage(msg.author, helpPart2);
 			} else {
+				suffix = suffix.trim().toLowerCase();
 				if (commands.hasOwnProperty(suffix)) {
-					msgArray.push("**" + config.command_prefix + "" + suffix + ": **" + commands[suffix].desc);
-					if (commands[suffix].hasOwnProperty("usage")) { msgArray.push("**Usage:** `" + config.command_prefix + "" + suffix + " " + commands[suffix].usage + "`"); }
-					if (commands[suffix].hasOwnProperty("cooldown")) { msgArray.push("**Cooldown:** " + commands[suffix].cooldown + " seconds"); }
-					if (commands[suffix].hasOwnProperty("deleteCommand")) { msgArray.push("*This command will delete the message that activates it*"); }
-					bot.sendMessage(msg, msgArray);
+					toSend.push("**" + config.command_prefix + "" + suffix + ":** " + commands[suffix].desc);
+					if (commands[suffix].hasOwnProperty("usage")) { toSend.push("**Usage:** `" + config.command_prefix + "" + suffix + " " + commands[suffix].usage + "`"); }
+					if (commands[suffix].hasOwnProperty("cooldown")) { toSend.push("**Cooldown:** " + commands[suffix].cooldown + " seconds"); }
+					if (commands[suffix].hasOwnProperty("deleteCommand")) { toSend.push("*Delete Command: true*"); }
+					bot.sendMessage(msg, toSend);
 				} else { bot.sendMessage(msg, "Command `" + suffix + "` not found.", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
 			}
 		}
@@ -150,23 +160,36 @@ var commands = {
 		}
 	},
 	"reverse": {
-		desc: "Return's the input backwards",
+		desc: "Returns the input backwards",
 		usage: "<text>", deleteCommand: true, cooldown: 5, shouldDisplay: false,
 		process: function(bot, msg, suffix) {
 			if (suffix) { bot.sendMessage(msg, "\u202e " + suffix); }
 		}
 	},
+	"id": {
+		desc: "Returns your ID (or the channel's)",
+		usage: "[\"channel\"]", deleteCommand: true, cooldown: 2, shouldDisplay: false,
+		process: function(bot, msg, suffix) {
+			if (suffix && suffix.trim().replace("\"", "") === "channel") { bot.sendMessage(msg, "This channel's ID is: " + msg.channel.id);
+			} else { bot.sendMessage(msg, "Your ID is: " + msg.author.id); }
+		}
+	},
+	"beep": {
+		desc: "boop", usage: "", deleteCommand: false, cooldown: 2,
+		process: (bot, msg, suffix) => { bot.sendMessage(msg, "boop    |    Time taken: " + (new Date() - msg.timestamp) + "ms"); }
+	},
 	"ping": {
 		desc: "Replies with pong.",
 		cooldown: 2, shouldDisplay: false, usage: "",
 		process: function(bot, msg) {
+			var timeTaken = new Date();
 			var n = Math.floor(Math.random() * 6);
-			if (n === 0) { bot.sendMessage(msg, "pong");
-			} else if (n === 1) { bot.sendMessage(msg, "You thought I'd say pong, *didn't you?*");
-			} else if (n === 2) { bot.sendMessage(msg, "pong!");
-			} else if (n === 3) { bot.sendMessage(msg, "Yeah, I'm still here");
-			} else if (n === 4) { bot.sendMessage(msg, "...");
-			} else if (n === 5) { bot.sendMessage(msg, config.command_prefix + "ping"); }
+			if (n === 0) { bot.sendMessage(msg, "pong    |    Time taken: " + (timeTaken - msg.timestamp) + "ms");
+			} else if (n === 1) { bot.sendMessage(msg, "You thought I'd say pong, *didn't you?*    |    Time taken: " + (timeTaken - msg.timestamp) + "ms");
+			} else if (n === 2) { bot.sendMessage(msg, "pong!    |    Time taken: " + (timeTaken - msg.timestamp) + "ms");
+			} else if (n === 3) { bot.sendMessage(msg, "Yeah, I'm still here    |    Time taken: " + (timeTaken - msg.timestamp) + "ms");
+			} else if (n === 4) { bot.sendMessage(msg, "...    |    Time taken: " + (timeTaken - msg.timestamp) + "ms");
+			} else if (n === 5) { bot.sendMessage(msg, config.command_prefix + "ping    |    Time taken: " + (timeTaken - msg.timestamp) + "ms"); }
 		}
 	},
 	"join": {
@@ -194,7 +217,7 @@ var commands = {
 								console.log("Already in server");
 								bot.sendMessage(msg, "I'm already in that server!");
 							} else {
-								if (config.is_heroku_version) {
+								if (config.use_env) {
 									if (process.env.banned_server_ids && process.env.banned_server_ids.indexOf(server.id) > -1) {
 										console.log(colors.cRed("Joined server but it was on the ban list") + ": " + server.name);
 										bot.sendMessage(msg, "This server is on the ban list");
@@ -212,12 +235,12 @@ var commands = {
 								console.log(colors.cGreen("Joined server: ") + server.name);
 								bot.sendMessage(msg, "✅ Successfully joined ***" + server.name + "***");
 								if (suffix.indexOf("-a") != -1) {
-									var msgArray = [];
-									msgArray.push("Hi! I'm **" + bot.user.username + "** and I was invited to this server by " + msg.author + ".");
-									msgArray.push("Use `" + config.command_prefix + "help` to get a list of normal commands.");
-									msgArray.push("If I shouldn't be here someone with the `Kick Members` permission can use `" + config.mod_command_prefix + "leaves` to make me leave");
-									msgArray.push("For help / feedback / bugs / testing / announcements / changelogs / etc. go to **discord.gg/0kvLlwb7slG3XCCQ**");
-									bot.sendMessage(server.defaultChannel, msgArray);
+									var toSend = [];
+									toSend.push("Hi! I'm **" + bot.user.username + "** and I was invited to this server by " + msg.author + ".");
+									toSend.push("Use `" + config.command_prefix + "help` to get a list of normal commands.");
+									toSend.push("Mod/Admin commands __including bot settings__ can be viewed with `" + config.mod_command_prefix + "`help ");
+									toSend.push("For help / feedback / bugs / testing / announcements / changelogs / etc. go to **discord.gg/0kvLlwb7slG3XCCQ**");
+									bot.sendMessage(server.defaultChannel, toSend);
 								} else { setTimeout(function() { bot.sendMessage(server.defaultChannel, "*Joined on request of " + msg.author + "*"); }, 2000); }
 							}
 						});
@@ -230,25 +253,7 @@ var commands = {
 		desc: "About me",
 		deleteCommand: true, cooldown: 10, usage: "",
 		process: function(bot, msg, suffix) {
-			var msgArray = [];
-			msgArray.push("I'm " + bot.user.username + " and ~~I was made by brussell98.~~ I'm a strong independent bot who don't need no creator.");
-			msgArray.push("I run on `discord.js` and my website is **brussell98.github.io/BrussellBot/**");
-			bot.sendMessage(msg, msgArray);
-		}
-	},
-	"letsplay": {
-		desc: "Ask if anyone wants to play a game. (@ everyone if members <= 30)",
-		deleteCommand: true,
-		usage: "[game name]",
-		cooldown: 15,
-		process: function(bot, msg, suffix) {
-			if (!msg.channel.isPrivate && msg.channel.permissionsOf(msg.author).hasPermission("mentionEveryone") && msg.channel.server.members.length <= 30) {
-				if (suffix) { bot.sendMessage(msg, "🎮 @everyone, " + msg.author + " would like to know if anyone wants to play **" + suffix + "**.");
-				} else { bot.sendMessage(msg, "🎮 @everyone, " + msg.author + " would like to know if anyone wants to play a game"); }
-			} else {
-				if (suffix) { bot.sendMessage(msg, "🎮 " + msg.author + " would like to know if anyone wants to play **" + suffix + "**.");
-				} else { bot.sendMessage(msg, "🎮 " + msg.author + " would like to know if anyone wants to play a game"); }
-			}
+			bot.sendMessage(msg, "I'm " + bot.user.username + " and ~~I was made by brussell98.~~ I'm a strong independent bot who don't need no creator.\nI run on `discord.js` and my website is **brussell98.github.io/bot/main.html**");
 		}
 	},
 	"dice": {
@@ -258,7 +263,7 @@ var commands = {
 		cooldown: 3,
 		process: function(bot, msg, suffix) {
 			var dice = "1d6";
-			if (suffix && /\d+d\d+/.test(suffix)) { dice = suffix; }
+			if (suffix && /\d+d\d+/.test(suffix) && suffix.indexOf(".") == -1) { dice = suffix; }
 			request("https://rolz.org/api/?" + dice + ".json", function(err, response, body) {
 				if (!err && response.statusCode == 200) {
 					var roll = JSON.parse(body);
@@ -294,66 +299,77 @@ var commands = {
 						if (msg.everyoneMentioned) { bot.sendMessage(msg, "Hey, " + msg.author.username + ", don't do that ok?", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 						if (msg.mentions.length > 4) { bot.sendMessage(msg, "Limit of 4 users", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 						msg.mentions.map(function(usr) {
-							var msgArray = [], count = 0;
-							msgArray.push("ℹ **Info on** " + usr.username);
-							msgArray.push("**User ID:** " + usr.id);
-							if (usr.game != null) { msgArray.push("**Status:** " + usr.status + " **last playing** " + usr.game.name);
-							} else { msgArray.push("**Status:** " + usr.status); }
-							var jDate = new Date(msg.channel.server.detailsOfUser(usr).joinedAt);
-							msgArray.push("**Joined this server on:** " + jDate.toUTCString());
-							var roles = msg.channel.server.rolesOfUser(usr.id).map(function(role) { return role.name; });
-							roles = roles.join(", ").replace("@", "");
-							if (roles.length <= 1500) { msgArray.push("**Roles:** " + roles); } else { msgArray.push("**Roles:** Too many to display"); }
-							bot.servers.map(function(server) { if (server.members.indexOf(usr) > -1) { count += 1; } });
-							if (count > 1) { msgArray.push("**Shared servers:** " + count); }
-							if (usr.avatarURL != null) { msgArray.push("**Avatar URL:** `" + usr.avatarURL + "`"); }
-							bot.sendMessage(msg, msgArray);
+							var toSend = [], count = 0;
+							toSend.push("ℹ **Info on** " + usr.username + " (" + usr.discriminator + ")");
+							toSend.push("**ID:** " + usr.id);
+							if (usr.game && usr.game.name !== undefined && usr.game.name !== null && usr.game.name !== "null") toSend.push("**Status:** " + usr.status + " **last playing** " + usr.game.name);
+							else toSend.push("**Status:** " + usr.status);
+							var detailsOf = msg.channel.server.detailsOfUser(usr);
+							if (detailsOf) toSend.push("**Joined on:** " + new Date(msg.channel.server.detailsOfUser(usr).joinedAt).toUTCString());
+							else toSend.push("**Joined on:** Error");
+							var roles = msg.channel.server.rolesOfUser(usr.id).map((role) => { return role.name; });
+							if (roles) {
+								roles = roles.join(", ").replace("@", "");
+								if (roles && roles !== "")
+									if (roles.length <= 1500) { toSend.push("**Roles:** `" + roles + "`"); } else { toSend.push("**Roles:** `" + roles.split(", ").length + "`"); }
+								else
+									toSend.push("**Roles:** `none`");
+							} else toSend.push("**Roles:** Error");
+							bot.servers.map((server) => { if (server.members.indexOf(usr) > -1) { count += 1; } });
+							if (count > 1) { toSend.push("**Shared servers:** " + count); }
+							if (usr.avatarURL != null) { toSend.push("**Avatar URL:** `" + usr.avatarURL + "`"); }
+							bot.sendMessage(msg, toSend);
 							if (config.debug) { console.log(colors.cDebug(" DEBUG ") + "Got info on " + usr.username); }
 						});
 					} else {
+						if (msg.everyoneMentioned) { bot.sendMessage(msg, "Hey, " + msg.author.username + ", don't do that ok?", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 						var users = suffix.split(/, ?/);
 						if (users.length > 4) { bot.sendMessage(msg, "Limit of 4 users", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 						users.map(function(user) {
-							var usr = msg.channel.server.members.find((member) => { return member.username.toLowerCase() == user.toLowerCase() });
-							if (!usr) { usr = msg.channel.server.members.find((member) => { return member.username.toLowerCase().indexOf(user.toLowerCase()) == 0 }); }
-							if (!usr) { usr = msg.channel.server.members.find((member) => { return member.username.toLowerCase().indexOf(user.toLowerCase()) > -1 }); }
+							var usr = findUser(msg.channel.server.members, user);
 							if (usr) {
-								var msgArray = [], count = 0;
-								msgArray.push("ℹ **Info on** " + usr.username);
-								msgArray.push("**User ID:** " + usr.id);
-								if (usr.game != null) { msgArray.push("**Status:** " + usr.status + " **last playing** " + usr.game.name);
-								} else { msgArray.push("**Status:** " + usr.status); }
-								var jDate = new Date(msg.channel.server.detailsOfUser(usr).joinedAt);
-								msgArray.push("**Joined this server on:** " + jDate.toUTCString());
+								var toSend = [], count = 0;
+								toSend.push("ℹ **Info on** " + usr.username + " (" + usr.discriminator + ")");
+								toSend.push("**ID:** " + usr.id);
+								if (usr.game && usr.game.name !== undefined && usr.game.name !== null && usr.game.name !== "null") toSend.push("**Status:** " + usr.status + " **last playing** " + usr.game.name);
+								else toSend.push("**Status:** " + usr.status);
+								var detailsOf = msg.channel.server.detailsOfUser(usr);
+								if (detailsOf) toSend.push("**Joined on:** " + new Date(msg.channel.server.detailsOfUser(usr).joinedAt).toUTCString());
+								else toSend.push("**Joined on:** Error");
 								var roles = msg.channel.server.rolesOfUser(usr.id).map((role) => { return role.name; });
-								roles = roles.join(", ").replace("@", "");
-								if (roles.length <= 1500) { msgArray.push("**Roles:** " + roles); } else { msgArray.push("**Roles:** Too many to display"); }
-								bot.servers.map(function(server) { if (server.members.indexOf(usr) > -1) { count += 1; } });
-								if (count > 1) { msgArray.push("**Shared servers:** " + count); }
-								if (usr.avatarURL != null) { msgArray.push("**Avatar URL:** `" + usr.avatarURL + "`"); }
-								bot.sendMessage(msg, msgArray);
+								if (roles) {
+									roles = roles.join(", ").replace("@", "");
+									if (roles && roles !== "")
+										if (roles.length <= 1500) { toSend.push("**Roles:** `" + roles + "`"); } else { toSend.push("**Roles:** `" + roles.split(", ").length + "`"); }
+									else
+										toSend.push("**Roles:** `none`");
+								} else toSend.push("**Roles:** Error");
+								bot.servers.map((server) => { if (server.members.indexOf(usr) > -1) { count += 1; } });
+								if (count > 1) { toSend.push("**Shared servers:** " + count); }
+								if (usr.avatarURL != null) { toSend.push("**Avatar URL:** `" + usr.avatarURL + "`"); }
+								bot.sendMessage(msg, toSend);
 								if (config.debug) { console.log(colors.cDebug(" DEBUG ") + "Got info on " + usr.username); }
-							} else { bot.sendMessage(msg, "User \"" + user + "\" not found. If you want to get info on multiple users separate them with a comma.", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 15000}); }); }
+							} else bot.sendMessage(msg, "User \"" + user + "\" not found. If you want to get info on multiple users separate them with a comma.", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 15000}); });
 						});
 					}
 				} else {
-					var msgArray = [];
-					msgArray.push("ℹ **Info on** " + msg.channel.server.name);
-					msgArray.push("**Server ID:** " + msg.channel.server.id);
-					msgArray.push("**Owner:** " + msg.channel.server.owner.username + " (**id:** " + msg.channel.server.owner.id);
-					msgArray.push("**Region:** " + msg.channel.server.region);
-					msgArray.push("**Members:** " + msg.channel.server.members.length);
+					var toSend = [];
+					toSend.push("ℹ **Info on** " + msg.channel.server.name);
+					toSend.push("**Server ID:** " + msg.channel.server.id);
+					toSend.push("**Owner:** " + msg.channel.server.owner.username + " (**ID:** " + msg.channel.server.owner.id + ")");
+					toSend.push("**Region:** " + msg.channel.server.region);
+					toSend.push("**Members:** " + msg.channel.server.members.length + " **Channels:** " + msg.channel.server.channels.length);
 					var roles = msg.channel.server.roles.map((role) => { return role.name; });
 					roles = roles.join(", ").replace("@", "");
-					msgArray.push("**Channels:** " + msg.channel.server.channels.length);
-					if (roles.length <= 1500) { msgArray.push("**Roles:** " + roles); } else { msgArray.push("**Roles:** Too many to display"); }
-					msgArray.push("**Default channel:** " + msg.channel.server.defaultChannel);
-					msgArray.push("**This channel's id:** " + msg.channel.id);
-					msgArray.push("**Icon URL:** `" + msg.channel.server.iconURL + "`");
-					bot.sendMessage(msg, msgArray);
-					if (config.debug) { console.log(colors.cDebug(" DEBUG ") + "Got info on " + msg.channel.server.name); }
+					if (roles.length <= 1500) toSend.push("**Roles:** `" + roles + "`");
+					else toSend.push("**Roles:** `" + roles.split(", ").length + "`");
+					toSend.push("**Default channel:** " + msg.channel.server.defaultChannel);
+					toSend.push("**This channel's id:** " + msg.channel.id);
+					toSend.push("**Icon URL:** `" + msg.channel.server.iconURL + "`");
+					bot.sendMessage(msg, toSend);
+					if (config.debug) console.log(colors.cDebug(" DEBUG ") + "Got info on " + msg.channel.server.name);
 				}
-			} else { bot.sendMessage(msg, "⚠ Can't do that in a DM.", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
+			} else bot.sendMessage(msg, "⚠ Can't do that in a DM.", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); });
 		}
 	},
 	"avatar": {
@@ -374,14 +390,13 @@ var commands = {
 					(usr.avatarURL != null) ? bot.sendMessage(msg, "**" + usr.username + "**'s avatar is: " + usr.avatarURL + "") : bot.sendMessage(msg, "**" + usr.username + "** has no avatar", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); });
 				});
 			} else {
+				if (msg.everyoneMentioned) { bot.sendMessage(msg, "Hey, " + msg.author.username + ", don't do that ok?", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 				var users = suffix.split(/, ?/);
 				if (users.length > 6) { bot.sendMessage(msg, "Limit of 6 users", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 				users.map(function(user) {
-					var usr = msg.channel.server.members.find((member) => { return member.username.toLowerCase() == user.toLowerCase() });
-					if (!usr) { usr = msg.channel.server.members.find((member) => { return member.username.toLowerCase().indexOf(user.toLowerCase()) == 0 }); }
-					if (!usr) { usr = msg.channel.server.members.find((member) => { return member.username.toLowerCase().indexOf(user.toLowerCase()) > -1 }); }
+					var usr = findUser(msg.channel.server.members, user);
 					if (usr) { (usr.avatarURL != null) ? bot.sendMessage(msg, "**" + usr.username + "**'s avatar is: " + usr.avatarURL + "") : bot.sendMessage(msg, "**" + usr.username + "** has no avatar", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); });
-					} else { bot.sendMessage(msg, "User \"" + user + "\" not found. If you want to get the avatar of multiple users separate them with a comma.", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 20000}); }); }
+					} else { bot.sendMessage(msg, "User \"" + user + "\" not found. (Blame *Better*Discord) If you want to get the avatar of multiple users separate them with a comma.", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 20000}); }); }
 				});
 			}
 		}
@@ -390,6 +405,7 @@ var commands = {
 		desc: "Makes a choice for you.",
 		usage: "<option 1>, <option 2>, [option], [option]",
 		cooldown: 4,
+		deleteCommand: false,
 		process: function(bot, msg, suffix) {
 			if (!suffix || /(.*), ?(.*)/.test(suffix) == false) { bot.sendMessage(msg, correctUsage("choose"), function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 			var choices = suffix.split(/, ?/);
@@ -580,13 +596,12 @@ var commands = {
 		cooldown: 6,
 		process: function(bot, msg, suffix) {
 			if (suffix) {
-				var USER = (config.is_heroku_version) ? process.env.mal_user : config.mal_user;
-				var PASS = (config.is_heroku_version) ? process.env.mal_pass : config.mal_pass;
-				if (!USER || !PASS) { bot.sendMessage(msg, "MAL login not configured by bot owner", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
+				if (!MAL_USER || !MAL_PASS || MAL_USER == "" || MAL_PASS =="") { bot.sendMessage(msg, "MAL login not configured by bot owner", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
+				if (/[\uD000-\uF8FF]/g.test(suffix)) { bot.sendMessage(msg, "Search cannot contain unicode characters.", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 				bot.startTyping(msg.channel);
 				var tags = suffix.split(" ").join("+");
 				var rUrl = "http://myanimelist.net/api/anime/search.xml?q=" + tags;
-				request(rUrl, {"auth": {"user": USER, "pass": PASS, "sendImmediately": false}}, function(error, response, body) {
+				request(rUrl, {"auth": {"user": MAL_USER, "pass": MAL_PASS, "sendImmediately": false}}, function(error, response, body) {
 					if (error) { console.log(error); }
 					if (!error && response.statusCode == 200) {
 						xml2js.parseString(body, function(err, result) {
@@ -597,13 +612,14 @@ var commands = {
 							var type = result.anime.entry[0].type;
 							var status = result.anime.entry[0].status;
 							var synopsis = result.anime.entry[0].synopsis.toString();
+							var id = result.anime.entry[0].id;
 							synopsis = synopsis.replace(/<br \/>/g, " "); synopsis = synopsis.replace(/\[(.{1,10})\]/g, "");
 							synopsis = synopsis.replace(/\r?\n|\r/g, " "); synopsis = synopsis.replace(/\[(i|\/i)\]/g, "*"); synopsis = synopsis.replace(/\[(b|\/b)\]/g, "**");
 							synopsis = ent.decodeHTML(synopsis);
 							if (!msg.channel.isPrivate) {
 								if (synopsis.length > 400) { synopsis = synopsis.substring(0, 400); synopsis += "..."; }
 							}
-							bot.sendMessage(msg, "**" + title + " / " + english + "**\n**Type:** " + type + " **| Episodes:** " + ep + " **| Status:** " + status + " **| Score:** " + score + "\n" + synopsis);
+							bot.sendMessage(msg, "**" + title + " / " + english + "**\n**Type:** " + type + " **| Episodes:** " + ep + " **| Status:** " + status + " **| Score:** " + score + "\n" + synopsis + "\n**www.myanimelist.net/anime/" + id + "**");
 						});
 					} else { bot.sendMessage(msg, "\"" + suffix + "\" not found. Blame the MAL search API", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
 				});
@@ -618,13 +634,12 @@ var commands = {
 		cooldown: 6,
 		process: function(bot, msg, suffix) {
 			if (suffix) {
-				var USER = (config.is_heroku_version) ? process.env.mal_user : config.mal_user;
-				var PASS = (config.is_heroku_version) ? process.env.mal_pass : config.mal_pass;
-				if (!USER || !PASS) { bot.sendMessage(msg, "MAL login not configured by bot owner", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
+				if (!MAL_USER || !MAL_PASS || MAL_USER == "" || MAL_PASS =="") { bot.sendMessage(msg, "MAL login not configured by bot owner", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
+				if (/[\uD000-\uF8FF]/g.test(suffix)) { bot.sendMessage(msg, "Search cannot contain unicode characters.", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 				bot.startTyping(msg.channel);
 				var tags = suffix.split(" ").join("+");
 				var rUrl = "http://myanimelist.net/api/manga/search.xml?q=" + tags;
-				request(rUrl, {"auth": {"user": USER, "pass": PASS, "sendImmediately": false}}, function(error, response, body) {
+				request(rUrl, {"auth": {"user": MAL_USER, "pass": MAL_PASS, "sendImmediately": false}}, function(error, response, body) {
 					if (error) { console.log(error); }
 					if (!error && response.statusCode == 200) {
 						xml2js.parseString(body, function(err, result) {
@@ -636,13 +651,14 @@ var commands = {
 							var type = result.manga.entry[0].type;
 							var status = result.manga.entry[0].status;
 							var synopsis = result.manga.entry[0].synopsis.toString();
+							var id = result.manga.entry[0].id;
 							synopsis = synopsis.replace(/<br \/>/g, " "); synopsis = synopsis.replace(/\[(.{1,10})\]/g, "");
 							synopsis = synopsis.replace(/\r?\n|\r/g, " "); synopsis = synopsis.replace(/\[(i|\/i)\]/g, "*"); synopsis = synopsis.replace(/\[(b|\/b)\]/g, "**");
 							synopsis = ent.decodeHTML(synopsis);
 							if (!msg.channel.isPrivate) {
 								if (synopsis.length > 400) { synopsis = synopsis.substring(0, 400); }
 							}
-							bot.sendMessage(msg, "**" + title + " / " + english + "**\n**Type:** " + type + " **| Chapters:** " + chapters + " **| Volumes: **" + volumes + " **| Status:** " + status + " **| Score:** " + score + "\n" + synopsis);
+							bot.sendMessage(msg, "**" + title + " / " + english + "**\n**Type:** " + type + " **| Chapters:** " + chapters + " **| Volumes: **" + volumes + " **| Status:** " + status + " **| Score:** " + score + "\n" + synopsis + "\n**www.myanimelist.net/manga/" + id + "**");
 						});
 					} else { bot.sendMessage(msg, "\"" + suffix + "\" not found", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
 				});
@@ -672,17 +688,18 @@ var commands = {
 
 				var color = "ff66aa",
 					username = msg.author.username;
-				suffix = suffix.split(" ");
-				if (suffix.length >= 2) {
-					if (/sig (.*) #?[A-Fa-f0-9]{6}$/.test(suffix.join(" "))) {
-						username = suffix.join("%20").substring(6, suffix.join("%20").lastIndexOf("%20"));
+				suffix = suffix.trim().split(" ");
+				suffix.shift();
+				if (suffix && suffix.length >= 1) {
+					if (/(.*) #?[A-Fa-f0-9]{6}$/.test(suffix.join(" "))) {
+						username = suffix.join("%20").substring(0, suffix.join("%20").lastIndexOf("%20"));
 						if (suffix[suffix.length - 1].length == 6) { color = suffix[suffix.length - 1];
 						} else if (suffix[suffix.length - 1].length == 7) { color = suffix[suffix.length - 1].substring(1); }
-					} else if (/sig #?[A-Fa-f0-9]{6}$/.test(suffix.join(" "))) {
+					} else if (/#?[A-Fa-f0-9]{6}$/.test(suffix.join(" "))) {
 						username = msg.author.username;
-						if (suffix[1].length == 6) { color = suffix[1];
-						} else if (suffix[1].length == 7) { color = suffix[1].substring(1); }
-					}
+						if (suffix[0].length == 6) { color = suffix[0];
+						} else if (suffix[0].length == 7) { color = suffix[0].substring(1); }
+					} else { username = suffix.join("%20"); }
 				}
 				request({url: "https://lemmmy.pw/osusig/sig.php?colour=hex" + color + "&uname=" + username + "&pp=2&flagshadow&xpbar&xpbarhex&darktriangles", encoding: null}, function(err, response, body) {
 					if (err) { bot.sendMessage(msg, "⚠ Error: " + err, function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
@@ -694,74 +711,77 @@ var commands = {
 			} else if (suffix.split(" ")[0] == "user") {
 
 				var username = (suffix.split(" ").length < 2) ?  msg.author.username : suffix.substring(5);
-				var APIKEY = (config.is_heroku_version) ? process.env.osu_api_key : config.osu_api_key;
-				if (!APIKEY) { bot.sendMessage(msg, "Osu API key not configured by bot owner", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
-				var osu = new osuapi.Api(APIKEY);
+				if (!OSU_API_KEY || OSU_API_KEY == "") { bot.sendMessage(msg, "Osu API key not configured by bot owner", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
+				var osu = new osuapi.Api(OSU_API_KEY);
 				osu.getUser(username, function(err, data) {
 					if (err) { bot.sendMessage(msg, "⚠ Error: " + err, function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 					if (!data) { bot.sendMessage(msg, "⚠ User \"" + username + "\" not found", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
-					var msgArray = [];
-					msgArray.push("Osu stats for: **" + data.username + "**:");
-					msgArray.push("━━━━━━━━━━━━━━━━━━━");
-					msgArray.push("**Play Count**: " + data.playcount.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " | **Ranked Score**: " + data.ranked_score.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " | **Total Score**: " + data.total_score.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " | **Level**: " + data.level.substring(0, data.level.split(".")[0].length + 3));
-					msgArray.push("**PP**: " + data.pp_raw.split(".")[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " | **Rank**: #" + data.pp_rank.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " | **Country Rank**: #" + data.pp_country_rank.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " | **Accuracy**: " + data.accuracy.substring(0, data.accuracy.split(".")[0].length + 3) + "%");
-					msgArray.push("**300**: " + data.count300.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " | **100**: " + data.count100.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " | **50**: " + data.count50.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " | **SS**: " + data.count_rank_ss + " | **S**: " + data.count_rank_s + " | **A**: " + data.count_rank_a.replace(/\B(?=(\d{3})+(?!\d))/g, ","));
-					bot.sendMessage(msg, msgArray);
+					var toSend = [];
+					if (data.playcount === null) { bot.sendMessage(msg, "User has no data", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
+					toSend.push("Osu stats for: **" + data.username + "**:");
+					toSend.push("━━━━━━━━━━━━━━━━━━━");
+					toSend.push("**Play Count**: " + data.playcount.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " | **Ranked Score**: " + data.ranked_score.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " | **Total Score**: " + data.total_score.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " | **Level**: " + data.level.substring(0, data.level.split(".")[0].length + 3));
+					toSend.push("**PP**: " + data.pp_raw.split(".")[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " | **Rank**: #" + data.pp_rank.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " | **Country Rank**: #" + data.pp_country_rank.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " | **Accuracy**: " + data.accuracy.substring(0, data.accuracy.split(".")[0].length + 3) + "%");
+					toSend.push("**300**: " + data.count300.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " | **100**: " + data.count100.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " | **50**: " + data.count50.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " | **SS**: " + data.count_rank_ss + " | **S**: " + data.count_rank_s + " | **A**: " + data.count_rank_a.replace(/\B(?=(\d{3})+(?!\d))/g, ","));
+					bot.sendMessage(msg, toSend);
 				});
 
 			} else if (suffix.split(" ")[0] === "best") {
 
 				var username = (suffix.split(" ").length < 2) ?  msg.author.username : suffix.substring(5);
-				var APIKEY = (config.is_heroku_version) ? process.env.osu_api_key : config.osu_api_key;
-				if (!APIKEY) { bot.sendMessage(msg, "Osu API key not configured by bot owner", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
-				var osu = new osuapi.Api(APIKEY);
+				if (!OSU_API_KEY || OSU_API_KEY == "") { bot.sendMessage(msg, "Osu API key not configured by bot owner", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
+				var osu = new osuapi.Api(OSU_API_KEY);
 				osu.getUserBest(username, function(err, data) {
 					if (err) { bot.sendMessage(msg, "⚠ Error: " + err, function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 					if (!data || !data[0] || !data[1] || !data[2] || !data[3] || !data[4]) { bot.sendMessage(msg, "⚠ User \"" + username + "\" not found or user doesn't have 5 plays", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
-					var msgArray = [];
-					msgArray.push("Top 5 osu scores for: **" + username + "**:");
-					msgArray.push("━━━━━━━━━━━━━━━━━━━");
+					var toSend = [];
+					toSend.push("Top 5 osu scores for: **" + username + "**:");
+					toSend.push("━━━━━━━━━━━━━━━━━━━");
 					osu.getBeatmap(data[0].beatmap_id, function(err, map1) {
-						msgArray.push("**1.** *" + map1.title + "* *(☆" + map1.difficultyrating.substring(0, map1.difficultyrating.split(".")[0].length + 3) + ")*: **PP:** " + Math.round(data[0].pp.split(".")[0]) + " **| Score:** " + data[0].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " **| Max Combo:** " + data[0].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " **| Misses:** " + data[0].countmiss + " **| Date:** " + data[0].date);
+						toSend.push("**1.** *" + map1.title + "* *(☆" + map1.difficultyrating.substring(0, map1.difficultyrating.split(".")[0].length + 3) + ")*: **PP:** " + Math.round(data[0].pp.split(".")[0]) + " **| Score:** " + data[0].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " **| Max Combo:** " + data[0].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " **| Misses:** " + data[0].countmiss + " **| Date:** " + data[0].date);
 						osu.getBeatmap(data[1].beatmap_id, function(err, map2) {
-							msgArray.push("**2.** *" + map2.title + "* *(☆" + map2.difficultyrating.substring(0, map2.difficultyrating.split(".")[0].length + 3) + ")*: **PP:** " + Math.round(data[1].pp.split(".")[0]) + " **| Score:** " + data[1].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " **| Max Combo:** " + data[1].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " **| Misses:** " + data[1].countmiss + " **| Date:** " + data[1].date);
+							toSend.push("**2.** *" + map2.title + "* *(☆" + map2.difficultyrating.substring(0, map2.difficultyrating.split(".")[0].length + 3) + ")*: **PP:** " + Math.round(data[1].pp.split(".")[0]) + " **| Score:** " + data[1].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " **| Max Combo:** " + data[1].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " **| Misses:** " + data[1].countmiss + " **| Date:** " + data[1].date);
 							osu.getBeatmap(data[2].beatmap_id, function(err, map3) {
-								msgArray.push("**3.** *" + map3.title + "* *(☆" + map3.difficultyrating.substring(0, map3.difficultyrating.split(".")[0].length + 3) + ")*: **PP:** " + Math.round(data[2].pp.split(".")[0]) + " **| Score:** " + data[2].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " **| Max Combo:** " + data[2].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " **| Misses:** " + data[2].countmiss + " **| Date:** " + data[2].date);
+								toSend.push("**3.** *" + map3.title + "* *(☆" + map3.difficultyrating.substring(0, map3.difficultyrating.split(".")[0].length + 3) + ")*: **PP:** " + Math.round(data[2].pp.split(".")[0]) + " **| Score:** " + data[2].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " **| Max Combo:** " + data[2].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " **| Misses:** " + data[2].countmiss + " **| Date:** " + data[2].date);
 								osu.getBeatmap(data[3].beatmap_id, function(err, map4) {
-									msgArray.push("**4.** *" + map4.title + "* *(☆" + map4.difficultyrating.substring(0, map4.difficultyrating.split(".")[0].length + 3) + ")*: **PP:** " + Math.round(data[3].pp.split(".")[0]) + " **| Score:** " + data[3].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " **| Max Combo:** " + data[3].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " **| Misses:** " + data[3].countmiss + " **| Date:** " + data[3].date);
+									toSend.push("**4.** *" + map4.title + "* *(☆" + map4.difficultyrating.substring(0, map4.difficultyrating.split(".")[0].length + 3) + ")*: **PP:** " + Math.round(data[3].pp.split(".")[0]) + " **| Score:** " + data[3].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " **| Max Combo:** " + data[3].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " **| Misses:** " + data[3].countmiss + " **| Date:** " + data[3].date);
 									osu.getBeatmap(data[4].beatmap_id, function(err, map5) {
-										msgArray.push("**5.** *" + map5.title + "* *(☆" + map5.difficultyrating.substring(0, map5.difficultyrating.split(".")[0].length + 3) + ")*: **PP:** " + Math.round(data[4].pp.split(".")[0]) + " **| Score:** " + data[4].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " **| Max Combo:** " + data[4].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " **| Misses:** " + data[4].countmiss + " **| Date:** " + data[4].date);
-										bot.sendMessage(msg, msgArray);
+										toSend.push("**5.** *" + map5.title + "* *(☆" + map5.difficultyrating.substring(0, map5.difficultyrating.split(".")[0].length + 3) + ")*: **PP:** " + Math.round(data[4].pp.split(".")[0]) + " **| Score:** " + data[4].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " **| Max Combo:** " + data[4].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " **| Misses:** " + data[4].countmiss + " **| Date:** " + data[4].date);
+										bot.sendMessage(msg, toSend);
 					});});});});});
 				});
 
 			} else if (suffix.split(" ")[0] === "recent") {
 
 				var username = (suffix.split(" ").length < 2) ? msg.author.username : suffix.substring(7);
-				var APIKEY = (config.is_heroku_version) ? process.env.osu_api_key : config.osu_api_key;
-				if (!APIKEY) { bot.sendMessage(msg, "Osu API key not configured by bot owner", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
-				var osu = new osuapi.Api(APIKEY);
+				if (!OSU_API_KEY || OSU_API_KEY == "") { bot.sendMessage(msg, "Osu API key not configured by bot owner", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
+				var osu = new osuapi.Api(OSU_API_KEY);
 				osu.getUserRecent(username, function(err, data) {
 					if (err) { bot.sendMessage(msg, "⚠ Error: " + err, function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 					if (!data || !data[0]) { bot.sendMessage(msg, "⚠ User \"" + username + "\" not found or no recent plays", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
-					var msgArray = [];
-					msgArray.push("5 most recent plays for: **" + username + "**:");
-					msgArray.push("━━━━━━━━━━━━━━━━━━━");
+					var toSend = [];
+					toSend.push("5 most recent plays for: **" + username + "**:");
+					toSend.push("━━━━━━━━━━━━━━━━━━━");
 					osu.getBeatmap(data[0].beatmap_id, function(err, map1) {
-						msgArray.push("**1.** *" + map1.title + "* *(☆" + map1.difficultyrating.substring(0, map1.difficultyrating.split(".")[0].length + 3) + ")*: **Score:** " + data[0].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " **| Max Combo:** " + data[0].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " **| Misses:** " + data[0].countmiss);
-						if (!data[1]) { bot.sendMessage(msg, msgArray); return; }
+						if (!map1 || !map1.title) { bot.sendMessage(msg, toSend); return; }
+						toSend.push("**1.** *" + map1.title + "* *(☆" + map1.difficultyrating.substring(0, map1.difficultyrating.split(".")[0].length + 3) + ")*: **Score:** " + data[0].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " **| Max Combo:** " + data[0].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " **| Misses:** " + data[0].countmiss);
+						if (!data[1]) { bot.sendMessage(msg, toSend); return; }
 						osu.getBeatmap(data[1].beatmap_id, function(err, map2) {
-							msgArray.push("**2.** *" + map2.title + "* *(☆" + map2.difficultyrating.substring(0, map2.difficultyrating.split(".")[0].length + 3) + ")*: **Score:** " + data[1].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " **| Max Combo:** " + data[1].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " **| Misses:** " + data[1].countmiss);
-							if (!data[2]) { bot.sendMessage(msg, msgArray); return; }
+							if (!map2 || !map2.title) { bot.sendMessage(msg, toSend); return; }
+							toSend.push("**2.** *" + map2.title + "* *(☆" + map2.difficultyrating.substring(0, map2.difficultyrating.split(".")[0].length + 3) + ")*: **Score:** " + data[1].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " **| Max Combo:** " + data[1].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " **| Misses:** " + data[1].countmiss);
+							if (!data[2]) { bot.sendMessage(msg, toSend); return; }
 							osu.getBeatmap(data[2].beatmap_id, function(err, map3) {
-								msgArray.push("**3.** *" + map3.title + "* *(☆" + map3.difficultyrating.substring(0, map3.difficultyrating.split(".")[0].length + 3) + ")*: **Score:** " + data[2].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " **| Max Combo:** " + data[2].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " **| Misses:** " + data[2].countmiss);
-								if (!data[3]) { bot.sendMessage(msg, msgArray); return; }
+								if (!map3 || !map3.title) { bot.sendMessage(msg, toSend); return; }
+								toSend.push("**3.** *" + map3.title + "* *(☆" + map3.difficultyrating.substring(0, map3.difficultyrating.split(".")[0].length + 3) + ")*: **Score:** " + data[2].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " **| Max Combo:** " + data[2].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " **| Misses:** " + data[2].countmiss);
+								if (!data[3]) { bot.sendMessage(msg, toSend); return; }
 								osu.getBeatmap(data[3].beatmap_id, function(err, map4) {
-									msgArray.push("**4.** *" + map4.title + "* *(☆" + map4.difficultyrating.substring(0, map4.difficultyrating.split(".")[0].length + 3) + ")*: **Score:** " + data[3].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " **| Max Combo:** " + data[3].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " **| Misses:** " + data[3].countmiss);
-									if (!data[4]) { bot.sendMessage(msg, msgArray); return; }
+									if (!map4 || !map4.title) { bot.sendMessage(msg, toSend); return; }
+									toSend.push("**4.** *" + map4.title + "* *(☆" + map4.difficultyrating.substring(0, map4.difficultyrating.split(".")[0].length + 3) + ")*: **Score:** " + data[3].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " **| Max Combo:** " + data[3].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " **| Misses:** " + data[3].countmiss);
+									if (!data[4]) { bot.sendMessage(msg, toSend); return; }
 									osu.getBeatmap(data[4].beatmap_id, function(err, map5) {
-										msgArray.push("**5.** *" + map5.title + "* *(☆" + map5.difficultyrating.substring(0, map5.difficultyrating.split(".")[0].length + 3) + ")*: **Score:** " + data[4].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " **| Max Combo:** " + data[4].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " **| Misses:** " + data[4].countmiss);
-										bot.sendMessage(msg, msgArray);
+										if (!map5 || !map5.title) { bot.sendMessage(msg, toSend); return; }
+										toSend.push("**5.** *" + map5.title + "* *(☆" + map5.difficultyrating.substring(0, map5.difficultyrating.split(".")[0].length + 3) + ")*: **Score:** " + data[4].score.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " **| Max Combo:** " + data[4].maxcombo.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " **| Misses:** " + data[4].countmiss);
+										bot.sendMessage(msg, toSend);
 					});});});});});
 				});
 
@@ -773,7 +793,6 @@ var commands = {
 		usage: "<rock/paper/scissors>",
 		cooldown: 2,
 		process: function(bot, msg, suffix) {
-			//if (!suffix) { bot.sendMessage(msg, correctUsage("rps")); return; }
 			var choice = Math.floor(Math.random() * 3);
 			if (choice == 0) { bot.sendMessage(msg, "I picked **rock**");
 			} else if (choice == 1) { bot.sendMessage(msg, "I picked **paper**");
@@ -786,11 +805,10 @@ var commands = {
 		deleteCommand: true,
 		cooldown: 7,
 		process: function(bot, msg, suffix) {
-			var APIKEY = (config.is_heroku_version) ? process.env.weather_api_key : config.weather_api_key;
-			if (APIKEY == null || APIKEY == "") { bot.sendMessage(msg, "⚠ No API key defined by bot owner", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
+			if (OWM_API_KEY == null || OWM_API_KEY == "") { bot.sendMessage(msg, "⚠ No API key defined by bot owner", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 			if (suffix) { suffix = suffix.replace(" ", ""); }
 			if (!suffix) { bot.sendMessage(msg, correctUsage("weather"), function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
-			var rURL = (/\d/.test(suffix) == false) ? "http://api.openweathermap.org/data/2.5/weather?q=" + suffix + "&APPID=" + APIKEY : "http://api.openweathermap.org/data/2.5/weather?zip=" + suffix + "&APPID=" + APIKEY;
+			var rURL = (/\d/.test(suffix) == false) ? "http://api.openweathermap.org/data/2.5/weather?q=" + suffix + "&APPID=" + OWM_API_KEY : "http://api.openweathermap.org/data/2.5/weather?zip=" + suffix + "&APPID=" + OWM_API_KEY;
 			request(rURL, function(error, response, body) {
 				if (!error && response.statusCode == 200) {
 					body = JSON.parse(body);
@@ -803,7 +821,7 @@ var commands = {
 					if (body.weather[0].description.indexOf("cloud") > -1) { emoji = "☁"; }
 					if (body.weather[0].description.indexOf("snow") > -1) { emoji = "❄"; }
 					if (body.weather[0].description.indexOf("rain") > -1 || body.weather[0].description.indexOf("storm") > -1 || body.weather[0].description.indexOf("drizzle") > -1) { emoji = "☔"; }
-					bot.sendMessage(msg, emoji + " __Weather for " + body.name + "__:\n**Conditions:** " + body.weather[0].description + " **Temp:** " + tempF + " / " + tempC + "\n**Humidity:** " + body.main.humidity + "% **Wind:** " + windspeed + " / " + windspeedUS + " **Cloudiness:** " + body.clouds.all + "%");
+					bot.sendMessage(msg, emoji + " __Weather for " + body.name + "__:\n**Conditions:** " + body.weather[0].description + " **Temp:** " + tempF + " / " + tempC + "\n**Humidity:** " + body.main.humidity + "% **Wind:** " + windspeedUS + " / " + windspeed + " **Cloudiness:** " + body.clouds.all + "%");
 				} else { console.log(error); }
 			});
 		}
@@ -812,9 +830,9 @@ var commands = {
 		desc: "Let me Google that for you",
 		deleteCommand: true,
 		usage: "<search>",
-		cooldown: 4,
+		cooldown: 3,
 		process: function(bot, msg, suffix) {
-			if (!suffix) { bot.sendMessage(msg, "**http://www.lmgtfy.com/?q=brussellbot+commands**"); return; }
+			if (!suffix) { bot.sendMessage(msg, "**http://www.lmgtfy.com/?q=lmgtfy**"); return; }
 			suffix = suffix.split(" ");
 			for (var i = 0; i < suffix.length; i++) { suffix[i] = encodeURIComponent(suffix[i]); }
 			bot.sendMessage(msg, "🔍 **http://www.lmgtfy.com/?q=" + suffix.join("+") + "**");
@@ -845,8 +863,8 @@ var commands = {
 		cooldown: 2,
 		process: function(bot, msg, suffix) {
 			request("http://catfacts-api.appspot.com/api/facts", function(error, response, body) {
-				if (error) { bot.sendMessage(msg, "Error: " + error, function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 10000}); }); }
-				if (response.statusCode != 200) { bot.sendMessage(msg, "Got status code " + response.statusCode, function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 10000}); }); }
+				if (error) { bot.sendMessage(msg, "Error: " + error, function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
+				if (response.statusCode != 200) { bot.sendMessage(msg, "Got status code " + response.statusCode, function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
 				if (!error && response.statusCode == 200) {
 					body = JSON.parse(body);
 					bot.sendMessage(msg, "🐱 **" + msg.author.username + "**, did you know that " + body.facts[0]);
@@ -858,14 +876,14 @@ var commands = {
 		desc: "I'll rate your waifu",
 		usage: "<name>",
 		deleteCommand: false,
-		cooldown: 5,
+		cooldown: 4,
 		process: function(bot, msg, suffix) {
 			if (!suffix) { bot.sendMessage(msg, correctUsage("ratewaifu"), function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
 			if (msg.everyoneMentioned) { bot.sendMessage(msg, "Hey, " + msg.author.username + ", don't do that ok?", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 			if (msg.mentions.length > 1) { bot.sendMessage(msg, "Multiple mentions aren't allowed!", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
 			if (suffix.toLowerCase().replace("-", " ") == bot.user.username.toLowerCase().replace("-", " ")) { bot.sendMessage(msg, "I'd rate myself **10/10**"); return; }
-			var fullName = "";
-			if (!msg.channel.isPrivate) { var user = msg.channel.server.members.find((member) => { return member.username.toLowerCase() == suffix.toLowerCase() }); } else { var user = false; }
+			var fullName = "", user = false;
+			if (!msg.channel.isPrivate) { user = msg.channel.server.members.find((member) => { return (member === undefined || member.username == undefined) ? false : member.username.toLowerCase() == suffix.toLowerCase() }); } else { user = false; }
 			if (!user && msg.mentions.length < 1) {
 				Object.keys(waifus).map(function(name) {if (name.toLowerCase() == suffix.toLowerCase()) { fullName = name; return; }});
 				if (!fullName) { Object.keys(waifus).map(function(name) {if (name.split(" ")[0].toLowerCase() == suffix.toLowerCase()) {fullName = name; return;}}); }
@@ -878,12 +896,65 @@ var commands = {
 				if (Ratings.hasOwnProperty(fullName.toLowerCase())) { bot.sendMessage(msg, "I gave " + fullName + " a **" + Ratings[fullName.toLowerCase()] + "/10**"); } //already rated
 				else {
 					if (user || msg.mentions.length > 0) { bot.sendMessage(msg, "I'd rate " + fullName + " **" + generateUserRating(bot, msg, fullName) + "/10**");
-					} else { bot.sendMessage(msg, fullName + " is a **" + generateJSONRating(fullName) + "/10**"); }
+					} else { bot.sendMessage(msg, "I'd rate " + fullName + " **" + generateJSONRating(fullName) + "/10**"); }
 				}
 			} else {
 				if (Ratings.hasOwnProperty(suffix.toLowerCase())) { bot.sendMessage(msg, "I gave " + suffix + " a **" + Ratings[suffix.toLowerCase()] + "/10**"); return; } //already rated
-				bot.sendMessage(msg, "I'd say " + suffix + " is a **" + generateRandomRating(suffix.toLowerCase(), true) + "/10**");
+				bot.sendMessage(msg, "I give " + suffix + " a **" + generateRandomRating(suffix.toLowerCase(), true) + "/10**");
 			}
+		}
+	},
+	"shared": {
+		desc: "Get a list of servers that the bot sees a user in.",
+		usage: "<user>",
+		deleteCommand: true, cooldown: 7,
+		process: function(bot, msg, suffix) {
+			if (!msg.channel.isPrivate) {
+				if (msg.mentions.length > 0) {
+					var ss = "none";
+					bot.servers.map((server) => { if (server.members.indexOf(msg.mentions[0]) > -1) ss += ", " + server.name; });
+					if (ss != "none") bot.sendMessage(msg, "**Shared Servers for " + msg.mentions[0].username.replace("@", "@ ") + ":** `" + ss.substring(6).replace("@", "@ ") + "`");
+					else bost.sendMessage(msg, "Somehow I don't share any servers with that user", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); });
+				} else if (suffix) {
+					var usr = findUser(msg.channel.server.members, suffix);
+					if (usr) {
+						var ss = "none";
+						bot.servers.map((server) => { if (server.members.indexOf(usr) > -1) ss += ", " + server.name; });
+						if (ss != "none") bot.sendMessage(msg, "**Shared Servers for " + usr.username.replace("@", "@ ") + ":** `" + ss.substring(6).replace("@", "@ ") + "`");
+						else bost.sendMessage(msg, "Somehow I don't share any servers with that user", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); });
+					} else bot.sendMessage(msg, "User not found", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); });
+				} else bot.sendMessage(msg, correctUsage("shared"), (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); });
+			} else bot.sendMessage(msg, "This command can't be used in a PM", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); });
+		}
+	},
+	"image": {
+		desc: "Get an image from Imgur",
+		usage: "<subreddit> [--nsfw] [--day | --week | --month | --year | --all]",
+		deleteCommand: false, cooldown: 10,
+		process: function(bot, msg, suffix) {
+			if (!IMGUR_CLIENT_ID || IMGUR_CLIENT_ID == "") { bot.sendMessage(msg, "⚠ No API key defined by bot owner", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
+			if (/[\uD000-\uF8FF]/g.test(suffix)) { bot.sendMessage(msg, "Search cannot contain unicode characters.", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
+			if (suffix && /^[^-].*/.test(suffix)) {
+				var time = (/(--day|--week|--month|--year|--all)/.test(suffix)) ? /(--day|--week|--month|--year|--all)/.exec(suffix)[0] : '--week';
+				request({
+						url: 'https://api.imgur.com/3/gallery/r/' + suffix.replace(/(--day|--week|--month|--year|--all|--nsfw|\/r\/| )/g, '') + '/top/' + time.substring(2) + '/50',
+						headers: {'Authorization': 'Client-ID ' + IMGUR_CLIENT_ID}
+				}, (error, response, body) => {
+					if (error) { console.log(error); bot.sendMessage(msg, "Oh no! There was an error!"); }
+					else if (response.statusCode != 200) bot.sendMessage(msg, "Got status code " + response.statusCode, (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); });
+					else if (body) {
+						body = JSON.parse(body);
+						var sendNSFW = (/ ?--nsfw/i.test(suffix)) ? true : false;
+						if (body.hasOwnProperty("data") && body.data.length !== 0) {
+							for (var i = 0; i < 100; i++) {
+								var toSend = body.data[Math.floor(Math.random() * (body.data.length))];
+								if (!sendNSFW && toSend.nsfw != true) { bot.sendMessage(msg, toSend.link); break; }
+								else if (sendNSFW && toSend.nsfw == true) { bot.sendMessage(msg, toSend.link + '**(NSFW)**'); break; }
+							}
+						} else bot.sendMessage(msg, "Nothing found!", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); });
+					}
+				});
+			} else bot.sendMessage(msg, correctUsage("image"), (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); });
 		}
 	}
 };
