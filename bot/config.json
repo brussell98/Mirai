@@ -1,8 +1,8 @@
 {
 	"email": "",
 	"password": "",
-	"command_prefix": "]",
-	"mod_command_prefix": "}",
+	"command_prefix": ")",
+	"mod_command_prefix": "&",
 	"non_essential_event_listeners": true,
 	"log_presence": false,
 	"debug": false,
@@ -10,11 +10,13 @@
 	"admin_id": 95286900801146880,
 	"greet_new_members": false,
 	"username_changes": false,
+	"ban_alerts": true,
 	"send_mentions": true,
 	"mal_user": "",
 	"mal_pass": "",
-	"is_heroku_version": false,
+	"use_env": false,
 	"weather_api_key": "",
 	"osu_api_key": "",
+	"imgur_client_id": "",
 	"banned_server_ids": [""]
 }
