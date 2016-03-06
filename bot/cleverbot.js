@@ -17,7 +17,11 @@ exports.cleverbot = function(bot, msg) {
 						});
 					}
 					bot.sendMessage(msg, '💬 ' + ent.decodeHTML(resp.message));
-					if (!resp.message || !ent.decodeHTML(resp.message)) { Slave = new Cleverbot(); console.log(colors.cWarn(" WARN ") + "Cleverbot returned nothing"); }
+					if (!resp.message || !ent.decodeHTML(resp.message)) {
+						delete require.cache[require.resolve("cleverbot-node")];
+						Cleverbot = require('cleverbot-node');
+						Slave = new Cleverbot();
+						console.log(colors.cWarn(" WARN ") + "Cleverbot returned nothing"); }
 				});
 			} catch (error) { bot.sendMessage(msg, '⚠ There was an error', (erro, wMessage) => { bot.deleteMessage(wMessage, {'wait': 10000}); }); }
 		});

@@ -7,15 +7,16 @@ var xml2js = require("xml2js");
 var osuapi = require("osu-api");
 var ent = require("entities");
 var waifus = require("./waifus.json");
+var db = require("./db.js");
 
 var VoteDB = {}
 	,LottoDB = {}
 	,Ratings = {};
-const IMGUR_CLIENT_ID = (config.use_env) ? process.env.IMGUR_CLIENT_ID: config.imgur_client_id;
-const OSU_API_KEY = (config.use_env) ? process.env.osu_api_key : config.osu_api_key;
-const OWM_API_KEY = (config.use_env) ? process.env.weather_api_key : config.weather_api_key;
-const MAL_USER = (config.use_env) ? process.env.mal_user : config.mal_user;
-const MAL_PASS = (config.use_env) ? process.env.mal_pass : config.mal_pass;
+const IMGUR_CLIENT_ID = config.imgur_client_id;
+const OSU_API_KEY = config.osu_api_key;
+const OWM_API_KEY = config.weather_api_key;
+const MAL_USER = config.mal_user;
+const MAL_PASS = config.mal_pass;
 
 /*****************************\
 		   Functions
@@ -207,33 +208,19 @@ var commands = {
 							if (err) {
 								bot.sendMessage(msg, "⚠ Failed to join: " + err);
 								console.log(colors.cWarn(" WARN ") + err);
-							} else if (!server || server.name == undefined || server.roles == undefined || server.channels == undefined || server.members == undefined) {
-								console.log(colors.cWarn(" WARN ") + "Error joining server. Didn't receive all data.");
-								bot.sendMessage(msg, "⚠ Failed to receive all data, please try again.");
-								try {
-									server.leave();
-								} catch (error) { /*how did it get here?*/ }
 							} else if (cServers.indexOf(server.id) > -1) {
 								console.log("Already in server");
 								bot.sendMessage(msg, "I'm already in that server!");
 							} else {
-								if (config.use_env) {
-									if (process.env.banned_server_ids && process.env.banned_server_ids.indexOf(server.id) > -1) {
-										console.log(colors.cRed("Joined server but it was on the ban list") + ": " + server.name);
-										bot.sendMessage(msg, "This server is on the ban list");
-										bot.leaveServer(server);
-										return;
-									}
-								} else {
-									if (config.banned_server_ids && config.banned_server_ids.indexOf(server.id) > -1) {
-										console.log(colors.cRed("Joined server but it was on the ban list") + ": " + server.name);
-										bot.sendMessage(msg, "This server is on the ban list");
-										bot.leaveServer(server);
-										return;
-									}
+								if (config.banned_server_ids && config.banned_server_ids.indexOf(server.id) > -1) {
+									console.log(colors.cRed("Joined server but it was on the ban list") + ": " + server.name);
+									bot.sendMessage(msg, "This server is on the ban list");
+									bot.leaveServer(server);
+									return;
 								}
 								console.log(colors.cGreen("Joined server: ") + server.name);
 								bot.sendMessage(msg, "✅ Successfully joined ***" + server.name + "***");
+								db.addServer(server);
 								if (suffix.indexOf("-a") != -1) {
 									var toSend = [];
 									toSend.push("Hi! I'm **" + bot.user.username + "** and I was invited to this server by " + msg.author + ".");
@@ -319,7 +306,6 @@ var commands = {
 							if (count > 1) { toSend.push("**Shared servers:** " + count); }
 							if (usr.avatarURL != null) { toSend.push("**Avatar URL:** `" + usr.avatarURL + "`"); }
 							bot.sendMessage(msg, toSend);
-							if (config.debug) { console.log(colors.cDebug(" DEBUG ") + "Got info on " + usr.username); }
 						});
 					} else {
 						if (msg.everyoneMentioned) { bot.sendMessage(msg, "Hey, " + msg.author.username + ", don't do that ok?", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
@@ -348,7 +334,6 @@ var commands = {
 								if (count > 1) { toSend.push("**Shared servers:** " + count); }
 								if (usr.avatarURL != null) { toSend.push("**Avatar URL:** `" + usr.avatarURL + "`"); }
 								bot.sendMessage(msg, toSend);
-								if (config.debug) { console.log(colors.cDebug(" DEBUG ") + "Got info on " + usr.username); }
 							} else bot.sendMessage(msg, "User \"" + user + "\" not found. If you want to get info on multiple users separate them with a comma.", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 15000}); });
 						});
 					}
@@ -367,7 +352,6 @@ var commands = {
 					toSend.push("**This channel's id:** " + msg.channel.id);
 					toSend.push("**Icon URL:** `" + msg.channel.server.iconURL + "`");
 					bot.sendMessage(msg, toSend);
-					if (config.debug) console.log(colors.cDebug(" DEBUG ") + "Got info on " + msg.channel.server.name);
 				}
 			} else bot.sendMessage(msg, "⚠ Can't do that in a DM.", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); });
 		}
@@ -412,8 +396,13 @@ var commands = {
 			if (choices.length < 2) {
 				bot.sendMessage(msg, correctUsage("choose"), function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); });
 			} else {
-				var choice = Math.floor(Math.random() * (choices.length));
-				bot.sendMessage(msg, "I chose **" + choices[choice] + "**");
+				if (choices.indexOf('homework') > -1 || choices.indexOf('hw') > -1) {
+					var choice = (choices.indexOf('homework') > -1) ? choices.indexOf('homework') : choices.indexOf('hw');
+					bot.sendMessage(msg, "I chose **" + choices[choice] + "**");
+				} else {
+					var choice = Math.floor(Math.random() * (choices.length));
+					bot.sendMessage(msg, "I chose **" + choices[choice] + "**");
+				}
 			}
 		}
 	},

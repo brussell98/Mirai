@@ -49,14 +49,6 @@ var aliases = {
 };
 
 var commands = {
-	"sql": {
-		desc: "Query the PostgreSQL database",
-		usage: "<query>",
-		deleteCommand: false, shouldDisplay: false,
-		process: function(bot, msg, suffix) {
-			if (msg.author.id == config.admin_id) { db.sql(bot, msg, suffix); }
-		}
-	},
 	"help": {
 		desc: "Sends a DM containing all of the commands. If a command is specified gives info on that command.",
 		usage: "[command]", deleteCommand: true, shouldDisplay: false,
@@ -72,7 +64,7 @@ var commands = {
 					} else { toSend.push("`" + config.mod_command_prefix + cmd + " " + commands[cmd].usage + "`\n        " + commands[cmd].desc); }
 				});
 				bot.sendMessage(msg.author, toSend);
-			} else { //if user wants info on a command
+			} else {
 				if (commands.hasOwnProperty(suffix)) {
 					toSend.push("**" + config.mod_command_prefix + "" + suffix + ": **" + commands[suffix].desc);
 					if (commands[suffix].hasOwnProperty("usage")) { toSend.push("**Usage:** `" + config.mod_command_prefix + "" + suffix + " " + commands[suffix].usage + "`"); }
@@ -278,10 +270,6 @@ var commands = {
 		process: function(bot, msg, suffix) {
 			if (msg.channel.server) {
 				if (msg.channel.permissionsOf(msg.author).hasPermission("kickMembers") || msg.author.id == config.admin_id) {
-					if (ServerSettings.hasOwnProperty(msg.channel.server.id)) {
-						delete ServerSettings[msg.channel.server.id];
-						db.removeFromDB(msg.channel.server.id);
-					}
 					bot.sendMessage(msg, "It's not like I wanted to be here or anything, *baka*").then(
 					msg.channel.server.leave());
 					console.log(colors.cYellow("I've left a server on request of " + msg.sender.username + ". ") + "I'm only in " + bot.servers.length + " servers now.");
@@ -445,111 +433,16 @@ var commands = {
 		}
 	},
 	"settings": {
-		desc: "Server settings. Docs: **http://brussell98.github.io/bot/serversettings.html**",
-		usage: "<enable|disable|welcomemsg|init|check> <command|message>",
-		deleteCommand: false,
-		cooldown: 3,
+		desc: "Per-server settings. Docs: **http://brussell98.github.io/bot/serversettings.html**",
+		usage: "",
+		deleteCommand: false, cooldown: 3,
 		process: function(bot, msg, suffix) {
 			if (msg.channel.isPrivate) { bot.sendMessage(msg, "Can't do this in a PM!", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
 			if (!msg.channel.permissionsOf(msg.author).hasPermission("manageServer") && msg.author.id != config.admin_id) { bot.sendMessage(msg, "You must have permission to manage the server!", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
 			if (!suffix) { bot.sendMessage(msg, correctUsage("settings"), (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
-			if (suffix.startsWith("enable")) {
 
-				if (!ServerSettings.hasOwnProperty(msg.channel.server.id)) { bot.sendMessage(msg, "You need to initialize per-server settings on this server! Go to this page to generate the comamnd: **http://brussell98.github.io/bot/serversettings.html**"); return; }
-				suffix = suffix.split(" ");
-				if (suffix.length == 1) { bot.sendMessage(msg, "You must specify a setting to enable", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
-				suffix.shift();
-				if (suffix[0].toLowerCase() == "deletecmds") {
-					if (ServerSettings[msg.channel.server.id].deletecmds == false) {
-						ServerSettings[msg.channel.server.id].deletecmds = true;
-						db.updateServerDB(msg.channel.server.id, () => { bot.sendMessage(msg, msg.author.username + " 👍", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); }, () => { bot.sendMessage(msg, "Something went wrong when updating the database. This change will not persist through a reboot."); });
-					} else { bot.sendMessage(msg, "__Delete Commands__ is already enabled!", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
-				} else if (suffix[0].toLowerCase() == "banalerts") {
-					if (ServerSettings[msg.channel.server.id].banalerts == false) {
-						ServerSettings[msg.channel.server.id].banalerts = true;
-						db.updateServerDB(msg.channel.server.id, () => { bot.sendMessage(msg, msg.author.username + " 👍", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); }, () => { bot.sendMessage(msg, "Something went wrong when updating the database. This change will not persist through a reboot."); });
-					} else { bot.sendMessage(msg, "__Ban Alerts__ are already enabled!", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
-				} else if (suffix[0].toLowerCase() == "namechanges") {
-					if (ServerSettings[msg.channel.server.id].namechanges == false) {
-						ServerSettings[msg.channel.server.id].namechanges = true;
-						db.updateServerDB(msg.channel.server.id, () => { bot.sendMessage(msg, msg.author.username + " 👍", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); }, () => { bot.sendMessage(msg, "Something went wrong when updating the database. This change will not persist through a reboot."); });
-					} else { bot.sendMessage(msg, "__Name Change Alerts__ are already enabled!", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
-				} else if (suffix[0].toLowerCase() == "welcomemsg") {
-					if (ServerSettings[msg.channel.server.id].welcomemsg == "false") {
-						ServerSettings[msg.channel.server.id].welcomemsg = "Hi $USER$! Welcome to $SERVER$";
-						bot.sendMessage(msg, "__Welcome Messages__ enabled! Use `" + config.mod_command_prefix + "settings welcomemsg <message>` to edit the message");
-						db.updateServerDB(msg.channel.server.id, () => { bot.sendMessage(msg, msg.author.username + " 👍", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); }, () => { bot.sendMessage(msg, "Something went wrong when updating the database. This change will not persist through a reboot."); });
-					} else { bot.sendMessage(msg, "__Welcome Messages__ are already enabled!", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
-				}
+			bot.sendMessage(msg, "Currently being re-written");
 
-			} else if (suffix.startsWith("disable")) {
-
-				if (!ServerSettings.hasOwnProperty(msg.channel.server.id)) { bot.sendMessage(msg, "You need to initialize per-server settings on this server! Go to this page to generate the comamnd: **http://brussell98.github.io/bot/serversettings.html**"); return; }
-				suffix = suffix.split(" ");
-				if (suffix.length == 1) { bot.sendMessage(msg, "You must specify a setting to disable", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
-				suffix.shift();
-				if (suffix[0].toLowerCase() == "deletecmds") {
-					if (ServerSettings[msg.channel.server.id].deletecmds == true) {
-						ServerSettings[msg.channel.server.id].deletecmds = false;
-						db.updateServerDB(msg.channel.server.id, () => { bot.sendMessage(msg, msg.author.username + " 👍", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); }, () => { bot.sendMessage(msg, "Something went wrong when updating the database. This change will not persist through a reboot."); });
-					} else { bot.sendMessage(msg, "__Delete Commands__ is already disabled!", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
-				} else if (suffix[0].toLowerCase() == "banalerts") {
-					if (ServerSettings[msg.channel.server.id].banalerts == true) {
-						ServerSettings[msg.channel.server.id].banalerts = false;
-						db.updateServerDB(msg.channel.server.id, () => { bot.sendMessage(msg, msg.author.username + " 👍", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); }, () => { bot.sendMessage(msg, "Something went wrong when updating the database. This change will not persist through a reboot."); });
-					} else { bot.sendMessage(msg, "__Ban Alerts__ are already disabled!", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
-				} else if (suffix[0].toLowerCase() == "namechanges") {
-					if (ServerSettings[msg.channel.server.id].namechanges == true) {
-						ServerSettings[msg.channel.server.id].namechanges = false;
-						db.updateServerDB(msg.channel.server.id, () => { bot.sendMessage(msg, msg.author.username + " 👍", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); }, () => { bot.sendMessage(msg, "Something went wrong when updating the database. This change will not persist through a reboot."); });
-					} else { bot.sendMessage(msg, "__Name Change Alerts__ are already disabled!", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
-				} else if (suffix[0].toLowerCase() == "welcomemsg") {
-					if (ServerSettings[msg.channel.server.id].welcomemsg != "false") {
-						ServerSettings[msg.channel.server.id].welcomemsg = "false";
-						db.updateServerDB(msg.channel.server.id, () => { bot.sendMessage(msg, msg.author.username + " 👍", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); }, () => { bot.sendMessage(msg, "Something went wrong when updating the database. This change will not persist through a reboot."); });
-					} else { bot.sendMessage(msg, "__Welcome Messages__ are already disabled!", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
-				}
-
-			} else if (suffix.startsWith("welcomemsg")) {
-
-				if (!ServerSettings.hasOwnProperty(msg.channel.server.id)) { bot.sendMessage(msg, "You need to initialize per-server settings on this server! Go to this page to generate the comamnd: **http://brussell98.github.io/bot/serversettings.html**"); return; }
-				if (/^welcomemsg .*/i.test(suffix)) {
-					suffix = suffix.substring(11);
-					//should probably filter some stuff out
-					ServerSettings[msg.channel.server.id].welcomemsg = suffix;
-					db.updateServerDB(msg.channel.server.id, () => { bot.sendMessage(msg, msg.author.username + " 👍", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); }, () => { bot.sendMessage(msg, "Something went wrong when updating the database. This change will not persist through a reboot."); });
-				} else { bot.sendMessage(msg, "You need to provide a welcome message!", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
-
-			} else if (suffix.startsWith("init")) {
-
-				if (!ServerSettings.hasOwnProperty(msg.channel.server.id)) {
-					if (/^init (true|false):::(true|false):::(true|false):::.*/i.test(suffix) && suffix.split(":::").length == 4) {
-						suffix = suffix.split(":::");
-						suffix[0] = suffix[0].replace(/^init /i, "");
-						var stngs = {
-										"deletecmds": (suffix[1] == "true") ? true : false,
-										"welcomemsg": (suffix[3] == "false") ? "false" : suffix[3],
-										"banalerts": (suffix[0] == "true") ? true : false,
-										"namechanges": (suffix[2] == "true") ? true : false,
-										"ignored": "none"
-									};
-						ServerSettings[msg.channel.server.id] = stngs;
-						db.addToDB(msg.channel.server.id, () => {
-							bot.sendMessage(msg, "Server added to settings database with the following settings:\n**Delete Commands:** " + ServerSettings[msg.channel.server.id].deletecmds + "\n**Ban Alerts:** " + ServerSettings[msg.channel.server.id].banalerts + "\n**Name Change Alerts:** " + ServerSettings[msg.channel.server.id].namechanges + "\n**Welcome Message:** " + ServerSettings[msg.channel.server.id].welcomemsg);
-						}, () => {
-							bot.sendMessage(msg, "Something went wrong when updating the database. This change will not persist through a reboot.");
-						});
-					} else { bot.sendMessage(msg, "Your init command isn't formatted correctly! Go here to generate one: **http://brussell98.github.io/bot/serversettings.html**", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
-				} else { bot.sendMessage(msg, "This server is already in the database! Use `" + config.mod_command_prefix + "settings enable/disable/welcomemsg`", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
-
-			} else if (suffix.startsWith("check")) {
-
-				if (ServerSettings.hasOwnProperty(msg.channel.server.id)) {
-					var ignoredChannels = (ServerSettings[msg.channel.server.id].ignored !== "none") ? "<#" + ServerSettings[msg.channel.server.id].ignored.substr(5).split(",").join("> <#") + ">" : "none";
-					bot.sendMessage(msg, "__Current settings__:\n**Delete Commands:** " + ServerSettings[msg.channel.server.id].deletecmds + "\n**Ban Alerts:** " + ServerSettings[msg.channel.server.id].banalerts + "\n**Name Change Alerts:** " + ServerSettings[msg.channel.server.id].namechanges + "\n**Welcome Message:** " + ServerSettings[msg.channel.server.id].welcomemsg + "\n**Ignored Channels:** " + ignoredChannels);
-				} else { bot.sendMessage(msg, "This server isn't set up for per-server settings."); }
-
-			} else { bot.sendMessage(msg, correctUsage("settings"), (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); }
 		}
 	},
 	"ignore": {
@@ -559,11 +452,9 @@ var commands = {
 		process: function(bot, msg, suffix) {
 			if (msg.channel.isPrivate) { bot.sendMessage(msg, "Can't do this in a PM!", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
 			if (!msg.channel.permissionsOf(msg.author).hasPermission("manageServer") && msg.author.id != config.admin_id) { bot.sendMessage(msg, "You must have permission to manage the server!", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
-			if (!ServerSettings.hasOwnProperty(msg.channel.server.id)) { bot.sendMessage(msg, "You need to initialize per-server settings on this server! Go to this page to generate the comamnd: **http://brussell98.github.io/bot/serversettings.html**"); return; }
-			if (ServerSettings[msg.channel.server.id].ignored.indexOf(msg.channel.id) === -1) {
-				ServerSettings[msg.channel.server.id].ignored += ',' + msg.channel.id;
-				db.updateServerDB(msg.channel.server.id, () => { bot.sendMessage(msg, "Ok, I'll ignore this channel now. Use `" + config.mod_command_prefix + "unignore` to activate me here again"); }, () => { bot.sendMessage(msg, "Something went wrong when updating the database. This change will not persist through a reboot."); })
-			} else { bot.sendMessage(msg, "This channel is already ignored", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }) }
+
+			bot.sendMessage(msg, "Currently being re-written");
+
 		}
 	},
 	"unignore": {
@@ -573,11 +464,9 @@ var commands = {
 		process: function(bot, msg, suffix) {
 			if (msg.channel.isPrivate) { bot.sendMessage(msg, "Can't do this in a PM!", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
 			if (!msg.channel.permissionsOf(msg.author).hasPermission("manageServer") && msg.author.id != config.admin_id) { bot.sendMessage(msg, "You must have permission to manage the server!", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
-			if (!ServerSettings.hasOwnProperty(msg.channel.server.id)) { bot.sendMessage(msg, "You need to initialize per-server settings on this server! Go to this page to generate the comamnd: **http://brussell98.github.io/bot/serversettings.html**"); return; }
-			if (ServerSettings[msg.channel.server.id].ignored.indexOf(msg.channel.id) > -1) {
-				ServerSettings[msg.channel.server.id].ignored = ServerSettings[msg.channel.server.id].ignored.replace(',' + msg.channel.id, "");
-				db.updateServerDB(msg.channel.server.id, () => { bot.sendMessage(msg, "I'm back!"); }, () => { bot.sendMessage(msg, "Something went wrong when updating the database. This change will not persist through a reboot."); })
-			} else { bot.sendMessage(msg, "This channel isn't ignored", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }) }
+
+			bot.sendMessage(msg, "Currently being re-written");
+
 		}
 	}
 }

@@ -91,5 +91,5 @@ exports.cBgGreen = function(text) {
 	chalk.styles.black.open +
 	text +
 	chalk.styles.bgGreen.close +
-	chalk.styles.black.close + chalk.styles.white.open + chalk.styles.bgBlack.open;
+	chalk.styles.black.close + chalk.styles.white.open;
 };

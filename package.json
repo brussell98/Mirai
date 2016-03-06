@@ -1,6 +1,6 @@
 {
 	"name": "brussellbot",
-	"version": "1.4.0",
+	"version": "2.0.0",
 	"description": "A Discord bot that does everything",
 	"author": "brussell98",
 	"main": "BrussellBot.js",
@@ -25,7 +25,6 @@
 		"cleverbot-node": "*",
 		"osu-api": "*",
 		"chalk": "*",
-		"entities": ">=1.1.1",
-		"pg": "*"
+		"entities": ">=1.1.1"
 	}
 }
