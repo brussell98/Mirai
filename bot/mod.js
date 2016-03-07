@@ -190,6 +190,7 @@ var commands = {
 		deleteCommand: true,
 		cooldown: 3,
 		process: function(bot, msg, suffix) {
+			if (msg.channel.isPrivate) return;
 			if (!msg.channel.permissionsOf(msg.author).hasPermission("kickMembers") && msg.author.id != config.admin_id) { bot.sendMessage(msg, "You don't have permission", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); });
 			} else if (!msg.channel.permissionsOf(bot.user).hasPermission("kickMembers")) { bot.sendMessage(msg, "I don't have permission", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); });
 			} else if (suffix && msg.mentions.length > 0) {
@@ -208,6 +209,7 @@ var commands = {
 		deleteCommand: true,
 		cooldown: 3,
 		process: function(bot, msg, suffix) {
+			if (msg.channel.isPrivate) return;
 			if (!msg.channel.permissionsOf(msg.author).hasPermission("banMembers") && msg.author.id != config.admin_id) { bot.sendMessage(msg, "You don't have permission", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); });
 			} else if (!msg.channel.permissionsOf(bot.user).hasPermission("banMembers")) { bot.sendMessage(msg, "I don't have permission", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); });
 			} else if (suffix && msg.mentions.length > 0) {
@@ -226,6 +228,7 @@ var commands = {
 		deleteCommand: true,
 		cooldown: 3,
 		process: function(bot, msg, suffix) {
+			if (msg.channel.isPrivate) return;
 			if (!msg.channel.permissionsOf(msg.author).hasPermission("manageRoles") && msg.author.id != config.admin_id) { bot.sendMessage(msg, "You don't have permission (manage roles)", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); });
 			} else if (!msg.channel.permissionsOf(bot.user).hasPermission("manageRoles")) { bot.sendMessage(msg, "I don't have permission (manage roles)", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); });
 			} else if (suffix && msg.mentions.length > 0 && /^(<@\d+>( ?)*)*( ?)*(\d+(.\d+)?)$/.test(suffix.trim())) {
@@ -249,6 +252,7 @@ var commands = {
 		deleteCommand: true,
 		cooldown: 3,
 		process: function(bot, msg, suffix) {
+			if (msg.channel.isPrivate) return;
 			if (!msg.channel.permissionsOf(msg.author).hasPermission("manageRoles") && msg.author.id != config.admin_id) { bot.sendMessage(msg, "You don't have permission (manage roles)", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); });
 			} else if (!msg.channel.permissionsOf(bot.user).hasPermission("manageRoles")) { bot.sendMessage(msg, "I don't have permission (manage roles)", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); });
 			} else if (suffix && msg.mentions.length > 0) {
@@ -315,8 +319,10 @@ var commands = {
 					var loopIndex = 0;
 					function annLoop() {
 						if (loopIndex >= bot.servers.length) { clearInterval(annTimer); return; }
-						bot.sendMessage(bot.servers[loopIndex].defaultChannel, "📣 " + announceMessages[index] + " - from your lord and savior " + msg.author.username);
-						loopIndex++;
+						if (bot.servers[loopIndex].name.indexOf("Discord API") == -1 && bot.servers[loopIndex].name.indexOf("Discord Bots") == -1 && bot.servers[loopIndex].name.indexOf("Discord Developers") == -1) {
+							bot.sendMessage(bot.servers[loopIndex].defaultChannel, "📣 " + announceMessages[index] + " - from your lord and savior " + msg.author.username);
+							loopIndex++;
+						}
 					}
 					var annTimer = setInterval(() => { annLoop() }, 1100);
 					delete confirmCodes[index];
@@ -434,15 +440,85 @@ var commands = {
 	},
 	"settings": {
 		desc: "Per-server settings. Docs: **http://brussell98.github.io/bot/serversettings.html**",
-		usage: "",
+		usage: "<enable/disable> <setting> | notify here | welcome <welcome message> | check",
 		deleteCommand: false, cooldown: 3,
 		process: function(bot, msg, suffix) {
 			if (msg.channel.isPrivate) { bot.sendMessage(msg, "Can't do this in a PM!", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
 			if (!msg.channel.permissionsOf(msg.author).hasPermission("manageServer") && msg.author.id != config.admin_id) { bot.sendMessage(msg, "You must have permission to manage the server!", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
-			if (!suffix) { bot.sendMessage(msg, correctUsage("settings"), (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
-
-			bot.sendMessage(msg, "Currently being re-written");
-
+			if (!suffix || !/.+ .+/.test(suffix)) { bot.sendMessage(msg, correctUsage("settings"), (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
+			if (!ServerSettings.hasOwnProperty(msg.channel.server.id)) db.addServer(msg.channel.server);
+			if (/enable ban ?alerts?/i.test(suffix.trim())) {
+				if (!ServerSettings[msg.channel.server.id].banAlerts) {
+					db.changeSetting('banAlerts', true, msg.channel.server.id);
+					bot.sendMessage(msg, 'Enabled ban alerts');
+				}
+			}
+			if (/disable ban ?alerts?/i.test(suffix.trim())) {
+				if (ServerSettings[msg.channel.server.id].banAlerts) {
+					db.changeSetting('banAlerts', false, msg.channel.server.id);
+					bot.sendMessage(msg, 'Disabled ban alerts');
+				}
+			}
+			if (/enable name ?changes?/i.test(suffix.trim())) {
+				if (!ServerSettings[msg.channel.server.id].nameChanges) {
+					db.changeSetting('nameChanges', true, msg.channel.server.id);
+					bot.sendMessage(msg, 'Enabled name change alerts');
+				}
+			}
+			if (/disable name ?changes?/i.test(suffix.trim())) {
+				if (ServerSettings[msg.channel.server.id].nameChanges) {
+					db.changeSetting('nameChanges', false, msg.channel.server.id);
+					bot.sendMessage(msg, 'Disabled name change alerts');
+				}
+			}
+			if (/enable delete ?commands?/i.test(suffix.trim())) {
+				if (!ServerSettings[msg.channel.server.id].banAlerts) {
+					db.changeSetting('deleteCommands', true, msg.channel.server.id);
+					bot.sendMessage(msg, 'Enabled command deletion');
+				}
+			}
+			if (/disable delete ?commands?/i.test(suffix.trim())) {
+				if (ServerSettings[msg.channel.server.id].banAlerts) {
+					db.changeSetting('deleteCommands', false, msg.channel.server.id);
+					bot.sendMessage(msg, 'Disabled command deletion');
+				}
+			}
+			if (/enable allow ?NSFW/i.test(suffix.trim())) {
+				if (!ServerSettings[msg.channel.server.id].allowNSFW) {
+					db.changeSetting('allowNSFW', true, msg.channel.server.id);
+					bot.sendMessage(msg, 'Enabled allow NSFW');
+				}
+			}
+			if (/disable allow ?NSFW/i.test(suffix.trim())) {
+				if (ServerSettings[msg.channel.server.id].allowNSFW) {
+					db.changeSetting('allowNSFW', false, msg.channel.server.id);
+					bot.sendMessage(msg, 'Disabled allow NSFW');
+				}
+			}
+			if (/notify? ?here/i.test(suffix.trim())) {
+				if (msg.channel.id == msg.channel.server.defaultChannel.id) {
+					db.changeSetting('notifyChannel', "general", msg.channel.server.id);
+					bot.sendMessage(msg, "Ok! I'll send notifications here now.");
+				} else {
+					db.changeSetting('notifyChannel', msg.channel.id, msg.channel.server.id);
+					bot.sendMessage(msg, "Ok! I'll send notifications here now.");
+				}
+			}
+			if (/^welcome( ?msg| ?message)? .+/i.test(suffix.trim())) {
+				db.changeSetting('welcome', suffix.replace(/^welcome( ?msg| ?message)? /i, ''), msg.channel.server.id);
+				bot.sendMessage(msg, 'Welcome message set to: ' + suffix.replace(/^welcome( ?msg| ?message)? /i, ''));
+			}
+			if (/disable welcome( ?msg| ?message)?/i.test(suffix.trim())) {
+				db.changeSetting('welcome', "none", msg.channel.server.id);
+				bot.sendMessage(msg, 'Disabled welcome message');
+			}
+			if (suffix.trim().toLowerCase() == 'check') {
+				var toSend = '**--- Current Settings ---**\n**Ban Alerts:** ' + ServerSettings[msg.channel.server.id].banAlerts + '\n**Name Changes:** ' + ServerSettings[msg.channel.server.id].nameChanges + '\n**Delete Commands:** ' + ServerSettings[msg.channel.server.id].deleteCommands + '\n**Allow NSFW:** ' + ServerSettings[msg.channel.server.id].allowNSFW + '\n**Notification Channel:** ';
+				toSend += (ServerSettings[msg.channel.server.id].notifyChannel == "general") ? 'Default' : '<#' + ServerSettings[msg.channel.server.id].notifyChannel + '>';
+				toSend += (ServerSettings[msg.channel.server.id].welcome.length < 1600) ? '\n**Welcome Message:** ' + ServerSettings[msg.channel.server.id].welcome : ServerSettings[msg.channel.server.id].welcome.substr(0, 1600) + '...';
+				toSend += (ServerSettings[msg.channel.server.id].ignore.length > 0) ? '\n**Ignored Channels:** <#' + ServerSettings[msg.channel.server.id].ignore.join('> <#') + '>' : '\n**Ignored Channels:** none' ;
+				bot.sendMessage(msg, toSend);
+			}
 		}
 	},
 	"ignore": {
@@ -452,9 +528,12 @@ var commands = {
 		process: function(bot, msg, suffix) {
 			if (msg.channel.isPrivate) { bot.sendMessage(msg, "Can't do this in a PM!", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
 			if (!msg.channel.permissionsOf(msg.author).hasPermission("manageServer") && msg.author.id != config.admin_id) { bot.sendMessage(msg, "You must have permission to manage the server!", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
-
-			bot.sendMessage(msg, "Currently being re-written");
-
+			if (!ServerSettings.hasOwnProperty(msg.channel.server.id)) db.addServer(msg.channel.server);
+			if (ServerSettings[msg.channel.server.id].ignore.indexOf(msg.channel.id) > -1) bot.sendMessage(msg, 'This channel is already ignored', (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); });
+			else {
+				db.ignoreChannel(msg.channel.id, msg.channel.server.id);
+				bot.sendMessage(msg, "Ok, I'll ignore normal commands here now.");
+			}
 		}
 	},
 	"unignore": {
@@ -464,9 +543,12 @@ var commands = {
 		process: function(bot, msg, suffix) {
 			if (msg.channel.isPrivate) { bot.sendMessage(msg, "Can't do this in a PM!", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
 			if (!msg.channel.permissionsOf(msg.author).hasPermission("manageServer") && msg.author.id != config.admin_id) { bot.sendMessage(msg, "You must have permission to manage the server!", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
-
-			bot.sendMessage(msg, "Currently being re-written");
-
+			if (!ServerSettings.hasOwnProperty(msg.channel.server.id)) db.addServer(msg.channel.server);
+			if (ServerSettings[msg.channel.server.id].ignore.indexOf(msg.channel.id) == -1) bot.sendMessage(msg, "This channel isn't ignored", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); });
+			else {
+				db.unignoreChannel(msg.channel.id, msg.channel.server.id);
+				bot.sendMessage(msg, "Ok, I'll stop ignoring this channel.");
+			}
 		}
 	}
 }

@@ -28,50 +28,51 @@ function correctUsage(cmd) {
 
 function autoEndVote(bot, msg) {
 	setTimeout(() => {
-		if (VoteDB.hasOwnProperty(msg.channel.id)) { commands["vote"].process(bot, msg, "end"); }
+		if (VoteDB.hasOwnProperty(msg.channel.id)) commands["vote"].process(bot, msg, "end");
 	}, 600000); //10 minutes = 600,000
 }
 
 function autoEndLotto(bot, msg) {
 	setTimeout(() => {
-		if (LottoDB.hasOwnProperty(msg.channel.id)) { commands["lotto"].process(bot, msg, "end"); }
+		if (LottoDB.hasOwnProperty(msg.channel.id)) commands["lotto"].process(bot, msg, "end");
 	}, 600000);
 }
 
 function findUser(members, query) {
-	var usr = members.find((member) => { return (member === undefined || member.username == undefined) ? false : member.username.toLowerCase() == query.toLowerCase() });
-	if (!usr) { usr = members.find((member) => { return (member === undefined || member.username == undefined) ? false : member.username.toLowerCase().indexOf(query.toLowerCase()) == 0 }); }
-	if (!usr) { usr = members.find((member) => { return (member === undefined || member.username == undefined) ? false : member.username.toLowerCase().indexOf(query.toLowerCase()) > -1 }); }
+	var usr = members.find(member=>{ return (member === undefined || member.username == undefined) ? false : member.username.toLowerCase() == query.toLowerCase() });
+	if (!usr) { usr = members.find(member=>{ return (member === undefined || member.username == undefined) ? false : member.username.toLowerCase().indexOf(query.toLowerCase()) == 0 }); }
+	if (!usr) { usr = members.find(member=>{ return (member === undefined || member.username == undefined) ? false : member.username.toLowerCase().indexOf(query.toLowerCase()) > -1 }); }
 	return usr || false;
 }
 
 function generateRandomRating(fullName, storeRating) {
 	var weightedNumber = Math.floor((Math.random() * 20) + 1); //between 1 and 20
 	var score, moreRandom = Math.floor(Math.random() * 4);
-	if (weightedNumber < 5) { score = Math.floor((Math.random() * 3) + 1); } //between 1 and 3
-	else if (weightedNumber > 4 && weightedNumber < 16) { score = Math.floor((Math.random() * 4) + 4); } //between 4 and 7
-	else if (weightedNumber > 15) { score = Math.floor((Math.random() * 3) + 8); } //between 8 and 10
-	if (moreRandom === 0 && score !== 1) { score -= 1;
-	} else if (moreRandom == 3 && score != 10) { score += 1; }
-	if (storeRating) { Ratings[fullName.toLowerCase()] = score; }
+	if (weightedNumber < 5) score = Math.floor((Math.random() * 3) + 1); //between 1 and 3
+	else if (weightedNumber > 4 && weightedNumber < 16) score = Math.floor((Math.random() * 4) + 4); //between 4 and 7
+	else if (weightedNumber > 15) score = Math.floor((Math.random() * 3) + 8); //between 8 and 10
+	if (moreRandom === 0 && score !== 1) score -= 1;
+	else if (moreRandom == 3 && score != 10) score += 1;
+	if (storeRating) Ratings[fullName.toLowerCase()] = score;
 	return score;
 }
 
 function generateUserRating(bot, msg, fullName) {
 	var user = msg.channel.server.members.get("username", fullName);
-	if (user === undefined) { return generateRandomRating(); }
+	if (user === undefined) return generateRandomRating();
 	var score = generateRandomRating() - 1;
-	try {
-		var joined = new Date(msg.channel.server.detailsOfUser(user).joinedAt), now = new Date();
+	var details = msg.channel.server.detailsOfUser(user);
+	if (details) {
+		var joined = new Date(details.joinedAt), now = new Date();
 		if (now.valueOf() - joined.valueOf() >= 2592000000) { score += 1; } //if user has been on the server for at least one month +1
-	} catch (e) { console.log(colors.cError(" ERROR ") + e.stack); }
-	if (msg.channel.permissionsOf(user).hasPermission("manageServer")) { score += 1; } //admins get +1 ;)
+	}
+	if (msg.channel.permissionsOf(user).hasPermission("manageServer")) score += 1; //admins get +1 ;)
 	var count = 0;
-	bot.servers.map((server) => { if (server.members.get("id", user.id)) { count += 1; } }); //how many servers does the bot share with them
-	if (count > 2) { score += 1; } //if we share at least 3 servers
-	if (!user.avatarURL) { score -= 1; } //gotta have an avatar
-	if (user.username.length > 22) { score -= 1; } //long usernames are hard to type so -1
-	if (score > 10) { score = 10; } else if (score < 1) { score = 1; } //keep it within 1-10
+	bot.servers.map((server) => { if (server.members.get("id", user.id)) count += 1; }); //how many servers does the bot share with them
+	if (count > 2) score += 1; //if we share at least 3 servers
+	if (!user.avatarURL) score -= 1; //gotta have an avatar
+	if (user.username.length > 22) score -= 1; //long usernames are hard to type so -1
+	if (score > 10) score = 10; else if (score < 1) score = 1; //keep it within 1-10
 	Ratings[fullName.toLowerCase()] = score;
 	return score;
 }
@@ -87,7 +88,7 @@ function generateJSONRating(fullName) {
 	};
 	var score = Math.floor((Math.random() * ((parseInt(ranges[ranking].split("-")[1], 10) + 1 - parseInt(ranges[ranking].split("-")[0], 10)))) + parseInt(ranges[ranking].split("-")[0], 10))
 	var moreRandom = Math.floor(Math.random() * 4); //0-3
-	if (score > 1 && moreRandom === 0) { score -= 1; } else if (score < 10 && moreRandom == 3) { score += 1; }
+	if (score > 1 && moreRandom === 0) score -= 1; else if (score < 10 && moreRandom == 3) score += 1;
 	Ratings[fullName.toLowerCase()] = score;
 	return score;
 }
@@ -175,8 +176,12 @@ var commands = {
 			} else { bot.sendMessage(msg, "Your ID is: " + msg.author.id); }
 		}
 	},
+	"test": {
+		desc: "boop", usage: "", deleteCommand: false, cooldown: 2, shouldDisplay: false,
+		process: (bot, msg, suffix) => { bot.sendMessage(msg, 'It worked son'); }
+	},
 	"beep": {
-		desc: "boop", usage: "", deleteCommand: false, cooldown: 2,
+		desc: "boop", usage: "", deleteCommand: false, cooldown: 2, shouldDisplay: false,
 		process: (bot, msg, suffix) => { bot.sendMessage(msg, "boop    |    Time taken: " + (new Date() - msg.timestamp) + "ms"); }
 	},
 	"ping": {
@@ -223,12 +228,12 @@ var commands = {
 								db.addServer(server);
 								if (suffix.indexOf("-a") != -1) {
 									var toSend = [];
-									toSend.push("Hi! I'm **" + bot.user.username + "** and I was invited to this server by " + msg.author + ".");
+									toSend.push("Hi! I'm **" + bot.user.username.replace(/@/g, "") + "** and I was invited to this server by " + msg.author.username.replace(/@/g, "") + ".");
 									toSend.push("Use `" + config.command_prefix + "help` to get a list of normal commands.");
 									toSend.push("Mod/Admin commands __including bot settings__ can be viewed with `" + config.mod_command_prefix + "`help ");
 									toSend.push("For help / feedback / bugs / testing / announcements / changelogs / etc. go to **discord.gg/0kvLlwb7slG3XCCQ**");
 									bot.sendMessage(server.defaultChannel, toSend);
-								} else { setTimeout(function() { bot.sendMessage(server.defaultChannel, "*Joined on request of " + msg.author + "*"); }, 2000); }
+								} else { setTimeout(function() { bot.sendMessage(server.defaultChannel, "*Joined on request of " + msg.author.username.replace(/@/g, "") + "*"); }, 2000); }
 							}
 						});
 					}
@@ -283,7 +288,7 @@ var commands = {
 			if (!msg.channel.isPrivate) {
 				if (suffix) {
 					if (msg.mentions.length > 0) {
-						if (msg.everyoneMentioned) { bot.sendMessage(msg, "Hey, " + msg.author.username + ", don't do that ok?", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
+						if (msg.everyoneMentioned) { bot.sendMessage(msg, "Hey, " + msg.author.username.replace(/@/g, "") + ", don't do that ok?", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 						if (msg.mentions.length > 4) { bot.sendMessage(msg, "Limit of 4 users", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 						msg.mentions.map(function(usr) {
 							var toSend = [], count = 0;
@@ -294,21 +299,23 @@ var commands = {
 							var detailsOf = msg.channel.server.detailsOfUser(usr);
 							if (detailsOf) toSend.push("**Joined on:** " + new Date(msg.channel.server.detailsOfUser(usr).joinedAt).toUTCString());
 							else toSend.push("**Joined on:** Error");
-							var roles = msg.channel.server.rolesOfUser(usr.id).map((role) => { return role.name; });
-							if (roles) {
-								roles = roles.join(", ").replace("@", "");
-								if (roles && roles !== "")
-									if (roles.length <= 1500) { toSend.push("**Roles:** `" + roles + "`"); } else { toSend.push("**Roles:** `" + roles.split(", ").length + "`"); }
-								else
-									toSend.push("**Roles:** `none`");
+							if (msg.channel.server.rolesOfUser(usr.id) != undefined) {
+								var roles = msg.channel.server.rolesOfUser(usr.id).map(role=>role.name);
+								if (roles) {
+									roles = roles.join(", ").replace(/@/g, "");
+									if (roles && roles !== "")
+										if (roles.length <= 1500) { toSend.push("**Roles:** `" + roles + "`"); } else { toSend.push("**Roles:** `" + roles.split(", ").length + "`"); }
+									else
+										toSend.push("**Roles:** `none`");
+								} else toSend.push("**Roles:** Error");
 							} else toSend.push("**Roles:** Error");
-							bot.servers.map((server) => { if (server.members.indexOf(usr) > -1) { count += 1; } });
+							bot.servers.map(server=>{ if (server.members.indexOf(usr) > -1) { count += 1; }});
 							if (count > 1) { toSend.push("**Shared servers:** " + count); }
 							if (usr.avatarURL != null) { toSend.push("**Avatar URL:** `" + usr.avatarURL + "`"); }
 							bot.sendMessage(msg, toSend);
 						});
 					} else {
-						if (msg.everyoneMentioned) { bot.sendMessage(msg, "Hey, " + msg.author.username + ", don't do that ok?", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
+						if (msg.everyoneMentioned) { bot.sendMessage(msg, "Hey, " + msg.author.username.replace(/@/g, "") + ", don't do that ok?", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 						var users = suffix.split(/, ?/);
 						if (users.length > 4) { bot.sendMessage(msg, "Limit of 4 users", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 						users.map(function(user) {
@@ -322,15 +329,17 @@ var commands = {
 								var detailsOf = msg.channel.server.detailsOfUser(usr);
 								if (detailsOf) toSend.push("**Joined on:** " + new Date(msg.channel.server.detailsOfUser(usr).joinedAt).toUTCString());
 								else toSend.push("**Joined on:** Error");
-								var roles = msg.channel.server.rolesOfUser(usr.id).map((role) => { return role.name; });
-								if (roles) {
-									roles = roles.join(", ").replace("@", "");
-									if (roles && roles !== "")
-										if (roles.length <= 1500) { toSend.push("**Roles:** `" + roles + "`"); } else { toSend.push("**Roles:** `" + roles.split(", ").length + "`"); }
-									else
-										toSend.push("**Roles:** `none`");
+								if (msg.channel.server.rolesOfUser(usr.id) != undefined) {
+									var roles = msg.channel.server.rolesOfUser(usr.id).map(role=>role.name);
+									if (roles) {
+										roles = roles.join(", ").replace(/@/g, "");
+										if (roles && roles !== "")
+											if (roles.length <= 1500) { toSend.push("**Roles:** `" + roles + "`"); } else { toSend.push("**Roles:** `" + roles.split(", ").length + "`"); }
+										else
+											toSend.push("**Roles:** `none`");
+									} else toSend.push("**Roles:** Error");
 								} else toSend.push("**Roles:** Error");
-								bot.servers.map((server) => { if (server.members.indexOf(usr) > -1) { count += 1; } });
+								bot.servers.map(server=>{ if (server.members.indexOf(usr) > -1) { count += 1; }});
 								if (count > 1) { toSend.push("**Shared servers:** " + count); }
 								if (usr.avatarURL != null) { toSend.push("**Avatar URL:** `" + usr.avatarURL + "`"); }
 								bot.sendMessage(msg, toSend);
@@ -344,8 +353,8 @@ var commands = {
 					toSend.push("**Owner:** " + msg.channel.server.owner.username + " (**ID:** " + msg.channel.server.owner.id + ")");
 					toSend.push("**Region:** " + msg.channel.server.region);
 					toSend.push("**Members:** " + msg.channel.server.members.length + " **Channels:** " + msg.channel.server.channels.length);
-					var roles = msg.channel.server.roles.map((role) => { return role.name; });
-					roles = roles.join(", ").replace("@", "");
+					var roles = msg.channel.server.roles.map(role=>role.name);
+					roles = roles.join(", ").replace(/@/g, "");
 					if (roles.length <= 1500) toSend.push("**Roles:** `" + roles + "`");
 					else toSend.push("**Roles:** `" + roles.split(", ").length + "`");
 					toSend.push("**Default channel:** " + msg.channel.server.defaultChannel);
@@ -368,18 +377,18 @@ var commands = {
 			}
 			if (msg.mentions.length == 0 && !suffix) { (msg.author.avatarURL != null) ? bot.sendMessage(msg, msg.author.username + "'s avatar is: " + msg.author.avatarURL) : bot.sendMessage(msg, msg.author.username + " has no avatar", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); });
 			} else if (msg.mentions.length > 0) {
-				if (msg.everyoneMentioned) { bot.sendMessage(msg, "Hey, " + msg.author.username + ", don't do that ok?", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
+				if (msg.everyoneMentioned) { bot.sendMessage(msg, "Hey, " + msg.author.username.replace(/@/g, "") + ", don't do that ok?", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 				if (msg.mentions.length > 6) { bot.sendMessage(msg, "Limit of 6 users", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 				msg.mentions.map(function(usr) {
-					(usr.avatarURL != null) ? bot.sendMessage(msg, "**" + usr.username + "**'s avatar is: " + usr.avatarURL + "") : bot.sendMessage(msg, "**" + usr.username + "** has no avatar", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); });
+					(usr.avatarURL != null) ? bot.sendMessage(msg, "**" + usr.username.replace(/@/g, "") + "**'s avatar is: " + usr.avatarURL + "") : bot.sendMessage(msg, "**" + usr.username + "** has no avatar", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); });
 				});
 			} else {
-				if (msg.everyoneMentioned) { bot.sendMessage(msg, "Hey, " + msg.author.username + ", don't do that ok?", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
+				if (msg.everyoneMentioned) { bot.sendMessage(msg, "Hey, " + msg.author.username.replace(/@/g, "") + ", don't do that ok?", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 				var users = suffix.split(/, ?/);
 				if (users.length > 6) { bot.sendMessage(msg, "Limit of 6 users", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 				users.map(function(user) {
 					var usr = findUser(msg.channel.server.members, user);
-					if (usr) { (usr.avatarURL != null) ? bot.sendMessage(msg, "**" + usr.username + "**'s avatar is: " + usr.avatarURL + "") : bot.sendMessage(msg, "**" + usr.username + "** has no avatar", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); });
+					if (usr) { (usr.avatarURL != null) ? bot.sendMessage(msg, "**" + usr.username.replace(/@/g, "") + "**'s avatar is: " + usr.avatarURL + "") : bot.sendMessage(msg, "**" + usr.username + "** has no avatar", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); });
 					} else { bot.sendMessage(msg, "User \"" + user + "\" not found. (Blame *Better*Discord) If you want to get the avatar of multiple users separate them with a comma.", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 20000}); }); }
 				});
 			}
@@ -488,7 +497,7 @@ var commands = {
 				if (msg.channel.isPrivate) { bot.sendMessage(msg, "Can't do that in a direct message"); return; }
 				if (VoteDB.hasOwnProperty(currentChannel)) { bot.sendMessage(msg, "There is already a vote pending!", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 				var topic = (suffix.replace(" -noautoend", "").split(" ").length > 1) ? suffix.replace(" -noautoend", "").substring(4) : "None";
-				bot.sendMessage(msg, "New vote started by **" + msg.author.username + "**. Topic: `" + topic + "`. To vote say `" + config.command_prefix + "vote +/-`\nUpvotes: 0\nDownvotes: 0", function(err, message) {
+				bot.sendMessage(msg, "New vote started by **" + msg.author.username.replace(/@/g, "") + "**. Topic: `" + topic + "`. To vote say `" + config.command_prefix + "vote +/-`\nUpvotes: 0\nDownvotes: 0", function(err, message) {
 					if (err) { bot.sendMessage(msg, err); return; }
 					var object = {"topic": topic, "annMsg": message, "upvoters": "", "downvoters": "", "upvotes": 0, "downvotes": 0, "starter": msg.author.id};
 					VoteDB[currentChannel] = [];
@@ -662,8 +671,8 @@ var commands = {
 		cooldown: 2,
 		process: function(bot, msg, suffix) {
 			var side = Math.floor(Math.random() * (2));
-			if (side == 0) { bot.sendMessage(msg, "**" + msg.author.username + "** flipped a coin and got **Heads**");
-			} else { bot.sendMessage(msg, "**" + msg.author.username + "** flipped a coin and got **Tails**"); }
+			if (side == 0) { bot.sendMessage(msg, "**" + msg.author.username.replace(/@/g, "") + "** flipped a coin and got **Heads**");
+			} else { bot.sendMessage(msg, "**" + msg.author.username.replace(/@/g, "") + "** flipped a coin and got **Tails**"); }
 		}
 	},
 	"osu": {
@@ -821,7 +830,7 @@ var commands = {
 		usage: "<search>",
 		cooldown: 3,
 		process: function(bot, msg, suffix) {
-			if (!suffix) { bot.sendMessage(msg, "**http://www.lmgtfy.com/?q=lmgtfy**"); return; }
+			if (!suffix) { bot.sendMessage(msg, "**http://www.lmgtfy.com/?q=bot-chan+commands**"); return; }
 			suffix = suffix.split(" ");
 			for (var i = 0; i < suffix.length; i++) { suffix[i] = encodeURIComponent(suffix[i]); }
 			bot.sendMessage(msg, "🔍 **http://www.lmgtfy.com/?q=" + suffix.join("+") + "**");
@@ -856,7 +865,7 @@ var commands = {
 				if (response.statusCode != 200) { bot.sendMessage(msg, "Got status code " + response.statusCode, function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
 				if (!error && response.statusCode == 200) {
 					body = JSON.parse(body);
-					bot.sendMessage(msg, "🐱 **" + msg.author.username + "**, did you know that " + body.facts[0]);
+					bot.sendMessage(msg, "🐱 **" + msg.author.username.replace(/@/g, "") + "**, did you know that " + body.facts[0]);
 				}
 			});
 		}
@@ -868,7 +877,7 @@ var commands = {
 		cooldown: 4,
 		process: function(bot, msg, suffix) {
 			if (!suffix) { bot.sendMessage(msg, correctUsage("ratewaifu"), function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
-			if (msg.everyoneMentioned) { bot.sendMessage(msg, "Hey, " + msg.author.username + ", don't do that ok?", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
+			if (msg.everyoneMentioned) { bot.sendMessage(msg, "Hey, " + msg.author.username.replace(/@/g, "") + ", don't do that ok?", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 			if (msg.mentions.length > 1) { bot.sendMessage(msg, "Multiple mentions aren't allowed!", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
 			if (suffix.toLowerCase().replace("-", " ") == bot.user.username.toLowerCase().replace("-", " ")) { bot.sendMessage(msg, "I'd rate myself **10/10**"); return; }
 			var fullName = "", user = false;
@@ -902,14 +911,14 @@ var commands = {
 				if (msg.mentions.length > 0) {
 					var ss = "none";
 					bot.servers.map((server) => { if (server.members.indexOf(msg.mentions[0]) > -1) ss += ", " + server.name; });
-					if (ss != "none") bot.sendMessage(msg, "**Shared Servers for " + msg.mentions[0].username.replace("@", "@ ") + ":** `" + ss.substring(6).replace("@", "@ ") + "`");
+					if (ss != "none") bot.sendMessage(msg, "**Shared Servers for " + msg.mentions[0].username.replace(/@/g, "@ ") + ":** `" + ss.substring(6).replace(/@/g, "@ ") + "`");
 					else bost.sendMessage(msg, "Somehow I don't share any servers with that user", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); });
 				} else if (suffix) {
 					var usr = findUser(msg.channel.server.members, suffix);
 					if (usr) {
 						var ss = "none";
 						bot.servers.map((server) => { if (server.members.indexOf(usr) > -1) ss += ", " + server.name; });
-						if (ss != "none") bot.sendMessage(msg, "**Shared Servers for " + usr.username.replace("@", "@ ") + ":** `" + ss.substring(6).replace("@", "@ ") + "`");
+						if (ss != "none") bot.sendMessage(msg, "**Shared Servers for " + usr.username.replace(/@/g, "@ ") + ":** `" + ss.substring(6).replace(/@/g, "@ ") + "`");
 						else bost.sendMessage(msg, "Somehow I don't share any servers with that user", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); });
 					} else bot.sendMessage(msg, "User not found", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); });
 				} else bot.sendMessage(msg, correctUsage("shared"), (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); });
@@ -934,6 +943,8 @@ var commands = {
 					else if (body) {
 						body = JSON.parse(body);
 						var sendNSFW = (/ ?--nsfw/i.test(suffix)) ? true : false;
+						if (sendNSFW && !ServerSettings.hasOwnProperty(msg.channel.server.id)) { bot.sendMessage(msg, "This server doesn't have NSFW images allowed"); return; }
+						if (sendNSFW && !ServerSettings[msg.channel.server.id].allowNSFW) { bot.sendMessage(msg, "This server doesn't have NSFW images allowed"); return; }
 						if (body.hasOwnProperty("data") && body.data.length !== 0) {
 							for (var i = 0; i < 100; i++) {
 								var toSend = body.data[Math.floor(Math.random() * (body.data.length))];

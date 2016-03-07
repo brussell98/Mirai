@@ -7,7 +7,7 @@ exports.cWarn = function(text) {
 	text +
 	chalk.styles.black.close +
 	chalk.styles.bgYellow.close +
-	chalk.styles.white.open + chalk.styles.bgBlack.open + " ";
+	chalk.styles.white.open + " ";
 };
 
 exports.cError = function(text) {
@@ -16,7 +16,7 @@ exports.cError = function(text) {
 	text +
 	chalk.styles.black.close +
 	chalk.styles.bgRed.close +
-	chalk.styles.white.open + chalk.styles.bgBlack.open + " ";
+	chalk.styles.white.open + " ";
 };
 
 exports.cDebug = function(text) {
@@ -25,7 +25,7 @@ exports.cDebug = function(text) {
 	text +
 	chalk.styles.black.close +
 	chalk.styles.bgWhite.close +
-	chalk.styles.white.open + chalk.styles.bgBlack.open + " ";
+	chalk.styles.white.open + " ";
 };
 
 exports.cGreen = function(text) {

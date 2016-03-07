@@ -15,15 +15,15 @@ var lastExecTime = {};
 commandsProcessed = 0, talkedToTimes = 0;
 
 var bot = new discord.Client();
-bot.on("warn", (m) => { if (config.show_warn) { console.log(colors.cWarn(" WARN ") + m); } });
-bot.on("debug", (m) => { if (config.debug) { console.log(colors.cDebug(" DEBUG ") + m); } });
+bot.on("warn", m=>{ if (config.show_warn) { console.log(colors.cWarn(" WARN ") + m); } });
+bot.on("debug", m=>{ if (config.debug) { console.log(colors.cDebug(" DEBUG ") + m); } });
 
 bot.on("ready", () => {
 	bot.forceFetchUsers();
 	bot.setPlayingGame(games[Math.floor(Math.random() * (games.length))]);
 	console.log(colors.cGreen("BrussellBot is ready!") + " Listening to " + bot.channels.length + " channels on " + bot.servers.length + " servers");
 	versioncheck.checkForUpdate((resp) => {
-		if (resp !== null) { console.log(resp); }
+		if (resp !== null) console.log(resp);
 	});
 });
 
@@ -38,43 +38,43 @@ bot.on("disconnected", () => {
 });
 
 bot.on("message", (msg) => {
-	if (msg.channel.isPrivate && msg.author.id != bot.user.id && (/(^https?:\/\/discord\.gg\/[A-Za-z0-9]+$|^https?:\/\/discordapp\.com\/invite\/[A-Za-z0-9]+$)/.test(msg.content))) { carbonInvite(msg); } //accept invites sent in a DM
+	if (msg.channel.isPrivate && msg.author.id != bot.user.id && (/(^https?:\/\/discord\.gg\/[A-Za-z0-9]+$|^https?:\/\/discordapp\.com\/invite\/[A-Za-z0-9]+$)/.test(msg.content))) carbonInvite(msg); //accept invites sent in a DM
 	if (msg.author.id == config.admin_id && msg.content.startsWith("(eval) ")) { evaluateString(msg); return; } //bot owner eval command
 	if (msg.mentions.length !== 0 && !msg.channel.isPrivate) {
 		if (msg.isMentioned(bot.user) && msg.content.startsWith("<@" + bot.user.id + ">")) {
 			if (ServerSettings.hasOwnProperty(msg.channel.server.id)) { if (ServerSettings[msg.channel.server.id].ignore.indexOf(msg.channel.id) === -1) {
 				cleverbot(bot, msg); talkedToTimes += 1;
-				console.log(colors.cServer(msg.channel.server.name) + " > " + colors.cGreen(msg.author.username) + " > " + colors.cYellow("@" + bot.user.username) + " " + msg.cleanContent.replace("@" + bot.user.username, "").replace(/\n/g, " "));
+				console.log(colors.cServer(msg.channel.server.name) + " > " + colors.cGreen(msg.author.username) + " > " + colors.cYellow("@" + bot.user.username) + " " + msg.cleanContent.replace("@" + bot.user.username, "").replace(" ", "").replace(/\n/g, " "));
 			}} else {
 				cleverbot(bot, msg); talkedToTimes += 1;
-				console.log(colors.cServer(msg.channel.server.name) + " > " + colors.cGreen(msg.author.username) + " > " + colors.cYellow("@" + bot.user.username) + " " + msg.cleanContent.replace("@" + bot.user.username, "").replace(/\n/g, " "));
+				console.log(colors.cServer(msg.channel.server.name) + " > " + colors.cGreen(msg.author.username) + " > " + colors.cYellow("@" + bot.user.username) + " " + msg.cleanContent.replace("@" + bot.user.username, "").replace(" ", "").replace(/\n/g, " "));
 			}
 		}
 		if (msg.content.indexOf("<@" + config.admin_id + ">") > -1) {
 			if (config.send_mentions) {
 				var owner = bot.users.get("id", config.admin_id);
-				if (owner.status != "online") { bot.sendMessage(owner, msg.channel.server.name + " > " + msg.author.username + ": " + msg.cleanContent); }
+				if (owner.status != "online") bot.sendMessage(owner, msg.channel.server.name + " > " + msg.author.username + ": " + msg.cleanContent);
 			}
 		}
 	}
-	if (!msg.content.startsWith(config.command_prefix) && !msg.content.startsWith(config.mod_command_prefix)) { return; }
-	if (msg.author.id == bot.user.id) { return; }
+	if (!msg.content.startsWith(config.command_prefix) && !msg.content.startsWith(config.mod_command_prefix)) return;
+	if (msg.author.id == bot.user.id) return;
 	if (msg.content.indexOf(" ") == 1 && msg.content.length > 2) { msg.content = msg.content.replace(" ", ""); }
 	if (!msg.channel.isPrivate && !msg.content.startsWith(config.mod_command_prefix) && ServerSettings.hasOwnProperty(msg.channel.server.id)) {
-		if (ServerSettings[msg.channel.server.id].ignore.indexOf(msg.channel.id) > -1) { return; }
+		if (ServerSettings[msg.channel.server.id].ignore.indexOf(msg.channel.id) > -1) return;
 	}
 	var cmd = msg.content.split(" ")[0].replace(/\n/g, " ").substring(1).toLowerCase();
 	var suffix = msg.content.replace(/\n/g, " ").substring(cmd.length + 2);
 	if (msg.content.startsWith(config.command_prefix)) {
-		if (commands.commands.hasOwnProperty(cmd)) { execCommand(msg, cmd, suffix, "normal");
-		} else if (commands.aliases.hasOwnProperty(cmd)) {
+		if (commands.commands.hasOwnProperty(cmd)) execCommand(msg, cmd, suffix, "normal");
+		else if (commands.aliases.hasOwnProperty(cmd)) {
 			msg.content = msg.content.replace(/[^ ]+ /, config.command_prefix + commands.aliases[cmd] + " ");
 			execCommand(msg, commands.aliases[cmd], suffix, "normal");
 		}
 	} else if (msg.content.startsWith(config.mod_command_prefix)) {
 		if (cmd == "reload" && msg.author.id == config.admin_id) { reload(); bot.deleteMessage(msg); return; }
-		if (mod.commands.hasOwnProperty(cmd)) { execCommand(msg, cmd, suffix, "mod");
-		} else if (mod.aliases.hasOwnProperty(cmd)) {
+		if (mod.commands.hasOwnProperty(cmd)) execCommand(msg, cmd, suffix, "mod");
+		else if (mod.aliases.hasOwnProperty(cmd)) {
 			msg.content = msg.content.replace(/[^ ]+ /, config.mod_command_prefix + mod.aliases[cmd] + " ");
 			execCommand(msg, mod.aliases[cmd], suffix, "mod");
 		}
@@ -144,11 +144,13 @@ bot.on("serverNewMember", (objServer, objUser) => {
 	}
 });
 
-bot.on("channelDeleted", (channel) => {
+bot.on("channelDeleted", channel => {
+	if (channel.isPrivate) return;
 	if (ServerSettings.hasOwnProperty(channel.server.id)) {
-		if (ServerSettings[channel.server.id].ignore.indexOf(channel.id) !== -1) ServerSettings[channel.server.id].ignore.splice(ServerSettings[channel.server.id].ignore.indexOf(channel.server.id), 1);
-		updateDB('../db/servers.json', JSON.stringify(ServerSettings));
-		console.log("Ignored channel was deleted and removed from the DB");
+		if (ServerSettings[channel.server.id].ignore.indexOf(channel.id) > -1) {
+			db.unignoreChannel(channel.id, channel.server.id);
+			if (config.debug) console.log(colors.cDebug(" DEBUG ") + "Ignored channel was deleted and removed from the DB");
+		}
 	}
 });
 
@@ -174,13 +176,15 @@ bot.on("presence", (userOld, userNew) => {
 		if (userOld.username != userNew.username) {
 			bot.servers.map((ser) => {
 				if (ser.members.get("id", userOld.id) && ServerSettings.hasOwnProperty(ser.id) && ServerSettings[ser.id].nameChanges == true) {
-					bot.sendMessage(ser, "`" + userOld.username.replace(/@/g, "@ ") + "` is now known as `" + userNew.username.replace(/@/g, "@ ") + "`"); }
+					if (ServerSettings[ser.id].notifyChannel == "general") bot.sendMessage(ser, "`" + userOld.username.replace(/@/g, "@ ") + "` is now known as `" + userNew.username.replace(/@/g, "@ ") + "`");
+					else bot.sendMessage(ServerSettings[ser.id].notifyChannel, "`" + userOld.username.replace(/@/g, "@ ") + "` is now known as `" + userNew.username.replace(/@/g, "@ ") + "`");
+				}
 			});
 		}
 	}
 });
 
-bot.on("serverDeleted", (objServer) => {
+bot.on("serverDeleted", objServer => {
 	console.log(colors.cUYellow("Left server") + " " + objServer.name);
 });
 
@@ -212,8 +216,8 @@ function carbonInvite(msg) {
 				console.log(colors.cGreen("Joined server: ") + " " + server.name);
 				bot.sendMessage(msg, "Successfully joined " + server.name);
 				var toSend = [];
-				if (msg.author.id == '109338686889476096') { toSend.push("Hi! I'm **" + bot.user.username + "** and I was invited to this server through carbonitex.net."); }
-				else { toSend.push("Hi! I'm **" + bot.user.username + "** and I was invited to this server by " + msg.author.username + "."); }
+				if (msg.author.id == '109338686889476096') { toSend.push("Hi! I'm **" + bot.user.username.replace(/@/g, "") + "** and I was invited to this server through carbonitex.net."); }
+				else { toSend.push("Hi! I'm **" + bot.user.username.replace(/@/g, "") + "** and I was invited to this server by " + msg.author.username.replace(/@/g, "") + "."); }
 				toSend.push("You can use `" + config.command_prefix + "help` to see what I can do. Mods can use `" + config.mod_command_prefix + "help` for mod commands.");
 				toSend.push("Mod/Admin commands __including bot settings__ can be viewed with `" + config.mod_command_prefix + "`help ");
 				toSend.push("For help / feedback / bugs/ testing / info / changelogs / etc. go to **discord.gg/0kvLlwb7slG3XCCQ**");
@@ -225,25 +229,24 @@ function carbonInvite(msg) {
 }
 
 function reload() {
-	delete require.cache[require.resolve("./bot/config.json")];
-	config = require("./bot/config.json");
-	delete require.cache[require.resolve("./bot/games.json")];
-	games = require("./bot/games.json").games;
-	delete require.cache[require.resolve("./bot/commands.js")];
-	try { commands = require("./bot/commands.js");
+	delete require.cache[require.resolve(__dirname + "/bot/config.json")];
+	config = require(__dirname + "/bot/config.json");
+	delete require.cache[require.resolve(__dirname + "/bot/games.json")];
+	games = require(__dirname + "/bot/games.json").games;
+	delete require.cache[require.resolve(__dirname + "/bot/commands.js")];
+	try { commands = require(__dirname + "/bot/commands.js");
 	} catch (err) { console.log(colors.cError(" ERROR ") + "Problem loading commands.js: " + err); }
-	delete require.cache[require.resolve("./bot/mod.js")];
-	try {mod = require("./bot/mod.js");
+	delete require.cache[require.resolve(__dirname + "/bot/mod.js")];
+	try { mod = require(__dirname + "/bot/mod.js");
 	} catch (err) { console.log(colors.cError(" ERROR ") + "Problem loading mod.js: " + err); }
-	delete require.cache[require.resolve("./bot/config.json")];
-	delete require.cache[require.resolve("./bot/versioncheck.js")];
-	versioncheck = require("./bot/versioncheck.js");
-	delete require.cache[require.resolve("./bot/styles.js")];
-	colors = require("./bot/styles.js");
-	delete require.cache[require.resolve("./bot/cleverbot.js")];
-	cleverbot = require("./bot/cleverbot").cleverbot;
-	delete require.cache[require.resolve("./bot/db.js")];
-	db = require("./bot/db.js");
+	delete require.cache[require.resolve(__dirname + "/bot/versioncheck.js")];
+	versioncheck = require(__dirname + "/bot/versioncheck.js");
+	delete require.cache[require.resolve(__dirname + "/bot/styles.js")];
+	colors = require(__dirname + "/bot/styles.js");
+	delete require.cache[require.resolve(__dirname + "/bot/cleverbot.js")];
+	cleverbot = require(__dirname + "/bot/cleverbot").cleverbot;
+	delete require.cache[require.resolve(__dirname + "/bot/db.js")];
+	db = require(__dirname + "/bot/db.js");
 	console.log(colors.cBgGreen(" Module Reload ") + " Success");
 }
 
