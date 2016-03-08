@@ -2,10 +2,19 @@ var Cleverbot = require('cleverbot-node');
 var Slave = new Cleverbot();
 var ent = require('entities');
 var colors = require('./styles.js');
+var antiSpam = {};
+
+setInterval(() => antiSpam = {},3600000);
 
 exports.cleverbot = function(bot, msg) {
 	var text = (msg.cleanContent.split(' ').length > 1) ? msg.cleanContent.substring(msg.cleanContent.indexOf(' ') + 1).replace('@', '') : false;
 	if (text) {
+		if (!antiSpam.hasOwnProperty(msg.author.id)) antiSpam[msg.author.id] = text;
+		else {
+			if (antiSpam[msg.author.id] == text) return;
+			else antiSpam[msg.author.id] = text;
+		}
+		console.log(colors.cServer(msg.channel.server.name) + " > " + colors.cGreen(msg.author.username) + " > " + colors.cYellow("@" + bot.user.username) + " " + msg.cleanContent.replace("@" + bot.user.username, "").replace(" ", "").replace(/\n/g, " "));
 		bot.startTyping(msg.channel);
 		Cleverbot.prepare(() => {
 			try {
@@ -26,5 +35,13 @@ exports.cleverbot = function(bot, msg) {
 			} catch (error) { bot.sendMessage(msg, '⚠ There was an error', (erro, wMessage) => { bot.deleteMessage(wMessage, {'wait': 10000}); }); }
 		});
 		bot.stopTyping(msg.channel);
-	} else { bot.sendMessage(msg, 'Yes?'); }
+	} else {
+		if (!antiSpam.hasOwnProperty(msg.author.id)) antiSpam[msg.author.id] = "";
+		else {
+			if (antiSpam[msg.author.id] == "") return;
+			else antiSpam[msg.author.id] = "";
+		}
+		console.log(colors.cServer(msg.channel.server.name) + " > " + colors.cGreen(msg.author.username) + " > " + colors.cYellow("@" + bot.user.username) + " " + msg.cleanContent.replace("@" + bot.user.username, "").replace(" ", "").replace(/\n/g, " "));
+		bot.sendMessage(msg, 'Yes?');
+	}
 };

@@ -22,8 +22,8 @@ const MAL_PASS = config.mal_pass;
 		   Functions
 \*****************************/
 
-function correctUsage(cmd) {
-	return (commands.hasOwnProperty(cmd)) ? "Usage: `" + config.command_prefix + "" + cmd + " " + commands[cmd].usage + "`": "This should display the correct usage but the bot maker made a mistake";
+function correctUsage(cmd, user) {
+	return (commands.hasOwnProperty(cmd)) ? user.replace(/@/g, '') + ", the correct usage is: `" + config.command_prefix + "" + cmd + " " + commands[cmd].usage + "`": "This should display the correct usage but the bot maker made a mistake";
 }
 
 function autoEndVote(bot, msg) {
@@ -238,7 +238,7 @@ var commands = {
 						});
 					}
 				});
-			} else { bot.sendMessage(msg, correctUsage("join")); }
+			} else { bot.sendMessage(msg, correctUsage("join", msg.author.username)); }
 		}
 	},
 	"about": {
@@ -400,10 +400,10 @@ var commands = {
 		cooldown: 4,
 		deleteCommand: false,
 		process: function(bot, msg, suffix) {
-			if (!suffix || /(.*), ?(.*)/.test(suffix) == false) { bot.sendMessage(msg, correctUsage("choose"), function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
+			if (!suffix || /(.*), ?(.*)/.test(suffix) == false) { bot.sendMessage(msg, correctUsage("choose", msg.author.username), function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 			var choices = suffix.split(/, ?/);
 			if (choices.length < 2) {
-				bot.sendMessage(msg, correctUsage("choose"), function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); });
+				bot.sendMessage(msg, correctUsage("choose", msg.author.username), function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); });
 			} else {
 				if (choices.indexOf('homework') > -1 || choices.indexOf('hw') > -1) {
 					var choice = (choices.indexOf('homework') > -1) ? choices.indexOf('homework') : choices.indexOf('hw');
@@ -483,7 +483,7 @@ var commands = {
 				var choice = Math.floor(Math.random() * msg.mentions.length);
 				bot.sendMessage(msg, "Out of **" + msg.mentions.length + "** entries the winner is " + msg.mentions[choice]);
 
-			} else { bot.sendMessage(msg, correctUsage("lotto"), function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 15000}); }); } //wrong usage
+			} else { bot.sendMessage(msg, correctUsage("lotto", msg.author.username), function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 15000}); }); } //wrong usage
 		}
 	},
 	"vote": {
@@ -546,7 +546,7 @@ var commands = {
 						bot.updateMessage(VoteDB[currentChannel][0].annMsg, VoteDB[currentChannel][0].annMsg.content.replace(/Upvotes\: [\d]{1,2}\nDownvotes: [\d]{1,2}/g, "Upvotes: " + VoteDB[currentChannel][0].upvotes + "\nDownvotes: " + VoteDB[currentChannel][0].downvotes), function(err, message) { VoteDB[currentChannel][0].annMsg = message; });
 					}
 				}
-			} else { bot.sendMessage(msg, correctUsage("vote"), function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 12000}); }); }
+			} else { bot.sendMessage(msg, correctUsage("vote", msg.author.username), function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 12000}); }); }
 		}
 	},
 	"strawpoll": {
@@ -574,7 +574,7 @@ var commands = {
 						} else if (response.statusCode != 201) { bot.sendMessage(msg, "Got status code " + response.statusCode); }
 					}
 				);
-			} else { bot.sendMessage(msg, correctUsage("strawpoll"), function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
+			} else { bot.sendMessage(msg, correctUsage("strawpoll", msg.author.username), function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
 		}
 	},
 	"8ball": {
@@ -622,7 +622,7 @@ var commands = {
 					} else { bot.sendMessage(msg, "\"" + suffix + "\" not found. Blame the MAL search API", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
 				});
 				bot.stopTyping(msg.channel);
-			} else { bot.sendMessage(msg, correctUsage("anime"), function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
+			} else { bot.sendMessage(msg, correctUsage("anime", msg.author.username), function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
 		}
 	},
 	"manga": {
@@ -661,7 +661,7 @@ var commands = {
 					} else { bot.sendMessage(msg, "\"" + suffix + "\" not found", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
 				});
 				bot.stopTyping(msg.channel);
-			} else { bot.sendMessage(msg, correctUsage("manga"), function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
+			} else { bot.sendMessage(msg, correctUsage("manga", msg.author.username), function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
 		}
 	},
 	"coinflip": {
@@ -681,7 +681,7 @@ var commands = {
 		deleteCommand: true,
 		cooldown: 5,
 		process: function(bot, msg, suffix) {
-			if (!suffix) { bot.sendMessage(msg, correctUsage("osu"), function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 15000}); }); return; }
+			if (!suffix) { bot.sendMessage(msg, correctUsage("osu", msg.author.username), function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 15000}); }); return; }
 			if (suffix.split(" ")[0] === "sig") {
 
 				var color = "ff66aa",
@@ -783,7 +783,7 @@ var commands = {
 					});});});});});
 				});
 
-			} else { bot.sendMessage(msg, correctUsage("osu"), function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 15000}); }); }
+			} else { bot.sendMessage(msg, correctUsage("osu", msg.author.username), function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 15000}); }); }
 		}
 	},
 	"rps": {
@@ -805,7 +805,7 @@ var commands = {
 		process: function(bot, msg, suffix) {
 			if (OWM_API_KEY == null || OWM_API_KEY == "") { bot.sendMessage(msg, "⚠ No API key defined by bot owner", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 			if (suffix) { suffix = suffix.replace(" ", ""); }
-			if (!suffix) { bot.sendMessage(msg, correctUsage("weather"), function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
+			if (!suffix) { bot.sendMessage(msg, correctUsage("weather", msg.author.username), function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 			var rURL = (/\d/.test(suffix) == false) ? "http://api.openweathermap.org/data/2.5/weather?q=" + suffix + "&APPID=" + OWM_API_KEY : "http://api.openweathermap.org/data/2.5/weather?zip=" + suffix + "&APPID=" + OWM_API_KEY;
 			request(rURL, function(error, response, body) {
 				if (!error && response.statusCode == 200) {
@@ -876,7 +876,7 @@ var commands = {
 		deleteCommand: false,
 		cooldown: 4,
 		process: function(bot, msg, suffix) {
-			if (!suffix) { bot.sendMessage(msg, correctUsage("ratewaifu"), function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
+			if (!suffix) { bot.sendMessage(msg, correctUsage("ratewaifu", msg.author.username), function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
 			if (msg.everyoneMentioned) { bot.sendMessage(msg, "Hey, " + msg.author.username.replace(/@/g, "") + ", don't do that ok?", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 			if (msg.mentions.length > 1) { bot.sendMessage(msg, "Multiple mentions aren't allowed!", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
 			if (suffix.toLowerCase().replace("-", " ") == bot.user.username.toLowerCase().replace("-", " ")) { bot.sendMessage(msg, "I'd rate myself **10/10**"); return; }
@@ -921,7 +921,7 @@ var commands = {
 						if (ss != "none") bot.sendMessage(msg, "**Shared Servers for " + usr.username.replace(/@/g, "@ ") + ":** `" + ss.substring(6).replace(/@/g, "@ ") + "`");
 						else bost.sendMessage(msg, "Somehow I don't share any servers with that user", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); });
 					} else bot.sendMessage(msg, "User not found", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); });
-				} else bot.sendMessage(msg, correctUsage("shared"), (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); });
+				} else bot.sendMessage(msg, correctUsage("shared", msg.author.username), (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); });
 			} else bot.sendMessage(msg, "This command can't be used in a PM", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); });
 		}
 	},
@@ -934,6 +934,9 @@ var commands = {
 			if (/[\uD000-\uF8FF]/g.test(suffix)) { bot.sendMessage(msg, "Search cannot contain unicode characters.", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 			if (suffix && /^[^-].*/.test(suffix)) {
 				var time = (/(--day|--week|--month|--year|--all)/.test(suffix)) ? /(--day|--week|--month|--year|--all)/.exec(suffix)[0] : '--week';
+				var sendNSFW = (/ ?--nsfw/i.test(suffix)) ? true : false;
+				if (!msg.channel.isPrivate && sendNSFW && !ServerSettings.hasOwnProperty(msg.channel.server.id)) { bot.sendMessage(msg, "This server doesn't have NSFW images allowed"); return; }
+				if (!msg.channel.isPrivate && sendNSFW && !ServerSettings[msg.channel.server.id].allowNSFW) { bot.sendMessage(msg, "This server doesn't have NSFW images allowed"); return; }
 				request({
 						url: 'https://api.imgur.com/3/gallery/r/' + suffix.replace(/(--day|--week|--month|--year|--all|--nsfw|\/r\/| )/g, '') + '/top/' + time.substring(2) + '/50',
 						headers: {'Authorization': 'Client-ID ' + IMGUR_CLIENT_ID}
@@ -942,9 +945,6 @@ var commands = {
 					else if (response.statusCode != 200) bot.sendMessage(msg, "Got status code " + response.statusCode, (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); });
 					else if (body) {
 						body = JSON.parse(body);
-						var sendNSFW = (/ ?--nsfw/i.test(suffix)) ? true : false;
-						if (sendNSFW && !ServerSettings.hasOwnProperty(msg.channel.server.id)) { bot.sendMessage(msg, "This server doesn't have NSFW images allowed"); return; }
-						if (sendNSFW && !ServerSettings[msg.channel.server.id].allowNSFW) { bot.sendMessage(msg, "This server doesn't have NSFW images allowed"); return; }
 						if (body.hasOwnProperty("data") && body.data.length !== 0) {
 							for (var i = 0; i < 100; i++) {
 								var toSend = body.data[Math.floor(Math.random() * (body.data.length))];
@@ -954,7 +954,7 @@ var commands = {
 						} else bot.sendMessage(msg, "Nothing found!", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); });
 					}
 				});
-			} else bot.sendMessage(msg, correctUsage("image"), (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); });
+			} else bot.sendMessage(msg, correctUsage("image", msg.author.username), (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); });
 		}
 	}
 };

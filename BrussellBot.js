@@ -44,11 +44,7 @@ bot.on("message", (msg) => {
 		if (msg.isMentioned(bot.user) && msg.content.startsWith("<@" + bot.user.id + ">")) {
 			if (ServerSettings.hasOwnProperty(msg.channel.server.id)) { if (ServerSettings[msg.channel.server.id].ignore.indexOf(msg.channel.id) === -1) {
 				cleverbot(bot, msg); talkedToTimes += 1;
-				console.log(colors.cServer(msg.channel.server.name) + " > " + colors.cGreen(msg.author.username) + " > " + colors.cYellow("@" + bot.user.username) + " " + msg.cleanContent.replace("@" + bot.user.username, "").replace(" ", "").replace(/\n/g, " "));
-			}} else {
-				cleverbot(bot, msg); talkedToTimes += 1;
-				console.log(colors.cServer(msg.channel.server.name) + " > " + colors.cGreen(msg.author.username) + " > " + colors.cYellow("@" + bot.user.username) + " " + msg.cleanContent.replace("@" + bot.user.username, "").replace(" ", "").replace(/\n/g, " "));
-			}
+			}} else { cleverbot(bot, msg); talkedToTimes += 1; }
 		}
 		if (msg.content.indexOf("<@" + config.admin_id + ">") > -1) {
 			if (config.send_mentions) {
@@ -97,6 +93,7 @@ function execCommand(msg, cmd, suffix, type) {
 							var left = (leTime.valueOf() - cTime.valueOf()) / 1000;
 							if (msg.author.id != config.admin_id) { //admin bypass
 								bot.sendMessage(msg, msg.author.username + ", you need to *cooldown* (" + Math.round(left) + " seconds)", function(erro, message) { bot.deleteMessage(message, {"wait": 6000}); });
+								if (!msg.channel.isPrivate) bot.deleteMessage(msg, {"wait": 10000});
 								return;
 							}
 						} else { lastExecTime[cmd][id] = cTime; }
@@ -122,6 +119,7 @@ function execCommand(msg, cmd, suffix, type) {
 							var left = (leTime.valueOf() - cTime.valueOf()) / 1000;
 							if (msg.author.id != config.admin_id) { //admin bypass
 								bot.sendMessage(msg, msg.author.username + ", you need to *cooldown* (" + Math.round(left) + " seconds)", function(erro, message) { bot.deleteMessage(message, {"wait": 6000}); });
+								if (!msg.channel.isPrivate) bot.deleteMessage(msg, {"wait": 10000});
 								return;
 							}
 						} else { lastExecTime[cmd][id] = cTime; }
