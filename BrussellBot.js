@@ -39,6 +39,9 @@ bot.on("disconnected", () => {
 
 bot.on("message", (msg) => {
 	if (msg.channel.isPrivate && msg.author.id != bot.user.id && (/(^https?:\/\/discord\.gg\/[A-Za-z0-9]+$|^https?:\/\/discordapp\.com\/invite\/[A-Za-z0-9]+$)/.test(msg.content))) carbonInvite(msg); //accept invites sent in a DM
+	if (msg.channel.isPrivate && /^(help|how do I use this\??)$/i.test(msg.content)) {
+		commands.commands["help"].process(bot, msg);
+	}
 	if (msg.author.id == config.admin_id && msg.content.startsWith("(eval) ")) { evaluateString(msg); return; } //bot owner eval command
 	if (msg.mentions.length !== 0 && !msg.channel.isPrivate) {
 		if (msg.isMentioned(bot.user) && msg.content.startsWith("<@" + bot.user.id + ">")) {

@@ -45,7 +45,7 @@ var aliases = {
 	"rolec": "color", "rolecolor": "color",
 	"gc": "givecolor", "setcolor": "givecolor",
 	"rmcolor": "removecolor", "takecolor": "removecolor", "rc": "removecolor", "deletecolor": "removecolor",
-	"config": "settings"
+	"config": "settings", "set": "settings"
 };
 
 var commands = {
@@ -445,7 +445,7 @@ var commands = {
 		process: function(bot, msg, suffix) {
 			if (msg.channel.isPrivate) { bot.sendMessage(msg, "Can't do this in a PM!", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
 			if (!msg.channel.permissionsOf(msg.author).hasPermission("manageServer") && msg.author.id != config.admin_id) { bot.sendMessage(msg, "You must have permission to manage the server!", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
-			if (!suffix || !/.+ .+/.test(suffix)) { bot.sendMessage(msg, correctUsage("settings", msg.author.username), (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
+			if (!suffix || !/(.+ .+|check)/.test(suffix)) { bot.sendMessage(msg, correctUsage("settings", msg.author.username), (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
 			if (!ServerSettings.hasOwnProperty(msg.channel.server.id)) db.addServer(msg.channel.server);
 			if (/enable ban ?alerts?/i.test(suffix.trim())) {
 				if (!ServerSettings[msg.channel.server.id].banAlerts) {
