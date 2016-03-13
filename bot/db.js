@@ -1,23 +1,29 @@
 var fs = require('fs');
+var colors = require("./styles.js");
 ServerSettings = require('../db/servers.json');
 
 var updated = false;
 setInterval(() => {
 	if (updated) {
 		updated = false;
-		updateDB(__dirname + '/../db/servers.json', JSON.stringify(ServerSettings));
+		updateServers();
 	}
 }, 30000)
 
-function updateDB(file, data) {
-	fs.writeFile(file, data)
-}
-
-function addServer(server) {
-	if (!ServerSettings.hasOwnProperty(server.id)) {
-		ServerSettings[server.id] = {"ignore":[],"banAlerts":false,"nameChanges":false,"welcome":"none","deleteCommands":false,"notifyChannel":"general","allowNSFW":false};
-		updated = true;
-	}
+function updateServers() {
+	fs.writeFile(__dirname + '/../db/servers-temp.json', JSON.stringify(ServerSettings), error=>{
+		if (error) console.log(error)
+		else {
+			fs.stat(__dirname + '/../db/servers-temp.json', (err, stats)=>{
+				if (err) console.log(err)
+				else if (stats["size"] < 5) console.log('Prevented server settings database from being overwritten')
+				else {
+					fs.rename(__dirname + '/../db/servers-temp.json', __dirname + '/../db/servers.json', e=>{if(e)console.log(e)});
+					if (debug) console.log(colors.cDebug(" DEBUG ") + " Updated servers.json");
+				}
+			});
+		}
+	})
 }
 
 exports.addServer = function(server) {

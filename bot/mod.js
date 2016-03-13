@@ -1,5 +1,5 @@
 var config = require("./config.json");
-var games = require("./games.json").games;
+var games = require("./games.json");
 var version = require("../package.json").version;
 var colors = require("./styles.js");
 var db = require("./db.js");
@@ -13,8 +13,9 @@ Functions
 =====================
 */
 
-function correctUsage(cmd, user) {
-	return (commands.hasOwnProperty(cmd)) ? user.replace(/@/g, '') + ", the correct usage is: `" + config.mod_command_prefix + "" + cmd + " " + commands[cmd].usage + "`": "This should display the correct usage but the bot maker made a mistake";
+function correctUsage(cmd, usage, msg, bot) {
+	bot.sendMessage(msg, msg.author.username.replace(/@/g, '@\u200b') + ", the correct usage is `" + config.mod_command_prefix + cmd + ' ' + usage + '`', (erro, wMessage)=>{bot.deleteMessage(wMessage, {"wait": 10000});});
+	bot.deleteMessage(msg, {"wait": 10000});
 }
 
 function unMute(bot, msg, users, time, role) {
@@ -55,38 +56,41 @@ var commands = {
 		process: function(bot, msg, suffix) {
 			var toSend = [];
 			if (!suffix) {
-				toSend.push("Use `" + config.mod_command_prefix + "help <command name>` to get info on a specific command.");
-				toSend.push("");
-				toSend.push("**Commands: **\n");
-				Object.keys(commands).forEach(function(cmd) {
+				toSend.push("Use `" + config.mod_command_prefix + "help <command name>` to get more info on a command.");
+				toSend.push("Normal commands can be found using `" + config.command_prefix + "help`.");
+				toSend.push("You can find the list online at **http://brussell98.github.io/bot/commands.html**");
+				toSend.push("**Commands:**\n");
+				Object.keys(commands).forEach(cmd=>{
 					if (commands[cmd].hasOwnProperty("shouldDisplay")) {
-						if (commands[cmd].shouldDisplay) { toSend.push("`" + config.mod_command_prefix + cmd + " " + commands[cmd].usage + "`\n        " + commands[cmd].desc); }
-					} else { toSend.push("`" + config.mod_command_prefix + cmd + " " + commands[cmd].usage + "`\n        " + commands[cmd].desc); }
+						if (commands[cmd].shouldDisplay) toSend.push("`" + config.mod_command_prefix + cmd + " " + commands[cmd].usage + "`\n		" + commands[cmd].desc);
+					} else toSend.push("`" + config.mod_command_prefix + cmd + " " + commands[cmd].usage + "`\n		" + commands[cmd].desc);
 				});
 				bot.sendMessage(msg.author, toSend);
 			} else {
+				suffix = suffix.trim().toLowerCase();
 				if (commands.hasOwnProperty(suffix)) {
-					toSend.push("**" + config.mod_command_prefix + "" + suffix + ": **" + commands[suffix].desc);
-					if (commands[suffix].hasOwnProperty("usage")) { toSend.push("**Usage:** `" + config.mod_command_prefix + "" + suffix + " " + commands[suffix].usage + "`"); }
-					if (commands[suffix].hasOwnProperty("cooldown")) { toSend.push("**Cooldown:** " + commands[suffix].cooldown + " seconds"); }
-					if (commands[suffix].hasOwnProperty("deleteCommand")) { toSend.push("*This command will delete the message that activates it*"); }
+					toSend.push("`" + config.mod_command_prefix + suffix + commands[suffix].usage + "`");
+					if (commands[suffix].hasOwnProperty("info")) toSend.push(commands[suffix].info);
+					else if (commands[suffix].hasOwnProperty("desc")) toSend.push(commands[suffix].desc);
+					if (commands[suffix].hasOwnProperty("cooldown")) toSend.push("__Cooldown:__ " + commands[suffix].cooldown + " seconds");
+					if (commands[suffix].hasOwnProperty("deleteCommand")) toSend.push("*Can delete the activating message*");
 					bot.sendMessage(msg, toSend);
-				} else { bot.sendMessage(msg, "Command `" + suffix + "` not found.", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
+				} else bot.sendMessage(msg, "Command `" + suffix + "` not found. Aliases aren't allowed.", (erro, wMessage)=>{ bot.deleteMessage(wMessage, {"wait": 8000}); });
 			}
 		}
 	},
 	"stats": {
 		desc: "Get the stats of the bot",
 		usage: "", cooldown: 30, deleteCommand: true,
-		process: function(bot, msg, suffix) {
+		process: function(bot, msg) {
 			if (msg.author.id == config.admin_id || msg.channel.isPrivate || msg.channel.permissionsOf(msg.author).hasPermission("manageChannel")) {
 				var toSend = [];
 				toSend.push("```");
-				toSend.push("Uptime (may be inaccurate): " + (Math.round(bot.uptime / (1000 * 60 * 60))) + " hours, " + (Math.round(bot.uptime / (1000 * 60)) % 60) + " minutes, and " + (Math.round(bot.uptime / 1000) % 60) + " seconds.");
-				toSend.push("Connected to " + bot.servers.length + " servers with " + bot.channels.length + " channels. I'm aware of " + bot.users.length + " users.");
+				toSend.push("Uptime: " + (Math.round(bot.uptime / (1000 * 60 * 60))) + " hours and " + (Math.round(bot.uptime / (1000 * 60)) % 60) + " minutes");
+				toSend.push("Connected to " + bot.servers.length + " servers with " + bot.channels.length + " channels and " + bot.users.length + " users.");
 				toSend.push("Memory Usage: " + Math.round(process.memoryUsage().rss / 1024 / 1000) + "MB");
 				toSend.push("Running BrussellBot v" + version);
-				toSend.push("Commands this session: " + commandsProcessed + " + " + talkedToTimes + " cleverbot");
+				toSend.push("Commands this session: " + commandsProcessed + " + " + talkedToTimes + " cleverbot (avg " + ((commandsProcessed + talkedToTimes) / (bot.uptime / (1000 * 60))).toFixed(2) + "/min)");
 				toSend.push("```");
 				bot.sendMessage(msg, toSend);
 			} else { bot.sendMessage(msg, "Only server admins/mods can do this.", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
@@ -97,9 +101,9 @@ var commands = {
 		usage: "[game]", cooldown: 10, shouldDisplay: false, deleteCommand: true,
 		process: function(bot, msg, suffix) {
 			if (msg.author.id == config.admin_id) {
-				if (!suffix) { bot.setPlayingGame(games[Math.floor(Math.random() * (games.length))]);
-				} else { bot.setPlayingGame(suffix); if (config.debug) { console.log(colors.cDebug(" DEBUG ") + msg.author.username + " changed the playing status to: " + suffix); } }
-			} else { bot.setPlayingGame("with " + msg.author.username); }
+				if (!suffix) bot.setPlayingGame(games[Math.floor(Math.random() * (games.length))]);
+				else bot.setPlayingGame(suffix);
+			} else bot.setPlayingGame("with " + msg.author.username);
 		}
 	},
 	"clean": {
@@ -111,13 +115,13 @@ var commands = {
 				if (msg.channel.isPrivate || msg.channel.permissionsOf(msg.author).hasPermission("manageMessages") || msg.author.id == config.admin_id) {
 					bot.getChannelLogs(msg.channel, 100, (error, messages) => {
 						if (error) { console.log(colors.cWarn(" WARN ") + "Something went wrong while fetching logs."); return; }
-						if (config.debug) { console.log(colors.cDebug(" DEBUG ") + "Cleaning bot messages..."); }
+						if (debug) { console.log(colors.cDebug(" DEBUG ") + "Cleaning bot messages..."); }
 						var todo = parseInt(suffix),
 						delcount = 0;
 						for (var i = 0; i < 100; i++) {
 							if (todo <= 0 || i == 99) {
 								bot.sendMessage(msg, "Cleaned up " + delcount + " of my messages", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); });
-								if (config.debug) { console.log(colors.cDebug(" DEBUG ") + "Done! Deleted " + delcount + " messages."); }
+								if (debug) { console.log(colors.cDebug(" DEBUG ") + "Done! Deleted " + delcount + " messages."); }
 								return;
 							}
 							if (messages[i].author == bot.user) {
@@ -127,8 +131,8 @@ var commands = {
 							}
 						}
 					});
-				} else { bot.sendMessage(msg, "⚠ You must have permission to manage messages in this channel", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
-			} else { bot.sendMessage(msg, correctUsage("clean", msg.author.username), function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
+				} else bot.sendMessage(msg, "⚠ You must have permission to manage messages in this channel", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); });
+			} else correctUsage("clean", this.usage, msg, bot);
 		}
 	},
 	"prune": {
@@ -142,7 +146,7 @@ var commands = {
 						if (msg.channel.permissionsOf(bot.user).hasPermission("manageMessages")) {
 							bot.getChannelLogs(msg.channel, 100, { "before": msg }, (error, messages) => {
 								if (error) { console.log(colors.cWarn(" WARN ") + "Something went wrong while fetching logs."); return; }
-								if (config.debug) { console.log(colors.cDebug(" DEBUG ") + "Pruning messages..."); }
+								if (debug) { console.log(colors.cDebug(" DEBUG ") + "Pruning messages..."); }
 								var todo = parseInt(suffix.split(" ")[0]);
 								var hasTerm = false, hasUser = false, hasImages = false;
 								var term = "", username = "";
@@ -152,15 +156,15 @@ var commands = {
 									} else if (msg.mentions.length > 1) { bot.sendMessage(msg, "⚠ Can only prune one user at a time", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 15000}); }); return;
 									} else { username = msg.mentions[0].username.toLowerCase(); hasUser = true; }
 								} else if (suffix.split(" ").length == 2 && (suffix.split(" ")[1].toLowerCase() === "images" || suffix.split(" ")[1].toLowerCase() === "image")) { hasImages = true;
-								} else if (suffix.split(" ").length > 1) { bot.sendMessage(msg, correctUsage("prune", msg.author.username), function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 15000}); }); return; }
+								} else if (suffix.split(" ").length > 1) { correctUsage("prune", this.usage, msg, bot); return; }
 								var delcount = 0;
 								for (var i = 0; i < 100; i++) {
 									if (todo <= 0 || i == 99) {
-										if (!hasImages && !hasTerm && !hasUser) { bot.sendMessage(msg, "Deleted " + delcount + " messages", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); });
-										} else if (hasImages) { bot.sendMessage(msg, "Deleted " + delcount + " images", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); });
-										} else if (hasTerm) { bot.sendMessage(msg, "Deleted " + delcount + " messages containing " + term, (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); });
-										} else if (hasUser) { bot.sendMessage(msg, "Deleted " + delcount + " of " + username + "'s messages", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); }
-										if (config.debug) { console.log(colors.cDebug(" DEBUG ") + "Done! Deleted " + delcount + " messages."); }
+										if (!hasImages && !hasTerm && !hasUser) bot.sendMessage(msg, "Deleted " + delcount + " messages", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); });
+										else if (hasImages) bot.sendMessage(msg, "Deleted " + delcount + " images", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); });
+										else if (hasTerm) bot.sendMessage(msg, "Deleted " + delcount + " messages containing " + term, (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); });
+										else if (hasUser) bot.sendMessage(msg, "Deleted " + delcount + " of " + username + "'s messages", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); });
+										if (debug) console.log(colors.cDebug(" DEBUG ") + "Done! Deleted " + delcount + " messages.");
 										return;
 									}
 									if (hasTerm && messages[i].content.indexOf(term) > -1) {
@@ -178,10 +182,10 @@ var commands = {
 									}
 								}
 							});
-						} else { bot.sendMessage(msg, "⚠ I don't have permission to delete messages.", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
-					} else { bot.sendMessage(msg, "⚠ You must have permission to manage messages in this channel", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
-				} else { bot.sendMessage(msg, "⚠ Can't do that in a DM"), function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }; }
-			} else { bot.sendMessage(msg, correctUsage("prune", msg.author.username), function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
+						} else bot.sendMessage(msg, "⚠ I don't have permission to delete messages.", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); });
+					} else bot.sendMessage(msg, "⚠ You must have permission to manage messages in this channel", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); });
+				} else bot.sendMessage(msg, "⚠ Can't do that in a DM"), function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); };
+			} else correctUsage("prune", this.usage, msg, bot);
 		}
 	},
 	"kick": {
@@ -191,16 +195,16 @@ var commands = {
 		cooldown: 3,
 		process: function(bot, msg, suffix) {
 			if (msg.channel.isPrivate) return;
-			if (!msg.channel.permissionsOf(msg.author).hasPermission("kickMembers") && msg.author.id != config.admin_id) { bot.sendMessage(msg, "You don't have permission", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); });
-			} else if (!msg.channel.permissionsOf(bot.user).hasPermission("kickMembers")) { bot.sendMessage(msg, "I don't have permission", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); });
-			} else if (suffix && msg.mentions.length > 0) {
+			if (!msg.channel.permissionsOf(msg.author).hasPermission("kickMembers") && msg.author.id != config.admin_id) bot.sendMessage(msg, "You don't have permission", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); });
+			else if (!msg.channel.permissionsOf(bot.user).hasPermission("kickMembers")) bot.sendMessage(msg, "I don't have permission", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); });
+			else if (suffix && msg.mentions.length > 0) {
 				var kickMessage = suffix.replace(/<@\d+>/g, "").trim();
 				msg.mentions.map((unlucky) => {
 					msg.channel.server.kickMember(unlucky);
 					if (kickMessage) { bot.sendMessage(unlucky, kickMessage); }
 				});
 				bot.sendMessage(msg, msg.author.username + " 👍", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); });
-			} else { bot.sendMessage(msg, correctUsage("kick", msg.author.username), (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); }
+			} else correctUsage("kick", this.usage, msg, bot);
 		}
 	},
 	"ban": {
@@ -210,30 +214,31 @@ var commands = {
 		cooldown: 3,
 		process: function(bot, msg, suffix) {
 			if (msg.channel.isPrivate) return;
-			if (!msg.channel.permissionsOf(msg.author).hasPermission("banMembers") && msg.author.id != config.admin_id) { bot.sendMessage(msg, "You don't have permission", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); });
-			} else if (!msg.channel.permissionsOf(bot.user).hasPermission("banMembers")) { bot.sendMessage(msg, "I don't have permission", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); });
-			} else if (suffix && msg.mentions.length > 0) {
+			if (!msg.channel.permissionsOf(msg.author).hasPermission("banMembers") && msg.author.id != config.admin_id) bot.sendMessage(msg, "You don't have permission", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); });
+			else if (!msg.channel.permissionsOf(bot.user).hasPermission("banMembers")) bot.sendMessage(msg, "I don't have permission", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); });
+			else if (suffix && msg.mentions.length > 0) {
 				var banMessage = suffix.replace(/<@\d+>/g, "").trim();
 				msg.mentions.map((unlucky) => {
 					msg.channel.server.banMember(unlucky, 1);
 					if (banMessage) { bot.sendMessage(unlucky, banMessage); }
 				});
 				bot.sendMessage(msg, msg.author.username + " 👍", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); });
-			} else { bot.sendMessage(msg, correctUsage("ban", msg.author.username), (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); }
+			} else correctUsage("ban", this.usage, msg, bot);
 		}
 	},
 	"mute": {
-		desc: "Mute users for the specified time",
+		desc: "Mute users for the specified time (max 1 hour)",
 		usage: "<@users> <minutes>",
 		deleteCommand: true,
 		cooldown: 3,
 		process: function(bot, msg, suffix) {
 			if (msg.channel.isPrivate) return;
-			if (!msg.channel.permissionsOf(msg.author).hasPermission("manageRoles") && msg.author.id != config.admin_id) { bot.sendMessage(msg, "You don't have permission (manage roles)", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); });
-			} else if (!msg.channel.permissionsOf(bot.user).hasPermission("manageRoles")) { bot.sendMessage(msg, "I don't have permission (manage roles)", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); });
-			} else if (suffix && msg.mentions.length > 0 && /^(<@\d+>( ?)*)*( ?)*(\d+(.\d+)?)$/.test(suffix.trim())) {
-				var time = parseFloat(suffix.replace(/<@\d+>/g, "").trim());
-				var role = msg.channel.server.roles.find((r) => { return r.name.toLowerCase() === "muted" });
+			if (!msg.channel.permissionsOf(msg.author).hasPermission("manageRoles") && msg.author.id != config.admin_id) bot.sendMessage(msg, "You don't have permission (manage roles)", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); });
+			else if (!msg.channel.permissionsOf(bot.user).hasPermission("manageRoles")) bot.sendMessage(msg, "I don't have permission (manage roles)", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); });
+			else if (suffix && msg.mentions.length > 0 && /^(<@\d+>( ?)*)*( ?)*(\d+(.\d+)?)$/.test(suffix.trim())) {
+				var time = parseFloat(suffix.replace(/<@\d+>/g, '').trim());
+				if (time) { if (time > 60) time = 60; } else time = 5;
+				var role = msg.channel.server.roles.find(r=>r.name.toLowerCase() === "muted");
 				if (role) {
 					msg.mentions.map((user) => {
 						if (!bot.memberHasRole(user, role)) {
@@ -242,8 +247,8 @@ var commands = {
 					});
 					unMute(bot, msg, msg.mentions, time, role);
 					bot.sendMessage(msg, msg.author.username + " 👍", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); });
-				} else { bot.sendMessage(msg, "Please create a role named `muted` that denies send messages in all channels", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); }
-			} else { bot.sendMessage(msg, correctUsage("mute", msg.author.username), (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); }
+				} else bot.sendMessage(msg, "Please create a role named `muted` that denies send messages in all channels", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); });
+			} else correctUsage("mute", this.usage, msg, bot);
 		}
 	},
 	"unmute": {
@@ -265,23 +270,23 @@ var commands = {
 					});
 					bot.sendMessage(msg, msg.author.username + " 👍", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); });
 				} else { bot.sendMessage(msg, "`muted` role not found", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); }
-			} else { bot.sendMessage(msg, correctUsage("unmute", msg.author.username), (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); }
+			} else correctUsage("unmute", this.usage, msg, bot);
 		}
 	},
 	"leave": {
 		desc: "Leaves the server.",
 		usage: "", deleteCommand: true,
-		process: function(bot, msg, suffix) {
+		process: function(bot, msg) {
 			if (msg.channel.server) {
 				if (msg.channel.permissionsOf(msg.author).hasPermission("kickMembers") || msg.author.id == config.admin_id) {
-					bot.sendMessage(msg, "It's not like I wanted to be here or anything, *baka*").then(
-					msg.channel.server.leave());
+					bot.sendMessage(msg, "It's not like I wanted to be here or anything, *baka*")
+					setTimeout(()=>{msg.channel.server.leave()}, 2000);
 					console.log(colors.cYellow("I've left a server on request of " + msg.sender.username + ". ") + "I'm only in " + bot.servers.length + " servers now.");
 				} else {
 					bot.sendMessage(msg, "You can't tell me what to do! *(You need permission to kick users in this channel)*");
 					console.log(colors.cYellow("Non-privileged user: " + msg.sender.username) + " tried to make me leave a server.");
 				}
-			} else { bot.sendMessage(msg, "⚠ I can't leave a DM.", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
+			} else { bot.sendMessage(msg, "⚠ I can't leave a DM.", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
 		}
 	},
 	"announce": {
@@ -304,7 +309,7 @@ var commands = {
 					}
 					var annTimerS = setInterval(() => { annLoopS() }, 1100);
 					delete confirmCodes[index];
-					if (config.debug) { console.log(colors.cDebug(" DEBUG ") + "Announced \"" + announceMessages[index] + "\" to members of " + msg.channel.server.name); }
+					if (debug) { console.log(colors.cDebug(" DEBUG ") + "Announced \"" + announceMessages[index] + "\" to members of " + msg.channel.server.name); }
 				} else {
 					announceMessages.push(suffix);
 					var code = Math.floor(Math.random() * 100000);
@@ -326,7 +331,7 @@ var commands = {
 					}
 					var annTimer = setInterval(() => { annLoop() }, 1100);
 					delete confirmCodes[index];
-					if (config.debug) { console.log(colors.cDebug(" DEBUG ") + "Announced \"" + announceMessages[index] + "\" to all servers"); }
+					if (debug) { console.log(colors.cDebug(" DEBUG ") + "Announced \"" + announceMessages[index] + "\" to all servers"); }
 				} else {
 					announceMessages.push(suffix);
 					var code = Math.floor(Math.random() * 100000);
@@ -339,7 +344,7 @@ var commands = {
 	"changelog": {
 		desc: "See recent changes to the bot",
 		deleteCommand: true, usage: "", cooldown: 30,
-		process: function(bot, msg, suffix) {
+		process: function(bot, msg) {
 			var chanelogChannel = bot.channels.get("id", "135527608564580353");
 			if (!chanelogChannel) { bot.sendMessage(msg, "The bot is not in the BrussellBot Official Server", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); });
 			} else {
@@ -361,23 +366,23 @@ var commands = {
 		deleteCommand: true, cooldown: 5,
 		process: function(bot, msg, suffix) {
 			if (/^(.*) #?[A-F0-9]{6}$/i.test(suffix)) {
-				if (msg.channel.isPrivate) { bot.sendMessage(msg, "Must be done in a server!",function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
-				if (!msg.channel.permissionsOf(msg.author).hasPermission("manageRoles") && msg.author.id != config.admin_id) { bot.sendMessage(msg, "You can't edit roles!",function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
-				if (!msg.channel.permissionsOf(bot.user).hasPermission("manageRoles")) { bot.sendMessage(msg, "I can't edit roles!",function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
+				if (msg.channel.isPrivate) { bot.sendMessage(msg, "Must be done in a server!", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
+				if (!msg.channel.permissionsOf(msg.author).hasPermission("manageRoles") && msg.author.id != config.admin_id) { bot.sendMessage(msg, "You can't edit roles!", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
+				if (!msg.channel.permissionsOf(bot.user).hasPermission("manageRoles")) { bot.sendMessage(msg, "I can't edit roles!", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
 				var role = msg.channel.server.roles.get("name", suffix.replace(/ #?[a-f0-9]{6}/i, ""));
 				if (role) { bot.updateRole(role, {color: parseInt(suffix.replace(/(.*) #?/, ""), 16)}); bot.sendMessage(msg, msg.author.username + " 👍", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); });
-				} else { bot.sendMessage(msg, "Role \"" + suffix.replace(/ #?[a-f0-9]{6}/i, "") + "\" not found",function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 10000}); }); }
-			} else { bot.sendMessage(msg, correctUsage("color", msg.author.username),function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 10000}); }); }
+				} else bot.sendMessage(msg, "Role \"" + suffix.replace(/ #?[a-f0-9]{6}/i, "") + "\" not found", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); });
+			} else correctUsage("color", this.usage, msg, bot);
 		}
 	},
 	"givecolor": {
 		desc: "Give a user a color",
 		usage: "<@users> <color as hex>",
 		deleteCommand: true,
-		cooldown: 2,
+		cooldown: 4,
 		process: function(bot, msg, suffix) {
 			if (msg.channel.isPrivate) { bot.sendMessage(msg, "Can't do this in a PM!", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
-			if (!/^<@(.*)> #?[a-f0-9]{6}$/i.test(suffix)) { bot.sendMessage(msg, correctUsage("givecolor", msg.author.username), (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
+			if (!/^<@(.*)> #?[a-f0-9]{6}$/i.test(suffix)) { correctUsage("givecolor", this.usage, msg, bot); return; }
 			if (!msg.channel.permissionsOf(msg.author).hasPermission("manageRoles") && msg.author.id != config.admin_id) { bot.sendMessage(msg, "You can't edit roles!", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
 			if (!msg.channel.permissionsOf(bot.user).hasPermission("manageRoles")) { bot.sendMessage(msg, "I can't manage roles!", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
 			if (msg.mentions.length < 1) { bot.sendMessage(msg, "You must mention the users you want to change the color of!",(erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
@@ -408,34 +413,35 @@ var commands = {
 		desc: "Clean unused colors | Remove a user's color | Remove a color",
 		usage: "clean | @users | #hexcolor",
 		deleteCommand: true,
-		cooldown: 2,
+		cooldown: 4,
 		process: function(bot, msg, suffix) {
-			if (msg.channel.isPrivate) { bot.sendMessage(msg, "Can't do this in a PM!",function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
+			if (msg.channel.isPrivate) { bot.sendMessage(msg, "Can't do this in a PM!", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
 			if (!msg.channel.permissionsOf(msg.author).hasPermission("manageRoles") && msg.author.id != config.admin_id) { bot.sendMessage(msg, "You can't edit roles!",function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
-			if (!msg.channel.permissionsOf(bot.user).hasPermission("manageRoles")) { bot.sendMessage(msg, "I can't manage roles!",function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
+			if (!msg.channel.permissionsOf(bot.user).hasPermission("manageRoles")) { bot.sendMessage(msg, "I can't manage roles!", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
 			if (msg.mentions.length > 0) {
 				msg.mentions.map((user) => {
 					msg.channel.server.rolesOfUser(user).map((r) => {
 						if (/^#[a-f0-9]{6}$/.test(r.name)) {
 							bot.removeMemberFromRole(user, r);
-							setTimeout(() => {if (msg.channel.server.usersWithRole(r).length < 1) { bot.deleteRole(r, (e) => { if (e) { bot.sendMessage(msg, "Error deleting role: " + e,function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 10000}); }); } }); }},500);
+							setTimeout(() => {if (msg.channel.server.usersWithRole(r).length < 1) { bot.deleteRole(r, (e) => { if (e) { bot.sendMessage(msg, "Error deleting role: " + e, (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); } }); }},500);
 						}
 					});
 				});
 				bot.sendMessage(msg, msg.author.username + " 👍", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); });
 			} else if (/^#?[a-f0-9]{6}$/i.test(suffix.trim())) {
 				var role = msg.channel.server.roles.get("name", "#" + suffix.trim().replace(/(.*) #?/, "").toLowerCase());
-				if (!role) { bot.sendMessage(msg, "Color not found",function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
-				bot.deleteRole(role, (e) => { if (e) { bot.sendMessage(msg, "Error deleting role: " + e,function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; } });
+				if (!role) { bot.sendMessage(msg, "Color not found", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
+				bot.deleteRole(role, (e) => { if (e) { bot.sendMessage(msg, "Error deleting role: " + e, (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; } });
 				bot.sendMessage(msg, msg.author.username + " 👍", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); });
 			} else if (suffix.trim() == "clean") {
+				var count = 0;
 				msg.channel.server.roles.map((role) => {
 					if (/^#?[a-f0-9]{6}$/.test(role.name)) {
-						if (msg.channel.server.usersWithRole(role).length < 1) { bot.deleteRole(role, (e) => { if (e) { bot.sendMessage(msg, "Error deleting role: " + e,function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 10000}); }); } }); }
+						if (msg.channel.server.usersWithRole(role).length < 1) { bot.deleteRole(role, e=>{ if (e) { bot.sendMessage(msg, "Error deleting role: " + e, (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); } }); }
 					}
 				});
-				bot.sendMessage(msg, msg.author.username + " 👍", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); });
-			} else { bot.sendMessage(msg, correctUsage("removecolor", msg.author.username),function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 10000}); }); }
+				bot.sendMessage(msg, "Removed " + count + " colors with no users", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); });
+			} else correctUsage("removecolor", this.usage, msg, bot);
 		}
 	},
 	"settings": {
@@ -445,7 +451,7 @@ var commands = {
 		process: function(bot, msg, suffix) {
 			if (msg.channel.isPrivate) { bot.sendMessage(msg, "Can't do this in a PM!", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
 			if (!msg.channel.permissionsOf(msg.author).hasPermission("manageServer") && msg.author.id != config.admin_id) { bot.sendMessage(msg, "You must have permission to manage the server!", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
-			if (!suffix || !/(.+ .+|check)/.test(suffix)) { bot.sendMessage(msg, correctUsage("settings", msg.author.username), (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
+			if (!suffix || !/(.+ .+|check)/.test(suffix)) { correctUsage("settings", this.usage, msg, bot); return; }
 			if (!ServerSettings.hasOwnProperty(msg.channel.server.id)) db.addServer(msg.channel.server);
 			if (/enable ban ?alerts?/i.test(suffix.trim())) {
 				if (!ServerSettings[msg.channel.server.id].banAlerts) {
@@ -472,13 +478,13 @@ var commands = {
 				}
 			}
 			if (/enable delete ?commands?/i.test(suffix.trim())) {
-				if (!ServerSettings[msg.channel.server.id].banAlerts) {
+				if (!ServerSettings[msg.channel.server.id].deleteCommands) {
 					db.changeSetting('deleteCommands', true, msg.channel.server.id);
 					bot.sendMessage(msg, 'Enabled command deletion');
 				}
 			}
 			if (/disable delete ?commands?/i.test(suffix.trim())) {
-				if (ServerSettings[msg.channel.server.id].banAlerts) {
+				if (ServerSettings[msg.channel.server.id].deleteCommands) {
 					db.changeSetting('deleteCommands', false, msg.channel.server.id);
 					bot.sendMessage(msg, 'Disabled command deletion');
 				}
@@ -525,7 +531,7 @@ var commands = {
 		desc: "Have the bot ignore that channel",
 		usage: "",
 		cooldown: 3, deleteCommand: true,
-		process: function(bot, msg, suffix) {
+		process: function(bot, msg) {
 			if (msg.channel.isPrivate) { bot.sendMessage(msg, "Can't do this in a PM!", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
 			if (!msg.channel.permissionsOf(msg.author).hasPermission("manageServer") && msg.author.id != config.admin_id) { bot.sendMessage(msg, "You must have permission to manage the server!", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
 			if (!ServerSettings.hasOwnProperty(msg.channel.server.id)) db.addServer(msg.channel.server);
@@ -540,7 +546,7 @@ var commands = {
 		desc: "Have the bot no longer ignore that channel",
 		usage: "",
 		cooldown: 3, deleteCommand: true,
-		process: function(bot, msg, suffix) {
+		process: function(bot, msg) {
 			if (msg.channel.isPrivate) { bot.sendMessage(msg, "Can't do this in a PM!", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
 			if (!msg.channel.permissionsOf(msg.author).hasPermission("manageServer") && msg.author.id != config.admin_id) { bot.sendMessage(msg, "You must have permission to manage the server!", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
 			if (!ServerSettings.hasOwnProperty(msg.channel.server.id)) db.addServer(msg.channel.server);
