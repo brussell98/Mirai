@@ -25,12 +25,13 @@ exports.cleverbot = function(bot, msg) {
 							return String.fromCharCode(parseInt(grp, 16));
 						});
 					}
-					bot.sendMessage(msg, '💬 ' + ent.decodeHTML(resp.message));
 					if (!resp.message || !ent.decodeHTML(resp.message)) {
+						bot.sendMessage(msg, '⚠ Nothing was returned! Resetting cleverbot...');
 						delete require.cache[require.resolve("cleverbot-node")];
 						Cleverbot = require('cleverbot-node');
 						Slave = new Cleverbot();
-						console.log(colors.cWarn(" WARN ") + "Cleverbot returned nothing"); }
+						console.log(colors.cWarn(" WARN ") + "Cleverbot returned nothing");
+					} else bot.sendMessage(msg, '💬 ' + ent.decodeHTML(resp.message));
 				});
 			} catch (error) { bot.sendMessage(msg, '⚠ There was an error', (erro, wMessage) => { bot.deleteMessage(wMessage, {'wait': 10000}); }); }
 		});

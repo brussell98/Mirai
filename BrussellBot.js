@@ -27,6 +27,7 @@ bot.on("ready", () => {
 	versioncheck.checkForUpdate(resp => {
 		if (resp !== null) console.log(resp);
 	});
+	db.checkServers(bot);
 });
 
 bot.on("disconnected", () => {
@@ -47,8 +48,8 @@ bot.on("message", msg => {
 	if (msg.mentions.length !== 0 && !msg.channel.isPrivate) {
 		if (msg.isMentioned(bot.user) && msg.content.startsWith("<@" + bot.user.id + ">")) {
 			if (ServerSettings.hasOwnProperty(msg.channel.server.id)) { if (ServerSettings[msg.channel.server.id].ignore.indexOf(msg.channel.id) === -1) {
-				cleverbot(bot, msg); talkedToTimes += 1;
-			}} else { cleverbot(bot, msg); talkedToTimes += 1; }
+				cleverbot(bot, msg); talkedToTimes += 1; db.updateTimestamp(msg.channel.server);
+			}} else { cleverbot(bot, msg); talkedToTimes += 1; db.updateTimestamp(msg.channel.server); }
 		}
 		if (msg.content.indexOf("<@" + config.admin_id + ">") > -1) {
 			if (config.send_mentions) {
@@ -68,6 +69,7 @@ bot.on("message", msg => {
 	if (msg.content.startsWith(config.command_prefix)) {
 		if (commands.commands.hasOwnProperty(cmd)) execCommand(msg, cmd, suffix, "normal");
 		else if (commands.aliases.hasOwnProperty(cmd)) {
+			if (!msg.channel.isPrivate) db.updateTimestamp(msg.channel.server);
 			msg.content = msg.content.replace(/[^ ]+ /, config.command_prefix + commands.aliases[cmd] + " ");
 			execCommand(msg, commands.aliases[cmd], suffix, "normal");
 		}
@@ -75,6 +77,7 @@ bot.on("message", msg => {
 		if (cmd == "reload" && msg.author.id == config.admin_id) { reload(); bot.deleteMessage(msg); return; }
 		if (mod.commands.hasOwnProperty(cmd)) execCommand(msg, cmd, suffix, "mod");
 		else if (mod.aliases.hasOwnProperty(cmd)) {
+			if (!msg.channel.isPrivate) db.updateTimestamp(msg.channel.server);
 			msg.content = msg.content.replace(/[^ ]+ /, config.mod_command_prefix + mod.aliases[cmd] + " ");
 			execCommand(msg, mod.aliases[cmd], suffix, "mod");
 		}
@@ -86,23 +89,17 @@ function execCommand(msg, cmd, suffix, type) {
 		commandsProcessed += 1;
 		if (type == "normal") {
 			if (!msg.channel.isPrivate) console.log(colors.cServer(msg.channel.server.name) + " > " + colors.cGreen(msg.author.username) + " > " + msg.cleanContent.replace(/\n/g, " ")); else console.log(colors.cGreen(msg.author.username) + " > " + msg.cleanContent.replace(/\n/g, " "));
-			if (commands.commands[cmd].hasOwnProperty("cooldown")) {
-				if (lastExecTime.hasOwnProperty(cmd)) {
-					var id = msg.author.id;
-					if (lastExecTime[cmd][id] != undefined) {
-						var cTime = new Date();
-						var leTime = new Date(lastExecTime[cmd][id]);
-						leTime.setSeconds(leTime.getSeconds() + commands.commands[cmd].cooldown);
-						if (cTime < leTime) { //if it is still on cooldow
-							var left = (leTime.valueOf() - cTime.valueOf()) / 1000;
-							if (msg.author.id != config.admin_id) { //admin bypass
-								bot.sendMessage(msg, msg.author.username + ", you need to *cooldown* (" + Math.round(left) + " seconds)", function(erro, message) { bot.deleteMessage(message, {"wait": 6000}); });
-								if (!msg.channel.isPrivate) bot.deleteMessage(msg, {"wait": 10000});
-								return;
-							}
-						} else lastExecTime[cmd][id] = cTime;
-					} else lastExecTime[cmd][id] = new Date();
-				} else lastExecTime[cmd] = {};
+			if (msg.author.id != config.admin_id && commands.commands[cmd].hasOwnProperty("cooldown")) {
+				if (!lastExecTime.hasOwnProperty(cmd)) lastExecTime[cmd] = {};
+				if (!lastExecTime[cmd].hasOwnProperty(msg.author.id)) lastExecTime[cmd][msg.author.id] = new Date().valueOf();
+				else {
+					var now = new Date().valueOf();
+					if (now < lastExecTime[cmd][msg.author.id] + (commands.commands[cmd].cooldown * 1000)) {
+						bot.sendMessage(msg, msg.author.username.replace(/@/g, '@\u200b') + ", you need to *cooldown* (" + Math.round(((lastExecTime[cmd][msg.author.id] + commands.commands[cmd].cooldown * 1000) - now) / 1000) + " seconds)", (e, m)=>{ bot.deleteMessage(m, {"wait": 6000}); });
+						if (!msg.channel.isPrivate) bot.deleteMessage(msg, {"wait": 10000});
+						return;
+					} lastExecTime[cmd][msg.author.id] = now;
+				}
 			}
 			commands.commands[cmd].process(bot, msg, suffix);
 			if (!msg.channel.isPrivate && commands.commands[cmd].hasOwnProperty("deleteCommand")) {
@@ -112,23 +109,17 @@ function execCommand(msg, cmd, suffix, type) {
 			if (!msg.channel.isPrivate)
 				console.log(colors.cServer(msg.channel.server.name) + " > " + colors.cGreen(msg.author.username) + " > " + colors.cBlue(msg.cleanContent.replace(/\n/g, " ").split(" ")[0]) + msg.cleanContent.replace(/\n/g, " ").substr(msg.cleanContent.replace(/\n/g, " ").split(" ")[0].length));
 			else console.log(colors.cGreen(msg.author.username) + " > " + colors.cBlue(msg.cleanContent.replace(/\n/g, " ").split(" ")[0]) + msg.cleanContent.replace(/\n/g, " ").substr(msg.cleanContent.replace(/\n/g, " ").split(" ")[0].length));
-			if (mod.commands[cmd].hasOwnProperty("cooldown")) {
-				if (lastExecTime.hasOwnProperty(cmd)) {
-					var id = msg.author.id;
-					if (lastExecTime[cmd][id] != undefined) {
-						var cTime = new Date();
-						var leTime = new Date(lastExecTime[cmd][id]);
-						leTime.setSeconds(leTime.getSeconds() + mod.commands[cmd].cooldown);
-						if (cTime < leTime) { //if it is still on cooldown
-							var left = (leTime.valueOf() - cTime.valueOf()) / 1000;
-							if (msg.author.id != config.admin_id) { //admin bypass
-								bot.sendMessage(msg, msg.author.username + ", you need to *cooldown* (" + Math.round(left) + " seconds)", function(erro, message) { bot.deleteMessage(message, {"wait": 6000}); });
-								if (!msg.channel.isPrivate) bot.deleteMessage(msg, {"wait": 10000});
-								return;
-							}
-						} else lastExecTime[cmd][id] = cTime;
-					} else lastExecTime[cmd][id] = new Date();
-				} else lastExecTime[cmd] = {};
+			if (msg.author.id != config.admin_id && mod.commands[cmd].hasOwnProperty("cooldown")) {
+				if (!lastExecTime.hasOwnProperty(cmd)) lastExecTime[cmd] = {};
+				if (!lastExecTime[cmd].hasOwnProperty(msg.author.id)) lastExecTime[cmd][msg.author.id] = new Date().valueOf();
+				else {
+					var now = new Date().valueOf();
+					if (now < lastExecTime[cmd][msg.author.id] + (mod.commands[cmd].cooldown * 1000)) {
+						bot.sendMessage(msg, msg.author.username.replace(/@/g, '@\u200b') + ", you need to *cooldown* (" + Math.round(((lastExecTime[cmd][msg.author.id] + mod.commands[cmd].cooldown * 1000) - now) / 1000) + " seconds)", (e, m)=>{ bot.deleteMessage(m, {"wait": 6000}); });
+						if (!msg.channel.isPrivate) bot.deleteMessage(msg, {"wait": 10000});
+						return;
+					} lastExecTime[cmd][msg.author.id] = now;
+				}
 			}
 			mod.commands[cmd].process(bot, msg, suffix);
 			if (!msg.channel.isPrivate && mod.commands[cmd].hasOwnProperty("deleteCommand")) {
@@ -176,6 +167,7 @@ bot.on("presence", (userOld, userNew) => {
 		} else if (userNew.status != userOld.status) { console.log(colors.cDebug(" PRESENCE ") + userNew.username + " is now " + userNew.status + " playing " + userNew.game.name); }
 	}
 	if (config.non_essential_event_listeners) {
+		if (userOld.username == undefined || userNew.username == undefined) return;
 		if (userOld.username != userNew.username) {
 			bot.servers.map((ser) => {
 				if (ser.members.get("id", userOld.id) && ServerSettings.hasOwnProperty(ser.id) && ServerSettings[ser.id].nameChanges == true) {
@@ -189,6 +181,7 @@ bot.on("presence", (userOld, userNew) => {
 
 bot.on("serverDeleted", objServer => {
 	console.log(colors.cUYellow("Left server") + " " + objServer.name);
+	db.handleLeave(objServer);
 });
 
 /* Login */
@@ -226,6 +219,7 @@ function carbonInvite(msg) {
 				toSend.push("For help / feedback / bugs/ testing / info / changelogs / etc. go to **https://discord.gg/0kvLlwb7slG3XCCQ**");
 				bot.sendMessage(server.defaultChannel, toSend);
 				db.addServer(server);
+				db.addServerToTimes(server);
 			}
 		});
 	}
@@ -254,29 +248,30 @@ function reload() {
 }
 
 function checkConfig() {
-	if (config.email === null) { console.log(colors.cWarn(" WARN ") + "Email not defined"); }
-	if (config.password === null) { console.log(colors.cWarn(" WARN ") + "Password not defined"); }
-	if (config.command_prefix === null || config.command_prefix.length !== 1) { console.log(colors.cWarn(" WARN ") + "Prefix either not defined or more than one character"); }
-	if (config.mod_command_prefix === null || config.mod_command_prefix.length !== 1) { console.log(colors.cWarn(" WARN ") + "Mod prefix either not defined or more than one character"); }
-	if (config.admin_id === null) { console.log(colors.cYellow("Admin user's id not defined") + " in config"); }
-	if (config.mal_user === null) { console.log(colors.cYellow("MAL username not defined") + " in config"); }
-	if (config.mal_pass === null) { console.log(colors.cYellow("MAL password not defined") + " in config"); }
-	if (config.weather_api_key === null) { console.log(colors.cYellow("OpenWeatherMap API key not defined") + " in config"); }
-	if (config.osu_api_key === null) { console.log(colors.cYellow("Osu API key not defined") + " in config"); }
+	if (!config.email) { console.log(colors.cWarn(" WARN ") + "Email not defined"); }
+	if (!config.password) { console.log(colors.cWarn(" WARN ") + "Password not defined"); }
+	if (!config.command_prefix || config.command_prefix.length !== 1) { console.log(colors.cWarn(" WARN ") + "Prefix either not defined or more than one character"); }
+	if (!config.mod_command_prefix || config.mod_command_prefix.length !== 1) { console.log(colors.cWarn(" WARN ") + "Mod prefix either not defined or more than one character"); }
+	if (!config.admin_id) { console.log(colors.cYellow("Admin user's id") + " not defined in config"); }
+	if (!config.mal_user) { console.log(colors.cYellow("MAL username") + " not defined in config"); }
+	if (!config.mal_pass) { console.log(colors.cYellow("MAL password") + " not defined in config"); }
+	if (!config.weather_api_key) { console.log(colors.cYellow("OpenWeatherMap API key") + " not defined in config"); }
+	if (!config.osu_api_key) { console.log(colors.cYellow("Osu API key") + " not defined in config"); }
+	if (!config.imgur_client_id) { console.log(colors.cYellow("Imgur client id") + " not defined in config"); }
 }
 
 function evaluateString(msg) {
 	if (msg.author.id != config.admin_id) { console.log(colors.cWarn(" WARN ") + "Somehow an unauthorized user got into eval!"); return; }
-	var timeTaken = new Date();
+	var timeTaken = new Date(), result;
 	console.log("Running eval");
-	var result;
-	try { result = eval("try{" + msg.content.substring(7).replace(/\n/g, "") + "}catch(err){console.log(colors.cError(\" ERROR \")+err);bot.sendMessage(msg, \"```\"+err+\"```\");}");
-	} catch (e) { console.log(colors.cError(" ERROR ") + e); bot.sendMessage(msg, "```" + e + "```"); }
-	if (result && typeof result !== "object") {
-		bot.sendMessage(msg,  "`Time taken: " + (timeTaken - msg.timestamp) + "ms`\n" + result);
-		console.log("Result: " + result);
+	try { result = eval(msg.content.substring(7).replace(/\n/g, ""));
+	} catch (e) { console.log(colors.cError(" ERROR ") + e); bot.sendMessage(msg, "```diff\n- " + e + "```"); }
+	if (result) {
+		if (typeof result === 'object') {
+			if (JSON.stringify(result) !== '{}') bot.sendMessage(msg, "`Compute time: " + (timeTaken - msg.timestamp) + "ms`\n" + JSON.stringify(result));
+		} else bot.sendMessage(msg, "`Compute time: " + (timeTaken - msg.timestamp) + "ms`\n" + result);
 	}
-
+	console.log("Result: " + result);
 }
 
 setInterval(() => {
