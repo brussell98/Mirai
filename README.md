@@ -1,4 +1,4 @@
-# BrussellBot 2.0
+# BrussellBot 2.1
 
 A multipurpose bot for Discord using [Discord.js](https://github.com/hydrabolt/discord.js/)
 

@@ -1,12 +1,12 @@
-var config = require("./config.json");
-var version = require("../package.json").version;
-var colors = require("./styles.js");
-var request = require("request");
-var xml2js = require("xml2js");
-var osuapi = require("osu-api");
-var ent = require("entities");
-var waifus = require("./waifus.json");
-var db = require("./db.js");
+var config = require("./config.json")
+	,version = require("../package.json").version
+	,request = require("request")
+	,xml2js = require("xml2js")
+	,osuapi = require("osu-api")
+	,ent = require("entities")
+	,waifus = require("./waifus.json")
+	,db = require("./db.js")
+	,remind = require('./remind.js');
 
 var VoteDB = {}
 	,LottoDB = {}
@@ -17,12 +17,14 @@ const OWM_API_KEY = config.weather_api_key;
 const MAL_USER = config.mal_user;
 const MAL_PASS = config.mal_pass;
 
+setInterval(() => Ratings = {},86400000);
+
 /*****************************\
 		   Functions
 \*****************************/
 
-function correctUsage(cmd, usage, msg, bot) {
-	bot.sendMessage(msg, msg.author.username.replace(/@/g, '@\u200b') + ", the correct usage is `" + config.command_prefix + cmd + ' ' + usage + '`', (erro, wMessage)=>{bot.deleteMessage(wMessage, {"wait": 10000});});
+function correctUsage(cmd, usage, msg, bot, delay) {
+	bot.sendMessage(msg, msg.author.username.replace(/@/g, '@\u200b') + ", the correct usage is `" + config.command_prefix + cmd + ' ' + usage + '`', (erro, wMessage)=>{bot.deleteMessage(wMessage, {"wait": delay || 10000});});
 	bot.deleteMessage(msg, {"wait": 10000});
 }
 
@@ -92,6 +94,19 @@ function generateJSONRating(fullName) {
 	return score;
 }
 
+function timeParser(ammount, mod) {
+	switch (ammount) {
+		case "a": case "an": case "one": case "1": //js pls
+			return 1 * mod;
+		case "two": case "2":
+			return 2 * mod;
+		case "three": case "3":
+			return 3 * mod;
+		default:
+			return parseInt(ammount) * mod;
+	}
+}
+
 /*****************************\
 Commands (Check https://github.com/brussell98/BrussellBot/wiki/New-Command-Guide for how to make new ones)
 \*****************************/
@@ -101,9 +116,11 @@ var aliases = {
 	"server": "botserver",
 	"backwards": "reverse",
 	"myid": "id",
+	"poi?": "poi",
 	"p": "ping",
 	"j": "join", "joins": "join",
-	"i": "info",
+	"joined": "joinedat",
+	"i": "info", "user": "info", "userinfo": "info", "serverinfo": "info",
 	"a": "avatar",
 	"pick": "choose", "c": "choose",
 	"v": "vote",
@@ -116,7 +133,8 @@ var aliases = {
 	"cat": "catfacts", "meow": "catfacts", "neko": "catfacts",
 	"r": "ratewaifu", "rate": "ratewaifu", "waifu": "ratewaifu",
 	"imgur": "image", "im": "image",
-	"f": "fortune"
+	"f": "fortune",
+	"remind": "remindme"
 };
 
 var commands = {
@@ -127,21 +145,21 @@ var commands = {
 		process: function(bot, msg, suffix) {
 			var toSend = [];
 			if (!suffix) {
-				toSend.push("Use `" + config.command_prefix + "help <command name>` to get more info on a command.");
-				toSend.push("Mod commands can be found using `" + config.mod_command_prefix + "help`.");
-				toSend.push("You can find the list online at **http://brussell98.github.io/bot/commands.html**");
-				toSend.push("**Commands:**\n");
-				toSend.push("`@" + bot.user.username + " text`\n		Talk to the bot (cleverbot)");
+				toSend.push("Use `" + config.command_prefix + "help <command name>` to get more info on a command.\n");
+				toSend.push("Mod commands can be found using `" + config.mod_command_prefix + "help`.\n");
+				toSend.push("You can find the list online at **http://brussell98.github.io/bot/commands.html**\n");
+				toSend.push("**Commands:**```glsl\n");
+				toSend.push("@" + bot.user.username + " text\n\t#Talk to the bot (cleverbot)");
 				Object.keys(commands).forEach(cmd=>{
 					if (commands[cmd].hasOwnProperty("shouldDisplay")) {
-						if (commands[cmd].shouldDisplay) toSend.push("`" + config.command_prefix + cmd + " " + commands[cmd].usage + "`\n		" + commands[cmd].desc);
-					} else toSend.push("`" + config.command_prefix + cmd + " " + commands[cmd].usage + "`\n		" + commands[cmd].desc);
+						if (commands[cmd].shouldDisplay) toSend.push("\n" + config.command_prefix + cmd + " " + commands[cmd].usage + "\n\t#" + commands[cmd].desc);
+					} else toSend.push("\n" + config.command_prefix + cmd + " " + commands[cmd].usage + "\n\t#" + commands[cmd].desc);
 				});
-				toSend = toSend.join('\n');
-				if (toSend.length >= 2000) {
-					bot.sendMessage(msg.author, toSend.substr(0, 2000));
-					setTimeout(()=>{bot.sendMessage(msg.author, toSend.substr(2000));}, 1000);
-				} else bot.sendMessage(msg.author, toSend);
+				toSend = toSend.join('');
+				if (toSend.length >= 1990) {
+					bot.sendMessage(msg.author, toSend.substr(0, 1990).substr(0, toSend.substr(0, 1990).lastIndexOf('\n\t')) + "```");
+					setTimeout(()=>{bot.sendMessage(msg.author, "```glsl" + toSend.substr(toSend.substr(0, 1990).lastIndexOf('\n\t')) + "```");}, 1000);
+				} else bot.sendMessage(msg.author, toSend + "```");
 			} else {
 				suffix = suffix.trim().toLowerCase();
 				if (commands.hasOwnProperty(suffix)) {
@@ -151,7 +169,7 @@ var commands = {
 					if (commands[suffix].hasOwnProperty("cooldown")) toSend.push("__Cooldown:__ " + commands[suffix].cooldown + " seconds");
 					if (commands[suffix].hasOwnProperty("deleteCommand")) toSend.push("*Can delete the activating message*");
 					bot.sendMessage(msg, toSend);
-				} else bot.sendMessage(msg, "Command `" + suffix + "` not found. Aliases aren't allowed.", (erro, wMessage)=>{ bot.deleteMessage(wMessage, {"wait": 8000}); });
+				} else bot.sendMessage(msg, "Command `" + suffix + "` not found. Aliases aren't allowed.", (erro, wMessage)=>{ bot.deleteMessage(wMessage, {"wait": 10000}); });
 			}
 		}
 	},
@@ -176,13 +194,17 @@ var commands = {
 		}
 	},
 	"beep": {
-		desc: "boop", usage: "", deleteCommand: false, cooldown: 2, shouldDisplay: false,
+		desc: "boop", usage: "", deleteCommand: false, cooldown: 3, shouldDisplay: false,
 		process: (bot, msg) => { bot.sendMessage(msg, "boop", (e,sentMsg)=>{bot.updateMessage(sentMsg, "boop    |    Time taken: " + (sentMsg.timestamp - msg.timestamp) + "ms")}); }
+	},
+	"poi": {
+		desc: "poi", usage: "", deleteCommand: false, cooldown: 3, shouldDisplay: false,
+		process: (bot, msg) => { bot.sendMessage(msg, "Poi!"); }
 	},
 	"ping": {
 		desc: "Replies with pong.",
 		info: "You can use this to check how long it take the bot to detect a message and respond.",
-		cooldown: 2, shouldDisplay: false, usage: "",
+		cooldown: 3, shouldDisplay: false, usage: "",
 		process: function(bot, msg) {
 			var n = Math.floor(Math.random() * 6);
 			if (n === 0) { bot.sendMessage(msg, "pong", (e,sentMsg)=>{bot.updateMessage(sentMsg, "pong    |    Time taken: " + (sentMsg.timestamp - msg.timestamp) + "ms")});
@@ -207,18 +229,18 @@ var commands = {
 						bot.joinServer(invite, function(err, server) {
 							if (err) {
 								bot.sendMessage(msg, "⚠ Failed to join: " + err);
-								console.log(colors.cWarn(" WARN ") + err);
+								console.log(cWarn(" WARN ") + " " + err);
 							} else if (cServers.indexOf(server.id) > -1) {
 								console.log("Already in server");
 								bot.sendMessage(msg, "I'm already in that server!");
 							} else {
 								if (config.banned_server_ids && config.banned_server_ids.indexOf(server.id) > -1) {
-									console.log(colors.cRed("Joined server but it was on the ban list") + ": " + server.name);
+									console.log(cRed("Joined server but it was on the ban list") + ": " + server.name);
 									bot.sendMessage(msg, "This server is on the ban list");
 									bot.leaveServer(server);
 									return;
 								}
-								console.log(colors.cGreen("Joined server: ") + server.name);
+								console.log(cGreen("Joined server: ") + server.name);
 								bot.sendMessage(msg, "✅ Successfully joined ***" + server.name + "***");
 								db.addServer(server);
 								db.addServerToTimes(server);
@@ -257,7 +279,7 @@ var commands = {
 					if (roll.details == null) { bot.sendMessage(msg, roll.result, function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 					if (roll.details.length <= 100) bot.sendMessage(msg, "🎲 Your **" + roll.input + "** resulted in " + roll.result + " " + roll.details);
 					else bot.sendMessage(msg, "🎲 Your **" + roll.input + "** resulted in " + roll.result);
-				} else console.log(colors.cWarn(" WARN ") + "Got an error: " + err + ", status code: ", response.statusCode);
+				} else console.log(cWarn(" WARN ") + " Got an error: " + err + ", status code: ", response.statusCode);
 			});
 		}
 	},
@@ -270,8 +292,41 @@ var commands = {
 			var roll = 100;
 			try {
 				if (suffix && /\d+/.test(suffix)) { roll = parseInt(suffix.replace(/[^\d]/g, "")); }
-			} catch (err) { console.log(colors.cError(" ERROR ") + err); bot.sendMessage(msg, "⚠ Error parsing suffix into int", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
+			} catch (err) { console.log(cError(" ERROR ") + " " + err); bot.sendMessage(msg, "⚠ Error parsing suffix into int", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); }
 			bot.sendMessage(msg, msg.author.username + " rolled **1-" + roll + "** and got " + Math.floor((Math.random() * (roll)) + 1));
+		}
+	},
+	"joinedat": {
+		desc: "Check when a user joined the server", usage: "[user]",
+		deleteCommand: true, cooldown: 5,
+		process: function(bot, msg, suffix) {
+			if (msg.mentions.length > 0) {
+				if (msg.mentions.length > 4) bot.sendMessage(msg, "Limit of 4 users at once", (e, m)=>{bot.deleteMessage(m,{"wait": 10000});});
+				msg.mentions.map(user=>{
+					var toSend = [];
+					var detailsOf = msg.channel.server.detailsOfUser(user);
+					if (detailsOf) toSend.push("**" + user.username.replace(/@/g, '@\u200b') + " joined on:** " + new Date(detailsOf.joinedAt).toUTCString());
+					else toSend.push("**" + user.username.replace(/@/g, '@\u200b') + " joined on:** Error user is undefined");
+					bot.sendMessage(msg, toSend);
+				});
+			} else if (suffix) {
+				var users = suffix.split(/, ?/);
+				if (users.length > 4) { bot.sendMessage(msg, "Limit of 4 users at once", (erro, wMessage)=>{ bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
+				var toSend = [];
+				users.map(user=>{
+					var usr = findUser(msg.channel.server.members, user);
+					if (usr) {
+						var detailsOf = msg.channel.server.detailsOfUser(usr);
+						if (detailsOf) toSend.push("**" + usr.username.replace(/@/g, '@\u200b') + " joined on:** " + new Date(detailsOf.joinedAt).toUTCString());
+						else toSend.push("**" + usr.username.replace(/@/g, '@\u200b') + " joined on:** Error user is undefined");
+					} else toSend.push("User \"" + user.replace(/@/g, '@\u200b') + "\" not found");
+				});
+				bot.sendMessage(msg, toSend);
+			} else {
+				var detailsOf = msg.channel.server.detailsOfUser(msg.author);
+				if (detailsOf) bot.sendMessage(msg, "**" + msg.author.username.replace(/@/g, '@\u200b') + " joined on:** " + new Date(detailsOf.joinedAt).toUTCString());
+				else bot.sendMessage(msg, "**" + msg.author.username.replace(/@/g, '@\u200b') + " joined on:** Error user is undefined");
+			}
 		}
 	},
 	"info": {
@@ -287,12 +342,11 @@ var commands = {
 						if (msg.mentions.length > 4) { bot.sendMessage(msg, "Limit of 4 users", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 						msg.mentions.map(function(usr) {
 							var toSend = [], count = 0;
-							toSend.push("ℹ **Info on** " + usr.username + " (" + usr.discriminator + ")");
-							toSend.push("**ID:** " + usr.id);
+							toSend.push("**Info on** " + usr.username + "#" + usr.discriminator + " (ID: " + usr.id + ")");
 							if (usr.game && usr.game.name !== undefined && usr.game.name !== null && usr.game.name !== "null") toSend.push("**Status:** " + usr.status + " **last playing** " + usr.game.name);
 							else toSend.push("**Status:** " + usr.status);
 							var detailsOf = msg.channel.server.detailsOfUser(usr);
-							if (detailsOf) toSend.push("**Joined on:** " + new Date(msg.channel.server.detailsOfUser(usr).joinedAt).toUTCString());
+							if (detailsOf) toSend.push("**Joined on:** " + new Date(detailsOf.joinedAt).toUTCString());
 							else toSend.push("**Joined on:** Error");
 							if (msg.channel.server.rolesOfUser(usr.id) != undefined) {
 								var roles = msg.channel.server.rolesOfUser(usr.id).map(role=>role.name);
@@ -306,7 +360,6 @@ var commands = {
 							} else toSend.push("**Roles:** Error");
 							bot.servers.map(server=>{ if (server.members.indexOf(usr) > -1) { count += 1; }});
 							if (count > 1) { toSend.push("**Shared servers:** " + count); }
-							if (usr.avatarURL != null) { toSend.push("**Avatar URL:** `" + usr.avatarURL + "`"); }
 							bot.sendMessage(msg, toSend);
 						});
 					} else {
@@ -317,12 +370,11 @@ var commands = {
 							var usr = findUser(msg.channel.server.members, user);
 							if (usr) {
 								var toSend = [], count = 0;
-								toSend.push("ℹ **Info on** " + usr.username + " (" + usr.discriminator + ")");
-								toSend.push("**ID:** " + usr.id);
+								toSend.push("**Info on** " + usr.username + "#" + usr.discriminator + " (ID: " + usr.id + ")");
 								if (usr.game && usr.game.name !== undefined && usr.game.name !== null && usr.game.name !== "null") toSend.push("**Status:** " + usr.status + " **last playing** " + usr.game.name);
 								else toSend.push("**Status:** " + usr.status);
 								var detailsOf = msg.channel.server.detailsOfUser(usr);
-								if (detailsOf) toSend.push("**Joined on:** " + new Date(msg.channel.server.detailsOfUser(usr).joinedAt).toUTCString());
+								if (detailsOf) toSend.push("**Joined on:** " + new Date(detailsOf.joinedAt).toUTCString());
 								else toSend.push("**Joined on:** Error");
 								if (msg.channel.server.rolesOfUser(usr.id) != undefined) {
 									var roles = msg.channel.server.rolesOfUser(usr.id).map(role=>role.name);
@@ -336,15 +388,13 @@ var commands = {
 								} else toSend.push("**Roles:** Error");
 								bot.servers.map(server=>{ if (server.members.indexOf(usr) > -1) { count += 1; }});
 								if (count > 1) { toSend.push("**Shared servers:** " + count); }
-								if (usr.avatarURL != null) { toSend.push("**Avatar URL:** `" + usr.avatarURL + "`"); }
 								bot.sendMessage(msg, toSend);
 							} else bot.sendMessage(msg, "User \"" + user + "\" not found. If you want to get info on multiple users separate them with a comma.", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 15000}); });
 						});
 					}
 				} else {
 					var toSend = [];
-					toSend.push("ℹ **Info on** " + msg.channel.server.name);
-					toSend.push("**Server ID:** " + msg.channel.server.id);
+					toSend.push("**Info on** " + msg.channel.server.name + " (" + msg.channel.server.id + ")");
 					toSend.push("**Owner:** " + msg.channel.server.owner.username + " (**ID:** " + msg.channel.server.owner.id + ")");
 					toSend.push("**Region:** " + msg.channel.server.region);
 					toSend.push("**Members:** " + msg.channel.server.members.length + " **Channels:** " + msg.channel.server.channels.length);
@@ -384,7 +434,7 @@ var commands = {
 				users.map(function(user) {
 					var usr = findUser(msg.channel.server.members, user);
 					if (usr) { (usr.avatarURL != null) ? bot.sendMessage(msg, "**" + usr.username.replace(/@/g, '@\u200b') + "**'s avatar is: " + usr.avatarURL + "") : bot.sendMessage(msg, "**" + usr.username + "** has no avatar", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); });
-					} else { bot.sendMessage(msg, "User \"" + user + "\" not found. (Blame *Better*Discord) If you want to get the avatar of multiple users separate them with a comma.", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 20000}); }); }
+					} else { bot.sendMessage(msg, "User \"" + user + "\" not found. If you want to get the avatar of multiple users separate them with a comma.", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 20000}); }); }
 				});
 			}
 		}
@@ -566,7 +616,7 @@ var commands = {
 		usage: "[question]",
 		cooldown: 4,
 		process: function(bot, msg) {
-			var responses = ["It is certain", "Without a doubt", "You may rely on it", "Most likely", "Yes", "Signs point to yes", "Better not tell you now", "Don't count on it", "My reply is no", "My sources say no", "Outlook not so good", "Very doubtful"];
+			var responses = ["It is certain", "Without a doubt", "You may rely on it", "Most liskely", "Yes", "Signs point to yes", "Better not tell you now", "Don't count on it", "My reply is no", "My sources say no", "Outlook not so good", "Very doubtful"];
 			bot.sendMessage(msg, "🎱 " + responses[Math.floor(Math.random() * (responses.length))]);
 		}
 	},
@@ -689,17 +739,22 @@ var commands = {
 				var username = (suffix.split(" ").length < 2) ?  msg.author.username : suffix.substring(5);
 				if (!OSU_API_KEY || OSU_API_KEY == "") { bot.sendMessage(msg, "Osu API key not configured by bot owner", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 				var osu = new osuapi.Api(OSU_API_KEY);
-				osu.getUser(username, function(err, data) {
-					if (err) { bot.sendMessage(msg, "⚠ Error: " + err, function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
-					if (!data) { bot.sendMessage(msg, "⚠ User \"" + username + "\" not found", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
-					var toSend = [];
-					if (data.playcount === null) { bot.sendMessage(msg, "User has no data", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
-					toSend.push("Osu stats for: **" + data.username.replace(/@/g, '@\u200b') + "**:");
-					toSend.push("━━━━━━━━━━━━━━━━━━━");
-					toSend.push("**Play Count**: " + data.playcount.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " | **Ranked Score**: " + data.ranked_score.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " | **Total Score**: " + data.total_score.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " | **Level**: " + data.level.substring(0, data.level.split(".")[0].length + 3));
-					toSend.push("**PP**: " + data.pp_raw.split(".")[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " | **Rank**: #" + data.pp_rank.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " | **Country Rank**: #" + data.pp_country_rank.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " | **Accuracy**: " + data.accuracy.substring(0, data.accuracy.split(".")[0].length + 3) + "%");
-					toSend.push("**300**: " + data.count300.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " | **100**: " + data.count100.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " | **50**: " + data.count50.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " | **SS**: " + data.count_rank_ss + " | **S**: " + data.count_rank_s + " | **A**: " + data.count_rank_a.replace(/\B(?=(\d{3})+(?!\d))/g, ","));
-					bot.sendMessage(msg, toSend);
+				osu.getUser(username, (err, data) => {
+					if (err) bot.sendMessage(msg, "⚠ Error: " + err, function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); });
+					if (!data) bot.sendMessage(msg, "⚠ User \"" + username + "\" not found", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); });
+					else {
+						if (data.playcount === null || data.playcount == 0) { bot.sendMessage(msg, "User has no data", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
+						var toSend = [];
+						toSend.push("User: " + data.username.replace(/@/g, '@\u200b') + " (" + data.country + ")");
+						toSend.push("Play Count: " + data.playcount.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " | Level: " + data.level.substring(0, data.level.split(".")[0].length + 3));
+						toSend.push("Ranked Score: " + data.ranked_score.replace(/\B(?=(\d{3})+(?!\d))/g, ","));
+						toSend.push("Total Score: " + data.total_score.replace(/\B(?=(\d{3})+(?!\d))/g, ","));
+						toSend.push("PP: " + data.pp_raw.split(".")[0].replace(/\B(?=(\d{3})+(?!\d))/g, ","));
+						toSend.push("Rank: #" + data.pp_rank.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " (Country Rank: #" + data.pp_country_rank.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + ")");
+						toSend.push("Accuracy: " + data.accuracy.substring(0, data.accuracy.split(".")[0].length + 3) + "%");
+						toSend.push("300s: " + data.count300.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " | 100s: " + data.count100.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " | 50s: " + data.count50.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " | SS: " + data.count_rank_ss + " | S: " + data.count_rank_s + " | A: " + data.count_rank_a.replace(/\B(?=(\d{3})+(?!\d))/g, ","));
+						bot.sendMessage(msg, "```xl\n" + toSend.join('\n') + "```");
+					}
 				});
 
 			} else if (suffix.split(" ")[0] === "best") {
@@ -761,7 +816,7 @@ var commands = {
 					});});});});});
 				});
 
-			} else correctUsage("osu", this.usage, msg, bot);
+			} else correctUsage("osu", this.usage, msg, bot, 15000);
 		}
 	},
 	"rps": {
@@ -966,19 +1021,69 @@ var commands = {
 			})
 		}
 	},
-	"remindme": { shouldDisplay: false,
+	"remindme": {
 		desc: "Set reminders.",
-		usage: "clear | list | <reminder> <[# days] [# hours] [# minutes]>",
-		info: "Comming Soon!",
-		deleteCommand: true, cooldown: 5,
+		usage: "remove <text in reminder> | list | <reminder> in <[0 days] [00 hours] [00 minutes] [000 seconds]>",
+		info: "__remove:__ Will remove a reminder containing the text input.\n__list:__ List your reminders.\n__add:__ Use the *<text> in <[0 days] [00 hours] [00 minutes] [000 seconds]>*  format.",
+		deleteCommand: false, cooldown: 5,
 		process: function(bot, msg, suffix) {
-			if (/^clear \d$/i.test(suffix.trim())) {
-				console.log('Detected clear');
-			} else if (suffix.trim().toLowerCase() === 'list') {
-				console.log('detected list');
-			} else if (/^.* in ((\d|a|one|two|three) ?d[ays]*)?( and| &)? ?((\d\d?\d?|a|an|one|two|three) ?h[ours]*)?( and| &)? ?((\d\d?\d?|a|an|one|two|three) ?m[inutes]*)?( and| &)? ?((\d\d?\d?|a|an|one|two|three) ?s[econds]*)?$/i.test(suffix)) {
-				console.log('detected valid remind');
-			} else correctUsage("remindme", this.usage, msg, bot);
+			if (/^remove/i.test(suffix)) {
+
+				if (suffix.length > 7) {
+					remind.removeReminder(suffix.replace(/^remove /i, ''), msg.author.id, ()=>{
+						bot.sendMessage(msg, "Successfully removed reminder 👍");
+					}, ()=>{
+						bot.sendMessage(msg, "No matching reminder found 👎");
+					});
+				} else {
+					var list = remind.listForUser(msg.author.id);
+					if (list && list.length > 0) bot.sendMessage(msg, "__Use `" + config.command_prefix + "remindme remove ` + the text from the reminder you wish to remove:__\n"+list.join('\n'));
+					else bot.sendMessage(msg, "Looks like you don't have any reminders!");
+				}
+
+			} else if (suffix.toLowerCase() === 'list') {
+
+				var list = remind.listForUser(msg.author.id);
+				if (list && list.length > 0) bot.sendMessage(msg, "__Here are your reminders:__\n"+list.join('\n'));
+				else bot.sendMessage(msg, "Looks like you don't have any reminders!");
+
+			} else if (/^.* in( ((\d|a|one|two|three) ?d[ays]*)( and| &)?)?( ((\d\d?\d?|a|an|one|two|three) ?h[ours]*)( and| &)?)?( ((\d\d?\d?|a|one|two|three) ?m[inutes]*)( and| &)?)?( (\d\d?\d?|a|one|two|three) ?s[econds]*)?$/i.test(suffix)) {
+
+				if (remind.countForUser(msg.author.id) >= 5) {
+					bot.sendMessage(msg, "You can't add any more reminders because you already have 5. You can remove a reminder to make space with *NOT YET SUPPORTED*");
+					return;
+				}
+
+				var millisecs = 0
+					,timeString = suffix.replace(/.* in /i, '');
+				if (/ ((\d\d?\d?\d?\d?|a|one|two|three) ?s[econds]*)$/i.test(suffix)) {
+					millisecs += timeParser(/((\d\d?\d?\d?\d?|a|one|two|three) ?s[econds]*)$/i.exec(suffix)[2] + "", 1000);
+					suffix = suffix.replace(/( and| &)? ((\d\d?\d?\d?\d?|a|one|two|three) ?s[econds]*)$/i, '');
+				}
+				if (/ ((\d\d?\d?|a|one|two|three) ?m[inutes]*)$/i.test(suffix)) {
+					millisecs += timeParser(/((\d\d?\d?|a|one|two|three) ?m[inutes]*)$/i.exec(suffix)[2] + "", 60000);
+					suffix = suffix.replace(/( and| &)? ((\d\d?\d?|a|one|two|three) ?m[inutes]*)$/i, '');
+				}
+				if (/ ((\d\d?\d?|a|an|one|two|three) ?h[ours]*)$/i.test(suffix)) {
+					millisecs += timeParser(/((\d\d?\d?|a|an|one|two|three) ?h[ours]*)$/i.exec(suffix)[2] + "", 3600000);
+					suffix = suffix.replace(/( and| &)? ((\d\d?\d?|a|an|one|two|three) ?h[ours]*)$/i, '');
+				}
+				if (/ ((\d|a|one|two|three) ?d[ays]*)$/i.test(suffix)) {
+					var hours = /((\d|a|one|two|three) ?d[ays]*)$/i.exec(suffix)[2];
+					if (/\d/.test(hours)) {
+						if (hours > 7) { bot.sendMessage(msg, "There is a 7 day limit on reminders", (e, m)=>{bot.deleteMessage(m,{"wait": 10000});}); return; }
+					}
+					millisecs += timeParser(hours + "", 86400000);
+					suffix = suffix.replace(/( and| &)? ((\d|a|one|two|three) ?d[ays]*)$/i, '');
+				}
+				if (millisecs > 604800000) { bot.sendMessage(msg, "There is a 7 day limit on reminders", (e, m)=>{bot.deleteMessage(m,{"wait": 10000});}); return; }
+				else if (millisecs <= 0) { bot.sendMessage(msg, "You must specify a time in the future", (e, m)=>{bot.deleteMessage(m,{"wait": 10000});}); return; }
+
+				var reminder = suffix.replace(/^(me )?(to )?/i, '').replace(/in ?$/i, '').trim();
+				remind.addReminder(msg.author.id, Date.now() + millisecs, reminder);
+				bot.sendMessage(msg, "Got it! I'll remind you in " + timeString);
+
+			} else correctUsage("remindme", this.usage, msg, bot, 15000);
 		}
 	}
 };
