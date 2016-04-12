@@ -2,7 +2,7 @@ var request = require("request");
 var version = require("../package.json").version;
 
 exports.checkForUpdate = function() {
-	request("https://raw.githubusercontent.com/brussell98/BrussellBot/public/package.json", (err, response, body)=>{
+	request("https://raw.githubusercontent.com/brussell98/BrussellBot/master/package.json", (err, response, body)=>{
 		if (err) console.log(cWarn(" WARN ") + " Version check error: " + err);
 		else if (response.statusCode == 200) {
 			var latest = JSON.parse(body).version;
