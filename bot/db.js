@@ -1,4 +1,5 @@
 var fs = require('fs')
+	,config = require("../bot/config.json");
 ServerSettings = require('../db/servers.json');
 Times = require('../db/times.json');
 var inactive = []
@@ -48,7 +49,13 @@ function updateTimes() {
 	})
 }
 
+exports.serverIsNew = function(server) {
+	if (Times.hasOwnProperty(server.id)) return false;
+	return true;
+}
+
 exports.addServer = function(server) {
+	if (!server) return;
 	if (!ServerSettings.hasOwnProperty(server.id)) {
 		ServerSettings[server.id] = {"ignore":[],"banAlerts":false,"nameChanges":false,"welcome":"none","deleteCommands":false,"notifyChannel":"general","allowNSFW":false};
 		updatedS = true;
@@ -93,16 +100,36 @@ exports.unignoreChannel = function(channelId, serverId) {
 exports.checkServers = function(bot) {
 	inactive = [];
 	var now = Date.now();
+	Object.keys(Times).map(id=>{
+		if (!bot.servers.find(s=>s.id == id)) delete Times[id];
+	});
 	bot.servers.map(server=>{
-		if (server == undefined || whitelist.indexOf(server.id) > -1) return;
-		if (!Times.hasOwnProperty(server.id)) Times[server.id] = now;
-		else if (now - Times[server.id] >= 604800000) {
+		if (server == undefined) return;
+		if (!Times.hasOwnProperty(server.id)) {
+			console.log(cGreen("Joined server: ") + server.name);
+			if (config.banned_server_ids && config.banned_server_ids.indexOf(server.id) > -1) {
+				console.log(cRed("Joined server but it was on the ban list") + ": " + server.name);
+				bot.sendMessage(server.defaultChannel, "This server is on the ban list");
+				setTimeout(()=>{bot.leaveServer(server);},1000);
+			} else {
+				if (config.whitelist.indexOf(server.id) == -1) {
+					var toSend = [];
+					toSend.push("👋🏻 Hi! I'm **" + bot.user.username.replace(/@/g, '@\u200b') + "**");
+					toSend.push("You can use `" + config.command_prefix + "help` to see what I can do. Mods can use `" + config.mod_command_prefix + "help` for mod commands.");
+					toSend.push("Mod/Admin commands *including bot settings* can be viewed with `" + config.mod_command_prefix + "help`");
+					toSend.push("For help, feedback, bugs, info, changelogs, etc. go to **<https://discord.gg/0kvLlwb7slG3XCCQ>**");
+					bot.sendMessage(server.defaultChannel, toSend);
+				}
+				Times[server.id] = now;
+				addServer(server);
+			}
+		} else if (config.whitelist.indexOf(server.id) == -1 && now - Times[server.id] >= 604800000) {
 			inactive.push(server.id);
 			if (debug) console.log(cDebug(" DEBUG ") + " " + server.name + '(' + server.id + ')' + ' hasn\'t used the bot for ' + ((now - Times[server.id]) / 1000 / 60 / 60 / 24).toFixed(1) + ' days.');
 		}
 	});
 	updatedT = true;
-	if (inactive.length > 0) console.log('Can leave ' + inactive.length + ' servers due to inactivity');
+	if (inactive.length > 0) console.log("Can leave " + inactive.length + " servers that don't use the bot");
 	if (debug) console.log(cDebug(" DEBUG ") + " Checked for inactive servers");
 };
 
@@ -150,11 +177,19 @@ exports.handleLeave = function(server) {
 
 exports.addServerToTimes = function(server) {
 	if (!server || !server.id) return;
-	if (!Times.hasOwnProperty(server.id) && whitelist.indexOf(server.id) == -1) {
+	if (!Times.hasOwnProperty(server.id)) {
 		Times[server.id] = Date.now();
 		updatedT = true;
 	}
 };
+
+function addServer(server) {
+	if (!server) return
+	if (!ServerSettings.hasOwnProperty(server.id)) {
+		ServerSettings[server.id] = {"ignore":[],"banAlerts":false,"nameChanges":false,"welcome":"none","deleteCommands":false,"notifyChannel":"general","allowNSFW":false};
+		updatedS = true;
+	}
+}
 
 exports.updateTimestamp = function(server) {
 	if (!server || !server.id) return;

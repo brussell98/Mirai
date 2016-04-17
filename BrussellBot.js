@@ -12,7 +12,6 @@ var commands = require("./bot/commands.js")
 	,remind = require('./bot/remind.js')
 	,chalk = require('chalk')
 	,clk = new chalk.constructor({enabled: true});
-checkConfig();
 
 cWarn = clk.bgYellow.black;
 cError = clk.bgRed.black;
@@ -25,6 +24,8 @@ cRed = clk.bold.red;
 cServer = clk.bold.magenta;
 cUYellow = clk.bold.underline.yellow;
 cBgGreen = clk.bgGreen.black;
+
+checkConfig();
 
 var lastExecTime = {}
 	,pmCoolDown = {};
@@ -41,7 +42,7 @@ bot.on("ready", () => {
 	bot.setPlayingGame(games[Math.floor(Math.random() * (games.length))]);
 	console.log(cGreen("BrussellBot is ready!") + " Listening to " + bot.channels.length + " channels on " + bot.servers.length + " servers");
 	versioncheck.checkForUpdate();
-	db.checkServers(bot);
+	setTimeout(()=>{db.checkServers(bot)},10000);
 	remind.checkReminders(bot);
 	if (config.carbon_key) {
 		request.post({
@@ -64,16 +65,18 @@ bot.on("disconnected", () => {
 	commandsProcessed = 0, talkedToTimes = 0, lastExecTime = {};
 	setTimeout(() => {
 		console.log("Attempting to log in...");
-		bot.login(config.email, config.password, (err, token)=>{
-			if (err) { console.log(err); process.exit(0); }
-			if (!token) { console.log(cWarn(" WARN ") + " Failed to re-connect"); process.exit(0); }
-		});}, 20000);
+		bot.loginWithToken(config.token, (err, token) => {
+			if (err) { console.log(err); setTimeout(() => { process.exit(1); }, 2000); }
+			if (!token) { console.log(cWarn(" WARN ") + " failed to connect"); setTimeout(() => { process.exit(0); }, 2000); }
+		});
+	});
 });
 
 bot.on("message", msg => {
 	if (msg.author.id == bot.user.id) return;
 	if (msg.channel.isPrivate) {
-		if (/(^https?:\/\/discord\.gg\/[A-Za-z0-9]+$|^https?:\/\/discordapp\.com\/invite\/[A-Za-z0-9]+$)/.test(msg.content)) pmInvite(msg); //accept invites sent in a DM
+		if (/(^https?:\/\/discord\.gg\/[A-Za-z0-9]+$|^https?:\/\/discordapp\.com\/invite\/[A-Za-z0-9]+$)/.test(msg.content))
+			bot.sendMessage(msg.author, "Use this to bring me to your server: <https://discordapp.com/oauth2/authorize?&client_id=" + config.app_id + "&scope=bot&permissions=12659727>");
 		else if (msg.content[0] !== config.command_prefix && msg.content[0] !== config.mod_command_prefix && !msg.content.startsWith('(eval) ')) {
 			if (pmCoolDown.hasOwnProperty(msg.author.id)) {
 				if (Date.now() - pmCoolDown[msg.author.id] > 3000) {
@@ -118,7 +121,7 @@ bot.on("message", msg => {
 							if (toSend.length + msg.cleanContent.length >= 1930)
 								toSend = msg.cleanContent.substr(0, 1930);
 							else toSend += msg.cleanContent.substr(0, 1930);
-							bot.sendMessage(owner, msg.channel.server.name + " > " + msg.author.username + ":\n");
+							bot.sendMessage(owner, msg.channel.server.name + " > " + msg.author.username + ":\n" + toSend);
 						} else bot.sendMessage(owner, msg.channel.server.name + " > " + msg.author.username + ":\n" + msg.cleanContent.substr(0, 1930));
 					}
 				}
@@ -220,8 +223,8 @@ bot.on("userBanned", (objUser, objServer) => {
 	if (config.non_essential_event_listeners && ServerSettings.hasOwnProperty(objServer.id) && ServerSettings[objServer.id].banAlerts == true) {
 		console.log(objUser.username + cRed(" banned on ") + objServer.name);
 		if (ServerSettings[objServer.id].notifyChannel != "general") bot.sendMessage(ServerSettings[objServer.id].notifyChannel, "⚠ " + objUser.username.replace(/@/g, '@\u200b') + " was banned");
-		else bot.sendMessage(objServer.defaultChannel, "⚠ " + objUser.username.replace(/@/g, '@\u200b') + " was banned");
-		bot.sendMessage(objUser, "⚠ You were banned from " + objServer.name);
+		else bot.sendMessage(objServer.defaultChannel, "🍌🔨 " + objUser.username.replace(/@/g, '@\u200b') + " was banned");
+		bot.sendMessage(objUser, "🍌🔨 You were banned from " + objServer.name);
 	}
 });
 
@@ -240,8 +243,8 @@ bot.on("presence", (userOld, userNew) => {
 			bot.servers.map(ser => {
 				if (ServerSettings.hasOwnProperty(ser.id) && ServerSettings[ser.id].nameChanges == true) {
 					if (ser.members.find(x=>x.id==userOld.id)) {
-						if (ServerSettings[ser.id].notifyChannel == "general") bot.sendMessage(ser, "`" + userOld.username.replace(/@/g, '@\u200b') + "` is now known as `" + userNew.username.replace(/@/g, '@\u200b') + "`");
-						else bot.sendMessage(ServerSettings[ser.id].notifyChannel, "`" + userOld.username.replace(/@/g, '@\u200b') + "` is now known as `" + userNew.username.replace(/@/g, '@\u200b') + "`");
+						if (ServerSettings[ser.id].notifyChannel == "general") bot.sendMessage(ser, "**`" + userOld.username.replace(/@/g, '@\u200b') + "`** is now known as **`" + userNew.username.replace(/@/g, '@\u200b') + "`**");
+						else bot.sendMessage(ServerSettings[ser.id].notifyChannel, "**`" + userOld.username.replace(/@/g, '@\u200b') + "`** is now known as **`" + userNew.username.replace(/@/g, '@\u200b') + "`**");
 					}
 				}
 			});
@@ -254,72 +257,58 @@ bot.on("serverDeleted", objServer => {
 	db.handleLeave(objServer);
 });
 
+bot.on("serverCreated", server => {
+	if (db.serverIsNew(server)) {
+		console.log(cGreen("Joined server: ") + server.name);
+		if (config.banned_server_ids && config.banned_server_ids.indexOf(server.id) > -1) {
+			console.log(cRed("Joined server but it was on the ban list") + ": " + server.name);
+			bot.sendMessage(server.defaultChannel, "This server is on the ban list");
+			setTimeout(()=>{bot.leaveServer(server);},1000);
+		} else {
+			var toSend = [];
+			toSend.push("👋🏻 Hi! I'm **" + bot.user.username.replace(/@/g, '@\u200b') + "**");
+			toSend.push("You can use **`" + config.command_prefix + "help`** to see what I can do.");
+			toSend.push("Mod/Admin commands *including bot settings* can be viewed with **`" + config.mod_command_prefix + "help`**");
+			toSend.push("For help, feedback, bugs, info, changelogs, etc. go to **<https://discord.gg/0kvLlwb7slG3XCCQ>**");
+			bot.sendMessage(server.defaultChannel, toSend);
+			db.addServer(server);
+			db.addServerToTimes(server);
+		}
+	}
+});
+
 /* Login */
 console.log("Logging in...");
-bot.login(config.email, config.password, function(err, token) {
+bot.loginWithToken(config.token, (err, token) => {
 	if (err) { console.log(err); setTimeout(() => { process.exit(1); }, 2000); }
 	if (!token) { console.log(cWarn(" WARN ") + " failed to connect"); setTimeout(() => { process.exit(0); }, 2000); }
 });
 
-function pmInvite(msg) {
-	if (msg) {
-		if (debug) console.log(cDebug(" DEBUG ") + " Attempting to join: " + msg.content);
-		var cServers = [];
-		bot.servers.map((srvr) => { cServers.push(srvr.id); });
-		bot.joinServer(msg.content, function(err, server) {
-			if (err) {
-				bot.sendMessage(msg, "Failed to join: " + err);
-				console.log(cWarn(" WARN ") + " " + err);
-			} else if (cServers.indexOf(server.id) > -1) {
-				console.log("Already in server " + server.name);
-				bot.sendMessage(msg, "I'm already in that server!");
-			} else {
-				if (config.banned_server_ids && config.banned_server_ids.indexOf(server.id) > -1) {
-					console.log(cRed("Joined server but it was on the ban list") + ": " + server.name);
-					bot.sendMessage(msg, "This server is on the ban list");
-					bot.leaveServer(server); return;
-				}
-				console.log(cGreen("Joined server: ") + server.name);
-				bot.sendMessage(msg, "Successfully joined " + server.name);
-				var toSend = [];
-				if (msg.author.id == '109338686889476096') { toSend.push("Hi! I'm **" + bot.user.username.replace(/@/g, '@\u200b') + "** and I was invited to this server through carbonitex.net."); }
-				else { toSend.push("Hi! I'm **" + bot.user.username.replace(/@/g, '@\u200b') + "** and I was invited to this server by " + msg.author.username.replace(/@/g, '@\u200b') + "."); }
-				toSend.push("You can use `" + config.command_prefix + "help` to see what I can do. Mods can use `" + config.mod_command_prefix + "help` for mod commands.");
-				toSend.push("Mod/Admin commands __including bot settings__ can be viewed with `" + config.mod_command_prefix + "help`");
-				toSend.push("For help / feedback / bugs/ testing / info / changelogs / etc. go to **https://discord.gg/0kvLlwb7slG3XCCQ**");
-				bot.sendMessage(server.defaultChannel, toSend);
-				db.addServer(server);
-				db.addServerToTimes(server);
-			}
-		});
-	}
-}
-
 function reload() {
 	delete require.cache[require.resolve(__dirname + "/bot/config.json")];
-	config = require(__dirname + "/bot/config.json");
 	delete require.cache[require.resolve(__dirname + "/bot/games.json")];
-	games = require(__dirname + "/bot/games.json");
 	delete require.cache[require.resolve(__dirname + "/bot/commands.js")];
-	try { commands = require(__dirname + "/bot/commands.js");
-	} catch (err) { console.log(cError(" ERROR ") + " Problem loading commands.js: " + err); }
 	delete require.cache[require.resolve(__dirname + "/bot/mod.js")];
-	try { mod = require(__dirname + "/bot/mod.js");
-	} catch (err) { console.log(cError(" ERROR ") + " Problem loading mod.js: " + err); }
 	delete require.cache[require.resolve(__dirname + "/bot/versioncheck.js")];
-	versioncheck = require(__dirname + "/bot/versioncheck.js");
 	delete require.cache[require.resolve(__dirname + "/bot/cleverbot.js")];
-	cleverbot = require(__dirname + "/bot/cleverbot").cleverbot;
 	delete require.cache[require.resolve(__dirname + "/bot/db.js")];
-	db = require(__dirname + "/bot/db.js");
 	delete require.cache[require.resolve(__dirname + "/bot/remind.js")];
-	remind = require(__dirname + "/bot/remind.js");
+	config = 			require(__dirname + "/bot/config.json");
+	games = 			require(__dirname + "/bot/games.json");
+	versioncheck = 		require(__dirname + "/bot/versioncheck.js");
+	cleverbot = 		require(__dirname + "/bot/cleverbot").cleverbot;
+	db = 				require(__dirname + "/bot/db.js");
+	remind = 			require(__dirname + "/bot/remind.js");
+	try { commands = 	require(__dirname + "/bot/commands.js");
+	} catch (err) { console.log(cError(" ERROR ") + " Problem loading commands.js: " + err); }
+	try { mod = 		require(__dirname + "/bot/mod.js");
+	} catch (err) { console.log(cError(" ERROR ") + " Problem loading mod.js: " + err); }
 	console.log(cBgGreen(" Module Reload ") + " Success");
 }
 
 function checkConfig() {
-	if (!config.email) { console.log(cWarn(" WARN ") + " Email not defined"); }
-	if (!config.password) { console.log(cWarn(" WARN ") + " Password not defined"); }
+	if (!config.token) { console.log(cWarn(" WARN ") + " Token not defined"); }
+	if (!config.app_id) { console.log(cWarn(" WARN ") + " App ID not defined"); }
 	if (!config.command_prefix || config.command_prefix.length !== 1) { console.log(cWarn(" WARN ") + " Prefix either not defined or more than one character"); }
 	if (!config.mod_command_prefix || config.mod_command_prefix.length !== 1) { console.log(cWarn(" WARN ") + " Mod prefix either not defined or more than one character"); }
 	if (!config.admin_id) { console.log(cYellow("Admin user's id") + " not defined in config"); }

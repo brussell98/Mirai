@@ -58,7 +58,7 @@ exports.checkReminders = function(bot) {
 	Object.keys(reminders).map(date=>{
 		if (date <= now) {
 			var recipent = bot.users.get('id', reminders[date].user);
-			if (recipent) bot.sendMessage(recipent, "**Reminder:** "+reminders[date].text);
+			if (recipent) bot.sendMessage(recipent, "⏰ **Reminder:** "+reminders[date].text);
 			if (debug) console.log(cDebug(" DEBUG ") + " Reminded user");
 			delete reminders[date];
 			updatedR = true;
