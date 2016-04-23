@@ -8,8 +8,8 @@ var commands = require("./bot/commands.js")
 	,discord = require("discord.js")
 	,cleverbot = require("./bot/cleverbot.js").cleverbot
 	,db = require("./bot/db.js")
-	,request = require('request')
 	,remind = require('./bot/remind.js')
+	,utils = require("../utils/utils.js")
 	,chalk = require('chalk')
 	,clk = new chalk.constructor({enabled: true});
 
@@ -33,31 +33,19 @@ setInterval(() => {lastExecTime = {};pmCoolDown = {}},3600000);
 commandsProcessed = 0, talkedToTimes = 0;
 show_warn = config.show_warn, debug = config.debug;
 
-var bot = new discord.Client({maxCachedMessages: 10, forceFetchUsers: true});
+var bot = new discord.Client({maxCachedMessages: 1000, forceFetchUsers: true});
 bot.on("error", m=>{ console.log(cError(" WARN ") + " " + m); });
 bot.on("warn", m=>{ if (show_warn) console.log(cWarn(" WARN ") + " " + m); });
 bot.on("debug", m=>{ if (debug) console.log(cDebug(" DEBUG ") +  " " + m); });
 
 bot.on("ready", () => {
 	bot.setPlayingGame(games[Math.floor(Math.random() * (games.length))]);
-	console.log(cGreen("BrussellBot is ready!") + " Listening to " + bot.channels.length + " channels on " + bot.servers.length + " servers");
+	console.log(cGreen("BrussellBot is ready!") + ` Listening to ${bot.channels.length} channels on ${bot.servers.length} servers`);
 	versioncheck.checkForUpdate();
 	setTimeout(()=>{db.checkServers(bot)},10000);
 	remind.checkReminders(bot);
-	if (config.carbon_key) {
-		request.post({
-				"url": "https://www.carbonitex.net/discord/data/botdata.php",
-				"headers": {"content-type": "application/json"}, "json": true,
-				body: {
-					"key": config.carbon_key,
-					"servercount": bot.servers.length
-				}
-			}, (e, r)=>{
-			if (config.debug) console.log(cDebug(" DEBUG ") + " Updated Carbon server count");
-			if (e) console.log("Error updating carbon stats: " + e);
-			if (r.statusCode !== 200) console.log("Error updating carbon stats: Status Code " + r.statusCode);
-		});
-	}
+	if (config.carbon_key)
+		utils.updateCarbon(config.carbon_key, bot.servers.length);
 });
 
 bot.on("disconnected", () => {
@@ -76,7 +64,7 @@ bot.on("message", msg => {
 	if (msg.author.id == bot.user.id) return;
 	if (msg.channel.isPrivate) {
 		if (/(^https?:\/\/discord\.gg\/[A-Za-z0-9]+$|^https?:\/\/discordapp\.com\/invite\/[A-Za-z0-9]+$)/.test(msg.content))
-			bot.sendMessage(msg.author, "Use this to bring me to your server: <https://discordapp.com/oauth2/authorize?&client_id=" + config.app_id + "&scope=bot&permissions=12659727>");
+			bot.sendMessage(msg.author, `Use this to bring me to your server: <https://discordapp.com/oauth2/authorize?&client_id=${config.app_id}&scope=bot&permissions=12659727>`);
 		else if (msg.content[0] !== config.command_prefix && msg.content[0] !== config.mod_command_prefix && !msg.content.startsWith('(eval) ')) {
 			if (pmCoolDown.hasOwnProperty(msg.author.id)) {
 				if (Date.now() - pmCoolDown[msg.author.id] > 3000) {
@@ -102,12 +90,12 @@ bot.on("message", msg => {
 		}
 	} else {
 		if (msg.mentions.length !== 0) {
-			if (msg.isMentioned(bot.user) && msg.content.startsWith("<@" + bot.user.id + ">")) {
+			if (msg.isMentioned(bot.user) && msg.content.startsWith(`<@${bot.user.id}>`)) {
 				if (ServerSettings.hasOwnProperty(msg.channel.server.id)) { if (ServerSettings[msg.channel.server.id].ignore.indexOf(msg.channel.id) === -1) {
 					cleverbot(bot, msg); talkedToTimes += 1; db.updateTimestamp(msg.channel.server);
 				}} else { cleverbot(bot, msg); talkedToTimes += 1; db.updateTimestamp(msg.channel.server); }
 			}
-			if (msg.content.indexOf("<@" + config.admin_id + ">") > -1) {
+			if (msg.content.indexOf(`<@${config.admin_id}>`) > -1) {
 				if (config.send_mentions) {
 					var owner = bot.users.get("id", config.admin_id);
 					if (owner && owner.status != "online") {
@@ -115,14 +103,14 @@ bot.on("message", msg => {
 						if (msg.channel.messages.length >= 3) {
 							var mIndex = msg.channel.messages.indexOf(msg);
 							if (Date.now() - msg.channel.messages[mIndex-2].timestamp <= 120000)
-								toSend += msg.channel.messages[mIndex-2].cleanContent + "\n\n";
+								toSend += msg.channel.messages[mIndex-2].cleanContent + "\n ---\n";
 							if (Date.now() - msg.channel.messages[mIndex-1].timestamp <= 120000)
-								toSend += msg.channel.messages[mIndex-1].cleanContent + "\n\n";
+								toSend += msg.channel.messages[mIndex-1].cleanContent + "\n ---\n";
 							if (toSend.length + msg.cleanContent.length >= 1930)
 								toSend = msg.cleanContent.substr(0, 1930);
 							else toSend += msg.cleanContent.substr(0, 1930);
-							bot.sendMessage(owner, msg.channel.server.name + " > " + msg.author.username + ":\n" + toSend);
-						} else bot.sendMessage(owner, msg.channel.server.name + " > " + msg.author.username + ":\n" + msg.cleanContent.substr(0, 1930));
+							bot.sendMessage(owner, `*${msg.channel.server.name} > ${msg.author.username}:*\n${toSend}`);
+						} else bot.sendMessage(owner, `*${msg.channel.server.name} > ${msg.author.username}:*\n${msg.cleanContent.substr(0, 1930)}`);
 					}
 				}
 			}
@@ -235,7 +223,7 @@ bot.on("userUnbanned", (objUser, objServer) => {
 bot.on("presence", (userOld, userNew) => {
 	if (config.log_presence) {
 		if ((userNew.status != userOld.status) && (userNew.game === null || userNew.game === undefined)) console.log(cDebug(" PRESENCE ") + " " + userNew.username + " is now " + userNew.status);
-		else if (userNew.status != userOld.status) console.log(cDebug(" PRESENCE ") + " " + userNew.username + " is now " + userNew.status + " playing " + userNew.game.name);
+		else if (userNew.status != userOld.status) console.log(cDebug(" PRESENCE ") + ` ${userNew.username} is now ${userNew.status} playing ${userNew.game.name}`);
 	}
 	if (config.non_essential_event_listeners) {
 		if (userOld.username == undefined || userNew.username == undefined) return;
@@ -261,16 +249,14 @@ bot.on("serverCreated", server => {
 	if (db.serverIsNew(server)) {
 		console.log(cGreen("Joined server: ") + server.name);
 		if (config.banned_server_ids && config.banned_server_ids.indexOf(server.id) > -1) {
-			console.log(cRed("Joined server but it was on the ban list") + ": " + server.name);
+			console.log(cRed("Joined server but it was on the ban list") + `: ${server.name}`);
 			bot.sendMessage(server.defaultChannel, "This server is on the ban list");
 			setTimeout(()=>{bot.leaveServer(server);},1000);
 		} else {
-			var toSend = [];
-			toSend.push("👋🏻 Hi! I'm **" + bot.user.username.replace(/@/g, '@\u200b') + "**");
-			toSend.push("You can use **`" + config.command_prefix + "help`** to see what I can do.");
-			toSend.push("Mod/Admin commands *including bot settings* can be viewed with **`" + config.mod_command_prefix + "help`**");
-			toSend.push("For help, feedback, bugs, info, changelogs, etc. go to **<https://discord.gg/0kvLlwb7slG3XCCQ>**");
-			bot.sendMessage(server.defaultChannel, toSend);
+			bot.sendMessage(server.defaultChannel, `👋🏻 Hi! I'm **${bot.user.username.replace(/@/g, '@\u200b')}**
+				You can use **\`${config.command_prefix}help\`** to see what I can do.
+				Mod/Admin commands *including bot settings* can be viewed with **\`${config.mod_command_prefix}help\`**
+				For help, feedback, bugs, info, changelogs, etc. go to **<https://discord.gg/0kvLlwb7slG3XCCQ>**`);
 			db.addServer(server);
 			db.addServerToTimes(server);
 		}
@@ -340,17 +326,6 @@ setInterval(() => {
 
 if (config.carbon_key) {
 	setInterval(()=>{
-		request.post({
-				"url": "https://www.carbonitex.net/discord/data/botdata.php",
-				"headers": {"content-type": "application/json"}, "json": true,
-				body: {
-					"key": config.carbon_key,
-					"servercount": bot.servers.length
-				}
-			}, (e, r)=>{
-			if (config.debug) console.log(cDebug(" DEBUG ") + " Updated Carbon server count");
-			if (e) console.log("Error updating carbon stats: " + e);
-			if (r.statusCode !== 200) console.log("Error updating carbon stats: Status Code " + r.statusCode);
-		});
-	}, 3600000);
+		utils.updateCarbon(config.carbon_key, bot.servers.length);
+	}, 9000000);
 }

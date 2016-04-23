@@ -133,7 +133,9 @@ var aliases = {
 	"r": "ratewaifu", "rate": "ratewaifu", "waifu": "ratewaifu",
 	"imgur": "image", "im": "image",
 	"f": "fortune",
-	"remind": "remindme", "reminder": "remindme"
+	"remind": "remindme", "reminder": "remindme",
+	"rekt": "rip",
+	"withrole": "inrole"
 };
 
 var commands = {
@@ -151,8 +153,8 @@ var commands = {
 				toSend.push("@" + bot.user.username + " text\n\t#Talk to the bot (cleverbot)");
 				Object.keys(commands).forEach(cmd=>{
 					if (commands[cmd].hasOwnProperty("shouldDisplay")) {
-						if (commands[cmd].shouldDisplay) toSend.push("\n" + config.command_prefix + cmd + " " + commands[cmd].usage + "\n\t#" + commands[cmd].desc);
-					} else toSend.push("\n" + config.command_prefix + cmd + " " + commands[cmd].usage + "\n\t#" + commands[cmd].desc);
+						if (commands[cmd].shouldDisplay) toSend.push(`\n${config.command_prefix}${cmd} ${commands[cmd].usage}\n\t#${commands[cmd].desc}`);
+					} else toSend.push(`\n${config.command_prefix}${cmd} ${commands[cmd].usage}\n\t#${commands[cmd].desc}`);
 				});
 				toSend = toSend.join('');
 				if (toSend.length >= 1990) {
@@ -160,7 +162,8 @@ var commands = {
 					setTimeout(()=>{bot.sendMessage(msg.author, "```glsl" + toSend.substr(toSend.substr(0, 1990).lastIndexOf('\n\t')) + "```");}, 1000);
 				} else bot.sendMessage(msg.author, toSend + "```");
 			} else {
-				suffix = suffix.trim().toLowerCase();
+				suffix = suffix.toLowerCase();
+				if (aliases.hasOwnProperty(suffix)) suffix = aliases[suffix];
 				if (commands.hasOwnProperty(suffix)) {
 					toSend.push("`" + config.command_prefix + suffix + ' ' + commands[suffix].usage + "`");
 					if (commands[suffix].hasOwnProperty("info")) toSend.push(commands[suffix].info);
@@ -217,7 +220,7 @@ var commands = {
 	"invite": {
 		desc: "Get my invite link", usage: "", deleteCommand: true,
 		process: function(bot, msg) {
-			bot.sendMessage(msg, "Use this to bring me to your server: <https://discordapp.com/oauth2/authorize?&client_id=" + config.app_id + "&scope=bot&permissions=12659727>");
+			bot.sendMessage(msg, "Use this to bring me to your server: <https://discordapp.com/oauth2/authorize?&client_id=" + config.app_id + "&scope=bot&permissions=12659727&redirect_uri=http://brussell98.github.io/bot/commands.html&response_type=code>");
 		}
 	},
 	"about": {
@@ -558,17 +561,18 @@ var commands = {
 			if (suffix && /^[^, ](.*), ?(.*)[^, ]$/.test(suffix)) {
 				suffix = msg.cleanContent.substring(msg.cleanContent.indexOf(" ") + 1).split(/, ?/);
 				request.post({
-						"url": "https://strawpoll.me/api/v2/polls",
-						"headers": {"content-type": "application/json"},
-						"json": true,
+						url: "https://strawpoll.me/api/v2/polls",
+						headers: {"content-type": "application/json"},
+						json: true,
 						body: {
 							"title": "" + msg.author.username + "'s Poll",
 							"options": suffix
-						}
+						},
+						followAllRedirects: true
 					}, (error, response, body) => {
-						if (!error && response.statusCode == 201) bot.sendMessage(msg, msg.author.username.replace(/@/g, '@\u200b') + " created a strawpoll. Vote here: <http://strawpoll.me/" + body.id + ">");
+						if (!error && response.statusCode == 200) bot.sendMessage(msg, msg.author.username.replace(/@/g, '@\u200b') + " created a strawpoll. Vote here: <http://strawpoll.me/" + body.id + ">");
 						else if (error) bot.sendMessage(msg, error);
-						else if (response.statusCode != 201) bot.sendMessage(msg, "Got status code " + response.statusCode);
+						else if (response.statusCode != 200) bot.sendMessage(msg, "Got status code " + response.statusCode);
 					}
 				);
 			} else correctUsage("strawpoll", this.usage, msg, bot);
@@ -584,7 +588,7 @@ var commands = {
 		}
 	},
 	"anime": {
-		desc: "Gets details on an anime from MAL.",
+		desc: "Get details on an anime from MAL.",
 		usage: "<anime name>",
 		deleteCommand: true,
 		cooldown: 6,
@@ -620,7 +624,7 @@ var commands = {
 		}
 	},
 	"manga": {
-		desc: "Gets details on a manga from MAL.",
+		desc: "Get details on a manga from MAL.",
 		usage: "<manga/novel name>",
 		deleteCommand: true,
 		cooldown: 6,
@@ -648,12 +652,45 @@ var commands = {
 							if (!msg.channel.isPrivate) {
 								if (synopsis.length > 400) synopsis = synopsis.substring(0, 400) + "...";
 							}
-							bot.sendMessage(msg, "**" + title + " / " + english + "**\n**Type:** " + type + " **| Chapters:** " + chapters + " **| Volumes: **" + volumes + " **| Status:** " + status + " **| Score:** " + score + "\n" + synopsis + "\n**<http://www.myanimelist.net/manga/" + id + ">**");
+							bot.sendMessage(msg, `**${title} / ${english}**
+								**Type:** ${type} **| Chapters:** ${chapters} **| Volumes:** ${volumes} **| Status:** ${status} **| Score:** ${score}
+								${synopsis}
+								**<http://www.myanimelist.net/manga/${id}>**`);
 						});
 					} else bot.sendMessage(msg, "\"" + suffix + "\" not found", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); });
 				});
 				bot.stopTyping(msg.channel);
 			} else correctUsage("manga", this.usage, msg, bot);
+		}
+	},
+	"maluser": {
+		desc: "Get details on a user's MAL.", usage: "<username>",
+		deleteCommand: true, cooldown: 6,
+		process: function(bot, msg, suffix) {
+			if (suffix) {
+				var rUrl = "http://myanimelist.net/malappinfo.php?u=" + ent.encodeHTML(suffix) + "&status=all&type=anime";
+				request(rUrl, (error, response, body) => {
+					if (error) console.log(error);
+					else if (!error && response.statusCode == 200) {
+						xml2js.parseString(body, (err, result) => {
+							if (err) console.log(err);
+							else if (!result.myanimelist.myinfo) bot.sendMessage(msg, result.myanimelist.error, (e, m)=>{bot.deleteMessage(m, {"wait": 8000});});
+							else {
+								result = result.myanimelist.myinfo[0];
+								bot.sendMessage(msg, `\`\`\`ruby
+									User: ${result.user_name} (${result.user_id})
+									Watching: ${result.user_watching}
+									Completed: ${result.user_completed}
+									On Hold: ${result.user_onhold}
+									Dropped: ${result.user_dropped}
+									PTW: ${result.user_plantowatch}
+									Days Spent Watching: ${result.user_days_spent_watching}
+									\`\`\``);
+							}
+						});
+					}
+				});
+			} else correctUsage("maluser", this.usage, msg, bot);
 		}
 	},
 	"coinflip": {
@@ -673,8 +710,8 @@ var commands = {
 			if (!suffix) { correctUsage("osu", this.usage, msg, bot); return; }
 
 			var osu;
-			if (/^(osu!?)?(mania|taiko|ctb|catch the beat) .{3,6} /i.test(suffix)) {
-				if (suffix.replace(/^(osu!?)?(mania|taiko|ctb|catch the beat) /i, '').startsWith('sig')) {
+			if (/^(osu!?)?(standard|mania|taiko|ctb|catch the beat) .{3,6} /i.test(suffix)) {
+				if (suffix.replace(/^(osu!?)?(standard|mania|taiko|ctb|catch the beat) /i, '').startsWith('sig')) {
 					if (/^(osu!?)?mania/i.test(suffix)) osu = "3";
 					else if (/^(osu!?)?(ctb|catch the beat)/i.test(suffix)) osu = "2";
 					else if (/^(osu!?)?taiko/i.test(suffix)) osu = "1";
@@ -684,7 +721,7 @@ var commands = {
 					else if (/^(osu!?)?(ctb|catch the beat)/i.test(suffix)) osu = new osuapi.Api(OSU_API_KEY, osuapi.Modes.CtB);
 					else if (/^(osu!?)?taiko/i.test(suffix)) osu = new osuapi.Api(OSU_API_KEY, osuapi.Modes.taiko);
 				}
-				suffix = suffix.replace(/^(osu!?)?(mania|taiko|ctb|catch the beat) /i, '');
+				suffix = suffix.replace(/^(osu!?)?(standard|mania|taiko|ctb|catch the beat) /i, '');
 			} else {
 				if (suffix.startsWith("sig")) osu = false;
 				else {
@@ -847,7 +884,9 @@ var commands = {
 					if (body.weather[0].description.indexOf("cloud") > -1) { emoji = "☁"; }
 					if (body.weather[0].description.indexOf("snow") > -1) { emoji = "❄"; }
 					if (body.weather[0].description.indexOf("rain") > -1 || body.weather[0].description.indexOf("storm") > -1 || body.weather[0].description.indexOf("drizzle") > -1) { emoji = "🌧"; }
-					bot.sendMessage(msg, emoji + " __Weather for " + body.name + "__:\n**Conditions:** " + body.weather[0].description + " **Temp:** " + tempF + " / " + tempC + "\n**Humidity:** " + body.main.humidity + "% **Wind:** " + windspeedUS + " / " + windspeed + " **Cloudiness:** " + body.clouds.all + "%");
+					bot.sendMessage(msg, `${emoji} __Weather for ${body.name}__:
+						**Conditions:** ${body.weather[0].description} **Temp:** ${tempF} / ${tempC}
+						**Humidity:** ${body.main.humidity}% **Wind:** ${windspeedUS} / ${windspeed} **Cloudiness:** ${body.clouds.all}%`);
 				} else console.log(error);
 			});
 		}
@@ -858,10 +897,10 @@ var commands = {
 		usage: "<search>",
 		cooldown: 3,
 		process: function(bot, msg, suffix) {
-			if (!suffix) { bot.sendMessage(msg, "**http://www.lmgtfy.com/?q=bot-chan+commands**"); return; }
+			if (!suffix) { bot.sendMessage(msg, "<http://www.lmgtfy.com/?q=bot-chan+commands>"); return; }
 			suffix = suffix.split(" ");
 			for (var i = 0; i < suffix.length; i++) { suffix[i] = encodeURIComponent(suffix[i]); }
-			bot.sendMessage(msg, "🔍 **http://www.lmgtfy.com/?q=" + suffix.join("+") + "**");
+			bot.sendMessage(msg, `🔍 <http://www.lmgtfy.com/?q=${suffix.join("+")}>`);
 		}
 	},
 	"numberfacts": {
@@ -977,7 +1016,7 @@ var commands = {
 				if (!msg.channel.isPrivate && sendNSFW && !ServerSettings.hasOwnProperty(msg.channel.server.id)) { bot.sendMessage(msg, "This server doesn't have NSFW images allowed"); return; }
 				if (!msg.channel.isPrivate && sendNSFW && !ServerSettings[msg.channel.server.id].allowNSFW) { bot.sendMessage(msg, "This server doesn't have NSFW images allowed"); return; }
 				request({
-						url: 'https://api.imgur.com/3/gallery/r/' + suffix.replace(/(--day|--week|--month|--year|--all|--nsfw|\/?r\/| )/gi, '') + '/top/' + time.substring(2) + '/50',
+						url: `https://api.imgur.com/3/gallery/r/${suffix.replace(/(--day|--week|--month|--year|--all|--nsfw|\/?r\/| )/gi, '')}/top/${time.substring(2)}/50`,
 						headers: {'Authorization': 'Client-ID ' + IMGUR_CLIENT_ID}
 				}, (error, response, body) => {
 					if (error) { console.log(error); bot.sendMessage(msg, "Oh no! There was an error!"); }
@@ -987,8 +1026,8 @@ var commands = {
 						if (body.hasOwnProperty("data") && body.data !== undefined && body.data.length !== 0) {
 							for (var i = 0; i < 100; i++) {
 								var toSend = body.data[Math.floor(Math.random() * (body.data.length))];
-								if (!sendNSFW && toSend.nsfw != true) { if (toSend.title) bot.sendMessage(msg, "📷 " + toSend.link + " " + toSend.title); else  + " " + bot.sendMessage(msg, toSend.link); break; }
-								else if (sendNSFW && toSend.nsfw == true) { if (toSend.title) bot.sendMessage(msg, "📷 " + toSend.link + " **(NSFW)** " + toSend.title); else  + " " + bot.sendMessage(msg, toSend.link + " **(NSFW)**"); break; }
+								if (!sendNSFW && toSend.nsfw != true) { if (toSend.title) bot.sendMessage(msg, `📷 ${toSend.link} ${toSend.title}`); else  + " " + bot.sendMessage(msg, toSend.link); break; }
+								else if (sendNSFW && toSend.nsfw == true) { if (toSend.title) bot.sendMessage(msg, `📷 ${toSend.link} **(NSFW)** ${toSend.title}`); else  + " " + bot.sendMessage(msg, toSend.link + " **(NSFW)**"); break; }
 							}
 						} else bot.sendMessage(msg, "Nothing found!", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); });
 					}
@@ -1018,7 +1057,7 @@ var commands = {
 	},
 	"remindme": {
 		desc: "Set reminders.",
-		usage: "remove <text in reminder> | list | <reminder> in <[0 days] [00 hours] [00 minutes] [000 seconds]>",
+		usage: "<reminder> in <[0 days] [00 hours] [00 minutes] [000 seconds]> | remove <text in reminder> | list ",
 		info: "__remove:__ Will remove a reminder containing the text input.\n__list:__ List your reminders.\n__add:__ Use the *<text> in <[0 days] [00 hours] [00 minutes] [000 seconds]>*  format.",
 		deleteCommand: false, cooldown: 5,
 		process: function(bot, msg, suffix) {
@@ -1042,7 +1081,7 @@ var commands = {
 				if (list && list.length > 0) bot.sendMessage(msg, "__Here are your reminders:__\n"+list.join('\n'));
 				else bot.sendMessage(msg, "Looks like you don't have any reminders!");
 
-			} else if (/^.* in( ((\d|a|one|two|three) ?d[ays]*)( and| &)?)?( ((\d\d?\d?|a|an|one|two|three) ?h[ours]*)( and| &)?)?( ((\d\d?\d?|a|one|two|three) ?m[inutes]*)( and| &)?)?( (\d\d?\d?|a|one|two|three) ?s[econds]*)?$/i.test(suffix)) {
+			} else if (/^.* in( ((\d\d?\d?|a|one|two|three) ?d[ays]*)( and| &)?)?( ((\d\d?\d?|a|an|one|two|three) ?h[ours]*)( and| &)?)?( ((\d\d?\d?|a|one|two|three) ?m[inutes]*)( and| &)?)?( (\d\d?\d?|a|one|two|three) ?s[econds]*)?$/i.test(suffix)) {
 
 				if (remind.countForUser(msg.author.id) >= 5) {
 					bot.sendMessage(msg, "You can't add any more reminders because you already have 5. You can remove a reminder to make space with `" + config.command_prefix + "remindme remove <text>`");
@@ -1063,15 +1102,15 @@ var commands = {
 					millisecs += timeParser(/((\d\d?\d?|a|an|one|two|three) ?h[ours]*)$/i.exec(suffix)[2] + "", 3600000);
 					suffix = suffix.replace(/( and| &)? ((\d\d?\d?|a|an|one|two|three) ?h[ours]*)$/i, '');
 				}
-				if (/ ((\d|a|one|two|three) ?d[ays]*)$/i.test(suffix)) {
-					var hours = /((\d|a|one|two|three) ?d[ays]*)$/i.exec(suffix)[2];
-					if (/\d/.test(hours)) {
-						if (hours > 7) { bot.sendMessage(msg, "There is a 7 day limit on reminders", (e, m)=>{bot.deleteMessage(m,{"wait": 10000});}); return; }
+				if (/ ((\d\d?\d?|a|one|two|three) ?d[ays]*)$/i.test(suffix)) {
+					var hours = /((\d\d?\d?|a|one|two|three) ?d[ays]*)$/i.exec(suffix)[2];
+					if (/\d\d\d?/.test(hours)) {
+						if (hours > 14) { bot.sendMessage(msg, "There is a 14 day limit on reminders", (e, m)=>{bot.deleteMessage(m,{"wait": 10000});}); return; }
 					}
 					millisecs += timeParser(hours + "", 86400000);
 					suffix = suffix.replace(/( and| &)? ((\d|a|one|two|three) ?d[ays]*)$/i, '');
 				}
-				if (millisecs > 604800000) { bot.sendMessage(msg, "There is a 7 day limit on reminders", (e, m)=>{bot.deleteMessage(m,{"wait": 10000});}); return; }
+				if (millisecs > 1209600000) { bot.sendMessage(msg, "There is a 14 day limit on reminders", (e, m)=>{bot.deleteMessage(m,{"wait": 10000});}); return; }
 				else if (millisecs <= 0) { bot.sendMessage(msg, "You must specify a time in the future", (e, m)=>{bot.deleteMessage(m,{"wait": 10000});}); return; }
 
 				var reminder = suffix.replace(/^(me )?(to )?/i, '').replace(/in ?$/i, '').trim();
@@ -1079,6 +1118,30 @@ var commands = {
 				bot.sendMessage(msg, "⏰ Got it! I'll remind you in " + timeString);
 
 			} else correctUsage("remindme", this.usage, msg, bot, 15000);
+		}
+	},
+	"rip": {
+		desc: "Rest in peace", usage: "[text]",
+		deleteCommand: true, cooldown: 3,
+		process: function(bot, msg, suffix) {
+			if (suffix) bot.sendMessage(msg, `💀 <https://ripme.xyz/${ent.encodeHTML(suffix).replace(/ /g, "%20")}>`);
+			else bot.sendMessage(msg, "💀 <https://ripme.xyz>");
+		}
+	},
+	"inrole": {
+		desc: "Get a list of the users in a role", usage: "<role name>",
+		deleteCommand: true, cooldown: 3,
+		process: function(bot, msg, suffix) {
+			if (msg.everyoneMentioned || suffix == "everyone") bot.sendMessage(msg, "Yeah right, like I'd let you do that", (e, m)=>{bot.deleteMessage(m,{"wait": 6000});});
+			else if (suffix) {
+				var role = msg.channel.server.roles.find(r=>suffix.toLowerCase() == r.name.toLowerCase());
+				if (!role) bot.sendMessage(msg, "Role not found", (e, m)=>{bot.deleteMessage(m,{"wait": 6000});});
+				else {
+					var withRole = msg.channel.server.usersWithRole(role);
+					if (withRole.length > 0) bot.sendMessage(msg, "Users in role \"" + suffix.replace(/@/g, '@\u200b') + "\":" + withRole.map(u=>" "+u.username.replace(/@/g, '@\u200b')));
+					else bot.sendMessage(msg, "No users in that role!", (e, m)=>{bot.deleteMessage(m,{"wait": 6000});});
+				}
+			} else bot.sendMessage(msg, "Please specify a role", (e, m)=>{bot.deleteMessage(m,{"wait": 6000});});
 		}
 	}
 };

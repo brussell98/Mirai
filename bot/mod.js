@@ -1,7 +1,8 @@
 var config = require("./config.json")
 	,games = require("./games.json")
 	,version = require("../package.json").version
-	,db = require("./db.js");
+	,db = require("./db.js")
+	,utils = require("../utils/utils.js");
 
 //stuff for announce
 var confirmCodes = []
@@ -41,7 +42,7 @@ var aliases = {
 	"c": "clean",
 	"p": "prune",
 	"getout": "kick",
-	"rek": "ban", "KO": "ban", "banhammer": "ban", "finishhim": "ban",
+	"rek": "ban", "ko": "ban", "banhammer": "ban", "finishhim": "ban",
 	"l": "leave",
 	"a": "announce", "ann": "announce",
 	"change": "changelog", "logs": "changelog", "changelogs": "changelog",
@@ -73,7 +74,8 @@ var commands = {
 					setTimeout(()=>{bot.sendMessage(msg.author, "```glsl" + toSend.substr(toSend.substr(0, 1990).lastIndexOf('\n\t')) + "```");}, 1000);
 				} else bot.sendMessage(msg.author, toSend + "```");
 			} else {
-				suffix = suffix.trim().toLowerCase();
+				suffix = suffix.toLowerCase();
+				if (aliases.hasOwnProperty(suffix)) suffix = aliases[suffix];
 				if (commands.hasOwnProperty(suffix)) {
 					toSend.push("`" + config.mod_command_prefix + suffix + ' ' + commands[suffix].usage + "`");
 					if (commands[suffix].hasOwnProperty("info")) toSend.push(commands[suffix].info);
@@ -610,6 +612,41 @@ var commands = {
 			else {
 				db.unignoreChannel(msg.channel.id, msg.channel.server.id);
 				bot.sendMessage(msg, "🔉 Ok, I'll stop ignoring this channel.");
+			}
+		}
+	},
+	"setavatar": {
+		desc: "Sets the avatar", usage: "<file name>",
+		cooldown: 3, deleteCommand: true, shouldDisplay: false,
+		process: function(bot, msg, suffix) {
+			if (msg.author.id == config.admin_id) {
+				console.log('Setting avatar to: ' + suffix + ' on request of ' + msg.author.username);
+				utils.setAvatar(suffix, bot);
+			}
+		}
+	},
+	"setname": {
+		desc: "Sets the bot's name", usage: "<name>",
+		cooldown: 3, deleteCommand: true, shouldDisplay: false,
+		process: function(bot, msg, suffix) {
+			if (msg.author.id == config.admin_id) {
+				console.log('Setting username to: ' + suffix + ' on request of ' + msg.author.username);
+				bot.updateDetails({username: suffix});
+			}
+		}
+	},
+	"msgowner": {
+		desc: "Message the owner of a server", usage: "<server>|<text>",
+		cooldown: 3, deleteCommand: true, shouldDisplay: false,
+		process: function(bot, msg, suffix) {
+			if (msg.author.id == config.admin_id && suffix && suffix.indexOf('|') > -1) {
+				var server = suffix.split('|')[0].trim();
+				suffix = suffix.substr(suffix.indexOf('|')).trim()
+				var server = /^\d+$/.test(server) ? bot.servers.get('id', server) : bot.servers.get('name', server);
+				if (server && suffix) {
+					bot.sendMessage(server.owner, suffix);
+					bot.sendMessage(msg, `Sent to ${server.owner.username.replace(/@/g, '@\u200b')}`);
+				}
 			}
 		}
 	}

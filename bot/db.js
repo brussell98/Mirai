@@ -2,8 +2,7 @@ var fs = require('fs')
 	,config = require("../bot/config.json");
 ServerSettings = require('../db/servers.json');
 Times = require('../db/times.json');
-var inactive = []
-	,whitelist = require('./config.json').whitelist;
+var inactive = [];
 
 var updatedS = false, updatedT = false;
 setInterval(() => {
@@ -30,7 +29,7 @@ function updateServers() {
 				}
 			});
 		}
-	})
+	});
 }
 
 function updateTimes() {
@@ -113,12 +112,10 @@ exports.checkServers = function(bot) {
 				setTimeout(()=>{bot.leaveServer(server);},1000);
 			} else {
 				if (config.whitelist.indexOf(server.id) == -1) {
-					var toSend = [];
-					toSend.push("👋🏻 Hi! I'm **" + bot.user.username.replace(/@/g, '@\u200b') + "**");
-					toSend.push("You can use `" + config.command_prefix + "help` to see what I can do. Mods can use `" + config.mod_command_prefix + "help` for mod commands.");
-					toSend.push("Mod/Admin commands *including bot settings* can be viewed with `" + config.mod_command_prefix + "help`");
-					toSend.push("For help, feedback, bugs, info, changelogs, etc. go to **<https://discord.gg/0kvLlwb7slG3XCCQ>**");
-					bot.sendMessage(server.defaultChannel, toSend);
+					bot.sendMessage(server.defaultChannel, `👋🏻 Hi! I'm **${bot.user.username.replace(/@/g, '@\u200b')}**
+						You can use **\`${config.command_prefix}help\`** to see what I can do.
+						Mod/Admin commands *including bot settings* can be viewed with **\`${config.mod_command_prefix}help\`**
+						For help, feedback, bugs, info, changelogs, etc. go to **<https://discord.gg/0kvLlwb7slG3XCCQ>**`);
 				}
 				Times[server.id] = now;
 				addServer(server);
