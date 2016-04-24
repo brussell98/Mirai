@@ -9,7 +9,7 @@ var commands = require("./bot/commands.js")
 	,cleverbot = require("./bot/cleverbot.js").cleverbot
 	,db = require("./bot/db.js")
 	,remind = require('./bot/remind.js')
-	,utils = require("../utils/utils.js")
+	,utils = require("./utils/utils.js")
 	,chalk = require('chalk')
 	,clk = new chalk.constructor({enabled: true});
 

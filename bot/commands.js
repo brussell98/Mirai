@@ -1124,7 +1124,8 @@ var commands = {
 		desc: "Rest in peace", usage: "[text]",
 		deleteCommand: true, cooldown: 3,
 		process: function(bot, msg, suffix) {
-			if (suffix) bot.sendMessage(msg, `💀 <https://ripme.xyz/${ent.encodeHTML(suffix).replace(/ /g, "%20")}>`);
+			if (suffix && suffix.toLowerCase() == 'me') bot.sendMessage(msg, `💀 <https://ripme.xyz/${ent.encodeHTML(msg.author.username.replace(/@/g, '')).replace(/ /g, "%20")}>`);
+			else if (suffix) bot.sendMessage(msg, `💀 <https://ripme.xyz/${ent.encodeHTML(suffix).replace(/ /g, "%20")}>`);
 			else bot.sendMessage(msg, "💀 <https://ripme.xyz>");
 		}
 	},
