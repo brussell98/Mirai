@@ -38,7 +38,7 @@ exports.addReminder = function(user, date, text) {
 };
 
 exports.countForUser = function(user) {
-	var count = 0;
+	let count = 0;
 	Object.keys(reminders).map(date=>{
 		if (reminders[date].user == user) count++;
 	});
@@ -46,7 +46,7 @@ exports.countForUser = function(user) {
 };
 
 exports.listForUser = function(user) {
-	var list = [];
+	let list = [];
 	Object.keys(reminders).map(date=>{
 		if (reminders[date].user == user) list.push(reminders[date].text+' **@** '+new Date(parseInt(date)).toUTCString());
 	});
@@ -54,10 +54,10 @@ exports.listForUser = function(user) {
 };
 
 exports.checkReminders = function(bot) {
-	var now = Date.now();
+	let now = Date.now();
 	Object.keys(reminders).map(date=>{
 		if (date <= now) {
-			var recipent = bot.users.get('id', reminders[date].user);
+			let recipent = bot.users.get('id', reminders[date].user);
 			if (recipent) bot.sendMessage(recipent, "⏰ **Reminder:** "+reminders[date].text);
 			if (debug) console.log(cDebug(" DEBUG ") + " Reminded user");
 			delete reminders[date];
@@ -75,10 +75,10 @@ Remove Reminder:
 */
 exports.removeReminder = function(text, user, success, fail) {
 	if (!text || !user) return;
-	var found = false;
+	let found = false;
 	Object.keys(reminders).map(t=>{
 		if (found) return;
-		if (reminders[t].user == user && reminders[t].text.indexOf(text) > -1) {
+		if (reminders[t].user == user && reminders[t].text.includes(text)) {
 			delete reminders[t];
 			updatedR = true;
 			if (debug) console.log(cDebug(" DEBUG ") + " Removed reminder for user " + user);

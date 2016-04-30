@@ -1,12 +1,12 @@
-var Cleverbot = require('cleverbot-node');
-var Slave = new Cleverbot();
-var ent = require('entities');
-var antiSpam = {};
+let Cleverbot = require('cleverbot-node')
+	,Waifu = new Cleverbot()
+	,ent = require('entities')
+	,antiSpam = {};
 
 setInterval(() => antiSpam = {},3600000);
 
 exports.cleverbot = function(bot, msg) {
-	var text;
+	let text;
 	if (!msg.channel.isPrivate) text = (msg.cleanContent.split(' ').length > 1) ? msg.cleanContent.substring(msg.cleanContent.indexOf(' ') + 1).replace('@', '') : false;
 	else text = msg.content;
 	if (text) {
@@ -19,7 +19,7 @@ exports.cleverbot = function(bot, msg) {
 		else console.log(cGreen(msg.author.username) + " > " + cYellow("@" + bot.user.username) + " " + msg.cleanContent.replace("@" + bot.user.username, "").replace(/\n/g, " "));
 		bot.startTyping(msg.channel);
 		Cleverbot.prepare(() => {
-			Slave.write(text, resp=>{
+			Waifu.write(text, resp=>{
 				if (/\|/g.test(resp.message)) {
 					resp.message = resp.message.replace(/\|/g, '\\u'); //replace | with \u
 					resp.message = resp.message.replace(/\\u([\d\w]{4})/gi, (match, grp) => { //unescape unicode
@@ -30,7 +30,7 @@ exports.cleverbot = function(bot, msg) {
 					bot.sendMessage(msg, '⚠ Nothing was returned! Resetting cleverbot...');
 					delete require.cache[require.resolve("cleverbot-node")];
 					Cleverbot = require('cleverbot-node');
-					Slave = new Cleverbot();
+					Waifu = new Cleverbot();
 					console.log(cWarn(" WARN ") + " Cleverbot returned nothing");
 				} else bot.sendMessage(msg, '💬 ' + ent.decodeHTML(resp.message));
 			});

@@ -8,11 +8,10 @@ Save a file safely
 	data: data to be written to the file
 	minSize: will not save if less than this size in bytes (optional, defaults to 5)
 */
-exports.safeSave = function(dir, ext, data, minSize) {
+exports.safeSave = function(dir, ext, data, minSize = 5) {
 	if (!dir || !ext || !data) return;
 	if (dir.startsWith('/')) dir = dir.substr(1);
 	if (!ext.startsWith('.')) ext = '.' + ext;
-	if (!minSize) minSize = 5;
 
 	fs.writeFile(__dirname + '/../' + dir + '-temp' + ext, data, error=>{
 		if (error) console.log(error);
@@ -36,9 +35,10 @@ Find a user matching the input string
 */
 exports.findUser = function(query, members) {
 	if (!query || !members || typeof query != 'string') return false;
-	var r = members.find(m=>{ return (m === undefined || m.username == undefined) ? false : m.username.toLowerCase() == query.toLowerCase() });
+	let r = members.find(m=>{ return (m === undefined || m.username == undefined) ? false : m.username.toLowerCase() == query.toLowerCase() });
 	if (!r) r = members.find(m=>{ return (m === undefined || m.username == undefined) ? false : m.username.toLowerCase().indexOf(query.toLowerCase()) == 0 });
-	if (!r) r = members.find(m=>{ return (m === undefined || m.username == undefined) ? false : m.username.toLowerCase().indexOf(query.toLowerCase()) > -1 });
+	if (!r) r = members.find(m=>{ return (m === undefined || m.username == undefined) ? false : m.username.toLowerCase().includes(query.toLowerCase()) });
+	//nicknames
 	return r || false;
 }
 
@@ -51,10 +51,10 @@ Tell the user the correct usage of a command
 	prefix: The command's prefix
 	delay: How long to wait before deleting (optional, defaults to 10 seconds)
 */
-exports.correctUsage = function(cmd, usage, msg, bot, prefix, delay) {
+exports.correctUsage = function(cmd, usage, msg, bot, prefix, delay = 10000) {
 	if (!cmd || !usage || !msg || !bot || !prefix) return;
-	bot.sendMessage(msg, `${msg.author.username.replace(/@/g, '@\u200b')}, the correct usage is *\`${prefix}${cmd} ${usage}\`*`, (e,m)=>{bot.deleteMessage(m, {"wait": delay || 10000});});
-	bot.deleteMessage(msg, {"wait": delay || 10000});
+	bot.sendMessage(msg, `${msg.author.username.replace(/@/g, '@\u200b')}, the correct usage is *\`${prefix}${cmd} ${usage}\`*`, (e,m)=>{bot.deleteMessage(m, {"wait": delay});});
+	bot.deleteMessage(msg, {"wait": delay});
 }
 
 /*
@@ -88,9 +88,44 @@ exports.setAvatar = function(file, bot) {
 		fs.access(__dirname + '/../avatars/' + file, err=>{
 			if (err) console.log("The file doesn't exist");
 			else {
-				var avatarB64 = 'data:image/jpeg;base64,' + fs.readFileSync(__dirname + '/../avatars/' + file, 'base64');
+				let avatarB64 = 'data:image/jpeg;base64,' + fs.readFileSync(__dirname + '/../avatars/' + file, 'base64');
 				bot.setAvatar(avatarB64).catch(console.log);
 			}
 		});
 	}
+}
+
+/*
+Get 700 channel messages if needed
+	bot: The client
+	channel: The channel to get logs for
+*/
+exports.getLogs = function(bot, channel) {
+	return new Promise((resolve, reject) => {
+		if (channel.messages.length >= 700)
+			resolve();
+		else {
+			bot.getChannelLogs(channel, 100, (e,ms)=>{
+				if (e) { reject(e); return; }
+				if (ms < 100) { resolve(); return; }
+				bot.getChannelLogs(channel, 100, {before:ms[99]}, (e,ms)=>{
+					if (e) { reject(e); return; }
+					if (ms < 100) { resolve(); return; }
+					bot.getChannelLogs(channel, 100, {before:ms[99]}, (e,ms)=>{
+						if (e) { reject(e); return; }
+						if (ms < 100) { resolve(); return; }
+						bot.getChannelLogs(channel, 100, {before:ms[99]}, (e,ms)=>{
+							if (e) { reject(e); return; }
+							if (ms < 100) { resolve(); return; }
+							bot.getChannelLogs(channel, 100, {before:ms[99]}, (e,ms)=>{
+								if (e) { reject(e); return; }
+								if (ms < 100) { resolve(); return; }
+								bot.getChannelLogs(channel, 100, {before:ms[99]}, (e,ms)=>{
+									if (e) { reject(e); return; }
+									if (ms < 100) { resolve(); return; }
+									bot.getChannelLogs(channel, 100, {before:ms[99]}, ()=>{
+										resolve();
+			});});});});});});});
+		}
+	});
 }
