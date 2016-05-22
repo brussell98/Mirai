@@ -13,14 +13,15 @@ exports.safeSave = function(dir, ext, data, minSize = 5) {
 	if (dir.startsWith('/')) dir = dir.substr(1);
 	if (!ext.startsWith('.')) ext = '.' + ext;
 
-	fs.writeFile(__dirname + '/../' + dir + '-temp' + ext, data, error=>{
+	fs.writeFile(`${__dirname}/../${dir}-temp${ext}`, data, error=>{
 		if (error) console.log(error);
 		else {
-			fs.stat(__dirname + '/../' + dir + '-temp' + ext, (err, stats)=>{
+			fs.stat(`${__dirname}/../${dir}-temp${ext}`, (err, stats)=>{
 				if (err) console.log(err);
-				else if (stats["size"] < minSize) console.log('safeSave: Prevented file from being overwritten');
+				else if (stats["size"] < minSize)
+					console.log('safeSave: Prevented file from being overwritten');
 				else {
-					fs.rename(__dirname + '/../' + dir + '-temp' + ext, __dirname + '/../' + dir + '' + ext, e=>{if(e)console.log(e)});
+					fs.rename(`${__dirname}/../${dir}-temp${ext}`, `${__dirname}/../${dir}${ext}`, e=>{if(e)console.log(e)});
 					if (debug) console.log(cDebug(" DEBUG ") + " Updated " + dir + ext);
 				}
 			});
@@ -29,16 +30,22 @@ exports.safeSave = function(dir, ext, data, minSize = 5) {
 }
 
 /*
-Find a user matching the input string
+Find a user matching the input string or return false if none found
 	query: the input
 	members: the array of users to search
+	server: server to look for nicknames on (optional)
 */
-exports.findUser = function(query, members) {
+exports.findUser = function(query, members, server) {
+	//order: match, starts with, contains, then repeat for nicks
 	if (!query || !members || typeof query != 'string') return false;
-	let r = members.find(m=>{ return (m === undefined || m.username == undefined) ? false : m.username.toLowerCase() == query.toLowerCase() });
-	if (!r) r = members.find(m=>{ return (m === undefined || m.username == undefined) ? false : m.username.toLowerCase().indexOf(query.toLowerCase()) == 0 });
-	if (!r) r = members.find(m=>{ return (m === undefined || m.username == undefined) ? false : m.username.toLowerCase().includes(query.toLowerCase()) });
-	//nicknames
+	let r = members.find(m=>{ return !m.username ? false : m.username.toLowerCase() == query.toLowerCase() });
+	if (!r) r = members.find(m=>{ return !m.username ? false : m.username.toLowerCase().indexOf(query.toLowerCase()) == 0 });
+	if (!r) r = members.find(m=>{ return !m.username ? false : m.username.toLowerCase().includes(query.toLowerCase()) });
+	if (server) {
+		if (!r) r = members.find(m=>{ return !server.detailsOf(m).nick ? false : server.detailsOf(m).nick.toLowerCase() === query.toLowerCase() });
+		if (!r) r = members.find(m=>{ return !server.detailsOf(m).nick ? false : server.detailsOf(m).nick.toLowerCase().indexOf(query.toLowerCase()) === 0 });
+		if (!r) r = members.find(m=>{ return !server.detailsOf(m).nick ? false : server.detailsOf(m).nick.toLowerCase().includes(query.toLowerCase()) });
+	}
 	return r || false;
 }
 
@@ -71,7 +78,7 @@ exports.updateCarbon = function(key, servers) {
 				"key": key,
 				"servercount": servers
 			}
-		}, (e, r)=>{
+		}, (e, r) => {
 		if (debug) console.log(cDebug(" DEBUG ") + " Updated Carbon server count");
 		if (e) console.log("Error updating carbon stats: " + e);
 		if (r.statusCode !== 200) console.log("Error updating carbon stats: Status Code " + r.statusCode);
@@ -129,3 +136,6 @@ exports.getLogs = function(bot, channel) {
 		}
 	});
 }
+
+//comma sperate a number
+exports.comma = number => number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");

@@ -12,7 +12,7 @@
 		"url": "https://github.com/brussell98/BrussellBot/issues"
 	},
 	"engines": {
-		"node": ">=5.7.0"
+		"node": ">=6.0.0"
 	},
 	"scripts": {
 		"start": "node BrussellBot.js --harmony"

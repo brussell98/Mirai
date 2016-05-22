@@ -1,5 +1,6 @@
-var fs = require('fs')
-	,config = require("../bot/config.json");
+var config = require("../bot/config.json")
+	,utils = require('../utils/utils.js');
+
 ServerSettings = require('../db/servers.json');
 Times = require('../db/times.json');
 var inactive = [];
@@ -8,45 +9,13 @@ var updatedS = false, updatedT = false;
 setInterval(() => {
 	if (updatedS) {
 		updatedS = false;
-		updateServers();
+		utils.safeSave('db/servers', '.json', JSON.stringify(ServerSettings));
 	}
 	if (updatedT) {
 		updatedT = false;
-		updateTimes();
+		utils.safeSave('db/times', '.json', JSON.stringify(Times));
 	}
-}, 60000)
-
-function updateServers() {
-	fs.writeFile(__dirname + '/../db/servers-temp.json', JSON.stringify(ServerSettings), error=>{
-		if (error) console.log(error)
-		else {
-			fs.stat(__dirname + '/../db/servers-temp.json', (err, stats)=>{
-				if (err) console.log(err)
-				else if (stats["size"] < 5) console.log('Prevented server settings database from being overwritten');
-				else {
-					fs.rename(__dirname + '/../db/servers-temp.json', __dirname + '/../db/servers.json', e=>{if(e)console.log(e)});
-					if (debug) console.log(cDebug(" DEBUG ") + " Updated servers.json");
-				}
-			});
-		}
-	});
-}
-
-function updateTimes() {
-	fs.writeFile(__dirname + '/../db/times-temp.json', JSON.stringify(Times), error=>{
-		if (error) console.log(error)
-		else {
-			fs.stat(__dirname + '/../db/times-temp.json', (err, stats)=>{
-				if (err) console.log(err)
-				else if (stats["size"] < 5) console.log('Prevented times database from being overwritten');
-				else {
-					fs.rename(__dirname + '/../db/times-temp.json', __dirname + '/../db/times.json', e=>{if(e)console.log(e)});
-					if (debug) console.log(cDebug(" DEBUG ") + " Updated times.json");
-				}
-			});
-		}
-	})
-}
+}, 60000);
 
 exports.serverIsNew = function(server) {
 	return !Times.hasOwnProperty(server.id);
@@ -106,11 +75,10 @@ exports.checkServers = function(bot) {
 					bot.sendMessage(server.defaultChannel, `👋🏻 Hi! I'm **${bot.user.username.replace(/@/g, '@\u200b')}**\nYou can use **\`${config.command_prefix}help\`** to see what I can do.\nMod/Admin commands *including bot settings* can be viewed with **\`${config.mod_command_prefix}help\`**\nFor help, feedback, bugs, info, changelogs, etc. go to **<https://discord.gg/0kvLlwb7slG3XCCQ>**`);
 				}
 				Times[server.id] = now;
-				//addServer(server);
 			}
 		} else if (!config.whitelist.includes(server.id) && now - Times[server.id] >= 604800000) {
 			inactive.push(server.id);
-			if (debug) console.log(cDebug(" DEBUG ") + " " + server.name + '(' + server.id + ')' + ' hasn\'t used the bot for ' + ((now - Times[server.id]) / 1000 / 60 / 60 / 24).toFixed(1) + ' days.');
+			if (debug) console.log(`${cDebug(" DEBUG ")} ${server.name} (${server.id}) hasn't used the bot for ${((now - Times[server.id]) / 1000 / 60 / 60 / 24).toFixed(1)} days.`);
 		}
 	});
 	updatedT = true;
@@ -125,10 +93,10 @@ exports.remInactive = function(bot, msg, delay = 6000) {
 		return;
 	}
 	let cnt = 0, passedOver = 0, toSend = "__Left servers for inactivity:__", now1 = new Date();
-	let remInterval = setInterval(()=>{
+	let remInterval = setInterval(() => {
 		let server = bot.servers.get('id', inactive[passedOver]);
 		if (server) {
-			toSend += '\n**' + (cnt+1) + ':** ' + server.name.replace(/@/g, '@\u200b') + ' (' + ((now1 - Times[inactive[passedOver]]) / 1000 / 60 / 60 / 24).toFixed(1) + ' days)';
+			toSend += `\n**${cnt+1}:** ${server.name.replace(/@/g, '@\u200b')} (${((now1 - Times[inactive[passedOver]]) / 1000 / 60 / 60 / 24).toFixed(1)} days)`;
 			server.leave();
 			console.log(cUYellow("Left server") + " " + server.name);
 			if (Times.hasOwnProperty(server.id)) {
@@ -141,8 +109,9 @@ exports.remInactive = function(bot, msg, delay = 6000) {
 		delete Times[inactive[passedOver]];
 		passedOver++;
 		if (cnt >= 10 || passedOver >= inactive.length) {
-			for (let i = 0; i < passedOver; i++) inactive.shift();
-			if (cnt == 0) bot.sendMessage(msg, 'Nothing to leave :)');
+			for (let i = 0; i < passedOver; i++) inactive.shift(); //remove the servers that it left from the array
+			if (cnt == 0)
+				bot.sendMessage(msg, 'Nothing to leave :)');
 			else bot.sendMessage(msg, toSend);
 			clearInterval(remInterval);
 			updatedT = true;
@@ -184,5 +153,5 @@ exports.updateTimestamp = function(server) {
 		Times[server.id] = Date.now();
 		updatedT = true;
 	}
-	if (inactive.includes(server.id)) inactive.splice(inactive.indexOf(server.id), 1);
+	if (inactive.includes(server.id)) inactive.splice(inactive.indexOf(server.id), 1); //if server was marked for removal remove that entry
 };

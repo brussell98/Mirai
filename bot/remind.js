@@ -1,29 +1,13 @@
-var fs = require('fs')
-	,reminders = require('../db/reminders.json')
-	,updatedR = false;
+var reminders = require('../db/reminders.json')
+	,updatedR = false
+	,utils = require('../utils/utils.js');
 
 setInterval(() => {
 	if (updatedR) {
 		updatedR = false;
-		updateRemindDB();
+		utils.safeSave('db/reminders', '.json', JSON.stringify(reminders));
 	}
 }, 60000)
-
-function updateRemindDB() {
-	fs.writeFile(__dirname + '/../db/reminders-temp.json', JSON.stringify(reminders), error=>{
-		if (error) console.log(error)
-		else {
-			fs.stat(__dirname + '/../db/reminders-temp.json', (err, stats)=>{
-				if (err) console.log(err)
-				else if (stats["size"] < 2) console.log('Prevented reminders database from being overwritten');
-				else {
-					fs.rename(__dirname + '/../db/reminders-temp.json', __dirname + '/../db/reminders.json', e=>{if(e)console.log(e)});
-					if (debug) console.log(cDebug(" DEBUG ") + " Updated reminders.json");
-				}
-			});
-		}
-	})
-}
 
 /*
 Add Reminder:
@@ -39,7 +23,7 @@ exports.addReminder = function(user, date, text) {
 
 exports.countForUser = function(user) {
 	let count = 0;
-	Object.keys(reminders).map(date=>{
+	Object.keys(reminders).map(date => {
 		if (reminders[date].user == user) count++;
 	});
 	return count;
@@ -47,7 +31,7 @@ exports.countForUser = function(user) {
 
 exports.listForUser = function(user) {
 	let list = [];
-	Object.keys(reminders).map(date=>{
+	Object.keys(reminders).map(date => {
 		if (reminders[date].user == user) list.push(reminders[date].text+' **@** '+new Date(parseInt(date)).toUTCString());
 	});
 	return list;
@@ -55,7 +39,7 @@ exports.listForUser = function(user) {
 
 exports.checkReminders = function(bot) {
 	let now = Date.now();
-	Object.keys(reminders).map(date=>{
+	Object.keys(reminders).map(date => {
 		if (date <= now) {
 			let recipent = bot.users.get('id', reminders[date].user);
 			if (recipent) bot.sendMessage(recipent, "⏰ **Reminder:** "+reminders[date].text);
@@ -76,7 +60,7 @@ Remove Reminder:
 exports.removeReminder = function(text, user, success, fail) {
 	if (!text || !user) return;
 	let found = false;
-	Object.keys(reminders).map(t=>{
+	Object.keys(reminders).map(t => {
 		if (found) return;
 		if (reminders[t].user == user && reminders[t].text.includes(text)) {
 			delete reminders[t];

@@ -139,7 +139,8 @@ var aliases = {
 	"f": "fortune",
 	"remind": "remindme", "reminder": "remindme",
 	"rekt": "rip",
-	"withrole": "inrole"
+	"withrole": "inrole",
+	"nicks": "names"
 };
 
 var commands = {
@@ -156,26 +157,26 @@ var commands = {
 				toSend.push("**Commands:**```glsl\n");
 				toSend.push("@" + bot.user.username + " text\n\t#Talk to the bot (cleverbot)");
 				Object.keys(commands).forEach(cmd=>{
-					if (commands[cmd].hasOwnProperty("shouldDisplay")) {
-						if (commands[cmd].shouldDisplay) toSend.push(`\n${config.command_prefix}${cmd} ${commands[cmd].usage}\n\t#${commands[cmd].desc}`);
-					} else toSend.push(`\n${config.command_prefix}${cmd} ${commands[cmd].usage}\n\t#${commands[cmd].desc}`);
+					if (!commands[cmd].hasOwnProperty("shouldDisplay") || (commands[cmd].hasOwnProperty("shouldDisplay") && commands[cmd].shouldDisplay))
+						toSend.push("\n" + config.mod_command_prefix + cmd + " " + commands[cmd].usage + "\n\t#" + commands[cmd].desc);
 				});
 				toSend = toSend.join('');
 				if (toSend.length >= 1990) {
-					bot.sendMessage(msg.author, toSend.substr(0, 1990).substr(0, toSend.substr(0, 1990).lastIndexOf('\n\t')) + "```");
-					setTimeout(()=>{bot.sendMessage(msg.author, "```glsl" + toSend.substr(toSend.substr(0, 1990).lastIndexOf('\n\t')) + "```");}, 1000);
+					bot.sendMessage(msg.author, toSend.substr(0, 1990).substr(0, toSend.substr(0, 1990).lastIndexOf('\n\t')) + "```"); //part 1
+					setTimeout(()=>{bot.sendMessage(msg.author, "```glsl" + toSend.substr(toSend.substr(0, 1990).lastIndexOf('\n\t')) + "```");}, 1000); //2
 				} else bot.sendMessage(msg.author, toSend + "```");
 			} else {
 				suffix = suffix.toLowerCase();
 				if (aliases.hasOwnProperty(suffix)) suffix = aliases[suffix];
 				if (commands.hasOwnProperty(suffix)) {
 					toSend.push("`" + config.command_prefix + suffix + ' ' + commands[suffix].usage + "`");
-					if (commands[suffix].hasOwnProperty("info")) toSend.push(commands[suffix].info);
-					else if (commands[suffix].hasOwnProperty("desc")) toSend.push(commands[suffix].desc);
+					if (commands[suffix].hasOwnProperty("info")) toSend.push(commands[suffix].info); //if extra info
+					else if (commands[suffix].hasOwnProperty("desc")) toSend.push(commands[suffix].desc); //else usse the desc
 					if (commands[suffix].hasOwnProperty("cooldown")) toSend.push("__Cooldown:__ " + commands[suffix].cooldown + " seconds");
 					if (commands[suffix].hasOwnProperty("deleteCommand")) toSend.push("*Can delete the activating message*");
 					bot.sendMessage(msg, toSend);
-				} else bot.sendMessage(msg, "Command `" + suffix + "` not found. Aliases aren't allowed.", (erro, wMessage)=>{ bot.deleteMessage(wMessage, {"wait": 10000}); });
+				} else
+					bot.sendMessage(msg, "Command `" + suffix + "` not found. Aliases aren't allowed.", (erro, wMessage)=>{ bot.deleteMessage(wMessage, {"wait": 10000}); });
 			}
 		}
 	},
@@ -231,7 +232,7 @@ var commands = {
 		desc: "About me",
 		deleteCommand: true, cooldown: 10, usage: "",
 		process: function(bot, msg) {
-			bot.sendMessage(msg, `__Author:__ Brussell\n__Library:__ Discord.js\n__Version:__ ${version}\n__Official Server:__ <https://discord.gg/0kvLlwb7slG3XCCQ>\n__Info and Commands:__  <http://brussell98.github.io/bot/index.html>`);
+			bot.sendMessage(msg, `\`\`\`md\n[Author][Brussell]\n[Library][Discord.js]\n[Version][${version}]\n[Official Server][https://discord.gg/0kvLlwb7slG3XCCQ]\n[Info and Commands][http://brussell98.github.io/bot/index.html]\`\`\``);
 		}
 	},
 	"dice": {
@@ -308,12 +309,14 @@ var commands = {
 						if (msg.mentions.length > 4) { bot.sendMessage(msg, "Limit of 4 users", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 						msg.mentions.map(usr=>{
 							let toSend = [], count = 0;
-							toSend.push("**Info on** " + usr.username + "#" + usr.discriminator + " (ID: " + usr.id + ") 🕵🏻");
+							toSend.push("**Info on** " + usr.username.replace(/@/g, '@\u200b') + "#" + usr.discriminator + " (ID: " + usr.id + ") 🕵🏻");
 							if (usr.game && usr.game.name !== undefined && usr.game.name !== null && usr.game.name !== "null") toSend.push("**Status:** " + usr.status + " **last playing** " + usr.game.name);
 							else toSend.push("**Status:** " + usr.status);
 							let detailsOf = msg.channel.server.detailsOfUser(usr);
-							if (detailsOf) toSend.push("**Joined on:** " + new Date(detailsOf.joinedAt).toUTCString());
-							else toSend.push("**Joined on:** Error");
+							if (detailsOf) {
+								if (detailsOf.nick !== null) toSend.push("**Nickname:** " + detailsOf.nick);
+								toSend.push("**Joined on:** " + new Date(detailsOf.joinedAt).toUTCString());
+							} else toSend.push("*Error getting details of user*");
 							if (msg.channel.server.rolesOfUser(usr.id) != undefined) {
 								let roles = msg.channel.server.rolesOfUser(usr.id).map(role=>role.name);
 								if (roles) {
@@ -335,15 +338,17 @@ var commands = {
 						let users = suffix.split(/, ?/);
 						if (users.length > 4) { bot.sendMessage(msg, "Limit of 4 users", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 						users.map(user=>{
-							let usr = findUser(msg.channel.server.members, user);
+							let usr = utils.findUser(user, msg.channel.server.members, msg.channel.server);
 							if (usr) {
 								let toSend = [], count = 0;
-								toSend.push("**Info on** " + usr.username + "#" + usr.discriminator + " (ID: " + usr.id + ") 🕵🏻");
+								toSend.push("**Info on** " + usr.username.replace(/@/g, '@\u200b') + "#" + usr.discriminator + " (ID: " + usr.id + ") 🕵🏻");
 								if (usr.game && usr.game.name !== undefined && usr.game.name !== null && usr.game.name !== "null") toSend.push("**Status:** " + usr.status + " **last playing** " + usr.game.name);
 								else toSend.push("**Status:** " + usr.status);
 								let detailsOf = msg.channel.server.detailsOfUser(usr);
-								if (detailsOf) toSend.push("**Joined on:** " + new Date(detailsOf.joinedAt).toUTCString());
-								else toSend.push("**Joined on:** Error");
+								if (detailsOf) {
+									if (detailsOf.nick !== null) toSend.push("**Nickname:** " + detailsOf.nick);
+									toSend.push("**Joined on:** " + new Date(detailsOf.joinedAt).toUTCString());
+								} else toSend.push("*Error getting details of user*");
 								if (msg.channel.server.rolesOfUser(usr.id) != undefined) {
 									let roles = msg.channel.server.rolesOfUser(usr.id).map(role=>role.name);
 									if (roles) {
@@ -363,8 +368,8 @@ var commands = {
 					}
 				} else {
 					let toSend = [];
-					toSend.push("**Info on** " + msg.channel.server.name + " (" + msg.channel.server.id + ") 🕵🏻");
-					toSend.push("**Owner:** " + msg.channel.server.owner.username + " (**ID:** " + msg.channel.server.owner.id + ")");
+					toSend.push("**Info on** " + msg.channel.server.name.replace(/@/g, '@\u200b') + " (" + msg.channel.server.id + ") 🕵🏻");
+					toSend.push("**Owner:** " + msg.channel.server.owner.username.replace(/@/g, '@\u200b') + " (**ID:** " + msg.channel.server.owner.id + ")");
 					toSend.push("**Region:** " + msg.channel.server.region);
 					toSend.push("**Members:** " + msg.channel.server.members.length + " **Channels:** " + msg.channel.server.channels.filter(c=>c.type=="text").length + "T " + msg.channel.server.channels.filter(c=>c.type=="voice").length + "V");
 					toSend.push("**Server created on** " + new Date((msg.channel.server.id / 4194304) + 1420070400000).toUTCString());
@@ -1065,7 +1070,7 @@ var commands = {
 	},
 	"remindme": {
 		desc: "Set reminders.",
-		usage: "<reminder> in <[0 days] [00 hours] [00 minutes] [000 seconds]> | remove <text in reminder> | list ",
+		usage: "<reminder> in <[0 days] [00 hours] [00 minutes] [000 seconds]> | remove <text in reminder> | list",
 		info: "__remove:__ Will remove a reminder containing the text input.\n__list:__ List your reminders.\n__add:__ Use the *<text> in <[0 days] [00 hours] [00 minutes] [000 seconds]>*  format.",
 		deleteCommand: false, cooldown: 5,
 		process: function(bot, msg, suffix) {
@@ -1141,6 +1146,10 @@ var commands = {
 		desc: "Get a list of the users in a role", usage: "<role name>",
 		deleteCommand: true, cooldown: 3,
 		process: function(bot, msg, suffix) {
+			if (msg.channel.isPrivate) {
+				bot.sendMessage(msg, "Maybe try that in a server?");
+				return;
+			}
 			if (msg.everyoneMentioned || suffix == "everyone") bot.sendMessage(msg, "Yeah right, like I'd let you do that", (e, m)=>{bot.deleteMessage(m,{"wait": 6000});});
 			else if (suffix) {
 				let role = msg.channel.server.roles.find(r=>suffix.toLowerCase() == r.name.toLowerCase());
@@ -1166,34 +1175,49 @@ var commands = {
 				return;
 			}
 			let mentions = [];
-			if (msg.channel.messages.length < 700) {
-				utils.getLogs(bot, msg.channel).then(()=>{
-					for (let i = msg.channel.messages.length - 2; i > 1 && mentions.length < 5; i--) {
-						if (msg.channel.messages[i].isMentioned(msg.author)) {
-							let mention = `**Mention:** \`${msg.channel.messages[i].author.username}\`: ${msg.channel.messages[i].cleanContent}`;
-							if (mention.length < 1990) {
-								let before = `\`${msg.channel.messages[i-2].author.username}\`: ${msg.channel.messages[i-2].cleanContent}\n\`${msg.channel.messages[i-1].author.username}\`: ${msg.channel.messages[i-1].cleanContent}`;
-								if (before.length + mention.length < 1990) {
-									mention = before + "\n" + mention;
-									let after = `\`${msg.channel.messages[i+1].author.username}\`: ${msg.channel.messages[i+1].cleanContent}\n\`${msg.channel.messages[i+2].author.username}\`: ${msg.channel.messages[i+2].cleanContent}`;
-									if (after.length + mention.length < 1990)
-										mention += "\n" + after;
-								}
+			utils.getLogs(bot, msg.channel).then(()=>{
+				for (let i = msg.channel.messages.length - 2; i > 1 && mentions.length < 5; i--) {
+					if (msg.channel.messages[i].isMentioned(msg.author)) {
+						let mention = `**Mention:** \`${msg.channel.messages[i].author.username}\`: ${msg.channel.messages[i].cleanContent}`;
+						if (mention.length < 1990) {
+							let before = `\`${msg.channel.messages[i-2].author.username}\`: ${msg.channel.messages[i-2].cleanContent}\n\`${msg.channel.messages[i-1].author.username}\`: ${msg.channel.messages[i-1].cleanContent}`;
+							if (before.length + mention.length < 1990) {
+								mention = before + "\n" + mention;
+								let after = `\`${msg.channel.messages[i+1].author.username}\`: ${msg.channel.messages[i+1].cleanContent}\n\`${msg.channel.messages[i+2].author.username}\`: ${msg.channel.messages[i+2].cleanContent}`;
+								if (after.length + mention.length < 1990)
+									mention += "\n" + after;
 							}
-							mentions.push(mention);
-							i+=3;
 						}
+						mentions.push(mention);
+						i-=3;
 					}
-					if (mentions.length == 0) {
-						bot.sendMessage(msg, `No mentions found in the past ${msg.channel.messages.length} messages!`);
-					} else {
-						mentions.forEach(m=>{
-							bot.sendMessage(msg.author, ` **-- Mention --** \n${m}`);
-						});
-					}
-				}).catch(e=>{
-					bot.sendMessage(msg, `There was an error: ${e}`);
-				});
+				}
+				if (mentions.length == 0) {
+					bot.sendMessage(msg, `No mentions found in the past ${msg.channel.messages.length} messages!`);
+				} else {
+					mentions.forEach(m=>{
+						bot.sendMessage(msg.author, ` **-- Mention --** \n${m}`);
+					});
+				}
+			}).catch(e=>{
+				bot.sendMessage(msg, `There was an error: ${e}`);
+			});
+		}
+	},
+	"names": {
+		desc: "Get a user's nicknames (that I know of)", usage: "user",
+		deleteCommand: true, cooldown: 6,
+		process: function(bot, msg, suffix) {
+			if (msg.channel.isPrivate) bot.sendMessage(msg, "You must do this in a server");
+			else {
+				let user = (!suffix) ? msg.author : (msg.mentions.length > 0) ? msg.mentions[0] : utils.findUser(suffix, msg.channel.server.members, msg.channel.server);
+				if (!user) bot.sendMessage(msg, "User not found");
+				else {
+					let nicks = (bot.servers.filter(s => s.members.get('id', user.id)) || []).map(s => s.detailsOf(user).nick);
+					nicks = nicks.filter(n => n !== null);
+					if (nicks.length > 0) bot.sendMessage(msg, `**Nicknames for ${user.username.replace(/@/g, '@\u200b')}:** ${nicks.join(', ')}`);
+					else bot.sendMessage(msg, user.username.replace(/@/g, '@\u200b') + " has no nicknames");
+				}
 			}
 		}
 	}
