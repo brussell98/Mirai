@@ -1,6 +1,6 @@
 {
 	"name": "brussellbot",
-	"version": "2.1.1",
+	"version": "2.2.0",
 	"description": "A Discord bot that does everything",
 	"author": "brussell98",
 	"main": "BrussellBot.js",
@@ -12,7 +12,7 @@
 		"url": "https://github.com/brussell98/BrussellBot/issues"
 	},
 	"engines": {
-		"node": ">=5.7.0"
+		"node": ">=6.0.0"
 	},
 	"scripts": {
 		"start": "node BrussellBot.js --harmony"
@@ -25,6 +25,7 @@
 		"cleverbot-node": "*",
 		"osu-api": "*",
 		"chalk": "*",
-		"entities": ">=1.1.1"
+		"entities": ">=1.1.1",
+		"csslint": "*"
 	}
 }

@@ -1,6 +1,7 @@
-# BrussellBot 2.1
+# BrussellBot 2.2
 
-A multipurpose bot for Discord using [Discord.js](https://github.com/hydrabolt/discord.js/)
+A multipurpose bot for Discord using [Discord.js](https://github.com/hydrabolt/discord.js/)   
+**Note:** NodeJS version 6.0.0+ is REQUIRED
 
 [Website](http://brussell98.github.io/bot/index.html)   
 [Discord Server](https://discord.gg/0kvLlwb7slG3XCCQ)   
