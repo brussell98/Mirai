@@ -138,4 +138,7 @@ exports.getLogs = function(bot, channel) {
 }
 
 //comma sperate a number
-exports.comma = number => number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+exports.comma = (number) => number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+
+//sort messages by earliest first
+exports.sortById = (a, b) => a.id - b.id;

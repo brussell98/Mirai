@@ -6,7 +6,8 @@ var config = require("./config.json")
 	,ent = require("entities")
 	,waifus = require("./waifus.json")
 	,remind = require('./remind.js')
-	,utils = require('../utils/utils.js');
+	,utils = require('../utils/utils.js')
+	,cssLinter = require('csslint').CSSLint;
 
 var VoteDB = {}
 	,LottoDB = {}
@@ -22,11 +23,6 @@ setInterval(() => Ratings = {},86400000);
 /*****************************\
 		   Functions
 \*****************************/
-
-function correctUsage(cmd, usage, msg, bot, delay) {
-	bot.sendMessage(msg, msg.author.username.replace(/@/g, '@\u200b') + ", the correct usage is *`" + config.command_prefix + cmd + ' ' + usage + '`*', (erro, wMessage)=>{bot.deleteMessage(wMessage, {"wait": delay || 10000});});
-	bot.deleteMessage(msg, {"wait": 10000});
-}
 
 function autoEndVote(bot, msg) {
 	setTimeout(() => {
@@ -140,7 +136,9 @@ var aliases = {
 	"remind": "remindme", "reminder": "remindme",
 	"rekt": "rip",
 	"withrole": "inrole",
-	"nicks": "names"
+	"nicks": "names",
+	"css": "csslint",
+	"convert": "currency"
 };
 
 var commands = {
@@ -158,7 +156,7 @@ var commands = {
 				toSend.push("@" + bot.user.username + " text\n\t#Talk to the bot (cleverbot)");
 				Object.keys(commands).forEach(cmd=>{
 					if (!commands[cmd].hasOwnProperty("shouldDisplay") || (commands[cmd].hasOwnProperty("shouldDisplay") && commands[cmd].shouldDisplay))
-						toSend.push("\n" + config.mod_command_prefix + cmd + " " + commands[cmd].usage + "\n\t#" + commands[cmd].desc);
+						toSend.push("\n" + config.command_prefix + cmd + " " + commands[cmd].usage + "\n\t#" + commands[cmd].desc);
 				});
 				toSend = toSend.join('');
 				if (toSend.length >= 1990) {
@@ -202,7 +200,7 @@ var commands = {
 	},
 	"beep": {
 		desc: "boop", usage: "", deleteCommand: false, cooldown: 3, shouldDisplay: false,
-		process: (bot, msg) => { bot.sendMessage(msg, "boop", (e,sentMsg)=>{bot.updateMessage(sentMsg, "boop    |    Time taken: " + (sentMsg.timestamp - msg.timestamp) + "ms")}); }
+		process: (bot, msg) => { bot.sendMessage(msg, "boop", (e,sentMsg)=>{bot.updateMessage(sentMsg, "boop   |   Time taken: " + (sentMsg.timestamp - msg.timestamp) + "ms")}); }
 	},
 	"poi": {
 		desc: "poi", usage: "", deleteCommand: false, cooldown: 3, shouldDisplay: false,
@@ -214,12 +212,18 @@ var commands = {
 		cooldown: 3, shouldDisplay: false, usage: "",
 		process: function(bot, msg) {
 			let n = Math.floor(Math.random() * 6);
-			if (n === 0) { bot.sendMessage(msg, "pong", (e,sentMsg)=>{bot.updateMessage(sentMsg, "pong    |    Time taken: " + (sentMsg.timestamp - msg.timestamp) + "ms")});
-			} else if (n === 1) { bot.sendMessage(msg, "You thought I'd say pong, *didn't you?*", (e,sentMsg)=>{bot.updateMessage(sentMsg, "You thought I'd say pong, *didn't you?*    |    Time taken: " + (sentMsg.timestamp - msg.timestamp) + "ms")});
-			} else if (n === 2) { bot.sendMessage(msg, "pong!", (e,sentMsg)=>{bot.updateMessage(sentMsg, "pong!    |    Time taken: " + (sentMsg.timestamp - msg.timestamp) + "ms")});
-			} else if (n === 3) { bot.sendMessage(msg, "Yeah, I'm still here", (e,sentMsg)=>{bot.updateMessage(sentMsg, "Yeah, I'm still here    |    Time taken: " + (sentMsg.timestamp - msg.timestamp) + "ms")});
-			} else if (n === 4) { bot.sendMessage(msg, "...", (e,sentMsg)=>{bot.updateMessage(sentMsg, "...    |    Time taken: " + (sentMsg.timestamp - msg.timestamp) + "ms")});
-			} else if (n === 5) { bot.sendMessage(msg, config.command_prefix + "ping", (e,sentMsg)=>{bot.updateMessage(sentMsg, "ping    |    Time taken: " + (sentMsg.timestamp - msg.timestamp) + "ms")}); }
+			if (n === 0)
+				bot.sendMessage(msg, "pong", (e,sentMsg)=>{bot.updateMessage(sentMsg, "pong   |   Time taken: " + (sentMsg.timestamp - msg.timestamp) + "ms")});
+			else if (n === 1)
+				bot.sendMessage(msg, "*I-It's not like I wanted to say pong or anything...*", (e,sentMsg)=>{bot.updateMessage(sentMsg, "*I-It's not like I wanted to say pong or anything...*   |   Time taken: " + (sentMsg.timestamp - msg.timestamp) + "ms")});
+			else if (n === 2)
+				bot.sendMessage(msg, "pong!", (e,sentMsg)=>{bot.updateMessage(sentMsg, "pong!   |   Time taken: " + (sentMsg.timestamp - msg.timestamp) + "ms")});
+			else if (n === 3)
+				bot.sendMessage(msg, "No");
+			else if (n === 4)
+				bot.sendMessage(msg, "...", (e,sentMsg)=>{bot.updateMessage(sentMsg, "...   |   Time taken: " + (sentMsg.timestamp - msg.timestamp) + "ms")});
+			else if (n === 5)
+				bot.sendMessage(msg, config.command_prefix + "ping", (e,sentMsg)=>{bot.updateMessage(sentMsg, "ping   |   Time taken: " + (sentMsg.timestamp - msg.timestamp) + "ms")});
 		}
 	},
 	"invite": {
@@ -242,12 +246,15 @@ var commands = {
 		info: "__Format:__ The first number is how many to roll. The second is the number of sides.",
 		process: function(bot, msg, suffix) {
 			let dice = (suffix && /\d+d\d+/.test(suffix)) ? suffix : "1d6";
-			request(`https://rolz.org/api/?${dice}.json`, function(err, response, body) {
+			request(`https://rolz.org/api/?${dice}.json`, (err, response, body) => {
 				if (!err && response.statusCode == 200) {
 					let roll = JSON.parse(body);
-					if (roll.details == null) { bot.sendMessage(msg, roll.result, function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
-					if (roll.details.length <= 100) bot.sendMessage(msg, `🎲 Your **${roll.input}** resulted in ${roll.result} ${roll.details}`);
-					else bot.sendMessage(msg, `🎲 Your **${roll.input}** resulted in ${roll.result}`);
+					if (roll.details == null)
+						bot.sendMessage(msg, roll.result, (e,m) => { bot.deleteMessage(m, {"wait": 8000}); });
+					if (roll.details.length <= 100)
+						bot.sendMessage(msg, `🎲 Your **${roll.input}** resulted in ${roll.result} ${roll.details}`);
+					else
+						bot.sendMessage(msg, `🎲 Your **${roll.input}** resulted in ${roll.result}`);
 				} else console.log(cWarn(" WARN ") + ` Got an error: ${err}, status code: ${response.statusCode}`);
 			});
 		}
@@ -418,9 +425,9 @@ var commands = {
 		usage: "<option 1>, <option 2>, [option], [option]",
 		cooldown: 4, deleteCommand: false,
 		process: function(bot, msg, suffix) {
-			if (!suffix || /(.*), ?(.*)/.test(suffix) == false) { correctUsage("choose", this.usage, msg, bot); return; }
+			if (!suffix || /(.*), ?(.*)/.test(suffix) == false) { ("choose", this.usage, msg, bot); return; }
 			let choices = suffix.split(/, ?/);
-			if (choices.length < 2) correctUsage("choose", this.usage, msg, bot);
+			if (choices.length < 2) utils.correctUsage("choose", this.usage, msg, bot, config.command_prefix);
 			else {
 				let choice = Math.floor(Math.random() * (choices.length));
 				choices.forEach((c,i)=>{if (c.includes('homework') || c.includes('sleep') || c.includes('study') || c.includes('productiv')) choice = i;});
@@ -496,7 +503,7 @@ var commands = {
 				if (msg.mentions.length < 2) { bot.sendMessage(msg, "You need to enter multiple users!"); return; }
 				bot.sendMessage(msg, " 🎊Out of **" + msg.mentions.length + "** entries the winner is " + msg.mentions[Math.floor(Math.random() * msg.mentions.length)] + " 🎊");
 
-			} else correctUsage("lotto", this.usage, msg, bot);
+			} else utils.correctUsage("lotto", this.usage, msg, bot, config.command_prefix);
 		}
 	},
 	"vote": {
@@ -557,7 +564,7 @@ var commands = {
 						bot.updateMessage(VoteDB[currentChannel][0].annMsg, VoteDB[currentChannel][0].annMsg.content.replace(/Upvotes\: [\d]{1,2}\nDownvotes: [\d]{1,2}/g, "Upvotes: " + VoteDB[currentChannel][0].upvotes + "\nDownvotes: " + VoteDB[currentChannel][0].downvotes), function(err, message) { VoteDB[currentChannel][0].annMsg = message; });
 					}
 				}
-			} else correctUsage("vote", this.usage, msg, bot);
+			} else utils.correctUsage("vote", this.usage, msg, bot, config.command_prefix);
 		}
 	},
 	"strawpoll": {
@@ -583,7 +590,7 @@ var commands = {
 						else if (response.statusCode != 200) bot.sendMessage(msg, "Got status code " + response.statusCode);
 					}
 				);
-			} else correctUsage("strawpoll", this.usage, msg, bot);
+			} else utils.correctUsage("strawpoll", this.usage, msg, bot, config.command_prefix);
 		}
 	},
 	"8ball": {
@@ -621,17 +628,15 @@ var commands = {
 								,status = result.anime.entry[0].status
 								,synopsis = result.anime.entry[0].synopsis.toString()
 								,id = result.anime.entry[0].id;
-							synopsis = synopsis.replace(/<br \/>/g, " ").replace(/\[(.{1,10})\]/g, "").replace(/\r?\n|\r/g, " ").replace(/\[(i|\/i)\]/g, "*").replace(/\[(b|\/b)\]/g, "**");
-							synopsis = ent.decodeHTML(synopsis);
-							if (!msg.channel.isPrivate) {
-								if (synopsis.length > 400) synopsis = synopsis.substring(0, 400); synopsis += "...";
-							}
+							synopsis = ent.decodeHTML(synopsis.replace(/<br \/>/g, " ").replace(/\[(.{1,10})\]/g, "").replace(/\r?\n|\r/g, " ").replace(/\[(i|\/i)\]/g, "*").replace(/\[(b|\/b)\]/g, "**"));
+							if (!msg.channel.isPrivate && synopsis.length > 400)
+								synopsis = synopsis.substring(0, 400) + '...';
 							bot.sendMessage(msg, "**" + title + " / " + english + "**\n**Type:** " + type + " **| Episodes:** " + ep + " **| Status:** " + status + " **| Score:** " + score + "\n" + synopsis + "\n**<http://www.myanimelist.net/anime/" + id + ">**");
 						});
 					} else bot.sendMessage(msg, "\"" + suffix + "\" not found.", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); });
 				});
 				bot.stopTyping(msg.channel);
-			} else correctUsage("anime", this.usage, msg, bot);
+			} else utils.correctUsage("anime", this.usage, msg, bot, config.command_prefix);
 		}
 	},
 	"manga": {
@@ -661,17 +666,15 @@ var commands = {
 								,status = result.manga.entry[0].status
 								,synopsis = result.manga.entry[0].synopsis.toString()
 								,id = result.manga.entry[0].id;
-							synopsis = synopsis.replace(/<br \/>/g, " ").replace(/\[(.{1,10})\]/g, "").replace(/\r?\n|\r/g, " ").replace(/\[(i|\/i)\]/g, "*").replace(/\[(b|\/b)\]/g, "**");
-							synopsis = ent.decodeHTML(synopsis);
-							if (!msg.channel.isPrivate) {
-								if (synopsis.length > 400) synopsis = synopsis.substring(0, 400) + "...";
-							}
+							synopsis = ent.decodeHTML(synopsis.replace(/<br \/>/g, " ").replace(/\[(.{1,10})\]/g, "").replace(/\r?\n|\r/g, " ").replace(/\[(i|\/i)\]/g, "*").replace(/\[(b|\/b)\]/g, "**"));
+							if (!msg.channel.isPrivate && synopsis.length > 400)
+								synopsis = synopsis.substring(0, 400) + '...';
 							bot.sendMessage(msg, `**${title} / ${english}**\n**Type:** ${type} **| Chapters:** ${chapters} **| Volumes:** ${volumes} **| Status:** ${status} **| Score:** ${score}\n${synopsis}\n**<http://www.myanimelist.net/manga/${id}>**`);
 						});
 					} else bot.sendMessage(msg, "\"" + suffix + "\" not found", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); });
 				});
 				bot.stopTyping(msg.channel);
-			} else correctUsage("manga", this.usage, msg, bot);
+			} else utils.correctUsage("manga", this.usage, msg, bot, config.command_prefix);
 		}
 	},
 	"maluser": {
@@ -697,7 +700,7 @@ var commands = {
 						});
 					}
 				});
-			} else correctUsage("maluser", this.usage, msg, bot);
+			} else utils.correctUsage("maluser", this.usage, msg, bot, config.command_prefix);
 		}
 	},
 	"coinflip": {
@@ -714,7 +717,10 @@ var commands = {
 		info: "**sig:** Get an osu!next styled signature for the specified account. You may provide a hex color.\n**user:** Get the statistics for a user.\n**best:** Get the top 5 plays for a user (by PP).\n**recent:** Get the 5 most recent plays for a user.\n**mode:** Mode can be used if you want to get data for a mode other than osu. You can use mania, taiko, or ctb.",
 		deleteCommand: true, cooldown: 5,
 		process: function(bot, msg, suffix) {
-			if (!suffix) { correctUsage("osu", this.usage, msg, bot); return; }
+			if (!suffix) {
+				utils.correctUsage("osu", this.usage, msg, bot, config.command_prefix);
+				return;
+			}
 
 			let osu;
 			if (/^(osu!?)?(standard|mania|taiko|ctb|catch the beat) .{3,6} /i.test(suffix)) {
@@ -856,7 +862,7 @@ var commands = {
 					});});});});});
 				});
 
-			} else correctUsage("osu", this.usage, msg, bot, 15000);
+			} else utils.correctUsage("osu", this.usage, msg, bot, config.command_prefix, 15000);
 		}
 	},
 	"rps": {
@@ -876,9 +882,15 @@ var commands = {
 		deleteCommand: true, cooldown: 7,
 		info: "Formats: `London` `London,UK` `10016` `10016,NY`",
 		process: function(bot, msg, suffix) {
-			if (OWM_API_KEY == null || OWM_API_KEY == "") { bot.sendMessage(msg, "⚠ No API key defined by bot owner", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
+			if (OWM_API_KEY == null || OWM_API_KEY == "") {
+				bot.sendMessage(msg, "⚠ No API key defined by bot owner", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); });
+				return;
+			}
 			if (suffix) suffix = suffix.replace(" ", "");
-			else { correctUsage("weather", this.usage, msg, bot); return; }
+			else {
+				utils.correctUsage("weather", this.usage, msg, bot, config.command_prefix);
+				return;
+			}
 			let rURL = (/\d/.test(suffix) == false) ? "http://api.openweathermap.org/data/2.5/weather?q=" + suffix + "&APPID=" + OWM_API_KEY : "http://api.openweathermap.org/data/2.5/weather?zip=" + suffix + "&APPID=" + OWM_API_KEY;
 			request(rURL, function(error, response, body) {
 				if (!error && response.statusCode == 200) {
@@ -948,7 +960,7 @@ var commands = {
 		usage: "<name> [--s[earch]]",
 		deleteCommand: false, cooldown: 5,
 		process: function(bot, msg, suffix) {
-			if (!suffix) { correctUsage("ratewaifu", this.usage, msg, bot); return; }
+			if (!suffix) { utils.correctUsage("ratewaifu", this.usage, msg, bot, config.command_prefix); return; }
 			if (msg.everyoneMentioned) { bot.sendMessage(msg, "Hey, " + msg.author.username.replace(/@/g, '@\u200b') + ", don't do that ok?", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 			if (msg.mentions.length > 1) { bot.sendMessage(msg, "Multiple mentions aren't allowed!", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); }); return; }
 			if (suffix.toLowerCase().replace("-", " ") == bot.user.username.toLowerCase().replace("-", " ")) { bot.sendMessage(msg, "I'd rate myself **10/10**"); return; }
@@ -1004,7 +1016,7 @@ var commands = {
 						if (ss != "none") bot.sendMessage(msg, "**Shared Servers for " + usr.username.replace(/@/g, '@\u200b') + ":** `" + ss.substring(6).replace(/@/g, '@\u200b') + "`");
 						else bot.sendMessage(msg, "Somehow I don't share any servers with that user", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); });
 					} else bot.sendMessage(msg, "User not found", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); });
-				} else correctUsage("shared", this.usage, msg, bot);
+				} else utils.correctUsage("shared", this.usage, msg, bot, config.command_prefix);
 			} else bot.sendMessage(msg, "This command can't be used in a PM", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); });
 		}
 	},
@@ -1045,7 +1057,7 @@ var commands = {
 						} else bot.sendMessage(msg, "Nothing found!", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); });
 					}
 				});
-			} else correctUsage("image", this.usage, msg, bot);
+			} else utils.correctUsage("image", this.usage, msg, bot, config.command_prefix);
 		}
 	},
 	"fortune": {
@@ -1130,7 +1142,7 @@ var commands = {
 				remind.addReminder(msg.author.id, Date.now() + millisecs, reminder);
 				bot.sendMessage(msg, "⏰ Got it! I'll remind you in " + timeString);
 
-			} else correctUsage("remindme", this.usage, msg, bot, 15000);
+			} else utils.correctUsage("remindme", this.usage, msg, bot, config.command_prefix, 15000);
 		}
 	},
 	"rip": {
@@ -1174,30 +1186,43 @@ var commands = {
 				bot.sendMessage(msg, "I can't read this channel's message history!");
 				return;
 			}
-			let mentions = [];
+			var mentions = [];
 			utils.getLogs(bot, msg.channel).then(()=>{
-				for (let i = msg.channel.messages.length - 2; i > 1 && mentions.length < 5; i--) {
+
+				msg.channel.messages.sort(utils.sortById); //sort by id, oldest first
+				msg.channel.messages.forEach((message, i) => { //remove dupes
+					if (i !== 0 && message.id == msg.channel.messages[i - 1].id)
+						msg.channel.messages.splice(i, 1);
+				});
+
+				for (let i = 2; i < msg.channel.messages.length - 2 && mentions.length < 5; i++) {
 					if (msg.channel.messages[i].isMentioned(msg.author)) {
-						let mention = `**Mention:** \`${msg.channel.messages[i].author.username}\`: ${msg.channel.messages[i].cleanContent}`;
-						if (mention.length < 1990) {
+						let mention = `\`${msg.channel.messages[i].author.username}\`: ${msg.channel.messages[i].cleanContent}`;
+						if (mention.length < 1980) {
 							let before = `\`${msg.channel.messages[i-2].author.username}\`: ${msg.channel.messages[i-2].cleanContent}\n\`${msg.channel.messages[i-1].author.username}\`: ${msg.channel.messages[i-1].cleanContent}`;
-							if (before.length + mention.length < 1990) {
+							if (before.length + mention.length < 1980) {
 								mention = before + "\n" + mention;
 								let after = `\`${msg.channel.messages[i+1].author.username}\`: ${msg.channel.messages[i+1].cleanContent}\n\`${msg.channel.messages[i+2].author.username}\`: ${msg.channel.messages[i+2].cleanContent}`;
-								if (after.length + mention.length < 1990)
+								if (after.length + mention.length < 1980)
 									mention += "\n" + after;
 							}
 						}
 						mentions.push(mention);
-						i-=3;
+						i += 3;
 					}
 				}
 				if (mentions.length == 0) {
 					bot.sendMessage(msg, `No mentions found in the past ${msg.channel.messages.length} messages!`);
 				} else {
-					mentions.forEach(m=>{
-						bot.sendMessage(msg.author, ` **-- Mention --** \n${m}`);
-					});
+					let messagesSent = 0;
+					let sendLoop = setInterval(() => {
+						if (messagesSent >= mentions.length)
+							clearInterval(sendLoop);
+						else {
+							bot.sendMessage(msg.author, ` **--------------- Mention ---------------** \n${mentions[messagesSent]}\n`);
+							messagesSent++;
+						}
+					}, 500);
 				}
 			}).catch(e=>{
 				bot.sendMessage(msg, `There was an error: ${e}`);
@@ -1217,6 +1242,47 @@ var commands = {
 					nicks = nicks.filter(n => n !== null);
 					if (nicks.length > 0) bot.sendMessage(msg, `**Nicknames for ${user.username.replace(/@/g, '@\u200b')}:** ${nicks.join(', ')}`);
 					else bot.sendMessage(msg, user.username.replace(/@/g, '@\u200b') + " has no nicknames");
+				}
+			}
+		}
+	},
+	"csslint": {
+		desc: "Lint CSS", usage: "<css>",
+		deleteCommand: false, cooldown: 6,
+		process: function(bot, msg, suffix) {
+			if (!suffix)
+				bot.sendMessage(msg, "You must pass some CSS to lint");
+			else {
+				let result = cssLinter.verify(suffix);
+				if (result.messages.length === 0)
+					bot.sendMessage(msg, "No errors or warnings!");
+				else {
+					let toSend = [];
+					for (let i = 0; i < result.messages.length; i++) {
+						let error = result.messages[i];
+						toSend.push(`${error.type} ${error.line ? `(line ${error.line}, col ${error.col}}) ` : ''}${error.message}`);
+					}
+					bot.sendMessage(msg, '```\n' + toSend.join('\n').substr(0, 1992) + '```');
+				}
+			}
+		}
+	},
+	"currency": {
+		desc: "Convert between currencies", usage: "<ammount> <CODE> to <CODE>",
+		deleteCommand: true, cooldown: 6,
+		process: function(bot, msg, suffix) {
+			if (!suffix)
+				utils.correctUsage("currency", this.usage, msg, bot, config.command_prefix);
+			else {
+				let parsed = suffix.match(/(\d+\.?\d?\d?) ?([a-zA-Z]{3}).*([a-zA-Z]{3})$/);
+				if (!parsed || parsed.length !== 4) utils.correctUsage("currency", this.usage, msg, bot, config.command_prefix);
+				else {
+					request(`https://www.google.com/finance/converter?a=${parsed[1]}&from=${parsed[2]}&to=${parsed[3]}`, (err, res, body) => {
+						if (err) bot.sendMessage(msg, err);
+						if (res.statusCode != 200) bot.sendMessage(msg, `Got response code ${res.statusCode}`);
+						else
+							bot.sendMessage(msg, `${parsed[1]} ${parsed[2]} is equal to ${body.match(/\<span class=bld\>(.+?)\<\/span\>/gmi)[0].replace(/\<\/?span( class=bld)?\>/g, '')}`);
+					});
 				}
 			}
 		}

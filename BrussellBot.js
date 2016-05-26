@@ -93,17 +93,17 @@ bot.on("message", msg => {
 				}
 			}
 
-			if (new RegExp(`<@!?${config.admin_id}>`).test(msg.content)) { //bot owner mentioned
+			if (new RegExp(`<@!?${config.admin_id[0]}>`).test(msg.content)) { //bot owner mentioned
 				if (config.send_mentions) {
-					let owner = bot.users.get("id", config.admin_id);
+					let owner = bot.users.get("id", config.admin_id[0]);
 					if (owner && owner.status != "online") {
 						let toSend = "";
 						if (msg.channel.messages.length >= 3) {
 							let mIndex = msg.channel.messages.indexOf(msg);
 							if (Date.now() - msg.channel.messages[mIndex-2].timestamp <= 120000) //if in the past 2 minutes
-								toSend += `**${msg.channel.messages[mIndex-2].username}:** ${msg.channel.messages[mIndex-2].cleanContent}\n`;
+								toSend += `**${msg.channel.messages[mIndex-2].author.username}:** ${msg.channel.messages[mIndex-2].cleanContent}\n`;
 							if (Date.now() - msg.channel.messages[mIndex-1].timestamp <= 120000) //if in the past 2 minutes
-								toSend += `**${msg.channel.messages[mIndex-1].username}:** ${msg.channel.messages[mIndex-1].cleanContent}\n`;
+								toSend += `**${msg.channel.messages[mIndex-1].author.username}:** ${msg.channel.messages[mIndex-1].cleanContent}\n`;
 							if (toSend.length + msg.cleanContent.length >= 1930) //if current message too long
 								toSend = `**${msg.author.username}:** ${msg.cleanContent}`.substr(0, 1930);
 							else toSend += msg.cleanContent.substr(0, 1930);
@@ -115,7 +115,7 @@ bot.on("message", msg => {
 		}
 
 	}
-	if (msg.author.id == config.admin_id && msg.content.startsWith("(eval) ")) { //bot owner eval command
+	if (config.admin_id.includes(msg.author.id) && msg.content.startsWith("(eval) ")) { //bot owner eval command
 		evaluateString(msg);
 		return;
 	}
@@ -146,7 +146,7 @@ bot.on("message", msg => {
 
 	} else if (msg.content.startsWith(config.mod_command_prefix)) {
 
-		if (cmd === "reload" && msg.author.id == config.admin_id) {
+		if (cmd === "reload" && config.admin_id.includes(msg.author.id)) {
 			reload();
 			bot.deleteMessage(msg);
 			return;
@@ -172,7 +172,7 @@ function execCommand(msg, cmd, suffix, type = "normal") {
 			if (!msg.channel.isPrivate) console.log(cServer(msg.channel.server.name) + " > " + cGreen(msg.author.username) + " > " + msg.cleanContent.replace(/\n/g, " "));
 			else console.log(cGreen(msg.author.username) + " > " + msg.cleanContent.replace(/\n/g, " ")); //console logs
 
-			if (msg.author.id != config.admin_id && commands.commands[cmd].hasOwnProperty("cooldown")) {
+			if (!config.admin_id.includes(msg.author.id) && commands.commands[cmd].hasOwnProperty("cooldown")) {
 				if (!lastExecTime.hasOwnProperty(cmd))
 					lastExecTime[cmd] = {}; //if no entry for command
 				if (!lastExecTime[cmd].hasOwnProperty(msg.author.id))
@@ -201,7 +201,7 @@ function execCommand(msg, cmd, suffix, type = "normal") {
 				console.log(cServer(msg.channel.server.name) + " > " + cGreen(msg.author.username) + " > " + cBlue(msg.cleanContent.replace(/\n/g, " ").split(" ")[0]) + msg.cleanContent.replace(/\n/g, " ").substr(msg.cleanContent.replace(/\n/g, " ").split(" ")[0].length));
 			else console.log(cGreen(msg.author.username) + " > " + cBlue(msg.cleanContent.replace(/\n/g, " ").split(" ")[0]) + msg.cleanContent.replace(/\n/g, " ").substr(msg.cleanContent.replace(/\n/g, " ").split(" ")[0].length)); //console logs
 
-			if (msg.author.id != config.admin_id && mod.commands[cmd].hasOwnProperty("cooldown")) {
+			if (!config.admin_id.includes(msg.author.id) && mod.commands[cmd].hasOwnProperty("cooldown")) {
 				if (!lastExecTime.hasOwnProperty(cmd))
 					lastExecTime[cmd] = {}; //if no entry for command
 				if (!lastExecTime[cmd].hasOwnProperty(msg.author.id))
@@ -353,7 +353,7 @@ function checkConfig() {
 }
 
 function evaluateString(msg) {
-	if (msg.author.id != config.admin_id) {
+	if (!config.admin_id.includes(msg.author.id)) {
 		console.log(cWarn(" WARN ") + " Somehow an unauthorized user got into eval!");
 		return;
 	}
