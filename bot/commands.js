@@ -1,47 +1,36 @@
-var config = require("./config.json")
-	,version = require("../package.json").version
-	,request = require("request")
-	,xml2js = require("xml2js")
-	,osuapi = require("osu-api")
-	,ent = require("entities")
-	,waifus = require("./waifus.json")
-	,remind = require('./remind.js')
-	,utils = require('../utils/utils.js')
-	,cssLinter = require('csslint').CSSLint;
+var config = require("./config.json"),
+	version = require("../package.json").version,
+	request = require("request"),
+	xml2js = require("xml2js"),
+	osuapi = require("osu-api"),
+	ent = require("entities"),
+	waifus = require("./waifus.json"),
+	remind = require('./remind.js'),
+	utils = require('../utils/utils.js'),
+	cssLinter = require('csslint').CSSLint;
 
-var VoteDB = {}
-	,LottoDB = {}
-	,Ratings = {};
+var VoteDB = {},
+	LottoDB = {},
+	Ratings = {};
 const IMGUR_CLIENT_ID = config.imgur_client_id;
 const OSU_API_KEY = config.osu_api_key;
 const OWM_API_KEY = config.weather_api_key;
 const MAL_USER = config.mal_user;
 const MAL_PASS = config.mal_pass;
+const charEmojiMap = {
+	"a": "🅰", "b": "🅱", "c": "©", "d": "↩", "e": "📧", "f": "🎏", "g": "⛽",
+	"h": "♓", "i": "ℹ", "j": () => Math.random() < .5 ? "🌶" : "🗾", "k": "🎋", "l": "👢", "m": "Ⓜ",
+	"n": "♑", "o": () => Math.random() < .5 ? "⭕" : "🔅", "p": "🅿", "q": "📯", "r": "®", "s": () => Math.random() < .5 ? "💲" : "⚡",
+	"t": "🌴", "u": "⛎", "v": () => Math.random() < .5 ? "🖖🏼" : "♈", "w": () => Math.random() < .7 ? "〰" : "📈", "x": () => Math.random() < .5 ? "❌" : "⚔", "y": "✌",
+	"z": "Ⓩ", "1": "1⃣", "2": "2⃣", "3": "3⃣", "4": "4⃣", "5": "5⃣",
+	"6": "6⃣", "7": "7⃣", "8": "8⃣", "9": "9⃣", "0": "0⃣", "$": "💲", "!": "❗", "?": "❓", " ": "　"
+};
 
-setInterval(() => Ratings = {},86400000);
+setInterval(() => Ratings = {}, 86400000);
 
 /*****************************\
 		   Functions
 \*****************************/
-
-function autoEndVote(bot, msg) {
-	setTimeout(() => {
-		if (VoteDB.hasOwnProperty(msg.channel.id)) commands["vote"].process(bot, msg, "end");
-	}, 600000); //10 minutes = 600,000
-}
-
-function autoEndLotto(bot, msg) {
-	setTimeout(() => {
-		if (LottoDB.hasOwnProperty(msg.channel.id)) commands["lotto"].process(bot, msg, "end");
-	}, 600000);
-}
-
-function findUser(members, query) {
-	let usr = members.find(member=>{ return (member === undefined || member.username == undefined) ? false : member.username.toLowerCase() == query.toLowerCase() });
-	if (!usr) { usr = members.find(member=>{ return (member === undefined || member.username == undefined) ? false : member.username.toLowerCase().indexOf(query.toLowerCase()) == 0 }); }
-	if (!usr) { usr = members.find(member=>{ return (member === undefined || member.username == undefined) ? false : member.username.toLowerCase().includes(query.toLowerCase()) }); }
-	return usr || false;
-}
 
 function generateRandomRating(fullName, storeRating = false) {
 	let weightedNumber = Math.floor((Math.random() * 20) + 1); //between 1 and 20
@@ -65,7 +54,7 @@ function generateUserRating(bot, msg, fullName) {
 	}
 	if (msg.channel.permissionsOf(user).hasPermission("manageServer")) score += 1; //admins get +1 ;)
 	let count = 0;
-	bot.servers.map(server=>{ if (server.members.includes(user)) count += 1; }); //how many servers does the bot share with them
+	bot.servers.map(server => { if (server.members.includes(user)) count += 1; }); //how many servers does the bot share with them
 	if (count > 2) score += 1; //if we share at least 3 servers
 	if (!user.avatarURL) score -= 1; //gotta have an avatar
 	if (user.username.length > 22) score -= 1; //long usernames are hard to type so -1
@@ -138,7 +127,9 @@ var aliases = {
 	"withrole": "inrole",
 	"nicks": "names",
 	"css": "csslint",
-	"convert": "currency"
+	"convert": "currency",
+	"emoji": "emojify", "cancerify": "emojify",
+	"aesthetic": "fullwidth"
 };
 
 var commands = {
@@ -154,14 +145,14 @@ var commands = {
 				toSend.push("You can find the list online at **http://brussell98.github.io/bot/commands.html**\n");
 				toSend.push("**Commands:**```glsl\n");
 				toSend.push("@" + bot.user.username + " text\n\t#Talk to the bot (cleverbot)");
-				Object.keys(commands).forEach(cmd=>{
+				Object.keys(commands).forEach(cmd => {
 					if (!commands[cmd].hasOwnProperty("shouldDisplay") || (commands[cmd].hasOwnProperty("shouldDisplay") && commands[cmd].shouldDisplay))
 						toSend.push("\n" + config.command_prefix + cmd + " " + commands[cmd].usage + "\n\t#" + commands[cmd].desc);
 				});
 				toSend = toSend.join('');
 				if (toSend.length >= 1990) {
 					bot.sendMessage(msg.author, toSend.substr(0, 1990).substr(0, toSend.substr(0, 1990).lastIndexOf('\n\t')) + "```"); //part 1
-					setTimeout(()=>{bot.sendMessage(msg.author, "```glsl" + toSend.substr(toSend.substr(0, 1990).lastIndexOf('\n\t')) + "```");}, 1000); //2
+					setTimeout(() => {bot.sendMessage(msg.author, "```glsl" + toSend.substr(toSend.substr(0, 1990).lastIndexOf('\n\t')) + "```");}, 1000); //2
 				} else bot.sendMessage(msg.author, toSend + "```");
 			} else {
 				suffix = suffix.toLowerCase();
@@ -170,11 +161,13 @@ var commands = {
 					toSend.push("`" + config.command_prefix + suffix + ' ' + commands[suffix].usage + "`");
 					if (commands[suffix].hasOwnProperty("info")) toSend.push(commands[suffix].info); //if extra info
 					else if (commands[suffix].hasOwnProperty("desc")) toSend.push(commands[suffix].desc); //else usse the desc
-					if (commands[suffix].hasOwnProperty("cooldown")) toSend.push("__Cooldown:__ " + commands[suffix].cooldown + " seconds");
+					if (commands[suffix].hasOwnProperty("cooldown"))  toSend.push("__Cooldown:__ " + commands[suffix].cooldown + " seconds");
+					let _aliases = Object.keys(aliases).filter(a => aliases[a] == suffix);
+					if (_aliases && _aliases.length > 0) toSend.push("__Aliases:__ " + _aliases.join(', '));
 					if (commands[suffix].hasOwnProperty("deleteCommand")) toSend.push("*Can delete the activating message*");
 					bot.sendMessage(msg, toSend);
 				} else
-					bot.sendMessage(msg, "Command `" + suffix + "` not found. Aliases aren't allowed.", (erro, wMessage)=>{ bot.deleteMessage(wMessage, {"wait": 10000}); });
+					bot.sendMessage(msg, "Command `" + suffix + "` not found.", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); });
 			}
 		}
 	},
@@ -200,7 +193,7 @@ var commands = {
 	},
 	"beep": {
 		desc: "boop", usage: "", deleteCommand: false, cooldown: 3, shouldDisplay: false,
-		process: (bot, msg) => { bot.sendMessage(msg, "boop", (e,sentMsg)=>{bot.updateMessage(sentMsg, "boop   |   Time taken: " + (sentMsg.timestamp - msg.timestamp) + "ms")}); }
+		process: (bot, msg) => { bot.sendMessage(msg, "boop", (e, sentMsg) => {bot.updateMessage(sentMsg, "boop   |   Time taken: " + (sentMsg.timestamp - msg.timestamp) + "ms")}); }
 	},
 	"poi": {
 		desc: "poi", usage: "", deleteCommand: false, cooldown: 3, shouldDisplay: false,
@@ -213,23 +206,23 @@ var commands = {
 		process: function(bot, msg) {
 			let n = Math.floor(Math.random() * 6);
 			if (n === 0)
-				bot.sendMessage(msg, "pong", (e,sentMsg)=>{bot.updateMessage(sentMsg, "pong   |   Time taken: " + (sentMsg.timestamp - msg.timestamp) + "ms")});
+				bot.sendMessage(msg, "pong", (e, sentMsg) => {bot.updateMessage(sentMsg, "pong   |   Time taken: " + (sentMsg.timestamp - msg.timestamp) + "ms")});
 			else if (n === 1)
-				bot.sendMessage(msg, "*I-It's not like I wanted to say pong or anything...*", (e,sentMsg)=>{bot.updateMessage(sentMsg, "*I-It's not like I wanted to say pong or anything...*   |   Time taken: " + (sentMsg.timestamp - msg.timestamp) + "ms")});
+				bot.sendMessage(msg, "*I-It's not like I wanted to say pong or anything...*", (e, sentMsg) => {bot.updateMessage(sentMsg, "*I-It's not like I wanted to say pong or anything...*   |   Time taken: " + (sentMsg.timestamp - msg.timestamp) + "ms")});
 			else if (n === 2)
-				bot.sendMessage(msg, "pong!", (e,sentMsg)=>{bot.updateMessage(sentMsg, "pong!   |   Time taken: " + (sentMsg.timestamp - msg.timestamp) + "ms")});
+				bot.sendMessage(msg, "pong!", (e, sentMsg) => {bot.updateMessage(sentMsg, "pong!   |   Time taken: " + (sentMsg.timestamp - msg.timestamp) + "ms")});
 			else if (n === 3)
 				bot.sendMessage(msg, "No");
 			else if (n === 4)
-				bot.sendMessage(msg, "...", (e,sentMsg)=>{bot.updateMessage(sentMsg, "...   |   Time taken: " + (sentMsg.timestamp - msg.timestamp) + "ms")});
+				bot.sendMessage(msg, "...", (e, sentMsg) => {bot.updateMessage(sentMsg, "...   |   Time taken: " + (sentMsg.timestamp - msg.timestamp) + "ms")});
 			else if (n === 5)
-				bot.sendMessage(msg, config.command_prefix + "ping", (e,sentMsg)=>{bot.updateMessage(sentMsg, "ping   |   Time taken: " + (sentMsg.timestamp - msg.timestamp) + "ms")});
+				bot.sendMessage(msg, config.command_prefix + "ping", (e, sentMsg) => {bot.updateMessage(sentMsg, "ping   |   Time taken: " + (sentMsg.timestamp - msg.timestamp) + "ms")});
 		}
 	},
 	"invite": {
 		desc: "Get my invite link", usage: "", deleteCommand: true,
 		process: function(bot, msg) {
-			bot.sendMessage(msg, `Use this to bring me to your server:  <https://discordapp.com/oauth2/authorize?&client_id=${config.app_id}&scope=bot&permissions=12659727&redirect_uri=http://brussell98.github.io/bot/commands.html&response_type=code>`);
+			bot.sendMessage(msg, `Use this to bring me to your server: ${config.invite_link}`);
 		}
 	},
 	"about": {
@@ -250,8 +243,8 @@ var commands = {
 				if (!err && response.statusCode == 200) {
 					let roll = JSON.parse(body);
 					if (roll.details == null)
-						bot.sendMessage(msg, roll.result, (e,m) => { bot.deleteMessage(m, {"wait": 8000}); });
-					if (roll.details.length <= 100)
+						bot.sendMessage(msg, roll.result, (e, m) => { bot.deleteMessage(m, {"wait": 8000}); });
+					else if (roll.details.length <= 100)
 						bot.sendMessage(msg, `🎲 Your **${roll.input}** resulted in ${roll.result} ${roll.details}`);
 					else
 						bot.sendMessage(msg, `🎲 Your **${roll.input}** resulted in ${roll.result}`);
@@ -275,31 +268,37 @@ var commands = {
 		deleteCommand: true, cooldown: 5,
 		process: function(bot, msg, suffix) {
 			if (msg.mentions.length > 0) {
-				if (msg.mentions.length > 4) bot.sendMessage(msg, "Limit of 4 users at once", (e, m)=>{bot.deleteMessage(m,{"wait": 10000});});
-				msg.mentions.map(user=>{
+				if (msg.mentions.length > 4) bot.sendMessage(msg, "Limit of 4 users at once", (e, m) => {bot.deleteMessage(m, {"wait": 10000});});
+				msg.mentions.map(user => {
 					let toSend = [];
 					let detailsOf = msg.channel.server.detailsOfUser(user);
-					if (detailsOf) toSend.push("**" + user.username.replace(/@/g, '@\u200b') + " joined on:** " + new Date(detailsOf.joinedAt).toUTCString());
-					else toSend.push("**" + user.username.replace(/@/g, '@\u200b') + " joined on:** Error user is undefined");
+					if (detailsOf)
+						toSend.push("**" + user.username.replace(/@/g, '@\u200b') + " joined on:**\n" + new Date(detailsOf.joinedAt).toUTCString());
+					else
+						toSend.push("**" + user.username.replace(/@/g, '@\u200b') + " joined on:**\nError user is undefined");
 					bot.sendMessage(msg, toSend);
 				});
 			} else if (suffix) {
-				let users = suffix.split(/, ?/);
-				if (users.length > 4) { bot.sendMessage(msg, "Limit of 4 users at once", (erro, wMessage)=>{ bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
+				let users = suffix.split(/ ?\| ?/);
+				if (users.length > 4) { bot.sendMessage(msg, "Limit of 4 users at once", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 				let toSend = [];
-				users.map(user=>{
-					let usr = findUser(msg.channel.server.members, user);
+				users.map(user => {
+					let usr = utils.findUser(msg.server.members, user, msg.server);
 					if (usr) {
 						let detailsOf = msg.channel.server.detailsOfUser(usr);
-						if (detailsOf) toSend.push("**" + usr.username.replace(/@/g, '@\u200b') + " joined on:** " + new Date(detailsOf.joinedAt).toUTCString());
-						else toSend.push("**" + usr.username.replace(/@/g, '@\u200b') + " joined on:** Error user is undefined");
+						if (detailsOf)
+							toSend.push("**" + usr.username.replace(/@/g, '@\u200b') + " joined on:**\n" + new Date(detailsOf.joinedAt).toUTCString());
+						else
+							toSend.push("**" + usr.username.replace(/@/g, '@\u200b') + " joined on:**\nError user is undefined");
 					} else toSend.push("User \"" + user.replace(/@/g, '@\u200b') + "\" not found");
 				});
 				bot.sendMessage(msg, toSend);
 			} else {
 				let detailsOf = msg.channel.server.detailsOfUser(msg.author);
-				if (detailsOf) bot.sendMessage(msg, "**" + msg.author.username.replace(/@/g, '@\u200b') + " joined on:** " + new Date(detailsOf.joinedAt).toUTCString());
-				else bot.sendMessage(msg, "**" + msg.author.username.replace(/@/g, '@\u200b') + " joined on:** Error user is undefined");
+				if (detailsOf)
+					bot.sendMessage(msg, "**" + msg.author.username.replace(/@/g, '@\u200b') + " joined on:**\n" + new Date(detailsOf.joinedAt).toUTCString());
+				else
+					bot.sendMessage(msg, "**" + msg.author.username.replace(/@/g, '@\u200b') + " joined on:**\nError user is undefined");
 			}
 		}
 	},
@@ -307,14 +306,14 @@ var commands = {
 		desc: "Gets info on the server or a user if mentioned.",
 		usage: "[username]",
 		deleteCommand: true, cooldown: 10,
-		info: "If no suffix is provided it will get info on the server.\nIf a user is provided it will get info on them.\nSome stats include: roles, join date, avatar, creation date, members, region, and owner.",
+		info: "If no suffix is provided it will get info on the server.\nIf a user is provided it will get info on them. Separate users with a `|`\nSome stats include: roles, join date, avatar, creation date, members, region, and owner.",
 		process: function(bot, msg, suffix) {
 			if (!msg.channel.isPrivate) {
 				if (suffix) {
 					if (msg.mentions.length > 0) {
 						if (msg.everyoneMentioned) { bot.sendMessage(msg, "Hey, " + msg.author.username.replace(/@/g, '@\u200b') + ", don't do that ok?", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 						if (msg.mentions.length > 4) { bot.sendMessage(msg, "Limit of 4 users", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
-						msg.mentions.map(usr=>{
+						msg.mentions.map(usr => {
 							let toSend = [], count = 0;
 							toSend.push("**Info on** " + usr.username.replace(/@/g, '@\u200b') + "#" + usr.discriminator + " (ID: " + usr.id + ") 🕵🏻");
 							if (usr.game && usr.game.name !== undefined && usr.game.name !== null && usr.game.name !== "null") toSend.push("**Status:** " + usr.status + " **last playing** " + usr.game.name);
@@ -325,7 +324,7 @@ var commands = {
 								toSend.push("**Joined on:** " + new Date(detailsOf.joinedAt).toUTCString());
 							} else toSend.push("*Error getting details of user*");
 							if (msg.channel.server.rolesOfUser(usr.id) != undefined) {
-								let roles = msg.channel.server.rolesOfUser(usr.id).map(role=>role.name);
+								let roles = msg.channel.server.rolesOfUser(usr.id).map(role => role.name);
 								if (roles) {
 									roles = roles.join(", ").replace(/@/g, '@\u200b');
 									if (roles && roles !== "")
@@ -335,17 +334,17 @@ var commands = {
 										toSend.push("**Roles:** `none`");
 								} else toSend.push("**Roles:** Error");
 							} else toSend.push("**Roles:** Error");
-							bot.servers.map(server=>{ if (server.members.includes(usr)) { count += 1; }});
+							bot.servers.map(server => { if (server.members.includes(usr)) { count += 1; }});
 							if (count > 1) { toSend.push("**Shared servers:** " + count); }
 							toSend.push("**Account created on** " + new Date((usr.id / 4194304) + 1420070400000).toUTCString());
 							bot.sendMessage(msg, toSend);
 						});
 					} else {
 						if (msg.everyoneMentioned) { bot.sendMessage(msg, "Hey, " + msg.author.username.replace(/@/g, '@\u200b') + ", don't do that ok?", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
-						let users = suffix.split(/, ?/);
+						let users = suffix.split(/ ?\| ?/);
 						if (users.length > 4) { bot.sendMessage(msg, "Limit of 4 users", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
-						users.map(user=>{
-							let usr = utils.findUser(user, msg.channel.server.members, msg.channel.server);
+						users.map(user => {
+							let usr = utils.findUser(user, msg.server.members, msg.server);
 							if (usr) {
 								let toSend = [], count = 0;
 								toSend.push("**Info on** " + usr.username.replace(/@/g, '@\u200b') + "#" + usr.discriminator + " (ID: " + usr.id + ") 🕵🏻");
@@ -357,7 +356,7 @@ var commands = {
 									toSend.push("**Joined on:** " + new Date(detailsOf.joinedAt).toUTCString());
 								} else toSend.push("*Error getting details of user*");
 								if (msg.channel.server.rolesOfUser(usr.id) != undefined) {
-									let roles = msg.channel.server.rolesOfUser(usr.id).map(role=>role.name);
+									let roles = msg.channel.server.rolesOfUser(usr.id).map(role => role.name);
 									if (roles) {
 										roles = roles.join(", ").replace(/@/g, '@\u200b');
 										if (roles && roles !== "")
@@ -366,11 +365,11 @@ var commands = {
 											toSend.push("**Roles:** `none`");
 									} else toSend.push("**Roles:** Error");
 								} else toSend.push("**Roles:** Error");
-								bot.servers.map(server=>{ if (server.members.includes(usr)) { count += 1; }});
+								bot.servers.map(server => { if (server.members.includes(usr)) { count += 1; }});
 								if (count > 1) { toSend.push("**Shared servers:** " + count); }
 								toSend.push("**Account created on** " + new Date((usr.id / 4194304) + 1420070400000).toUTCString());
 								bot.sendMessage(msg, toSend);
-							} else bot.sendMessage(msg, "User \"" + user + "\" not found. If you want to get info on multiple users separate them with a comma.", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 15000}); });
+							} else bot.sendMessage(msg, "User \"" + user + "\" not found. If you want to get info on multiple users separate them with a `|`.", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 15000}); });
 						});
 					}
 				} else {
@@ -378,9 +377,9 @@ var commands = {
 					toSend.push("**Info on** " + msg.channel.server.name.replace(/@/g, '@\u200b') + " (" + msg.channel.server.id + ") 🕵🏻");
 					toSend.push("**Owner:** " + msg.channel.server.owner.username.replace(/@/g, '@\u200b') + " (**ID:** " + msg.channel.server.owner.id + ")");
 					toSend.push("**Region:** " + msg.channel.server.region);
-					toSend.push("**Members:** " + msg.channel.server.members.length + " **Channels:** " + msg.channel.server.channels.filter(c=>c.type=="text").length + "T " + msg.channel.server.channels.filter(c=>c.type=="voice").length + "V");
+					toSend.push("**Members:** " + msg.channel.server.members.length + " **Channels:** " + msg.channel.server.channels.filter(c => c.type=="text").length + "T " + msg.channel.server.channels.filter(c => c.type=="voice").length + "V");
 					toSend.push("**Server created on** " + new Date((msg.channel.server.id / 4194304) + 1420070400000).toUTCString());
-					let roles = msg.channel.server.roles.map(role=>role.name);
+					let roles = msg.channel.server.roles.map(role => role.name);
 					roles = roles.join(", ").replace(/@/g, '@\u200b');
 					if (roles.length <= 1500) toSend.push("**Roles:** `" + roles + "`");
 					else toSend.push("**Roles:** `" + roles.split(", ").length + "`");
@@ -392,7 +391,7 @@ var commands = {
 		}
 	},
 	"avatar": {
-		desc: "Get a link to a user's avatar. Can use a comma for multiple users.",
+		desc: "Get a link to a user's avatar. Can use a | for multiple users.",
 		usage: "@mention OR username",
 		deleteCommand: true,
 		cooldown: 6,
@@ -401,8 +400,9 @@ var commands = {
 				if (msg.author.avatarURL != null) { bot.sendMessage(msg, "I can only get your avatar in a direct message. Here it is: " + msg.author.avatarURL); return; }
 				if (msg.author.avatarURL == null) { bot.sendMessage(msg, "I can only get your avatar in a direct message, but you don't have one"); return; }
 			}
-			if (msg.mentions.length == 0 && !suffix) { (msg.author.avatarURL != null) ? bot.sendMessage(msg, msg.author.username + "'s avatar: " + msg.author.avatarURL) : bot.sendMessage(msg, msg.author.username + " has no avatar", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); });
-			} else if (msg.mentions.length > 0) {
+			if (msg.mentions.length == 0 && !suffix)
+				(msg.author.avatarURL != null) ? bot.sendMessage(msg, msg.author.username + "'s avatar: " + msg.author.avatarURL) : bot.sendMessage(msg, msg.author.username + " has no avatar", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); });
+			else if (msg.mentions.length > 0) {
 				if (msg.everyoneMentioned) { bot.sendMessage(msg, "Hey, " + msg.author.username.replace(/@/g, '@\u200b') + ", don't do that ok?", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 				if (msg.mentions.length > 6) { bot.sendMessage(msg, "Limit of 6 users", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 				msg.mentions.map(function(usr) {
@@ -410,171 +410,261 @@ var commands = {
 				});
 			} else {
 				if (msg.everyoneMentioned) { bot.sendMessage(msg, "Hey, " + msg.author.username.replace(/@/g, '@\u200b') + ", don't do that ok?", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
-				let users = suffix.split(/, ?/);
-				if (users.length > 6) { bot.sendMessage(msg, "Limit of 6 users", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
+				let users = suffix.split(/ ?\| ?/);
+				if (users.length > 6) {
+					bot.sendMessage(msg, "Limit of 6 users", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); });
+					return;
+				}
 				users.map(function(user) {
-					let usr = findUser(msg.channel.server.members, user);
-					if (usr) { (usr.avatarURL != null) ? bot.sendMessage(msg, "**" + usr.username.replace(/@/g, '@\u200b') + "**'s avatar: " + usr.avatarURL + "") : bot.sendMessage(msg, "**" + usr.username + "** has no avatar", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); });
-					} else { bot.sendMessage(msg, "User \"" + user + "\" not found. If you want to get the avatar of multiple users separate them with a comma.", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 20000}); }); }
+					let usr = utils.findUser(msg.server.members, user, msg.server);
+					if (usr)
+						(usr.avatarURL != null) ? bot.sendMessage(msg, "**" + usr.username.replace(/@/g, '@\u200b') + "**'s avatar: " + usr.avatarURL + "") : bot.sendMessage(msg, "**" + usr.username + "** has no avatar", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); });
+					else
+						bot.sendMessage(msg, "User \"" + user + "\" not found. If you want to get the avatar of multiple users separate them with a `|`.", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 20000}); });
 				});
 			}
 		}
 	},
 	"choose": {
 		desc: "Makes a choice for you.",
-		usage: "<option 1>, <option 2>, [option], [option]",
+		usage: "<option 1> | <option 2> | [option 3] ...",
 		cooldown: 4, deleteCommand: false,
 		process: function(bot, msg, suffix) {
-			if (!suffix || /(.*), ?(.*)/.test(suffix) == false) { ("choose", this.usage, msg, bot); return; }
-			let choices = suffix.split(/, ?/);
+			if (!suffix) {
+				utils.correctUsage("choose", this.usage, msg, bot, config.command_prefix);
+				return;
+			}
+			let choices = suffix.split(/ ?\| ?/);
+			if (choices.length < 2 && suffix.includes(',')) choices = suffix.split(/, ?/);
 			if (choices.length < 2) utils.correctUsage("choose", this.usage, msg, bot, config.command_prefix);
 			else {
 				let choice = Math.floor(Math.random() * (choices.length));
-				choices.forEach((c,i)=>{if (c.includes('homework') || c.includes('sleep') || c.includes('study') || c.includes('productiv')) choice = i;});
+				choices.forEach((c, i) => {
+					if (c.includes('homework') || c.includes('sleep') || c.includes('study') || c.includes('productiv')) {
+						if (Math.random() > 0.3) choice = i;
+					}
+				});
 				bot.sendMessage(msg, "I chose **" + choices[choice].replace(/@/g, '@\u200b') + "**");
 			}
 		}
 	},
 	"lotto": {
 		desc: "Lottery picks a random entered user.",
-		usage: "end | enter | new [max entries] | <mentions to pick from> (pick from the users mentioned) | everyone",
-		deleteCommand: true, cooldown: 2,
-		info: "__new__: Start a lottery with the specified number as the max entries per user.\n__mentions__: Pick from the mentioned users.\n__everyone__: Pick a random person on the server.",
+		usage: "end | enter | start | draw[ -k] | @users to pick from | everyone",
+		deleteCommand: false,
+		info: "__start__: Start a lottery with the specified number as the max entries per user.\n\
+__mentions__: Pick from the mentioned users.\n\
+__everyone__: Pick a random person on the server.\n\
+__draw__: Pick someone from the entries. Add -k to keep them in.",
 		process: function(bot, msg, suffix) {
-			let currentchannel = msg.channel.id;
-			if (msg.everyoneMentioned || suffix.toLowerCase() == "everyone") {
+			if (msg.channel.isPrivate)
+				bot.sendMessage(msg, "Can't do that in a direct message.");
 
-				if (msg.channel.isPrivate) { bot.sendMessage(msg, "Can't do that in a direct message"); return; }
-				if (LottoDB.hasOwnProperty(msg.channel.id)) { bot.sendMessage(msg, "There is already a lottery running!", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
-				bot.sendMessage(msg, "🎊 Out of " + msg.channel.server.members.length + " members on this server, " + msg.channel.server.members.random().username + " is the winner! 🎊");
+			else if (msg.everyoneMentioned || suffix.toLowerCase() === "everyone") {
 
-			} else if (suffix.split(" ")[0] == "new") {
+				bot.sendMessage(msg, `${msg.author.username.replace(/@/g, '@\u200b')} entered all ${msg.server.members.length} members on this server into a lottery and ${msg.server.members.random()} is the winner! 🎊`);
 
-				let maxentries = 1
-				if (msg.channel.isPrivate) { bot.sendMessage(msg, "Can't do that in a direct message"); return; }
-				if (suffix.length > 1) {
-					if (/^\d+$/.test(suffix.split(" ")[1])) maxentries = parseInt(suffix.split(" ")[1]);
-				}
-				if (LottoDB.hasOwnProperty(currentchannel)) {
-					bot.sendMessage(msg.channel, "Lottery already running, please wait for it to end.", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); });
-				} else {
-					bot.sendMessage(msg, "New lottery started by **" + msg.author.username + "** (max entries per user: " + maxentries + "). Use `" + config.command_prefix + "lotto enter` to enter.");
-					let object = {"max": maxentries, "msg": msg, "entries": "", "starter": msg.author.id};
-					LottoDB[currentchannel] = [];
-					LottoDB[currentchannel][0] = object;
-					if (!suffix.includes("-noautoend")) { autoEndLotto(bot, msg); }
+			} else if (suffix.toLowerCase().startsWith('start')) {
+
+				if (LottoDB.hasOwnProperty(msg.channel.id))
+					bot.sendMessage(msg, "There is already a lottery running in this channel, please wait for it to end.");
+				else {
+					LottoDB[msg.channel.id] = {owner: msg.author.id, entries: []};
+					bot.sendMessage(msg, `${msg.author} has started a lottery!\nTo enter type \`${config.command_prefix}lotto enter\``);
 				}
 
-			} else if (suffix.replace(" ", "") == "end") {
+			} else if (suffix.toLowerCase().startsWith('draw')) {
 
-				if (msg.channel.isPrivate) { bot.sendMessage(msg, "Can't do that in a direct message"); return; }
-				if (LottoDB.hasOwnProperty(msg.channel.id)) {
-					if (msg.author.id == LottoDB[currentchannel][0].starter || msg.channel.permissionsOf(msg.author).hasPermission("manageChannel")) {
-						if (LottoDB[currentchannel][0].entries.split(",").length < 3) {
-							bot.sendMessage(msg, "Lottery ended but there have to be two entries into the lottery for a winner to be picked.");
-							delete LottoDB[currentchannel];
-						} else {
-							let winner = msg.channel.server.members.get("id", LottoDB[currentchannel][0].entries.split(",")[Math.floor((Math.random() * (LottoDB[currentchannel][0].entries.split(",").length - 1)) + 1)]);
-							bot.sendMessage(msg, "🎊 Out of **" + (LottoDB[currentchannel][0].entries.split(",").length - 1) + "** entries the winner is " + winner + " 🎊");
-							delete LottoDB[currentchannel];
-						}
-					} else { bot.sendMessage(msg, "Only the person that started the lottery can end it!", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
-				} else { bot.sendMessage(msg, "There isn't a lottery running in this channel!", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
-
-			} else if (suffix.replace(" ", "") == "enter") {
-
-				if (msg.channel.isPrivate) { bot.sendMessage(msg, "Can't do that in a direct message"); return; }
-				if (LottoDB.hasOwnProperty(currentchannel)) {
-					if (LottoDB[currentchannel][0].entries.split(",").includes(msg.author.id)) {
-						if (LottoDB[currentchannel][0].max < 2) { bot.sendMessage(msg.channel, "You can only enter this lottery **1** time.", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
-						if (LottoDB[currentchannel][0].entries.split(",").filter(function(value) { return value == msg.author.id; }).length >= LottoDB[currentchannel][0].max) { bot.sendMessage(msg.channel, "You can only enter this lottery **" + LottoDB[currentchannel][0].max + "** times.", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
-						LottoDB[currentchannel][0].entries = LottoDB[currentchannel][0].entries + "," + msg.author.id;
-						bot.sendMessage(msg.channel, "Added " + msg.author.username + " to the lottery");
-					} else {
-						LottoDB[currentchannel][0].entries = LottoDB[currentchannel][0].entries + "," + msg.author.id;
-						bot.sendMessage(msg.channel, "Added " + msg.author.username + " to the lottery");
-						return;
+				if (!LottoDB.hasOwnProperty(msg.channel.id))
+					bot.sendMessage(msg, "There isn't a lottery running in this channel.");
+				else {
+					if (LottoDB[msg.channel.id].entries.length < 2)
+						bot.sendMessage(msg, "Not enough entries.");
+					else {
+						let winner = ~~(Math.random() * LottoDB[msg.channel.id].entries.length);
+						bot.sendMessage(msg, `🎊 Out of **${LottoDB[msg.channel.id].entries.length}** entries ${msg.server.members.get('id', LottoDB[msg.channel.id].entries[winner])} is the winner! 🎊`);
+						if (!msg.content.includes('-k'))
+							LottoDB[msg.channel.id].entries.splice(winner, 1);
 					}
-				} else { bot.sendMessage(msg.channel, "No lottery to enter!", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
+				}
+
+			} else if (suffix.toLowerCase() === 'end') {
+
+				if (!LottoDB.hasOwnProperty(msg.channel.id))
+					bot.sendMessage(msg, "There isn't a lottery running in this channel.");
+				else {
+					if (msg.author.id != LottoDB[msg.channel.id].owner && !msg.channel.permissionsOf(msg.author).hasPermission("manageChannel"))
+						bot.sendMessage(msg, "You don't have permission to end the lottery.");
+					else {
+						bot.sendMessage(msg, "Lottery ended");
+						delete LottoDB[msg.channel.id];
+					}
+				}
+
+			} else if (suffix.toLowerCase() === 'enter') {
+
+				if (!LottoDB.hasOwnProperty(msg.channel.id))
+					bot.sendMessage(msg, "There isn't a lottery running in this channel.");
+				else if (LottoDB[msg.channel.id].entries.includes(msg.author.id)) {
+					bot.sendMessage(msg, "You've already entered this lottery.", (e, m) => { bot.deleteMessage(m, {"wait":  6000}); });
+					bot.deleteMessage(msg);
+				} else {
+					LottoDB[msg.channel.id].entries.push(msg.author.id);
+					bot.sendMessage(msg, `Added ${msg.author.username.replace(/@/g, '@\u200b')} to the lottery`, (e, m) => { bot.deleteMessage(m, {"wait":  6000}); });
+					bot.deleteMessage(msg);
+				}
 
 			} else if (msg.mentions.length > 0) {
 
-				if (msg.channel.isPrivate) { bot.sendMessage(msg, "Can't do that in a direct message"); return; }
-				if (msg.mentions.length < 2) { bot.sendMessage(msg, "You need to enter multiple users!"); return; }
-				bot.sendMessage(msg, " 🎊Out of **" + msg.mentions.length + "** entries the winner is " + msg.mentions[Math.floor(Math.random() * msg.mentions.length)] + " 🎊");
+				if (msg.mentions.length < 2)
+					bot.sendMessage(msg, "You need to enter multiple users.");
+				else
+					bot.sendMessage(msg, `🎊 Out of **${msg.mentions.length}** entries the winner is ${msg.mentions[~~(Math.random() * msg.mentions.length)]} 🎊`);
 
-			} else utils.correctUsage("lotto", this.usage, msg, bot, config.command_prefix);
+			} else
+				utils.correctUsage("lotto", this.usage, msg, bot, config.command_prefix);
 		}
 	},
 	"vote": {
 		desc: "Start / end a vote, or vote on one.",
-		usage: "+/- | new <topic> [-noautoend] | end",
-		deleteCommand: true,
+		usage: "<choice>, end, check, new [t:<topic>] | <option> | <option>[ | <option>...]",
+		info: "To vote just add the option you want to vote for. Votes can be changed.\n\
+When creating a new vote start it with `t:<topic>` to set the topic. Choices are seperated with a |.\n\
+Channel mods can end a vote as well as the owner of the vote.",
+		deleteCommand: false,
 		process: function(bot, msg, suffix) {
-			let currentChannel = msg.channel.id;
-			if (msg.channel.isPrivate) { bot.sendMessage(msg, "Can't do that in a direct message"); return; }
-			if (suffix.split(" ")[0] == "new") {
+			if (msg.channel.isPrivate)
+				bot.sendMessage(msg, "Can't do that in a direct message");
 
-				if (VoteDB.hasOwnProperty(currentChannel)) { bot.sendMessage(msg, "There is already a vote pending!", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
-				let topic = (suffix.replace(" -noautoend", "").split(" ").length > 1) ? suffix.replace(" -noautoend", "").substring(4).replace(/@/g, '@\u200b') : "None";
-				bot.sendMessage(msg, "🗳 New vote started by **" + msg.author.username.replace(/@/g, '@\u200b') + "**. Topic: `" + topic + "`. To vote say `" + config.command_prefix + "vote +/-`\nUpvotes: 0\nDownvotes: 0", function(err, message) {
-					if (err) { bot.sendMessage(msg, err); return; }
-					let object = {"topic": topic, "annMsg": message, "upvoters": "", "downvoters": "", "upvotes": 0, "downvotes": 0, "starter": msg.author.id};
-					VoteDB[currentChannel] = [];
-					VoteDB[currentChannel][0] = object;
-					if (!suffix.includes("-noautoend")) { autoEndVote(bot, msg); }
-				});
+			else if (!suffix)
+				utils.correctUsage("vote", this.usage, msg, bot, config.command_prefix);
 
-			} else if (suffix.replace(" ", "") == "end") {
+			else if (suffix.toLowerCase().startsWith('new')) {
 
-				if (!VoteDB.hasOwnProperty(currentChannel)) { bot.sendMessage(msg, "There isn't a vote to end!", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
-				if (msg.author.id == VoteDB[currentChannel][0].starter || msg.channel.permissionsOf(msg.author).hasPermission("manageChannel")) {
-					bot.deleteMessage(VoteDB[currentChannel][0].annMsg);
-					bot.sendMessage(msg, "**Results of last vote:**\nTopic: `" + VoteDB[currentChannel][0].topic + "`\nUpvotes: `" + VoteDB[currentChannel][0].upvotes + " " + Math.round((VoteDB[currentChannel][0].upvotes / (VoteDB[currentChannel][0].upvotes + VoteDB[currentChannel][0].downvotes)) * 100) + "%`\nDownvotes: `" + VoteDB[currentChannel][0].downvotes + " " + Math.round((VoteDB[currentChannel][0].downvotes / (VoteDB[currentChannel][0].upvotes + VoteDB[currentChannel][0].downvotes)) * 100) + "%`");
-					delete VoteDB[currentChannel];
-				} else { bot.sendMessage(msg, "Only the person that started the vote can end it!", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
+				if (VoteDB.hasOwnProperty(msg.channel.id))
+					bot.sendMessage(msg, "There is already a vote running in this channel.");
+				else {
+					let _suffix = suffix.match(/^new ((t:[^|]+)\|)?(.+)+$/i);
+					if (_suffix === null)
+						utils.correctUsage("vote", this.usage, msg, bot, config.command_prefix);
+					else {
+						let topic = _suffix[2],
+							options = (_suffix[3].split(/ ?\| ?/).filter(o => o !== "") || ['']).map(e => e.trim());
 
-			} else if (suffix.replace(" ", "") == "+" || suffix.replace(" ", "") == "-") {
-
-				if (VoteDB.hasOwnProperty(currentChannel) == false) { bot.sendMessage(msg, "There isn't a vote to vote on!", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
-				if (suffix.replace(" ", "") == "+") {
-					if (VoteDB[currentChannel][0].upvoters.includes(msg.author.id)) return;
-					if (VoteDB[currentChannel][0].downvoters.includes(msg.author.id)) {
-						VoteDB[currentChannel][0].upvoters += "," + msg.author.id;
-						VoteDB[currentChannel][0].upvotes += 1;
-						VoteDB[currentChannel][0].downvoters = VoteDB[currentChannel][0].upvoters.replace("," + msg.author.id, "");
-						VoteDB[currentChannel][0].downvotes -= 1;
-						bot.updateMessage(VoteDB[currentChannel][0].annMsg, VoteDB[currentChannel][0].annMsg.content.replace(/Upvotes\: [\d]{1,2}\nDownvotes: [\d]{1,2}/g, "Upvotes: " + VoteDB[currentChannel][0].upvotes + "\nDownvotes: " + VoteDB[currentChannel][0].downvotes), function(err, message) { VoteDB[currentChannel][0].annMsg = message; });
-					} else {
-						VoteDB[currentChannel][0].upvoters += "," + msg.author.id;
-						VoteDB[currentChannel][0].upvotes += 1;
-						bot.updateMessage(VoteDB[currentChannel][0].annMsg, VoteDB[currentChannel][0].annMsg.content.replace(/Upvotes\: [\d]{1,2}\nDownvotes: [\d]{1,2}/g, "Upvotes: " + VoteDB[currentChannel][0].upvotes + "\nDownvotes: " + VoteDB[currentChannel][0].downvotes), function(err, message) { VoteDB[currentChannel][0].annMsg = message; });
-					}
-				} else if (suffix.replace(" ", "") == "-") {
-					if (VoteDB[currentChannel][0].downvoters.includes(msg.author.id)) return;
-					if (VoteDB[currentChannel][0].upvoters.includes(msg.author.id)) {
-						VoteDB[currentChannel][0].downvoters += "," + msg.author.id;
-						VoteDB[currentChannel][0].downvotes += 1;
-						VoteDB[currentChannel][0].upvoters = VoteDB[currentChannel][0].upvoters.replace("," + msg.author.id, "");
-						VoteDB[currentChannel][0].upvotes -= 1;
-						bot.updateMessage(VoteDB[currentChannel][0].annMsg, VoteDB[currentChannel][0].annMsg.content.replace(/Upvotes\: [\d]{1,2}\nDownvotes: [\d]{1,2}/g, "Upvotes: " + VoteDB[currentChannel][0].upvotes + "\nDownvotes: " + VoteDB[currentChannel][0].downvotes), function(err, message) { VoteDB[currentChannel][0].annMsg = message; });
-					} else {
-						VoteDB[currentChannel][0].downvoters += "," + msg.author.id;
-						VoteDB[currentChannel][0].downvotes += 1;
-						bot.updateMessage(VoteDB[currentChannel][0].annMsg, VoteDB[currentChannel][0].annMsg.content.replace(/Upvotes\: [\d]{1,2}\nDownvotes: [\d]{1,2}/g, "Upvotes: " + VoteDB[currentChannel][0].upvotes + "\nDownvotes: " + VoteDB[currentChannel][0].downvotes), function(err, message) { VoteDB[currentChannel][0].annMsg = message; });
+						if (options.length < 2)
+							bot.sendMessage(msg, "You must give at least 2 options to vote for.");
+						else {
+							let toSend = `Vote started by ${msg.author.username.replace(/@/g, '@\u200b')}`;
+							if (topic !== undefined) {
+								topic = topic.substr(2);
+								toSend += `\nTopic: **${topic}**`;
+							}
+							toSend += "\n__Choices:__";
+							for (let o = 0; o < options.length; o++) {
+								toSend += `\n\t**${o + 1}.** ${options[o]}: 0`;
+							}
+							bot.sendMessage(msg, toSend, (err, message) => {
+								if (err)
+									console.log("Error sending vote message: " + err);
+								else {
+									VoteDB[msg.channel.id] = {
+										owner: msg.author.id,
+										topic,
+										votes: new Array(options.length).fill(0),
+										options,
+										message,
+										voters: {}
+									};
+								}
+							});
+						}
 					}
 				}
-			} else utils.correctUsage("vote", this.usage, msg, bot, config.command_prefix);
+
+			} else if (suffix.toLowerCase() === 'end') {
+
+				if (!VoteDB.hasOwnProperty(msg.channel.id))
+					bot.sendMessage(msg, "There isn't a vote running in this channel.");
+				else {
+					if (msg.author.id != VoteDB[msg.channel.id].owner && !msg.channel.permissionsOf(msg.author).hasPermission("manageChannel"))
+						bot.sendMessage(msg, "You don't have permission to end the vote.");
+					else {
+						let toSend = `The vote has ended! Here are the results\n\n`;
+						if (VoteDB[msg.channel.id].topic !== undefined)
+							toSend += `Topic: **${VoteDB[msg.channel.id].topic}**\n`;
+						toSend += "__Choices:__";
+						for (let opt = 0; opt < VoteDB[msg.channel.id].options.length; opt++) {
+							toSend += `\n\t**${opt + 1}.** ${VoteDB[msg.channel.id].options[opt]}: ${VoteDB[msg.channel.id].votes[opt]}`;
+						}
+						bot.sendMessage(msg, toSend);
+						delete VoteDB[msg.channel.id];
+					}
+				}
+
+			} else if (suffix.toLowerCase() === 'check') {
+
+				if (!VoteDB.hasOwnProperty(msg.channel.id))
+					bot.sendMessage(msg, "There isn't a vote running in this channel.");
+				else {
+					let toSend = `Current results of ${msg.author.username.replace(/@/g, '@\u200b')}'s vote`;
+					if (VoteDB[msg.channel.id].topic !== undefined) {
+						toSend += `\nTopic: **${VoteDB[msg.channel.id].topic}**`;
+					}
+					toSend += "\n__Choices:__";
+					for (let o = 0; o < VoteDB[msg.channel.id].options.length; o++) {
+						toSend += `\n\t**${o + 1}.** ${VoteDB[msg.channel.id].options[o]}: 0`;
+					}
+					bot.sendMessage(msg, toSend, (e, m) => { bot.deleteMessage(m, {"wait":  10000}); });
+				}
+
+			} else {
+
+				if (!VoteDB.hasOwnProperty(msg.channel.id))
+					bot.sendMessage(msg, "There isn't a vote running in this channel.");
+				else {
+					let choice = VoteDB[msg.channel.id].options.findIndex(opt => opt.toLowerCase() == suffix.toLowerCase());
+					if (choice === -1)
+						bot.sendMessage(msg, `"${suffix}" isn't an option.`, (e, m) => { bot.deleteMessage(m, {"wait":  6000}); });
+					else {
+						if (VoteDB[msg.channel.id].voters.hasOwnProperty(msg.author.id)) {
+							if (VoteDB[msg.channel.id].voters[msg.author.id] == choice) {
+								bot.sendMessage(msg, "You've already voted for that option.", (e, m) => { bot.deleteMessage(m, {"wait":  6000}); });
+								bot.deleteMessage(msg);
+								return;
+							}
+							VoteDB[msg.channel.id].votes[VoteDB[msg.channel.id].voters[msg.author.id]]--;
+						}
+						VoteDB[msg.channel.id].voters[msg.author.id] = choice;
+						VoteDB[msg.channel.id].votes[choice]++;
+						bot.deleteMessage(msg);
+						bot.sendMessage(msg, msg.author + ", Your vote has been counted", (e, m) => { bot.deleteMessage(m, {"wait":  6000}); });
+						let toSend = VoteDB[msg.channel.id].message.content.substr(0, VoteDB[msg.channel.id].message.content.indexOf('\n'));
+						if (VoteDB[msg.channel.id].topic !== undefined)
+							toSend += `\nTopic: **${VoteDB[msg.channel.id].topic}**`;
+						toSend += "\n__Choices:__";
+						for (let opt = 0; opt < VoteDB[msg.channel.id].options.length; opt++) {
+							toSend += `\n\t**${opt}.** ${VoteDB[msg.channel.id].options[opt]}: ${VoteDB[msg.channel.id].votes[opt]}`;
+						}
+						bot.updateMessage(VoteDB[msg.channel.id].message, toSend, (err, message) => {
+							if (err)
+								console.log("Error updating vote message: " + err);
+							else
+								VoteDB[msg.channel.id].message = message;
+						});
+					}
+				}
+
+			}
 		}
 	},
 	"strawpoll": {
 		desc: "Create a strawpoll",
 		deleteCommand: true,
-		usage: "<option1>, <option2>, [option3], ...",
+		usage: "<option1> | <option2> | [option3] ...",
 		cooldown: 15,
 		process: function(bot, msg, suffix) {
-			if (suffix && /^[^, ](.*), ?(.*)[^, ]$/.test(suffix)) {
-				suffix = msg.cleanContent.substring(msg.cleanContent.indexOf(" ") + 1).split(/, ?/);
+			if (suffix && /^[^\|].* ?\| ?.*[^\|]$/.test(suffix)) {
+				suffix = msg.cleanContent.substr(msg.cleanContent.indexOf(" ") + 1).split(/ ?\| ?/);
 				request.post({
 						url: "https://strawpoll.me/api/v2/polls",
 						headers: {"content-type": "application/json"},
@@ -611,7 +701,7 @@ var commands = {
 			if (suffix) {
 				if (!MAL_USER || !MAL_PASS || MAL_USER == "" || MAL_PASS =="") { bot.sendMessage(msg, "MAL login not configured by bot owner", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 				if (/[\uD000-\uF8FF]/g.test(suffix)) {
-					bot.sendMessage(msg, "Your search contained illegal characters", (e, m)=>{bot.deleteMessage(m, {"wait": 8000});});
+					bot.sendMessage(msg, "Your search contained illegal characters", (e, m) => {bot.deleteMessage(m, {"wait": 8000});});
 					return;
 				}
 				bot.startTyping(msg.channel);
@@ -620,14 +710,14 @@ var commands = {
 					if (error) console.log(error);
 					else if (!error && response.statusCode == 200) {
 						xml2js.parseString(body, function(err, result) {
-							let title = result.anime.entry[0].title
-								,english = result.anime.entry[0].english
-								,ep = result.anime.entry[0].episodes
-								,score = result.anime.entry[0].score
-								,type = result.anime.entry[0].type
-								,status = result.anime.entry[0].status
-								,synopsis = result.anime.entry[0].synopsis.toString()
-								,id = result.anime.entry[0].id;
+							let title = result.anime.entry[0].title,
+								english = result.anime.entry[0].english,
+								ep = result.anime.entry[0].episodes,
+								score = result.anime.entry[0].score,
+								type = result.anime.entry[0].type,
+								status = result.anime.entry[0].status,
+								synopsis = result.anime.entry[0].synopsis.toString(),
+								id = result.anime.entry[0].id;
 							synopsis = ent.decodeHTML(synopsis.replace(/<br \/>/g, " ").replace(/\[(.{1,10})\]/g, "").replace(/\r?\n|\r/g, " ").replace(/\[(i|\/i)\]/g, "*").replace(/\[(b|\/b)\]/g, "**"));
 							if (!msg.channel.isPrivate && synopsis.length > 400)
 								synopsis = synopsis.substring(0, 400) + '...';
@@ -648,7 +738,7 @@ var commands = {
 			if (suffix) {
 				if (!MAL_USER || !MAL_PASS || MAL_USER == "" || MAL_PASS =="") { bot.sendMessage(msg, "MAL login not configured by bot owner", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 				if (/[\uD000-\uF8FF]/g.test(suffix)) {
-					bot.sendMessage(msg, "Your search contained illegal characters", (e, m)=>{bot.deleteMessage(m, {"wait": 8000});});
+					bot.sendMessage(msg, "Your search contained illegal characters", (e, m) => {bot.deleteMessage(m, {"wait": 8000});});
 					return;
 				}
 				bot.startTyping(msg.channel);
@@ -657,15 +747,15 @@ var commands = {
 					if (error) console.log(error);
 					else if (!error && response.statusCode == 200) {
 						xml2js.parseString(body, function(err, result) {
-							let title = result.manga.entry[0].title
-								,english = result.manga.entry[0].english
-								,chapters = result.manga.entry[0].chapters
-								,volumes = result.manga.entry[0].volumes
-								,score = result.manga.entry[0].score
-								,type = result.manga.entry[0].type
-								,status = result.manga.entry[0].status
-								,synopsis = result.manga.entry[0].synopsis.toString()
-								,id = result.manga.entry[0].id;
+							let title = result.manga.entry[0].title,
+								english = result.manga.entry[0].english,
+								chapters = result.manga.entry[0].chapters,
+								volumes = result.manga.entry[0].volumes,
+								score = result.manga.entry[0].score,
+								type = result.manga.entry[0].type,
+								status = result.manga.entry[0].status,
+								synopsis = result.manga.entry[0].synopsis.toString(),
+								id = result.manga.entry[0].id;
 							synopsis = ent.decodeHTML(synopsis.replace(/<br \/>/g, " ").replace(/\[(.{1,10})\]/g, "").replace(/\r?\n|\r/g, " ").replace(/\[(i|\/i)\]/g, "*").replace(/\[(b|\/b)\]/g, "**"));
 							if (!msg.channel.isPrivate && synopsis.length > 400)
 								synopsis = synopsis.substring(0, 400) + '...';
@@ -683,7 +773,7 @@ var commands = {
 		process: function(bot, msg, suffix) {
 			if (suffix) {
 				if (/[\uD000-\uF8FF]/g.test(suffix)) {
-					bot.sendMessage(msg, "Your search contained illegal characters", (e, m)=>{bot.deleteMessage(m, {"wait": 8000});});
+					bot.sendMessage(msg, "Your search contained illegal characters", (e, m) => {bot.deleteMessage(m, {"wait": 8000});});
 					return;
 				}
 				let rUrl = `http://myanimelist.net/malappinfo.php?u=${suffix.replace(/ /g, '%20')}&status=all&type=anime`;
@@ -692,7 +782,7 @@ var commands = {
 					else if (!error && response.statusCode == 200) {
 						xml2js.parseString(body, (err, result) => {
 							if (err) console.log(err);
-							else if (!result.myanimelist.myinfo) bot.sendMessage(msg, result.myanimelist.error, (e, m)=>{bot.deleteMessage(m, {"wait": 8000});});
+							else if (!result.myanimelist.myinfo) bot.sendMessage(msg, result.myanimelist.error, (e, m) => {bot.deleteMessage(m, {"wait": 8000});});
 							else {
 								result = result.myanimelist.myinfo[0];
 								bot.sendMessage(msg, `\`\`\`ruby\nUser: ${result.user_name} (${result.user_id})\nWatching: ${result.user_watching}\nCompleted: ${result.user_completed}\nOn Hold: ${result.user_onhold}\nDropped: ${result.user_dropped}\nPTW: ${result.user_plantowatch}\nDays Spent Watching: ${result.user_days_spent_watching}\`\`\``);
@@ -753,12 +843,16 @@ var commands = {
 				if (suffix && suffix.length >= 1) {
 					if (/(.*) #?[A-Fa-f0-9]{6}$/.test(suffix.join(" "))) {
 						username = suffix.join("%20").substring(0, suffix.join("%20").lastIndexOf("%20"));
-						if (suffix[suffix.length - 1].length == 6) { color = suffix[suffix.length - 1];
-						} else if (suffix[suffix.length - 1].length == 7) { color = suffix[suffix.length - 1].substring(1); }
+						if (suffix[suffix.length - 1].length == 6)
+							color = suffix[suffix.length - 1];
+						else if (suffix[suffix.length - 1].length == 7)
+							color = suffix[suffix.length - 1].substring(1);
 					} else if (/#?[A-Fa-f0-9]{6}$/.test(suffix.join(" "))) {
 						username = msg.author.username;
-						if (suffix[0].length == 6) { color = suffix[0];
-						} else if (suffix[0].length == 7) { color = suffix[0].substring(1); }
+						if (suffix[0].length == 6)
+							color = suffix[0];
+						else if (suffix[0].length == 7)
+							color = suffix[0].substring(1);
 					} else { username = suffix.join("%20"); }
 				}
 				let url = "https://lemmmy.pw/osusig/sig.php?colour=hex" + color + "&uname=" + username + "&pp=2&flagshadow&xpbar&xpbarhex&darktriangles";
@@ -896,14 +990,16 @@ var commands = {
 				if (!error && response.statusCode == 200) {
 					body = JSON.parse(body);
 					if (!body.hasOwnProperty("weather")) return;
-					let tempF = Math.round(parseInt(body.main.temp) * (9 / 5) - 459.67) + " °F"
-						,tempC = Math.round(parseInt(body.main.temp) - 273.15) + " °C"
-						,windspeedUS = Math.round(parseInt(body.wind.speed) * 2.23694) + " mph"
-						,windspeed = body.wind.speed + " m/s"
-						,emoji = "☀";
-					if (body.weather[0].description.includes("cloud")) emoji = "☁";
-					if (body.weather[0].description.includes("snow")) emoji = "❄";
-					if (body.weather[0].description.includes("rain") || body.weather[0].description.includes("storm") || body.weather[0].description.includes("drizzle")) emoji = "🌧";
+					let tempF = Math.round(parseInt(body.main.temp) * (9 / 5) - 459.67) + " °F",
+						tempC = Math.round(parseInt(body.main.temp) - 273.15) + " °C",
+						windspeedUS = Math.round(parseInt(body.wind.speed) * 2.23694) + " mph",
+						windspeed = body.wind.speed + " m/s",
+						emoji = "☀";
+					if (body.weather[0].description.includes("cloud")) emoji = "🌥";
+					if (body.weather[0].description.includes("snow")) emoji = "⛄";
+					if (body.weather[0].description.includes("rain")) emoji = "🌧";
+					if (body.weather[0].description.includes("storm")) emoji = "⛈"
+					if (body.weather[0].description.includes("drizzle")) emoji = "🌦";
 					bot.sendMessage(msg, `${emoji} __Weather for ${body.name}__:\n**Conditions:** ${body.weather[0].description} **Temp:** ${tempF} / ${tempC}\n**Humidity:** ${body.main.humidity}% **Wind:** ${windspeedUS} / ${windspeed} **Cloudiness:** ${body.clouds.all}%`);
 				} else console.log(error);
 			});
@@ -966,23 +1062,31 @@ var commands = {
 			if (suffix.toLowerCase().replace("-", " ") == bot.user.username.toLowerCase().replace("-", " ")) { bot.sendMessage(msg, "I'd rate myself **10/10**"); return; }
 			let fullName = "", user = false;
 			if (suffix.search(/--s(earch)?/i) > -1) {
-				let showBase = (suffix.search(/--b(ase)?/i) > -1) ? true : false
-					,query = suffix.replace(/--s(earch)?/i, '').replace(/--b(ase)?/i, '').toLowerCase().trim()
-					,results = ["__Results:__"];
-				Object.keys(waifus).map(name=>{if (name.toLowerCase().includes(query)) (showBase) ? results.push(waifus[name] + ', ' + name) : results.push(name);});
+				let showBase = (suffix.search(/--b(ase)?/i) > -1) ? true : false,
+					query = suffix.replace(/--s(earch)?/i, '').replace(/--b(ase)?/i, '').toLowerCase().trim(),
+					results = ["__Results:__"];
+				Object.keys(waifus).map(name => {if (name.toLowerCase().includes(query)) (showBase) ? results.push(waifus[name] + ', ' + name) : results.push(name);});
 				if (results.length > 1) {
-					if (results.join('\n').length < 2000) bot.sendMessage(msg, results.join('\n'));
-					else bot.sendMessage(msg, results.join('\n').substr(0,2000));
+					if (results.join('\n').length < 2000)
+						bot.sendMessage(msg, results.join('\n'));
+					else
+						bot.sendMessage(msg, results.join('\n').substr(0, 2000));
 				} else bot.sendMessage(msg, "No names found matching that in the database");
 			} else {
 			if (!msg.channel.isPrivate) { user = msg.channel.server.members.find((member) => { return (member === undefined || member.username == undefined) ? false : member.username.toLowerCase() == suffix.toLowerCase() }); } else user = false;
 			if (!user && msg.mentions.length < 1) {
-				Object.keys(waifus).map(name=>{if (name.toLowerCase() == suffix.toLowerCase()) { fullName = name; return; }});
-				if (!fullName) { Object.keys(waifus).map(name=>{if (name.split(" ")[0].toLowerCase() == suffix.toLowerCase()) {fullName = name; return;}}); }
-				if (!fullName) { Object.keys(waifus).map(name=>{if (name.split(" ").length > 1) {for (let i = 1;i < name.split(" ").length;i++) {if (name.split(" ")[i].toLowerCase() == suffix.toLowerCase()) {fullName = name; return;}}}}); }
+				Object.keys(waifus).map(name => {if (name.toLowerCase() == suffix.toLowerCase()) { fullName = name; return; }});
+				if (!fullName) { Object.keys(waifus).map(name => {if (name.split(" ")[0].toLowerCase() == suffix.toLowerCase()) {fullName = name; return;}}); }
+				if (!fullName) { Object.keys(waifus).map(name => {if (name.split(" ").length > 1) {for (let i = 1;i < name.split(" ").length;i++) {if (name.split(" ")[i].toLowerCase() == suffix.toLowerCase()) {fullName = name; return;}}}}); }
 			} else {
-				if (msg.mentions.length > 0) { fullName = msg.mentions[0].username; if (msg.mentions[0].username == bot.user.username) { bot.sendMessage(msg, "I'd rate myself **10/10**"); return; }
-				} else if (user) fullName = user.username;
+				if (msg.mentions.length > 0) {
+					fullName = msg.mentions[0].username;
+					if (msg.mentions[0].username == bot.user.username) {
+						bot.sendMessage(msg, "I'd rate myself **10/10**");
+						return;
+					}
+				} else if (user)
+					fullName = user.username;
 			}
 			if (fullName) {
 				if (Ratings.hasOwnProperty(fullName.toLowerCase())) bot.sendMessage(msg, "I gave " + fullName + " a **" + Ratings[fullName.toLowerCase()] + "/10**"); //already rated
@@ -1009,7 +1113,7 @@ var commands = {
 					if (ss != "none") bot.sendMessage(msg, "**Shared Servers for " + msg.mentions[0].username.replace(/@/g, '@\u200b') + ":** `" + ss.substring(6).replace(/@/g, '@\u200b') + "`");
 					else bot.sendMessage(msg, "Somehow I don't share any servers with that user", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); });
 				} else if (suffix) {
-					let usr = findUser(msg.channel.server.members, suffix);
+					let usr = utils.findUser(msg.server.members, suffix, msg.server);
 					if (usr) {
 						let ss = "none";
 						bot.servers.map((server) => { if (server.members.includes(usr)) ss += ", " + server.name; });
@@ -1037,8 +1141,11 @@ var commands = {
 						url: `https://api.imgur.com/3/gallery/r/${suffix.replace(/(--day|--week|--month|--year|--all|--nsfw|\/?r\/| )/gi, '')}/top/${time.substring(2)}/50`,
 						headers: {'Authorization': 'Client-ID ' + IMGUR_CLIENT_ID}
 				}, (error, response, body) => {
-					if (error) { console.log(error); bot.sendMessage(msg, "Oh no! There was an error!"); }
-					else if (response.statusCode != 200) bot.sendMessage(msg, "Got status code " + response.statusCode, (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); });
+					if (error) {
+						console.log(error);
+						bot.sendMessage(msg, "Oh no! There was an error!");
+					} else if (response.statusCode != 200)
+						bot.sendMessage(msg, "Got status code " + response.statusCode, (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); });
 					else if (body) {
 						body = JSON.parse(body);
 						if (body.hasOwnProperty("data") && body.data !== undefined && body.data.length !== 0) {
@@ -1069,7 +1176,7 @@ var commands = {
 		process: function(bot, msg, suffix) {
 			let cat = 'wisdom';
 			if (suffix && /^(all|computers|cookie|definitions|miscellaneous|people|platitudes|politics|science|wisdom)$/i.test(suffix.trim())) cat = suffix.trim();
-			request.get('http://www.yerkee.com/api/fortune/' + cat, (e, r, b)=>{
+			request.get('http://www.yerkee.com/api/fortune/' + cat, (e, r, b) => {
 				if (e) bot.sendMessage(msg, 'Got an error: ' + e);
 				else if (r.statusCode !== 200) bot.sendMessage(msg, 'Got status code '+ r.statusCode);
 				else {
@@ -1089,9 +1196,9 @@ var commands = {
 			if (/^remove/i.test(suffix)) {
 
 				if (suffix.length > 7) {
-					remind.removeReminder(suffix.replace(/^remove /i, ''), msg.author.id, ()=>{
+					remind.removeReminder(suffix.replace(/^remove /i, ''), msg.author.id, () => {
 						bot.sendMessage(msg, "Successfully removed reminder 👍");
-					}, ()=>{
+					}, () => {
 						bot.sendMessage(msg, "No matching reminder found 👎");
 					});
 				} else {
@@ -1106,37 +1213,45 @@ var commands = {
 				if (list && list.length > 0) bot.sendMessage(msg, "__Here are your reminders:__\n"+list.join('\n'));
 				else bot.sendMessage(msg, "Looks like you don't have any reminders!");
 
-			} else if (/^.* in( ((\d\d?\d?|a|one|two|three) ?d[ays]*)( and| &)?)?( ((\d\d?\d?|a|an|one|two|three) ?h[ours]*)( and| &)?)?( ((\d\d?\d?|a|one|two|three) ?m[inutes]*)( and| &)?)?( (\d\d?\d?|a|one|two|three) ?s[econds]*)?$/i.test(suffix)) {
+			} else if (/^.* in( ((\d\d?\d?|a|one|two|three) ?d[ays]*)( and| &|,)?)?( ((\d\d?\d?|a|an|one|two|three) ?h[ours]*)( and| &|,)?)?( ((\d\d?\d?|a|one|two|three) ?m[inutes]*)( and| &|,)?)?( (\d\d?\d?|a|one|two|three) ?s[econds]*)?$/i.test(suffix)) {
 
 				if (remind.countForUser(msg.author.id) >= 5) {
 					bot.sendMessage(msg, "You can't add any more reminders because you already have 5. You can remove a reminder to make space with `" + config.command_prefix + "remindme remove <text>`");
 					return;
 				}
 
-				let millisecs = 0
-					,timeString = suffix.replace(/.* in /i, '');
+				let millisecs = 0,
+					timeString = suffix.replace(/.* in /i, '');
 				if (/ ((\d\d?\d?\d?\d?|a|one|two|three) ?s[econds]*)$/i.test(suffix)) {
 					millisecs += timeParser(/((\d\d?\d?\d?\d?|a|one|two|three) ?s[econds]*)$/i.exec(suffix)[2] + "", 1000);
-					suffix = suffix.replace(/( and| &)? ((\d\d?\d?\d?\d?|a|one|two|three) ?s[econds]*)$/i, '');
+					suffix = suffix.replace(/( and| &|,)? ((\d\d?\d?\d?\d?|a|one|two|three) ?s[econds]*)$/i, '');
 				}
 				if (/ ((\d\d?\d?|a|one|two|three) ?m[inutes]*)$/i.test(suffix)) {
 					millisecs += timeParser(/((\d\d?\d?|a|one|two|three) ?m[inutes]*)$/i.exec(suffix)[2] + "", 60000);
-					suffix = suffix.replace(/( and| &)? ((\d\d?\d?|a|one|two|three) ?m[inutes]*)$/i, '');
+					suffix = suffix.replace(/( and| &|,)? ((\d\d?\d?|a|one|two|three) ?m[inutes]*)$/i, '');
 				}
 				if (/ ((\d\d?\d?|a|an|one|two|three) ?h[ours]*)$/i.test(suffix)) {
 					millisecs += timeParser(/((\d\d?\d?|a|an|one|two|three) ?h[ours]*)$/i.exec(suffix)[2] + "", 3600000);
-					suffix = suffix.replace(/( and| &)? ((\d\d?\d?|a|an|one|two|three) ?h[ours]*)$/i, '');
+					suffix = suffix.replace(/( and| &|,)? ((\d\d?\d?|a|an|one|two|three) ?h[ours]*)$/i, '');
 				}
 				if (/ ((\d\d?\d?|a|one|two|three) ?d[ays]*)$/i.test(suffix)) {
 					let hours = /((\d\d?\d?|a|one|two|three) ?d[ays]*)$/i.exec(suffix)[2];
 					if (/\d\d\d?/.test(hours)) {
-						if (hours > 14) { bot.sendMessage(msg, "There is a 14 day limit on reminders", (e, m)=>{bot.deleteMessage(m,{"wait": 10000});}); return; }
+						if (hours > 14) {
+							bot.sendMessage(msg, "There is a 14 day limit on reminders", (e, m) => {bot.deleteMessage(m, {"wait": 10000});});
+							return;
+						}
 					}
 					millisecs += timeParser(hours + "", 86400000);
-					suffix = suffix.replace(/( and| &)? ((\d|a|one|two|three) ?d[ays]*)$/i, '');
+					suffix = suffix.replace(/( and| &|,)? ((\d|a|one|two|three) ?d[ays]*)$/i, '');
 				}
-				if (millisecs > 1209600000) { bot.sendMessage(msg, "There is a 14 day limit on reminders", (e, m)=>{bot.deleteMessage(m,{"wait": 10000});}); return; }
-				else if (millisecs <= 0) { bot.sendMessage(msg, "You must specify a time in the future", (e, m)=>{bot.deleteMessage(m,{"wait": 10000});}); return; }
+				if (millisecs > 1209600000) {
+					bot.sendMessage(msg, "There is a 14 day limit on reminders", (e, m) => {bot.deleteMessage(m, {"wait": 10000});});
+					return;
+				} else if (millisecs <= 0) {
+					bot.sendMessage(msg, "You must specify a time in the future", (e, m) => {bot.deleteMessage(m, {"wait": 10000});});
+					return;
+				}
 
 				let reminder = suffix.replace(/^(me )?(to )?/i, '').replace(/in ?$/i, '').trim();
 				remind.addReminder(msg.author.id, Date.now() + millisecs, reminder);
@@ -1162,16 +1277,17 @@ var commands = {
 				bot.sendMessage(msg, "Maybe try that in a server?");
 				return;
 			}
-			if (msg.everyoneMentioned || suffix == "everyone") bot.sendMessage(msg, "Yeah right, like I'd let you do that", (e, m)=>{bot.deleteMessage(m,{"wait": 6000});});
+			if (msg.everyoneMentioned || suffix == "everyone")
+				bot.sendMessage(msg, "Yeah right, like I'd let you do that", (e, m) => {bot.deleteMessage(m, {"wait": 6000});});
 			else if (suffix) {
-				let role = msg.channel.server.roles.find(r=>suffix.toLowerCase() == r.name.toLowerCase());
-				if (!role) bot.sendMessage(msg, "Role not found", (e, m)=>{bot.deleteMessage(m,{"wait": 6000});});
+				let role = msg.channel.server.roles.find(r => suffix.toLowerCase() == r.name.toLowerCase());
+				if (!role) bot.sendMessage(msg, "Role not found", (e, m) => {bot.deleteMessage(m, {"wait": 6000});});
 				else {
 					let withRole = msg.channel.server.usersWithRole(role);
-					if (withRole.length > 0) bot.sendMessage(msg, "Users in role \"" + suffix.replace(/@/g, '@\u200b') + "\":" + withRole.map(u=>" "+u.username.replace(/@/g, '@\u200b')));
-					else bot.sendMessage(msg, "No users in that role!", (e, m)=>{bot.deleteMessage(m,{"wait": 6000});});
+					if (withRole.length > 0) bot.sendMessage(msg, "Users in role \"" + suffix.replace(/@/g, '@\u200b') + "\":" + withRole.map(u => " "+u.username.replace(/@/g, '@\u200b')));
+					else bot.sendMessage(msg, "No users in that role!", (e, m) => {bot.deleteMessage(m, {"wait": 6000});});
 				}
-			} else bot.sendMessage(msg, "Please specify a role", (e, m)=>{bot.deleteMessage(m,{"wait": 6000});});
+			} else bot.sendMessage(msg, "Please specify a role", (e, m) => {bot.deleteMessage(m, {"wait": 6000});});
 		}
 	},
 	"mentions": {
@@ -1187,7 +1303,7 @@ var commands = {
 				return;
 			}
 			var mentions = [];
-			utils.getLogs(bot, msg.channel).then(()=>{
+			utils.getLogs(bot, msg.channel).then(() => {
 
 				msg.channel.messages.sort(utils.sortById); //sort by id, oldest first
 				msg.channel.messages.forEach((message, i) => { //remove dupes
@@ -1224,7 +1340,7 @@ var commands = {
 						}
 					}, 500);
 				}
-			}).catch(e=>{
+			}).catch(e => {
 				bot.sendMessage(msg, `There was an error: ${e}`);
 			});
 		}
@@ -1235,7 +1351,7 @@ var commands = {
 		process: function(bot, msg, suffix) {
 			if (msg.channel.isPrivate) bot.sendMessage(msg, "You must do this in a server");
 			else {
-				let user = (!suffix) ? msg.author : (msg.mentions.length > 0) ? msg.mentions[0] : utils.findUser(suffix, msg.channel.server.members, msg.channel.server);
+				let user = !suffix ? msg.author : (msg.mentions.length > 0) ? msg.mentions[0] : utils.findUser(suffix, msg.server.members, msg.server);
 				if (!user) bot.sendMessage(msg, "User not found");
 				else {
 					let nicks = (bot.servers.filter(s => s.members.get('id', user.id)) || []).map(s => s.detailsOf(user).nick);
@@ -1280,11 +1396,37 @@ var commands = {
 					request(`https://www.google.com/finance/converter?a=${parsed[1]}&from=${parsed[2]}&to=${parsed[3]}`, (err, res, body) => {
 						if (err) bot.sendMessage(msg, err);
 						if (res.statusCode != 200) bot.sendMessage(msg, `Got response code ${res.statusCode}`);
-						else
-							bot.sendMessage(msg, `${parsed[1]} ${parsed[2]} is equal to ${body.match(/\<span class=bld\>(.+?)\<\/span\>/gmi)[0].replace(/\<\/?span( class=bld)?\>/g, '')}`);
+						else {
+							let result = body.match(/<span class=bld>(.+?)<\/span>/gmi) || ["Error: Currency code invalid"];
+							bot.sendMessage(msg, `${parsed[1]} ${parsed[2]} is equal to ${result[0].replace(/<\/?span( class=bld)?>/g, '')}`);
+						}
 					});
 				}
 			}
+		}
+	},
+	"emojify": {
+		desc: "Turn text into emojis", usage: "<text>",
+		deleteCommand: false, cooldown: 2,
+		process: function(bot, msg, suffix = "I didn't input anything") {
+			bot.sendMessage(msg, suffix.replace(/./g, (c) => {
+				if (charEmojiMap.hasOwnProperty(c.toLowerCase())) {
+					if (typeof charEmojiMap[c.toLowerCase()] === 'function')
+						return charEmojiMap[c.toLowerCase()]();
+					return charEmojiMap[c.toLowerCase()];
+				}
+				return c;
+			}));
+		}
+	},
+	"fullwidth": {
+		desc: "Convert text to fullwidth", usage: "<text>",
+		deleteCommand: false, cooldown: 2,
+		process: function(bot, msg, suffix) {
+			if (!suffix)
+				suffix = "AESTHETIC";
+			bot.sendMessage(msg, suffix.replace(/[a-zA-Z0-9!\?\.'";:\]\[}{\)\(@#\$%\^&\*\-_=\+`~><]/g, (c) => String.fromCharCode(0xFEE0 + c.charCodeAt(0)))
+				.replace(/ /g, '　'));
 		}
 	}
 };

@@ -1,17 +1,17 @@
 //Run this with node to run the bot.
 
-var commands = require("./bot/commands.js")
-	,mod = require("./bot/mod.js")
-	,config = require("./bot/config.json")
-	,games = require("./bot/games.json")
-	,versioncheck = require("./bot/versioncheck.js")
-	,discord = require("discord.js")
-	,cleverbot = require("./bot/cleverbot.js").cleverbot
-	,db = require("./bot/db.js")
-	,remind = require('./bot/remind.js')
-	,utils = require("./utils/utils.js")
-	,chalk = require('chalk')
-	,clk = new chalk.constructor({enabled: true});
+var commands		= require("./bot/commands.js"),
+	mod			= require("./bot/mod.js"),
+	config			= require("./bot/config.json"),
+	games			= require("./bot/games.json"),
+	versioncheck	= require("./bot/versioncheck.js"),
+	discord		= require("discord.js"),
+	cleverbot		= require("./bot/cleverbot.js").cleverbot,
+	db				= require("./bot/db.js"),
+	remind			= require('./bot/remind.js'),
+	utils			= require("./utils/utils.js"),
+	chalk			= require('chalk'),
+	clk			= new chalk.constructor({enabled: true});
 
 cWarn = clk.bgYellow.black;
 cError = clk.bgRed.black;
@@ -27,22 +27,26 @@ cBgGreen = clk.bgGreen.black;
 
 checkConfig();
 
-var lastExecTime = {}
-	,pmCoolDown = {};
-setInterval(() => {lastExecTime = {};pmCoolDown = {}},3600000);
+var lastExecTime = {},
+	pmCoolDown = {};
+setInterval(() => {lastExecTime = {}; pmCoolDown = {}}, 3600000);
 commandsProcessed = 0, talkedToTimes = 0;
 show_warn = config.show_warn, debug = config.debug;
 
 var bot = new discord.Client({maxCachedMessages: 1000, forceFetchUsers: true});
-bot.on("error", m=>{ console.log(cError(" WARN ") + " " + m); });
-bot.on("warn", m=>{ if (show_warn) console.log(cWarn(" WARN ") + " " + m); });
-bot.on("debug", m=>{ if (debug) console.log(cDebug(" DEBUG ") +  " " + m); });
+bot.on("error", m => console.log(`${cError(" WARN ")} ${m}`));
+bot.on("warn", m => {
+	if (show_warn) console.log(`${cWarn(" WARN ")} ${m}`);
+});
+bot.on("debug", m => {
+	if (debug) console.log(`${cDebug(" DEBUG ")} ${m}`);
+});
 
 bot.on("ready", () => {
 	bot.setPlayingGame(games[Math.floor(Math.random() * (games.length))]);
 	console.log(cGreen("BrussellBot is ready!") + ` Listening to ${bot.channels.length} channels on ${bot.servers.length} servers`);
 	versioncheck.checkForUpdate();
-	setTimeout(()=>{db.checkServers(bot)},10000);
+	setTimeout(() => {db.checkServers(bot)}, 10000);
 	remind.checkReminders(bot);
 	if (config.carbon_key)
 		utils.updateCarbon(config.carbon_key, bot.servers.length);
@@ -65,7 +69,7 @@ bot.on("message", msg => {
 	if (msg.channel.isPrivate) {
 
 		if (/(^https?:\/\/discord\.gg\/[A-Za-z0-9]+$|^https?:\/\/discordapp\.com\/invite\/[A-Za-z0-9]+$)/.test(msg.content))
-			bot.sendMessage(msg.author, `Use this to bring me to your server: <https://discordapp.com/oauth2/authorize?&client_id=${config.app_id}&scope=bot&permissions=12659727>`); //if user DMs and invite
+			bot.sendMessage(msg.author, `Use this to bring me to your server: ${config.invite_link}`); //if user DMs and invite
 		else if (msg.content[0] !== config.command_prefix && msg.content[0] !== config.mod_command_prefix && !msg.content.startsWith('(eval) ')) {
 			if (!pmCoolDown.hasOwnProperty(msg.author.id)) {
 				pmCoolDown[msg.author.id] = Date.now(); //set if no entry for user
@@ -181,7 +185,7 @@ function execCommand(msg, cmd, suffix, type = "normal") {
 					let now = Date.now();
 					if (now < lastExecTime[cmd][msg.author.id] + (commands.commands[cmd].cooldown * 1000)) { //still on cooldown
 
-						bot.sendMessage(msg, msg.author.username.replace(/@/g, '@\u200b') + ", you need to *cooldown* (" + Math.round(((lastExecTime[cmd][msg.author.id] + commands.commands[cmd].cooldown * 1000) - now) / 1000) + " seconds)", (e, m)=>{ bot.deleteMessage(m, {"wait": 6000}); });
+						bot.sendMessage(msg, msg.author.username.replace(/@/g, '@\u200b') + ", you need to *cooldown* (" + Math.round(((lastExecTime[cmd][msg.author.id] + commands.commands[cmd].cooldown * 1000) - now) / 1000) + " seconds)", (e, m) => { bot.deleteMessage(m, {"wait": 6000}); });
 						if (!msg.channel.isPrivate) bot.deleteMessage(msg, {"wait": 10000});
 						return;
 
@@ -210,7 +214,7 @@ function execCommand(msg, cmd, suffix, type = "normal") {
 					let now = Date.now();
 					if (now < lastExecTime[cmd][msg.author.id] + (mod.commands[cmd].cooldown * 1000)) { //still on cooldown
 
-						bot.sendMessage(msg, msg.author.username.replace(/@/g, '@\u200b') + ", you need to *cooldown* (" + Math.round(((lastExecTime[cmd][msg.author.id] + mod.commands[cmd].cooldown * 1000) - now) / 1000) + " seconds)", (e, m)=>{ bot.deleteMessage(m, {"wait": 6000}); });
+						bot.sendMessage(msg, msg.author.username.replace(/@/g, '@\u200b') + ", you need to *cooldown* (" + Math.round(((lastExecTime[cmd][msg.author.id] + mod.commands[cmd].cooldown * 1000) - now) / 1000) + " seconds)", (e, m) => { bot.deleteMessage(m, {"wait": 6000}); });
 						if (!msg.channel.isPrivate) bot.deleteMessage(msg, {"wait": 10000});
 						return;
 
@@ -299,7 +303,9 @@ bot.on("serverCreated", server => {
 		if (config.banned_server_ids && config.banned_server_ids.includes(server.id)) {
 			console.log(cRed("Joined server but it was on the ban list") + `: ${server.name}`);
 			bot.sendMessage(server.defaultChannel, "This server is on the ban list");
-			setTimeout(()=>{bot.leaveServer(server);},1000);
+			setTimeout(() => {
+				bot.leaveServer(server);
+			}, 1000);
 		} else {
 			db.addServerToTimes(server);
 			bot.sendMessage(server.defaultChannel, `👋🏻 Hi! I'm **${bot.user.username.replace(/@/g, '@\u200b')}**\nYou can use **\`${config.command_prefix}help\`** to see what I can do.\nMod/Admin commands *including bot settings* can be viewed with **\`${config.mod_command_prefix}help\`**\nFor help, feedback, bugs, info, changelogs, etc. go to **<https://discord.gg/0kvLlwb7slG3XCCQ>**`);
@@ -311,8 +317,18 @@ bot.on("serverCreated", server => {
 /* Login */
 console.log("Logging in...");
 bot.loginWithToken(config.token, (err, token) => {
-	if (err) { console.log(err); setTimeout(() => { process.exit(1); }, 2000); }
-	if (!token) { console.log(cWarn(" WARN ") + " failed to connect"); setTimeout(() => { process.exit(0); }, 2000); }
+	if (err) {
+		console.log(err);
+		setTimeout(() => {
+			process.exit(1);
+		}, 2000);
+	}
+	if (!token) {
+		console.log(cWarn(" WARN ") + " failed to connect");
+		setTimeout(() => {
+			process.exit(0);
+		}, 2000);
+	}
 });
 
 function reload() {
@@ -332,16 +348,22 @@ function reload() {
 	db = 				require(__dirname + "/bot/db.js");
 	remind = 			require(__dirname + "/bot/remind.js");
 	utils = 			require(__dirname + "/utils/utils.js");
-	try { commands = 	require(__dirname + "/bot/commands.js");
-	} catch (err) { console.log(cError(" ERROR ") + " Problem loading commands.js: " + err); }
-	try { mod = 		require(__dirname + "/bot/mod.js");
-	} catch (err) { console.log(cError(" ERROR ") + " Problem loading mod.js: " + err); }
+	try {
+		commands = 		require(__dirname + "/bot/commands.js");
+	} catch (err) {
+		console.log(cError(" ERROR ") + " Problem loading commands.js: " + err);
+	}
+	try {
+		mod = 			require(__dirname + "/bot/mod.js");
+	} catch (err) {
+		console.log(cError(" ERROR ") + " Problem loading mod.js: " + err);
+	}
 	console.log(cBgGreen(" Module Reload ") + " Success");
 }
 
 function checkConfig() {
 	if (!config.token) console.log(cWarn(" WARN ") + " Token not defined");
-	if (!config.app_id) console.log(cWarn(" WARN ") + " App ID not defined");
+	if (!config.invite_link) console.log(cWarn(" WARN ") + " Invite link not defined");
 	if (!config.command_prefix || config.command_prefix.length !== 1) console.log(cWarn(" WARN ") + " Prefix either not defined or more than one character");
 	if (!config.mod_command_prefix || config.mod_command_prefix.length !== 1) console.log(cWarn(" WARN ") + " Mod prefix either not defined or more than one character");
 	if (!config.admin_id) console.log(cYellow("Admin user's id") + " not defined in config");
@@ -357,8 +379,8 @@ function evaluateString(msg) {
 		console.log(cWarn(" WARN ") + " Somehow an unauthorized user got into eval!");
 		return;
 	}
-	let timeTaken = new Date()
-		,result = 'u13g5u35y7jg73';
+	let timeTaken = new Date(),
+		result = 'u13g5u35y7jg73';
 	console.log("Running eval");
 	try {
 		result = eval(msg.content.substring(7));
@@ -367,7 +389,7 @@ function evaluateString(msg) {
 		bot.sendMessage(msg, "```diff\n- " + e + "```");
 	}
 	if (result !== 'u13g5u35y7jg73') {
-		if (typeof result !== 'object') bot.sendMessage(msg, "`Compute time: " + (timeTaken - msg.timestamp) + "ms`\n" + result);
+		bot.sendMessage(msg, "`Compute time: " + (timeTaken - msg.timestamp) + "ms`\n" + result);
 		console.log("Result: " + result);
 	}
 }
@@ -382,7 +404,7 @@ setInterval(() => {
 }, 30000);
 
 if (config.carbon_key) {
-	setInterval(()=>{
+	setInterval(() => {
 		utils.updateCarbon(config.carbon_key, bot.servers.length);
 	}, 9000000);
 }
