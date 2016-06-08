@@ -1,5 +1,5 @@
-var config = require("../bot/config.json")
-	,utils = require('../utils/utils.js');
+var config = require("../bot/config.json"),
+	utils = require('../utils/utils.js');
 
 ServerSettings = require('../db/servers.json');
 Times = require('../db/times.json');
@@ -59,17 +59,17 @@ exports.unignoreChannel = function(channelId, serverId) {
 exports.checkServers = function(bot) {
 	inactive = [];
 	let now = Date.now();
-	Object.keys(Times).map(id=>{
-		if (!bot.servers.find(s=>s.id == id)) delete Times[id];
+	Object.keys(Times).map(id => {
+		if (!bot.servers.find(s => s.id == id)) delete Times[id];
 	});
-	bot.servers.map(server=>{
+	bot.servers.map(server => {
 		if (server == undefined) return;
 		if (!Times.hasOwnProperty(server.id)) {
 			console.log(cGreen("Joined server: ") + server.name);
 			if (config.banned_server_ids && config.banned_server_ids.includes(server.id)) {
 				console.log(cRed("Joined server but it was on the ban list") + ": " + server.name);
 				bot.sendMessage(server.defaultChannel, "This server is on the ban list");
-				setTimeout(()=>{bot.leaveServer(server);},1000);
+				setTimeout(() => {bot.leaveServer(server);}, 1000);
 			} else {
 				if (!config.whitelist.includes(server.id)) {
 					bot.sendMessage(server.defaultChannel, `👋🏻 Hi! I'm **${bot.user.username.replace(/@/g, '@\u200b')}**\nYou can use **\`${config.command_prefix}help\`** to see what I can do.\nMod/Admin commands *including bot settings* can be viewed with **\`${config.mod_command_prefix}help\`**\nFor help, feedback, bugs, info, changelogs, etc. go to **<https://discord.gg/0kvLlwb7slG3XCCQ>**`);
@@ -140,7 +140,7 @@ exports.addServerToTimes = function(server) {
 var addServer = function(server) {
 	if (!server) return
 	if (!ServerSettings.hasOwnProperty(server.id)) {
-		ServerSettings[server.id] = {"ignore":[],"banAlerts":false,"nameChanges":false,"welcome":"none","deleteCommands":false,"notifyChannel":"general","allowNSFW":false};
+		ServerSettings[server.id] = {"ignore":[], "banAlerts":false, "nameChanges":false, "welcome":"none", "deleteCommands":false, "notifyChannel":"general", "allowNSFW":false};
 		updatedS = true;
 	}
 }

@@ -1,5 +1,5 @@
-var fs = require('fs')
-	,request = require('request');
+var fs = require('fs'),
+	request = require('request');
 
 /*
 Save a file safely
@@ -13,15 +13,15 @@ exports.safeSave = function(dir, ext, data, minSize = 5) {
 	if (dir.startsWith('/')) dir = dir.substr(1);
 	if (!ext.startsWith('.')) ext = '.' + ext;
 
-	fs.writeFile(`${__dirname}/../${dir}-temp${ext}`, data, error=>{
+	fs.writeFile(`${__dirname}/../${dir}-temp${ext}`, data, error => {
 		if (error) console.log(error);
 		else {
-			fs.stat(`${__dirname}/../${dir}-temp${ext}`, (err, stats)=>{
+			fs.stat(`${__dirname}/../${dir}-temp${ext}`, (err, stats) => {
 				if (err) console.log(err);
 				else if (stats["size"] < minSize)
 					console.log('safeSave: Prevented file from being overwritten');
 				else {
-					fs.rename(`${__dirname}/../${dir}-temp${ext}`, `${__dirname}/../${dir}${ext}`, e=>{if(e)console.log(e)});
+					fs.rename(`${__dirname}/../${dir}-temp${ext}`, `${__dirname}/../${dir}${ext}`, e => {if(e)console.log(e)});
 					if (debug) console.log(cDebug(" DEBUG ") + " Updated " + dir + ext);
 				}
 			});
@@ -38,13 +38,13 @@ Find a user matching the input string or return false if none found
 exports.findUser = function(query, members, server) {
 	//order: match, starts with, contains, then repeat for nicks
 	if (!query || !members || typeof query != 'string') return false;
-	let r = members.find(m=>{ return !m.username ? false : m.username.toLowerCase() == query.toLowerCase() });
-	if (!r) r = members.find(m=>{ return !m.username ? false : m.username.toLowerCase().indexOf(query.toLowerCase()) == 0 });
-	if (!r) r = members.find(m=>{ return !m.username ? false : m.username.toLowerCase().includes(query.toLowerCase()) });
+	let r = members.find(m => { return !m.username ? false : m.username.toLowerCase() == query.toLowerCase() });
+	if (!r) r = members.find(m => { return !m.username ? false : m.username.toLowerCase().indexOf(query.toLowerCase()) == 0 });
+	if (!r) r = members.find(m => { return !m.username ? false : m.username.toLowerCase().includes(query.toLowerCase()) });
 	if (server) {
-		if (!r) r = members.find(m=>{ return !server.detailsOf(m).nick ? false : server.detailsOf(m).nick.toLowerCase() === query.toLowerCase() });
-		if (!r) r = members.find(m=>{ return !server.detailsOf(m).nick ? false : server.detailsOf(m).nick.toLowerCase().indexOf(query.toLowerCase()) === 0 });
-		if (!r) r = members.find(m=>{ return !server.detailsOf(m).nick ? false : server.detailsOf(m).nick.toLowerCase().includes(query.toLowerCase()) });
+		if (!r) r = members.find(m => { return !server.detailsOf(m).nick ? false : server.detailsOf(m).nick.toLowerCase() === query.toLowerCase() });
+		if (!r) r = members.find(m => { return !server.detailsOf(m).nick ? false : server.detailsOf(m).nick.toLowerCase().indexOf(query.toLowerCase()) === 0 });
+		if (!r) r = members.find(m => { return !server.detailsOf(m).nick ? false : server.detailsOf(m).nick.toLowerCase().includes(query.toLowerCase()) });
 	}
 	return r || false;
 }
@@ -60,7 +60,7 @@ Tell the user the correct usage of a command
 */
 exports.correctUsage = function(cmd, usage, msg, bot, prefix, delay = 10000) {
 	if (!cmd || !usage || !msg || !bot || !prefix) return;
-	bot.sendMessage(msg, `${msg.author.username.replace(/@/g, '@\u200b')}, the correct usage is *\`${prefix}${cmd} ${usage}\`*`, (e,m)=>{bot.deleteMessage(m, {"wait": delay});});
+	bot.sendMessage(msg, `${msg.author.username.replace(/@/g, '@\u200b')}, the correct usage is *\`${prefix}${cmd} ${usage}\`*`, (e, m) => {bot.deleteMessage(m, {"wait": delay});});
 	bot.deleteMessage(msg, {"wait": delay});
 }
 
@@ -92,7 +92,7 @@ Set the bot's avatar
 */
 exports.setAvatar = function(file, bot) {
 	if (file && bot) {
-		fs.access(__dirname + '/../avatars/' + file, err=>{
+		fs.access(__dirname + '/../avatars/' + file, err => {
 			if (err) console.log("The file doesn't exist");
 			else {
 				let avatarB64 = 'data:image/jpeg;base64,' + fs.readFileSync(__dirname + '/../avatars/' + file, 'base64');
@@ -112,25 +112,25 @@ exports.getLogs = function(bot, channel) {
 		if (channel.messages.length >= 700)
 			resolve();
 		else {
-			bot.getChannelLogs(channel, 100, (e,ms)=>{
+			bot.getChannelLogs(channel, 100, (e, ms) => {
 				if (e) { reject(e); return; }
 				if (ms < 100) { resolve(); return; }
-				bot.getChannelLogs(channel, 100, {before:ms[99]}, (e,ms)=>{
+				bot.getChannelLogs(channel, 100, {before:ms[99]}, (e, ms) => {
 					if (e) { reject(e); return; }
 					if (ms < 100) { resolve(); return; }
-					bot.getChannelLogs(channel, 100, {before:ms[99]}, (e,ms)=>{
+					bot.getChannelLogs(channel, 100, {before:ms[99]}, (e, ms) => {
 						if (e) { reject(e); return; }
 						if (ms < 100) { resolve(); return; }
-						bot.getChannelLogs(channel, 100, {before:ms[99]}, (e,ms)=>{
+						bot.getChannelLogs(channel, 100, {before:ms[99]}, (e, ms) => {
 							if (e) { reject(e); return; }
 							if (ms < 100) { resolve(); return; }
-							bot.getChannelLogs(channel, 100, {before:ms[99]}, (e,ms)=>{
+							bot.getChannelLogs(channel, 100, {before:ms[99]}, (e, ms) => {
 								if (e) { reject(e); return; }
 								if (ms < 100) { resolve(); return; }
-								bot.getChannelLogs(channel, 100, {before:ms[99]}, (e,ms)=>{
+								bot.getChannelLogs(channel, 100, {before:ms[99]}, (e, ms) => {
 									if (e) { reject(e); return; }
 									if (ms < 100) { resolve(); return; }
-									bot.getChannelLogs(channel, 100, {before:ms[99]}, ()=>{
+									bot.getChannelLogs(channel, 100, {before:ms[99]}, () => {
 										resolve();
 			});});});});});});});
 		}

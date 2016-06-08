@@ -1,24 +1,33 @@
 {
-	"ecmaVersion": 6,
-	"env": {
-		"es6": true,
-		"node": true
-	},
-	"ecmaFeatures": {
-		"modules": true
-	},
-	"rules": {
-		"no-console": 0,
-		"no-control-regex": 0,
-		"no-redeclare": 0,
-		"no-inner-declarations": 0,
-	},
-	"globals": {
-		"ServerSettings",
-		"debug",
-		"show_warn",
-		"commandsProcessed",
-		"talkedToTimes",
+    "ecmaVersion": 6,
+    "env": {
+        "es6": true,
+        "node": true
+    },
+    "ecmaFeatures": {
+        "modules": true
+    },
+    "rules": {
+        "no-console": 0,
+        "no-control-regex": 0,
+        "no-alert": 1,
+        "no-else-return": 1,
+        "no-redeclare": 2,
+        "no-useless-escape": 1,
+        "no-inner-declarations": 0,
+        "array-bracket-spacing": ["warn", "never"],
+        "brace-style": ["warn", "1tbs", { "allowSingleLine": true }],
+        "no-trailing-spaces": 1,
+        "space-before-function-paren": ["warn", "never"],
+        "arrow-spacing": 1,
+        "comma-spacing": ["warn", { "before": false, "after": true }]
+        },
+    "globals": {
+        "ServerSettings",
+        "debug",
+        "show_warn",
+        "commandsProcessed",
+        "talkedToTimes",
         "Times",
         "cWarn",
         "cError",
@@ -31,6 +40,6 @@
         "cServer",
         "cUYellow",
         "cBgGreen"
-	},
-	extends: "eslint:recommended"
+    },
+    extends: "eslint:recommended"
 }

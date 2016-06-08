@@ -1,9 +1,9 @@
-let Cleverbot = require('cleverbot-node')
-	,Waifu = new Cleverbot()
-	,ent = require('entities')
-	,antiSpam = {};
+let Cleverbot = require('cleverbot-node'),
+	Waifu = new Cleverbot(),
+	ent = require('entities'),
+	antiSpam = {};
 
-setInterval(() => antiSpam = {},3600000);
+setInterval(() => antiSpam = {}, 3600000);
 
 exports.cleverbot = function(bot, msg) {
 	let text = (msg.channel.isPrivate) ? msg.content : msg.content.replace(new RegExp(`^<@!?${bot.user.id}>`), '').trim();
@@ -11,8 +11,9 @@ exports.cleverbot = function(bot, msg) {
 		if (!antiSpam.hasOwnProperty(msg.author.id))
 			antiSpam[msg.author.id] = text;
 		else {
-			if (antiSpam[msg.author.id] == text) return;
-			else antiSpam[msg.author.id] = text;
+			if (antiSpam[msg.author.id] == text)
+				return;
+			antiSpam[msg.author.id] = text;
 		}
 		if (!msg.channel.isPrivate)
 			console.log(cServer(msg.channel.server.name) + " > " + cGreen(msg.author.username) + " > " + cYellow("@" + bot.user.username) + " " + msg.content.replace(new RegExp(`^<@!?${bot.user.id}>`), "").replace(" ", "").replace(/\n/g, " "));
@@ -41,8 +42,9 @@ exports.cleverbot = function(bot, msg) {
 		if (!antiSpam.hasOwnProperty(msg.author.id))
 			antiSpam[msg.author.id] = "";
 		else {
-			if (antiSpam[msg.author.id] == "") return;
-			else antiSpam[msg.author.id] = "";
+			if (antiSpam[msg.author.id] == "")
+				return;
+			antiSpam[msg.author.id] = "";
 		}
 		if (!msg.channel.isPrivate)
 			console.log(cServer(msg.channel.server.name) + " > " + cGreen(msg.author.username) + " > " + cYellow("@" + bot.user.username) + " " + msg.content.replace(new RegExp(`^<@!?${bot.user.id}>`), "").replace(" ", "").replace(/\n/g, " "));
