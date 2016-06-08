@@ -283,7 +283,7 @@ var commands = {
 				if (users.length > 4) { bot.sendMessage(msg, "Limit of 4 users at once", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 8000}); }); return; }
 				let toSend = [];
 				users.map(user => {
-					let usr = utils.findUser(msg.server.members, user, msg.server);
+					let usr = utils.findUser(user, msg.server.members, msg.server);
 					if (usr) {
 						let detailsOf = msg.channel.server.detailsOfUser(usr);
 						if (detailsOf)
@@ -416,7 +416,7 @@ var commands = {
 					return;
 				}
 				users.map(function(user) {
-					let usr = utils.findUser(msg.server.members, user, msg.server);
+					let usr = utils.findUser(user, msg.server.members, msg.server);
 					if (usr)
 						(usr.avatarURL != null) ? bot.sendMessage(msg, "**" + usr.username.replace(/@/g, '@\u200b') + "**'s avatar: " + usr.avatarURL + "") : bot.sendMessage(msg, "**" + usr.username + "** has no avatar", function(erro, wMessage) { bot.deleteMessage(wMessage, {"wait": 8000}); });
 					else
@@ -1113,7 +1113,7 @@ Channel mods can end a vote as well as the owner of the vote.",
 					if (ss != "none") bot.sendMessage(msg, "**Shared Servers for " + msg.mentions[0].username.replace(/@/g, '@\u200b') + ":** `" + ss.substring(6).replace(/@/g, '@\u200b') + "`");
 					else bot.sendMessage(msg, "Somehow I don't share any servers with that user", (erro, wMessage) => { bot.deleteMessage(wMessage, {"wait": 10000}); });
 				} else if (suffix) {
-					let usr = utils.findUser(msg.server.members, suffix, msg.server);
+					let usr = utils.findUser(suffix, msg.server.members, msg.server);
 					if (usr) {
 						let ss = "none";
 						bot.servers.map((server) => { if (server.members.includes(usr)) ss += ", " + server.name; });
