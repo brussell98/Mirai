@@ -37,9 +37,9 @@ Find a user matching the input string or return false if none found
 */
 exports.findUser = function(query, members, server) {
 	//order: match, starts with, contains, then repeat for nicks
-	if (!query || !members || typeof query != 'string') return false;
-	let r = members.find(m => { return !m.username ? false : m.username.toLowerCase() == query.toLowerCase() });
-	if (!r) r = members.find(m => { return !m.username ? false : m.username.toLowerCase().indexOf(query.toLowerCase()) == 0 });
+	if (!query || !members || typeof query !== 'string') return false;
+	let r = members.find(m => { return !m.username ? false : m.username.toLowerCase() === query.toLowerCase() });
+	if (!r) r = members.find(m => { return !m.username ? false : m.username.toLowerCase().indexOf(query.toLowerCase()) === 0 });
 	if (!r) r = members.find(m => { return !m.username ? false : m.username.toLowerCase().includes(query.toLowerCase()) });
 	if (server) {
 		if (!r) r = members.find(m => { return !server.detailsOf(m).nick ? false : server.detailsOf(m).nick.toLowerCase() === query.toLowerCase() });
@@ -47,21 +47,6 @@ exports.findUser = function(query, members, server) {
 		if (!r) r = members.find(m => { return !server.detailsOf(m).nick ? false : server.detailsOf(m).nick.toLowerCase().includes(query.toLowerCase()) });
 	}
 	return r || false;
-}
-
-/*
-Tell the user the correct usage of a command
-	cmd: The name of the command
-	usage: The usage of the command
-	msg: The message object to reply to
-	bot: The bot
-	prefix: The command's prefix
-	delay: How long to wait before deleting (optional, defaults to 10 seconds)
-*/
-exports.correctUsage = function(cmd, usage, msg, bot, prefix, delay = 10000) {
-	if (!cmd || !usage || !msg || !bot || !prefix) return;
-	bot.sendMessage(msg, `${msg.author.username.replace(/@/g, '@\u200b')}, the correct usage is *\`${prefix}${cmd} ${usage}\`*`, (e, m) => {bot.deleteMessage(m, {"wait": delay});});
-	bot.deleteMessage(msg, {"wait": delay});
 }
 
 /*

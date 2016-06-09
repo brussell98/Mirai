@@ -23,23 +23,13 @@
         "comma-spacing": ["warn", { "before": false, "after": true }]
         },
     "globals": {
-        "ServerSettings",
         "debug",
         "show_warn",
+        "uptime",
         "commandsProcessed",
-        "talkedToTimes",
-        "Times",
+        "cleverbotTimesUsed",
         "cWarn",
-        "cError",
-        "cDebug",
-        "cGreen",
-        "cGrey",
-        "cYellow",
-        "cBlue",
-        "cRed",
-        "cServer",
-        "cUYellow",
-        "cBgGreen"
+        "cError"
     },
     extends: "eslint:recommended"
 }

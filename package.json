@@ -1,6 +1,6 @@
 {
 	"name": "brussellbot",
-	"version": "2.3.1",
+	"version": "3.0.0",
 	"description": "A Discord bot that does everything",
 	"author": "brussell98",
 	"main": "BrussellBot.js",
@@ -15,7 +15,7 @@
 		"node": ">=6.0.0"
 	},
 	"scripts": {
-		"start": "node BrussellBot.js --harmony"
+		"start": "node BrussellBot.js"
 	},
 	"license": "MIT",
 	"dependencies": {
@@ -26,6 +26,7 @@
 		"osu-api": "*",
 		"chalk": "*",
 		"entities": ">=1.1.1",
-		"csslint": "*"
+		"csslint": "*",
+		"require-reload": "*"
 	}
 }
