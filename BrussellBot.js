@@ -6,6 +6,11 @@ var reload			= require('require-reload')(require),
 	validateConfig	= reload('./utils/validateConfig.js'),
 	CommandManager	= reload('./utils/CommandManager.js');
 
+var events = {
+	ready: reload(`${__dirname}/events/ready.js`),
+	message: reload(`${__dirname}/events/message.js`)
+};
+
 //console colors
 cWarn	= chalk.bgYellow.black;
 cError	= chalk.bgRed.black;
@@ -18,16 +23,44 @@ cleverbotTimesUsed = 0;
 
 validateConfig(config);
 
-//Load commands and then log in
-var normalCommands = new CommandManager(config.prefix),
-	modCommands = new CommandManager(config.modPrefix, 'commands/mod/');
+var CommandManagers = [
+	new CommandManager(config.prefix),
+	new CommandManager(config.modPrefix, 'commands/mod/')
+];
 
-normalCommands.initialize()
-	.then(modCommands.initialize)
-	.then(login)
-	.catch(error => {throw new Error(error)});
+function init(index = 0) {
+	return new Promise((resolve, reject) => {
+		CommandManagers[index].initialize() //Load CommandManager at {index}
+			.then(() => {
+				index++;
+				if (CommandManagers.length > index) { //If there are more to load
+					init(index) //Loop through again
+						.then(resolve)
+						.catch(reject);
+				} else //If that was the last one resolve
+					resolve();
+			}).catch(reject)
+	});
+}
 
 function login() {
 	console.log(cGreen('Logging in...'));
-	bot.loginWithToken(config.token).catch(console.error);
+	bot.loginWithToken(config.token).catch(err => console.error(err));
 }
+
+//Load commands and log in
+init()
+	.then(login)
+	.catch(error => {throw new Error(error)});
+
+bot.on('ready', () => {
+	events.ready(bot, config);
+});
+
+bot.on('disconnected', () => {
+	console.log(cRed('Disconnected from Discord'));
+});
+
+bot.on('message', msg => {
+	events.message(bot, msg, CommandManagers, config);
+});

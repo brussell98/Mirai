@@ -88,34 +88,29 @@ exports.setAvatar = function(file, bot) {
 }
 
 /*
-Get 700 channel messages if needed
-	bot: The client
-	channel: The channel to get logs for
+ * Get previous channel messages. Return's an array starting at the newest message.
+ * bot: The client
+ * channel: The channel to get logs for
+ * count: number of messages to get
+ * before: get messages before this
 */
-exports.getLogs = function(bot, channel) {
-	return new Promise((resolve, reject) => {
-		if (channel.messages.length >= 700)
-			resolve();
-		else {
-			function checkIfEmpty(messages) {
-				if (messages.length < 100) {
-					resolve();
-					return;
-				}
-				return bot.getChannelLogs(channel, 100, {before: messages[99]});
-			}
-
-			bot.getChannelLogs(channel, 100)
-				.then(checkIfEmpty)
-				.then(checkIfEmpty)
-				.then(checkIfEmpty)
-				.then(checkIfEmpty)
-				.then(checkIfEmpty)
-				.then(checkIfEmpty)
-				.catch(reject)
-		}
-	});
+function getLogs(bot, channel, count, before) {
+    return new Promise(resolve => {
+        bot.getChannelLogs(channel, count, before ? {before} : {}).then(newMessages => {
+            count -= 100;
+            if (count > 0 && newMessages.length == 100) { //if it still needs to grab more and there are more
+                getLogs(bot, channel, count, newMessages[99]).then(messages => {
+                    if (messages)
+                        resolve(newMessages.concat(messages)); //add the fetched messages to the end
+                    else
+                        resolve(messages);
+                }).catch(() => {resolve(newMessages)});
+            } else
+                resolve(newMessages);
+        });
+    });
 }
+exports.getLogs = getLogs;
 
 //comma sperate a number
 exports.comma = (number) => number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
@@ -124,5 +119,5 @@ exports.comma = (number) => number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, "
 exports.sortById = (a, b) => a.id - b.id;
 
 exports.formatTime = function(milliseconds) {
-	
+
 }
