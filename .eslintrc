@@ -29,7 +29,9 @@
         "cleverbotTimesUsed",
         "cWarn",
         "cError",
-        "cDebug"
+        "cDebug",
+        "cGreen",
+        "cRed"
     },
     extends: "eslint:recommended"
 }

@@ -1,15 +1,15 @@
 var reload	= require('require-reload')(require),
-	fs = require('fs'),
-	Command = reload('./Command.js');
+	fs		= require('fs'),
+	Command	= reload('./Command.js');
 
 module.exports = class CommandManager {
 	/*
 	 * prefix: prefix for the commands handled by this.
 	 * dir: path to load commands from from the root directory of the bot.
 	 */
-	constructor(prefix, dir = `${__dirname}/../commands/`) {
+	constructor(prefix, dir = 'commands/normal/') {
 		this.prefix = prefix;
-		this.directory = dir;
+		this.directory = `${__dirname}/../${dir}`;
 		this.commands = {};
 	}
 
