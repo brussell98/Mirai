@@ -3,13 +3,14 @@ var reload	= require('require-reload')(require),
 	_chalk	= require('chalk'),
 	chalk	= _chalk.constructor({enabled: true}),
 	config	= reload('./config.json'),
-	validateConfig = reload('./utils/validateConfig.js');
+	validateConfig = reload('./utils/validateConfig.js'),
+	CommandManager = reload('./utils/CommandManager.js');
 
 //console colors
 cWarn = chalk.bgYellow.black;
 cError = chalk.bgRed.black;
+cDebug = chalk.bgWhite.black;
 
-uptime = Date.now();
 commandsProcessed = 0;
 cleverbotTimesUsed = 0;
 

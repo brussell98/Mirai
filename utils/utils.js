@@ -97,27 +97,22 @@ exports.getLogs = function(bot, channel) {
 		if (channel.messages.length >= 700)
 			resolve();
 		else {
-			bot.getChannelLogs(channel, 100, (e, ms) => {
-				if (e) { reject(e); return; }
-				if (ms < 100) { resolve(); return; }
-				bot.getChannelLogs(channel, 100, {before:ms[99]}, (e, ms) => {
-					if (e) { reject(e); return; }
-					if (ms < 100) { resolve(); return; }
-					bot.getChannelLogs(channel, 100, {before:ms[99]}, (e, ms) => {
-						if (e) { reject(e); return; }
-						if (ms < 100) { resolve(); return; }
-						bot.getChannelLogs(channel, 100, {before:ms[99]}, (e, ms) => {
-							if (e) { reject(e); return; }
-							if (ms < 100) { resolve(); return; }
-							bot.getChannelLogs(channel, 100, {before:ms[99]}, (e, ms) => {
-								if (e) { reject(e); return; }
-								if (ms < 100) { resolve(); return; }
-								bot.getChannelLogs(channel, 100, {before:ms[99]}, (e, ms) => {
-									if (e) { reject(e); return; }
-									if (ms < 100) { resolve(); return; }
-									bot.getChannelLogs(channel, 100, {before:ms[99]}, () => {
-										resolve();
-			});});});});});});});
+			function checkIfEmpty(messages) {
+				if (messages.length < 100) {
+					resolve();
+					return;
+				}
+				return bot.getChannelLogs(channel, 100, {before: messages[99]});
+			}
+
+			bot.getChannelLogs(channel, 100)
+				.then(checkIfEmpty)
+				.then(checkIfEmpty)
+				.then(checkIfEmpty)
+				.then(checkIfEmpty)
+				.then(checkIfEmpty)
+				.then(checkIfEmpty)
+				.catch(reject)
 		}
 	});
 }
@@ -127,3 +122,7 @@ exports.comma = (number) => number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, "
 
 //sort messages by earliest first
 exports.sortById = (a, b) => a.id - b.id;
+
+exports.formatTime = function(milliseconds) {
+	
+}
