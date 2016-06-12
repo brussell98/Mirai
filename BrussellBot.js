@@ -21,12 +21,13 @@ cRed	= chalk.bold.red;
 commandsProcessed = 0;
 cleverbotTimesUsed = 0;
 
+
 validateConfig(config);
 
-var CommandManagers = [
-	new CommandManager(config.prefix),
-	new CommandManager(config.modPrefix, 'commands/mod/')
-];
+var CommandManagers = [];
+for (let prefix in config.commandSets) //Add command sets
+	CommandManagers.push(new CommandManager(prefix, config.commandSets[prefix]));
+
 
 function init(index = 0) {
 	return new Promise((resolve, reject) => {
@@ -52,6 +53,7 @@ function login() {
 init()
 	.then(login)
 	.catch(error => {throw new Error(error)});
+
 
 bot.on('ready', () => {
 	events.ready(bot, config);

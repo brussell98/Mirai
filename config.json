@@ -1,7 +1,9 @@
 {
 	"token": "",
-	"prefix": "",
-	"modPrefix": "",
+	"commandSets": {
+		"]": "commands/normal/",
+		"}": "commands/mod/"
+	},
 	"adminIds": [""],
 	"allowUserGames": false
 }

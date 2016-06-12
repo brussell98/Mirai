@@ -3,13 +3,15 @@ module.exports = function(config) {
 		console.log(cError(" CONFIG ERROR ") + " Bot token is not defined");
 		process.exit(0);
 	}
-	if (config.prefix === undefined) {
-		console.log(cError(" CONFIG ERROR ") + " Command prefix is not defined");
-		process.exit(0);
-	}
-	if (config.modPrefix === undefined) {
-		console.log(cError(" CONFIG ERROR ") + " Mod command prefix is not defined");
-		process.exit(0);
+	//Check for invalid command sets
+	for (let prefix in config.commandSets) {
+		if (prefix == "") {
+			console.log(cError(" CONFIG ERROR ") + " One of your commandSets has no prefix");
+			process.exit(0);
+		} else if (typeof config.commandSets[prefix] !== 'string' || config.commandSets[prefix] === "") {
+			console.log(`${cError(" CONFIG ERROR ")} Your path for commandSet '${prefix}' is invalid`);
+			process.exit(0);
+		}
 	}
 	if (!config.adminIds || config.adminIds.length < 1) {
 		console.log(cError(" CONFIG ERROR ") + " You must specify at least one admin id");
