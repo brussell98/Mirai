@@ -1,5 +1,5 @@
 var reload			= require('require-reload')(require),
-	bot				= require('discord.js').Client({autoReconnect: true, forceFetchUsers: true, maxCachedMessages: 1000, disableEveryone: true}),
+	bot				= require('discord.js').Client({autoReconnect: true, forceFetchUsers: true, maxCachedMessages: 100, disableEveryone: true}),
 	_chalk			= require('chalk'),
 	chalk			= _chalk.constructor({enabled: true}),
 	config			= reload('./config.json'),
@@ -25,8 +25,10 @@ cleverbotTimesUsed = 0;
 validateConfig(config);
 
 var CommandManagers = [];
-for (let prefix in config.commandSets) //Add command sets
-	CommandManagers.push(new CommandManager(prefix, config.commandSets[prefix]));
+for (let prefix in config.commandSets) { //Add command sets
+	let newManager = new CommandManager(prefix, config.commandSets[prefix]); //If I add it directly eslint thinks I never use the class :/
+	CommandManagers.push(newManager);
+}
 
 
 function init(index = 0) {
@@ -64,5 +66,5 @@ bot.on('disconnected', () => {
 });
 
 bot.on('message', msg => {
-	events.message(bot, msg, CommandManagers, config);
+	events.message.handler(bot, msg, CommandManagers, config);
 });

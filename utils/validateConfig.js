@@ -24,8 +24,8 @@ module.exports = function(config) {
 		console.log(cWarn(" CONFIG WARNING ") + " Invite link is not defined");
 	if (config.alowUserGames === undefined)
 		console.log(cWarn(" CONFIG WARNING ") + " allowUserGames is not defined");
-	if (!config.inviteLink)
-		console.log(cWarn(" CONFIG WARNING ") + " Invite link is not defined");
+	if (typeof config.cleverbot !== 'boolean')
+		console.log(cWarn(" CONFIG WARNING ") + " cleverbot must be set to true or false");
 	if (!config.inviteLink)
 		console.log(cWarn(" CONFIG WARNING ") + " Invite link is not defined");
 	if (!config.inviteLink)
