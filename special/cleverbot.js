@@ -4,12 +4,12 @@ var reload		= require('require-reload')(require),
 	entities	= require('entities');
 
 var antiSpam = {};
-Waifu.prepare();
+Cleverbot.prepare(() => {});
 
 function reset() {
 	Cleverbot = reload('cleverbot-node');
 	Waifu = new Cleverbot();
-	Waifu.prepare();
+	Cleverbot.prepare(() => {});
 }
 
 function spamCheck(userId, text) {
@@ -23,8 +23,8 @@ function spamCheck(userId, text) {
 	return true;
 }
 
-function trimText(cleanContent, name) {
-	return cleanContent.replace(`@${name}`, '').trim(); //Removes the @Bot part
+function trimText(cleanContent, name, discriminator) {
+	return cleanContent.replace(`@${name}#${discriminator}`, '').trim(); //Removes the @Bot part
 }
 
 function processUnicode(text) {
@@ -36,7 +36,7 @@ function processUnicode(text) {
 }
 
 module.exports = function(bot, msg) {
-	let text = msg.channel.isPrivate ? msg.content : trimText(msg.cleanContent, msg.server.detailsOfUser(bot.user).nick || bot.user.username);
+	let text = msg.channel.isPrivate ? msg.content : trimText(msg.cleanContent, msg.server.detailsOfUser(bot.user).nick || bot.user.username, bot.user.discriminator);
 	if (spamCheck(msg.author.id, text)) {
 		if (msg.channel.isPrivate)
 			console.log(`${cGreen(msg.author.username)} > ${cYellow("@" + bot.user.username)} ${text}`);

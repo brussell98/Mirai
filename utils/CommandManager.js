@@ -22,15 +22,18 @@ module.exports = class CommandManager {
 		return new Promise((resolve, reject) => {
 			fs.readdir(this.directory, (err, files) => {
 				if (err) reject(`Error reading commands directory: ${err}`);
-				for (let name of files) {
-					if (name.endsWith('.js'))
-						try {
-							this.commands[name.replace(/\.js$/, '')] = new Command(name.replace(/\.js$/, ''), this.prefix, reload(this.directory + name));
-						} catch (e) {
-							console.error(`Error loading command ${name}: ${err}`);
-						}
+				else if (!files) reject(`No files in directory {this.directory}`);
+				else {
+					for (let name of files) {
+						if (name.endsWith('.js'))
+							try {
+								this.commands[name.replace(/\.js$/, '')] = new Command(name.replace(/\.js$/, ''), this.prefix, reload(this.directory + name));
+							} catch (e) {
+								console.error(`Error loading command ${name}: ${err}`);
+							}
+					}
+					resolve();
 				}
-				resolve();
 			});
 		});
 	}

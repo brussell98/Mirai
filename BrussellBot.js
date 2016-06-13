@@ -1,7 +1,8 @@
 var reload			= require('require-reload')(require),
-	bot				= require('discord.js').Client({autoReconnect: true, forceFetchUsers: true, maxCachedMessages: 100, disableEveryone: true}),
+	discord			= require('discord.js'),
+	bot				= new discord.Client({autoReconnect: true, forceFetchUsers: true, maxCachedMessages: 100, disableEveryone: true}),
 	_chalk			= require('chalk'),
-	chalk			= _chalk.constructor({enabled: true}),
+	chalk			= new _chalk.constructor({enabled: true}),
 	config			= reload('./config.json'),
 	validateConfig	= reload('./utils/validateConfig.js'),
 	CommandManager	= reload('./utils/CommandManager.js');
@@ -36,6 +37,7 @@ function init(index = 0) {
 	return new Promise((resolve, reject) => {
 		CommandManagers[index].initialize() //Load CommandManager at {index}
 			.then(() => {
+				console.log(`${cDebug(' INIT ')} Loaded CommandManager ${index}`);
 				index++;
 				if (CommandManagers.length > index) { //If there are more to load
 					init(index) //Loop through again
@@ -43,7 +45,7 @@ function init(index = 0) {
 						.catch(reject);
 				} else //If that was the last one resolve
 					resolve();
-			}).catch(reject)
+			}).catch(reject);
 	});
 }
 
@@ -55,7 +57,9 @@ function login() {
 //Load commands and log in
 init()
 	.then(login)
-	.catch(error => {throw new Error(error)});
+	.catch(error => {
+		console.error(`${cError(' ERROR IN INIT ')} ${error}`);
+	});
 
 
 bot.on('ready', () => {
@@ -69,15 +73,16 @@ bot.on('disconnected', () => {
 bot.on('message', msg => {
 	if (msg.content.startsWith(config.reloadCommand) && config.adminIds.includes(msg.author.id))
 		reloadModule(msg);
-	if (msg.content.startsWith(config.evalCommand) && config.adminIds.includes(msg.author.id))
+	else if (msg.content.startsWith(config.evalCommand) && config.adminIds.includes(msg.author.id))
 		evaluate(msg);
-	events.message.handler(bot, msg, CommandManagers, config);
+	else
+		events.message.handler(bot, msg, CommandManagers, config);
 });
 
 function reloadModule(msg) {
-
+	console.log(`${cDebug(' RELOAD MODULE ')} ${msg.author.username}: ${msg.content}`);
 }
 
 function evaluate(msg) {
-
+	console.log(`${cDebug(' EVAL ')} ${msg.author.username}: ${msg.content}`);
 }

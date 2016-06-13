@@ -1,7 +1,7 @@
 {
 	"name": "brussellbot",
 	"version": "3.0.0",
-	"description": "A Discord bot that does everything",
+	"description": "An easy to use bot framework",
 	"author": "brussell98",
 	"main": "BrussellBot.js",
 	"repository": {
@@ -25,7 +25,7 @@
 		"cleverbot-node": "*",
 		"osu-api": "*",
 		"chalk": "*",
-		"entities": ">=1.1.1",
+		"entities": "*",
 		"csslint": "*",
 		"require-reload": "*"
 	}
