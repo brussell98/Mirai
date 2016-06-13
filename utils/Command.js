@@ -29,7 +29,7 @@ module.exports = class Command {
 	}
 
 	//Run the command
-	execute(bot, msg, suffix) {
+	execute(bot, msg, suffix, config) {
 		if (this.usersOnCooldown.hasOwnProperty(msg.author.id)) { //if the user is still on cooldown
 			bot.sendMessage(msg, `${msg.author.username}, this command can only be used every ${this.cooldown} seconds.`, (e, m) => bot.deleteMessage(m, {wait: 6000}));
 			bot.deleteMessage(msg, {wait: 6000});
@@ -38,7 +38,7 @@ module.exports = class Command {
 			let result;
 			this.timesUsed++;
 			try {
-				result = this.task(bot, msg, suffix); //run the command
+				result = this.task(bot, msg, suffix, config); //run the command
 			} catch (err) {
 				console.log(`${cError(' COMMAND EXECUTION ERROR ')} ${err}`);
 			}

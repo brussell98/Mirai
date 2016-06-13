@@ -23,10 +23,6 @@ function spamCheck(userId, text) {
 	return true;
 }
 
-function log(msg) {
-	// TODO: This
-}
-
 function trimText(cleanContent, name) {
 	return cleanContent.replace(`@${name}`, '').trim(); //Removes the @Bot part
 }
@@ -42,14 +38,18 @@ function processUnicode(text) {
 module.exports = function(bot, msg) {
 	let text = msg.channel.isPrivate ? msg.content : trimText(msg.cleanContent, msg.server.detailsOfUser(bot.user).nick || bot.user.username);
 	if (spamCheck(msg.author.id, text)) {
-		log(msg);
+		if (msg.channel.isPrivate)
+			console.log(`${cGreen(msg.author.username)} > ${cYellow("@" + bot.user.username)} ${text}`);
+		else
+			console.log(`${cServer(msg.server.name)} >> ${cGreen(msg.author.username)} > ${cYellow("@" + bot.user.username)} ${text}`);
+
 		if (text === '') //If they just did @Botname
 			bot.sendMessage(msg, 'Yes?');
 		else {
 			Waifu.write(text, response => {
 				response = processUnicode(response.message);
 				if (response)
-					bot.sendMessage(msg, '💬 ' + response);
+					bot.sendMessage(msg, '💬 ' + entities.decodeHTML(response));
 				else { //API returned nothing back
 					reset();
 					console.log(`${cWarn(' WARN ')} Nothing was returned bu the cleverbot API. Reloading it now.`);

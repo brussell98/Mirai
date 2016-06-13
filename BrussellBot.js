@@ -17,6 +17,8 @@ cError	= chalk.bgRed.black;
 cDebug	= chalk.bgWhite.black;
 cGreen	= chalk.bold.green;
 cRed	= chalk.bold.red;
+cServer	= chalk.bold.magenta;
+cYellow	= chalk.bold.yellow;
 
 commandsProcessed = 0;
 cleverbotTimesUsed = 0;
@@ -26,8 +28,7 @@ validateConfig(config);
 
 var CommandManagers = [];
 for (let prefix in config.commandSets) { //Add command sets
-	let newManager = new CommandManager(prefix, config.commandSets[prefix]); //If I add it directly eslint thinks I never use the class :/
-	CommandManagers.push(newManager);
+	CommandManagers.push(new CommandManager(prefix, config.commandSets[prefix]));
 }
 
 
@@ -66,5 +67,17 @@ bot.on('disconnected', () => {
 });
 
 bot.on('message', msg => {
+	if (msg.content.startsWith(config.reloadCommand) && config.adminIds.includes(msg.author.id))
+		reloadModule(msg);
+	if (msg.content.startsWith(config.evalCommand) && config.adminIds.includes(msg.author.id))
+		evaluate(msg);
 	events.message.handler(bot, msg, CommandManagers, config);
 });
+
+function reloadModule(msg) {
+
+}
+
+function evaluate(msg) {
+
+}

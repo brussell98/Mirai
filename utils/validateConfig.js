@@ -20,6 +20,14 @@ module.exports = function(config) {
 		console.log(cError(" CONFIG ERROR ") + " Admin ID needs to be a string");
 		process.exit(0);
 	}
+	if (typeof config.reloadCommand !== 'string' || config.reloadCommand === "") {
+		console.log(cError(" CONFIG ERROR ") + " The reloadCommand needs to be a string");
+		process.exit(0);
+	}
+	if (typeof config.evalCommand !== 'string' || config.evalCommand === "") {
+		console.log(cError(" CONFIG ERROR ") + " The evalCommand needs to be a string");
+		process.exit(0);
+	}
 	if (!config.inviteLink)
 		console.log(cWarn(" CONFIG WARNING ") + " Invite link is not defined");
 	if (config.alowUserGames === undefined)

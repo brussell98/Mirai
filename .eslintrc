@@ -31,7 +31,9 @@
         "cError",
         "cDebug",
         "cGreen",
-        "cRed"
+        "cRed",
+        "cServer",
+        "cYellow"
     },
     extends: "eslint:recommended"
 }

@@ -4,6 +4,8 @@
 		"]": "commands/normal/",
 		"}": "commands/mod/"
 	},
+	"reloadCommand": "~$reload",
+	"evalCommand": "~$eval",
 	"adminIds": [""],
 	"allowUserGames": false,
 	"cleverbot": true
