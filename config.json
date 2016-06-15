@@ -1,12 +1,14 @@
 {
 	"token": "",
 	"commandSets": {
-		"]": "commands/normal/",
-		"}": "commands/mod/"
+		"]": {"dir": "commands/normal/"},
+		"}": {"dir": "commands/mod/", "color": "cBlue"}
 	},
 	"reloadCommand": "~$reload",
 	"evalCommand": "~$eval",
 	"adminIds": [""],
 	"allowUserGames": false,
-	"cleverbot": true
+	"cleverbot": true,
+	"inviteLink": "",
+	"errorMessage": "Oh no! I ran into an error! http://i.imgur.com/ES76UCM.jpg"
 }

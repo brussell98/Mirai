@@ -33,7 +33,8 @@
         "cGreen",
         "cRed",
         "cServer",
-        "cYellow"
+        "cYellow",
+        "cBlue"
     },
     extends: "eslint:recommended"
 }

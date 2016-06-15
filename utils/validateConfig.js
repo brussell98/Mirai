@@ -5,11 +5,11 @@ module.exports = function(config) {
 	}
 	//Check for invalid command sets
 	for (let prefix in config.commandSets) {
-		if (prefix == "") {
+		if (prefix === "") {
 			console.log(cError(" CONFIG ERROR ") + " One of your commandSets has no prefix");
 			process.exit(0);
-		} else if (typeof config.commandSets[prefix] !== 'string' || config.commandSets[prefix] === "") {
-			console.log(`${cError(" CONFIG ERROR ")} Your path for commandSet '${prefix}' is invalid`);
+		} else if (!config.commandSets[prefix].hasOwnProperty('dir')) {
+			console.log(`${cError(" CONFIG ERROR ")} You need to define a dir for commandSet '${prefix}'`);
 			process.exit(0);
 		}
 	}

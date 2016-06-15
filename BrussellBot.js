@@ -5,7 +5,8 @@ var reload			= require('require-reload')(require),
 	chalk			= new _chalk.constructor({enabled: true}),
 	config			= reload('./config.json'),
 	validateConfig	= reload('./utils/validateConfig.js'),
-	CommandManager	= reload('./utils/CommandManager.js');
+	CommandManager	= reload('./utils/CommandManager.js'),
+	utils			= reload('./utils/utils.js');
 
 var events = {
 	ready: reload(`${__dirname}/events/ready.js`),
@@ -20,6 +21,7 @@ cGreen	= chalk.bold.green;
 cRed	= chalk.bold.red;
 cServer	= chalk.bold.magenta;
 cYellow	= chalk.bold.yellow;
+cBlue	= chalk.bold.blue;
 
 commandsProcessed = 0;
 cleverbotTimesUsed = 0;
@@ -29,7 +31,10 @@ validateConfig(config);
 
 var CommandManagers = [];
 for (let prefix in config.commandSets) { //Add command sets
-	CommandManagers.push(new CommandManager(prefix, config.commandSets[prefix]));
+	let color = config.commandSets[prefix].hasOwnProperty('color') ? global[config.commandSets[prefix].color] : false;
+	if (color !== false && typeof color !== 'function') color = false; //If invalid color
+	let directory = config.commandSets[prefix].dir;
+	CommandManagers.push(new CommandManager(prefix, directory, color));
 }
 
 
@@ -63,7 +68,7 @@ init()
 
 
 bot.on('ready', () => {
-	events.ready(bot, config);
+	events.ready(bot, config, [], utils.comma);
 });
 
 bot.on('disconnected', () => {
@@ -71,7 +76,7 @@ bot.on('disconnected', () => {
 });
 
 bot.on('message', msg => {
-	if (msg.content.startsWith(config.reloadCommand) && config.adminIds.includes(msg.author.id))
+	if (msg.content.startsWith(config.reloadCommand) && config.adminIds.includes(msg.author.id)) //check for reload or eval command
 		reloadModule(msg);
 	else if (msg.content.startsWith(config.evalCommand) && config.adminIds.includes(msg.author.id))
 		evaluate(msg);
