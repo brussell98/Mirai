@@ -25,7 +25,7 @@ module.exports = class Command {
 
 	//For use in the command list DM.
 	get helpShort() {
-		return `${this.prefix}${this.name} ${this.usage}\n\t#${this.desc}`;
+		return `${this.prefix}${this.name} ${this.usage}\n\t# ${this.desc}`;
 	}
 
 	//Sent in response to the help command.
