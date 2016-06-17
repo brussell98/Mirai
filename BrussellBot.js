@@ -6,7 +6,8 @@ var reload			= require('require-reload')(require),
 	config			= reload('./config.json'),
 	validateConfig	= reload('./utils/validateConfig.js'),
 	CommandManager	= reload('./utils/CommandManager.js'),
-	utils			= reload('./utils/utils.js');
+	utils			= reload('./utils/utils.js'),
+	checkForUpdates	= reload('./utils/checkForUpdates.js');
 
 var events = {
 	ready: reload(`${__dirname}/events/ready.js`),
@@ -67,8 +68,13 @@ init()
 	});
 
 
+bot.on('error', e => {
+	console.log(`${cError(' CLIENT ERROR ')} ${e}`);
+});
+
 bot.on('ready', () => {
-	events.ready(bot, config, [], utils.comma);
+	checkForUpdates();
+	events.ready(bot, config, [], utils);
 });
 
 bot.on('disconnected', () => {

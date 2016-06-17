@@ -34,14 +34,12 @@ module.exports = function(config) {
 		console.log(cWarn(" CONFIG WARNING ") + " allowUserGames is not defined");
 	if (typeof config.cleverbot !== 'boolean')
 		console.log(cWarn(" CONFIG WARNING ") + " cleverbot must be set to true or false");
-	if (!config.inviteLink)
-		console.log(cWarn(" CONFIG WARNING ") + " Invite link is not defined");
-	if (!config.inviteLink)
-		console.log(cWarn(" CONFIG WARNING ") + " Invite link is not defined");
-	if (!config.inviteLink)
-		console.log(cWarn(" CONFIG WARNING ") + " Invite link is not defined");
-	if (!config.inviteLink)
-		console.log(cWarn(" CONFIG WARNING ") + " Invite link is not defined");
-	if (!config.inviteLink)
-		console.log(cWarn(" CONFIG WARNING ") + " Invite link is not defined");
+	if (!config.OWMApiKey)
+		console.log(cWarn(" CONFIG WARNING ") + " Open Weather Map API key is not defined");
+	if (!config.MALUsername)
+		console.log(cWarn(" CONFIG WARNING ") + " My Anime List username is not defined");
+	if (!config.MALPassword)
+		console.log(cWarn(" CONFIG WARNING ") + " My Anime List password is not defined");
+	if (!config.osuApiKey)
+		console.log(cWarn(" CONFIG WARNING ") + " osu API key is not defined");
 }

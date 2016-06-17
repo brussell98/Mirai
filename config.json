@@ -10,5 +10,12 @@
 	"allowUserGames": false,
 	"cleverbot": true,
 	"inviteLink": "",
-	"errorMessage": "Oh no! I ran into an error! http://i.imgur.com/ES76UCM.jpg"
+	"errorMessage": "Oh no! I ran into an error! http://i.imgur.com/ES76UCM.jpg",
+	"carbonKey": "",
+	"OWMApiKey": "",
+	"MALUsername": "",
+	"MALPassword": "",
+	"osuApiKey": "",
+	"bannedServers": [],
+	"whitelistedServers": []
 }

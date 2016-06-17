@@ -36,7 +36,14 @@ module.exports = class Command {
 **❯ Aliases:** ${this.aliases.join(', ') || "None"}`;
 	}
 
-	//Run the command
+	/*
+	 * Execute the command
+	 * bot: The client
+	 * msg: The message that triggered it
+	 * suffix: The text after the command (args)
+	 * config: The config file
+	 * Should return "wrong usage" if used wrong
+	*/
 	execute(bot, msg, suffix, config) {
 		if (this.usersOnCooldown.hasOwnProperty(msg.author.id)) { //if the user is still on cooldown
 			console.log(`${cDebug(' COMMAND ')} User on cooldown list`);

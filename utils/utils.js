@@ -2,27 +2,27 @@ var fs = require('fs'),
 	request = require('request');
 
 /*
-Save a file safely
-	dir: path from root folder (EX: db/servers)
-	ext: file extension (EX: .json)
-	data: data to be written to the file
-	minSize: will not save if less than this size in bytes (optional, defaults to 5)
+ * Save a file safely
+ * dir: path from root folder including filename (EX: db/servers)
+ * ext: file extension (EX: .json)
+ * data: data to be written to the file
+ * minSize: will not save if less than this size in bytes (optional, defaults to 5)
 */
-exports.safeSave = function(dir, ext, data, minSize = 5) {
-	if (!dir || !ext || !data) return;
-	if (dir.startsWith('/')) dir = dir.substr(1);
+exports.safeSave = function(file, ext, data, minSize = 5) {
+	if (!file || !ext || !data) return;
+	if (file.startsWith('/')) file = dir.substr(1);
 	if (!ext.startsWith('.')) ext = '.' + ext;
 
-	fs.writeFile(`${__dirname}/../${dir}-temp${ext}`, data, error => {
+	fs.writeFile(`${__dirname}/../${file}-temp${ext}`, data, error => {
 		if (error) console.log(error);
 		else {
-			fs.stat(`${__dirname}/../${dir}-temp${ext}`, (err, stats) => {
+			fs.stat(`${__dirname}/../${file}-temp${ext}`, (err, stats) => {
 				if (err) console.log(err);
 				else if (stats["size"] < minSize)
 					console.log('safeSave: Prevented file from being overwritten');
 				else {
-					fs.rename(`${__dirname}/../${dir}-temp${ext}`, `${__dirname}/../${dir}${ext}`, e => {if(e)console.log(e)});
-					if (debug) console.log(cDebug(" DEBUG ") + " Updated " + dir + ext);
+					fs.rename(`${__dirname}/../${file}-temp${ext}`, `${__dirname}/../${file}${ext}`, e => {if(e)console.log(e)});
+					if (debug) console.log(cDebug(" DEBUG ") + " Updated " + file + ext);
 				}
 			});
 		}
@@ -30,10 +30,10 @@ exports.safeSave = function(dir, ext, data, minSize = 5) {
 }
 
 /*
-Find a user matching the input string or return false if none found
-	query: the input
-	members: the array of users to search
-	server: server to look for nicknames on (optional)
+ * Find a user matching the input string or return false if none found
+ * query: the input
+ * members: the array of users to search
+ * server: server to look for nicknames on (optional)
 */
 exports.findUser = function(query, members, server) {
 	//order: match, starts with, contains, then repeat for nicks
@@ -50,9 +50,9 @@ exports.findUser = function(query, members, server) {
 }
 
 /*
-Update the server count on carbon
-	key: Bot's key
-	servers: Server count
+ * Update the server count on carbon
+ * key: Bot's key
+ * servers: Server count
 */
 exports.updateCarbon = function(key, servers) {
 	if (!key || !servers) return;
@@ -71,9 +71,9 @@ exports.updateCarbon = function(key, servers) {
 }
 
 /*
-Set the bot's avatar
-	file: file name with extension
-	bot: the client
+ * Set the bot's avatar
+ * file: file name with extension
+ * bot: the client
 */
 exports.setAvatar = function(file, bot) {
 	if (file && bot) {
@@ -118,6 +118,15 @@ exports.comma = (number) => number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, "
 //sort messages by earliest first
 exports.sortById = (a, b) => a.id - b.id;
 
+//Converts to human readable form
 exports.formatTime = function(milliseconds) {
-
+	let s = milliseconds / 1000;
+	let seconds = s % 60;
+	s /= 60;
+	let minutes = s % 60;
+	s /= 60;
+	let hours = s % 24;
+	s /= 24;
+	let days = s;
+	return `${days} days, ${hours} hours, ${minutes} minutes, and ${seconds} seconds`;
 }
