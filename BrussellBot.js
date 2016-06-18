@@ -11,7 +11,8 @@ var reload			= require('require-reload')(require),
 
 var events = {
 	ready: reload(`${__dirname}/events/ready.js`),
-	message: reload(`${__dirname}/events/message.js`)
+	message: reload(`${__dirname}/events/message.js`),
+	serverNewMember: reload(`${__dirname}/events/serverNewMember.js`)
 };
 
 //console colors
@@ -34,8 +35,7 @@ var CommandManagers = [];
 for (let prefix in config.commandSets) { //Add command sets
 	let color = config.commandSets[prefix].hasOwnProperty('color') ? global[config.commandSets[prefix].color] : false;
 	if (color !== false && typeof color !== 'function') color = false; //If invalid color
-	let directory = config.commandSets[prefix].dir;
-	CommandManagers.push(new CommandManager(prefix, directory, color));
+	CommandManagers.push(new CommandManager(prefix, config.commandSets[prefix].dir, color));
 }
 
 
@@ -88,6 +88,10 @@ bot.on('message', msg => {
 		evaluate(msg);
 	else
 		events.message.handler(bot, msg, CommandManagers, config);
+});
+
+bot.on('guildMemberAdd', (server, user) => {
+	events.serverNewMember(bot, server, user);
 });
 
 function reloadModule(msg) {

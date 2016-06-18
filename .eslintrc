@@ -23,8 +23,6 @@
         "comma-spacing": ["warn", { "before": false, "after": true }]
         },
     "globals": {
-        "debug",
-        "show_warn",
         "commandsProcessed",
         "cleverbotTimesUsed",
         "cWarn",

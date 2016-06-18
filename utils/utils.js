@@ -10,7 +10,7 @@ var fs = require('fs'),
 */
 exports.safeSave = function(file, ext, data, minSize = 5) {
 	if (!file || !ext || !data) return;
-	if (file.startsWith('/')) file = dir.substr(1);
+	if (file.startsWith('/')) file = file.substr(1);
 	if (!ext.startsWith('.')) ext = '.' + ext;
 
 	fs.writeFile(`${__dirname}/../${file}-temp${ext}`, data, error => {
@@ -22,7 +22,7 @@ exports.safeSave = function(file, ext, data, minSize = 5) {
 					console.log('safeSave: Prevented file from being overwritten');
 				else {
 					fs.rename(`${__dirname}/../${file}-temp${ext}`, `${__dirname}/../${file}${ext}`, e => {if(e)console.log(e)});
-					if (debug) console.log(cDebug(" DEBUG ") + " Updated " + file + ext);
+					console.log(`${cDebug(" SAFE SAVE ")} Updated ${file}${ext}`);
 				}
 			});
 		}
@@ -64,7 +64,7 @@ exports.updateCarbon = function(key, servers) {
 				"servercount": servers
 			}
 		}, (e, r) => {
-		if (debug) console.log(cDebug(" DEBUG ") + " Updated Carbon server count");
+		console.log(`${cDebug(" CARBON UPDATE ")} Updated Carbon server count to ${servers}`);
 		if (e) console.log("Error updating carbon stats: " + e);
 		if (r.statusCode !== 200) console.log("Error updating carbon stats: Status Code " + r.statusCode);
 	});
