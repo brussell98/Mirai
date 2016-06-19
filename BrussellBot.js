@@ -7,7 +7,8 @@ var reload			= require('require-reload')(require),
 	validateConfig	= reload('./utils/validateConfig.js'),
 	CommandManager	= reload('./utils/CommandManager.js'),
 	utils			= reload('./utils/utils.js'),
-	checkForUpdates	= reload('./utils/checkForUpdates.js');
+	checkForUpdates	= reload('./utils/checkForUpdates.js'),
+	ready = false;
 
 var events = {
 	ready: reload(`${__dirname}/events/ready.js`),
@@ -73,6 +74,7 @@ bot.on('error', e => {
 });
 
 bot.on('ready', () => {
+	ready = true;
 	checkForUpdates();
 	events.ready(bot, config, [], utils);
 });
@@ -90,7 +92,7 @@ bot.on('message', msg => {
 		events.message.handler(bot, msg, CommandManagers, config);
 });
 
-bot.on('guildMemberAdd', (server, user) => {
+bot.on('serverNewMember', (server, user) => {
 	events.serverNewMember(bot, server, user);
 });
 
@@ -100,4 +102,11 @@ function reloadModule(msg) {
 
 function evaluate(msg) {
 	console.log(`${cDebug(' EVAL ')} ${msg.author.username}: ${msg.content}`);
+}
+
+if (config.carbonKey) { //Send servercount to Carbon bot list
+	setInterval(() => {
+		if (ready)
+			utils.updateCarbon(config.carbonKey, bot.servers.length);
+	}, 1800000);
 }

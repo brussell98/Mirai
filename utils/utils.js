@@ -1,5 +1,5 @@
 var fs = require('fs'),
-	request = require('request');
+	superagent = require('superagent');
 
 /*
  * Save a file safely
@@ -52,22 +52,17 @@ exports.findUser = function(query, members, server) {
 /*
  * Update the server count on carbon
  * key: Bot's key
- * servers: Server count
+ * servercount: Server count
 */
-exports.updateCarbon = function(key, servers) {
-	if (!key || !servers) return;
-	request.post({
-			"url": "https://www.carbonitex.net/discord/data/botdata.php",
-			"headers": {"content-type": "application/json"}, "json": true,
-			body: {
-				"key": key,
-				"servercount": servers
-			}
-		}, (e, r) => {
-		console.log(`${cDebug(" CARBON UPDATE ")} Updated Carbon server count to ${servers}`);
-		if (e) console.log("Error updating carbon stats: " + e);
-		if (r.statusCode !== 200) console.log("Error updating carbon stats: Status Code " + r.statusCode);
-	});
+exports.updateCarbon = function(key, servercount) {
+	if (!key || !servercount) return;
+	superagent.post('https://www.carbonitex.net/discord/data/botdata.php')
+		.type('application/json')
+		.send({key, servercount})
+		.end(error => {
+			console.log(`${cDebug(" CARBON UPDATE ")} Updated Carbon server count to ${servercount}`);
+			if (error) console.log(`${cError(' CARBON UPDATE ERROR ')} ${error.status} ${error.response}`);
+		});
 }
 
 /*

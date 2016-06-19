@@ -15,12 +15,13 @@
 		"node": ">=6.0.0"
 	},
 	"scripts": {
-		"start": "node BrussellBot.js"
+		"start": "node BrussellBot.js",
+		"test": "echo No test script"
 	},
 	"license": "MIT",
 	"dependencies": {
 		"discord.js": "hydrabolt/discord.js#indev",
-		"request": "*",
+		"superagent": "*",
 		"xml2js": "*",
 		"cleverbot-node": "*",
 		"osu-api": "*",

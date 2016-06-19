@@ -8,11 +8,9 @@ module.exports = class CommandManager {
 	 * dir: path to load commands from from the root directory of the bot.
 	 */
 	constructor(prefix, dir = 'commands/normal/', color) {
-		console.log(`${cDebug(' COMMAND MANAGER ')} Set prefix to ${prefix}`);
 		this.prefix = prefix;
 		this.directory = `${__dirname}/../${dir}`;
 		this.color = color || false;
-		if (color !== false) console.log(`${cDebug(' COLOR DEBUG ')} ${color(dir)}`);
 		this.commands = {};
 	}
 
@@ -83,6 +81,8 @@ module.exports = class CommandManager {
 			let messageQueue = [];
 			let currentMessage = `\n# Here's a list of my commands. For more info do: ${this.prefix}help <command>`;
 			for (let cmd in this.commands) {
+				if (cmd.hidden === true)
+					continue;
 				let toAdd = this.commands[cmd].helpShort;
 				if (currentMessage.length + toAdd.length >= 1900) { //If too long push to queue and reset it.
 					messageQueue.push(currentMessage);
