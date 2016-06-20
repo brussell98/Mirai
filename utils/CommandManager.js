@@ -52,13 +52,17 @@ module.exports = class CommandManager {
 		let command = this.checkForMatch(name);
 		if (command !== false) {
 			console.log(`${cDebug(' COMMAND MANAGER ')} Message matched Command ${command.name}`);
-			// TODO: LOG
 			let suffix = msg.content.replace(this.prefix + name, '').trim();
+			this.logCommand(msg, command.name, msg.cleanContent.replace(this.prefix + name, ''));
 			return command.execute(bot, msg, suffix, config);
 		}
 	}
 
-	//Checks if the name matches a command, returns that command or false
+	/*
+	 * Checks if there is a matching command in this CommandManager.
+	 * @param {String} name - The command name to look for.
+	 * @return {Command} or {Boolean} Returns the matching Command or false.
+	*/
 	checkForMatch(name) {
 		console.log(`${cDebug(' COMMAND MANAGER ')} Checking for a command matching '${name}'`);
 		if (name.startsWith(this.prefix)) //Trim prefix off
@@ -76,12 +80,13 @@ module.exports = class CommandManager {
 	 * If a command is specified it will send info on that command
 	*/
 	help(bot, msg, command) {
+		this.logCommand(msg, 'help', msg.cleanContent.replace(this.prefix + 'help', ''));
 		if (!command) {
 			console.log(`${cDebug(' COMMAND MANAGER HELP ')} Sending help message`);
 			let messageQueue = [];
-			let currentMessage = `\n# Here's a list of my commands. For more info do: ${this.prefix}help <command>`;
+			let currentMessage = `\n// Here's a list of my commands. For more info do: ${this.prefix}help <command>`;
 			for (let cmd in this.commands) {
-				if (cmd.hidden === true)
+				if (this.commands[cmd].hidden === true)
 					continue;
 				let toAdd = this.commands[cmd].helpShort;
 				if (currentMessage.length + toAdd.length >= 1900) { //If too long push to queue and reset it.
@@ -105,5 +110,23 @@ module.exports = class CommandManager {
 			else
 				bot.sendMessage(msg, cmd.helpMessage);
 		}
+	}
+
+	/*
+	 * Show that a command was executed in the console.
+	 * @param {Message} msg - The message object that triggered the command.
+	 * @param {String} commandName - The name of the executed command.
+	 * @param {String} after - The text after the command and prefix, cleaned mentions.
+	*/
+	logCommand(msg, commandName, after) {
+		let toLog = '';
+		if (!msg.channel.isPrivate)
+			toLog += `${cServer(msg.server.name)} >> `;
+		toLog += `${cGreen(msg.author.username)} > `;
+		if (this.color !== false)
+			toLog += this.color(this.prefix + commandName) + after;
+		else
+			toLog += this.prefix + commandName + after;
+		return console.log(toLog);
 	}
 };
