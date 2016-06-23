@@ -2,11 +2,22 @@ var reload	= require('require-reload')(require),
 	fs		= require('fs'),
 	Command	= reload('./Command.js');
 
-module.exports = class CommandManager {
-	/*
-	 * prefix: prefix for the commands handled by this.
-	 * dir: path to load commands from from the root directory of the bot.
-	 */
+/**
+* @class
+* @classdesc Handles a directory of .js files formatted as {@link Command}.
+* @prop {String} prefix Prefix for the commands handled by this CommandManager.
+* @prop {String} dir="commands/normal/" Path where the commands are located from the root directory.
+* @prop {Function} [color=false] Color to log the commands as.
+* @prop {Object<Command>} commands The loaded {@link Command}.
+*/
+class CommandManager {
+
+	/**
+	* @constructor
+	* @arg {String} prefix Prefix for the commands handled by this CommandManager.
+	* @arg {String} dir="commands/normal/" Path to load commands from, from the root directory of the bot.
+	* @arg {Function} [color=false] Color to log the commands as.
+	*/
 	constructor(prefix, dir = 'commands/normal/', color) {
 		this.prefix = prefix;
 		this.directory = `${__dirname}/../${dir}`;
@@ -14,10 +25,10 @@ module.exports = class CommandManager {
 		this.commands = {};
 	}
 
-	/*
-	 * Initialize the command manager.
-	 * Loads each command in the set directory.
-	 * Returns a promise.
+	/**
+	* Initialize the command manager.
+	* Loads each command in the set directory.
+	* @returns {Promise}
 	*/
 	initialize() {
 		return new Promise((resolve, reject) => {
@@ -40,49 +51,51 @@ module.exports = class CommandManager {
 		});
 	}
 
-	/*
-	 * Called when a message is detected with the prefix. Decides what to do
-	 * msg: The matching message
-	 * config: The JSON formatted config file
+	/**
+	* Called when a message is detected with the prefix. Decides what to do.
+	* @arg {Eris} bot The client.
+	* @arg {Eris.Message} msg The matching message.
+	* @arg {Object} config The JSON formatted config file.
+	* @arg {settingsManager} settingsManager Used to adjust and get server settings.
 	*/
-	processCommand(bot, msg, config) {
+	processCommand(bot, msg, config, settingsManager) {
 		let name = msg.content.replace(this.prefix, '').split(' ')[0].toLowerCase();
 		if (name === "help")
 			return this.help(bot, msg, msg.content.replace(this.prefix + name, '').trim());
 		let command = this.checkForMatch(name);
-		if (command !== false) {
-			console.log(`${cDebug(' COMMAND MANAGER ')} Message matched Command ${command.name}`);
+		if (command !== null) {
 			let suffix = msg.content.replace(this.prefix + name, '').trim();
 			this.logCommand(msg, command.name, msg.cleanContent.replace(this.prefix + name, ''));
-			return command.execute(bot, msg, suffix, config);
+			return command.execute(bot, msg, suffix, config, settingsManager);
 		}
 	}
 
-	/*
-	 * Checks if there is a matching command in this CommandManager.
-	 * @param {String} name - The command name to look for.
-	 * @return {Command} or {Boolean} Returns the matching Command or false.
+	/**
+	* Checks if there is a matching command in this CommandManager.
+	* @arg {String} name The command name to look for.
+	* @return {?Command} Returns the matching {@link Command} or false.
 	*/
 	checkForMatch(name) {
-		console.log(`${cDebug(' COMMAND MANAGER ')} Checking for a command matching '${name}'`);
 		if (name.startsWith(this.prefix)) //Trim prefix off
 			name = name.substr(1);
 		for (let key in this.commands) {
 			if (key === name || this.commands[key].aliases.includes(name))
 				return this.commands[key];
 		}
-		return false;
+		return null;
 	}
 
-	/*
-	 * Built-in help command
-	 * If no command is specified it will DM a list of commands.
-	 * If a command is specified it will send info on that command
+	/**
+	* Built-in help command
+	* If no command is specified it will DM a list of commands.
+	* If a command is specified it will send info on that command
+	* @arg {Eris} bot The client.
+	* @arg {Eris.Message} msg The message that triggered the command.
+	* @arg {String} [command] The command to get help for.
 	*/
 	help(bot, msg, command) {
 		this.logCommand(msg, 'help', msg.cleanContent.replace(this.prefix + 'help', ''));
 		if (!command) {
-			console.log(`${cDebug(' COMMAND MANAGER HELP ')} Sending help message`);
 			let messageQueue = [];
 			let currentMessage = `\n// Here's a list of my commands. For more info do: ${this.prefix}help <command>`;
 			for (let cmd in this.commands) {
@@ -96,37 +109,40 @@ module.exports = class CommandManager {
 				currentMessage += '\n' + toAdd;
 			}
 			messageQueue.push(currentMessage);
-			let sendInOrder = setInterval(() => { //eslint-disable-line no-unused-vars
-				if (messageQueue.length > 0)
-					bot.sendMessage(msg.author, '```glsl' + messageQueue.shift() + '```'); //If still messages queued send the next one.
-				else clearInterval(sendInOrder);
-			}, 300);
+			bot.getDMChannel(msg.author.id).then(chan => {
+				let sendInOrder = setInterval(() => { //eslint-disable-line no-unused-vars
+					if (messageQueue.length > 0)
+						bot.createMessage(chan.id, '```glsl' + messageQueue.shift() + '```'); //If still messages queued send the next one.
+					else clearInterval(sendInOrder);
+				}, 300);
+			});
 
 		} else {
 			let cmd = this.checkForMatch(command);
-			console.log(`${cDebug(' COMMAND MANAGER HELP ')} Getting help for command ${command}`);
-			if (cmd === false) //If no matching command
-				bot.sendMessage(msg, `Command \`${this.prefix}${command}\` not found`);
+			if (cmd === null) //If no matching command
+				bot.createMessage(msg.channel.id, `Command \`${this.prefix}${command}\` not found`);
 			else
-				bot.sendMessage(msg, cmd.helpMessage);
+				bot.createMessage(msg.channel.id, cmd.helpMessage);
 		}
 	}
 
-	/*
-	 * Show that a command was executed in the console.
-	 * @param {Message} msg - The message object that triggered the command.
-	 * @param {String} commandName - The name of the executed command.
-	 * @param {String} after - The text after the command and prefix, cleaned mentions.
+	/**
+	* Show that a command was executed in the console.
+	* @arg {Eris.Message} msg The message object that triggered the command.
+	* @arg {String} commandName The name of the executed command.
+	* @arg {String} after The text after the command and prefix, cleaned mentions.
 	*/
 	logCommand(msg, commandName, after) {
 		let toLog = '';
-		if (!msg.channel.isPrivate)
-			toLog += `${cServer(msg.server.name)} >> `;
+		if (msg.channel.guild)
+			toLog += `${cServer(msg.channel.guild.name)} >> `;
 		toLog += `${cGreen(msg.author.username)} > `;
 		if (this.color !== false)
 			toLog += this.color(this.prefix + commandName) + after;
 		else
 			toLog += this.prefix + commandName + after;
-		return console.log(toLog);
+		console.log(toLog);
 	}
-};
+}
+
+module.exports = CommandManager;

@@ -36,24 +36,24 @@ function processUnicode(text) {
 }
 
 module.exports = function(bot, msg) {
-	let text = msg.channel.isPrivate ? msg.content : trimText(msg.cleanContent, msg.server.detailsOfUser(bot.user).nick || bot.user.username, bot.user.discriminator);
+	let text = !msg.channel.guild ? msg.content : trimText(msg.cleanContent, msg.channel.guild.members.get(bot.user.id).nick || bot.user.username, bot.user.discriminator);
 	if (spamCheck(msg.author.id, text)) {
-		if (msg.channel.isPrivate)
+		if (!msg.channel.guild)
 			console.log(`${cGreen(msg.author.username)} > ${cYellow("@" + bot.user.username)} ${text}`);
 		else
-			console.log(`${cServer(msg.server.name)} >> ${cGreen(msg.author.username)} > ${cYellow("@" + bot.user.username)} ${text}`);
+			console.log(`${cServer(msg.channel.guild.name)} >> ${cGreen(msg.author.username)} > ${cYellow("@" + bot.user.username)} ${text}`);
 
 		if (text === '') //If they just did @Botname
-			bot.sendMessage(msg, 'Yes?');
+			bot.createMessage(msg.channel.id, 'Yes?');
 		else {
 			Waifu.write(text, response => {
 				response = processUnicode(response.message);
 				if (response)
-					bot.sendMessage(msg, '💬 ' + entities.decodeHTML(response));
+					bot.createMessage(msg.channel.id, '💬 ' + entities.decodeHTML(response));
 				else { //API returned nothing back
 					reset();
 					console.log(`${cWarn(' WARN ')} Nothing was returned bu the cleverbot API. Reloading it now.`);
-					bot.sendMessage(msg, '⚠ There was an error, try again.');
+					bot.createMessage(msg.channel.id, '⚠ There was an error, try again.');
 				}
 			});
 		}

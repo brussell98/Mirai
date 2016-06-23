@@ -25,8 +25,6 @@
     "globals": {
         "commandsProcessed",
         "cleverbotTimesUsed",
-        "genericSettings",
-        "commandSettings",
         "cWarn",
         "cError",
         "cDebug",

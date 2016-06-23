@@ -1,14 +1,19 @@
 var fs = require('fs'),
 	superagent = require('superagent');
 
-/*
- * Save a file safely
- * dir: path from root folder including filename (EX: db/servers)
- * ext: file extension (EX: .json)
- * data: data to be written to the file
- * minSize: will not save if less than this size in bytes (optional, defaults to 5)
+/**
+* Contains various functions.
+* @module utils
 */
-exports.safeSave = function(file, ext, data, minSize = 5) {
+
+/**
+* Save a file safely, preventing it from being cleared.
+* @arg {String} dir Path from root folder including filename. (EX: db/servers)
+* @arg {String} ext=".json" File extension.
+* @arg {String} data Data to be written to the file.
+* @arg {Number} minSize=5 Will not save if less than this size in bytes.
+*/
+exports.safeSave = function(file, ext = ".json", data, minSize = 5) {
 	if (!file || !ext || !data) return;
 	if (file.startsWith('/')) file = file.substr(1);
 	if (!ext.startsWith('.')) ext = '.' + ext;
@@ -29,30 +34,31 @@ exports.safeSave = function(file, ext, data, minSize = 5) {
 	});
 }
 
-/*
- * Find a user matching the input string or return false if none found
- * query: the input
- * members: the array of users to search
- * server: server to look for nicknames on (optional)
+/**
+ * Find a user matching the input string or return null if none found
+ * @arg {String} query The input.
+ * @arg {Eris.Guild} guild The guild to look on.
+ * @returns {?Member} The found Member.
 */
-exports.findUser = function(query, members, server) {
+exports.findUser = function(query, guild) {
+	let found = null;
+	if (query === undefined || guild === undefined)
+		return found;
+	query = query.toLowerCase();
 	//order: match, starts with, contains, then repeat for nicks
-	if (!query || !members || typeof query !== 'string') return false;
-	let r = members.find(m => { return !m.username ? false : m.username.toLowerCase() === query.toLowerCase() });
-	if (!r) r = members.find(m => { return !m.username ? false : m.username.toLowerCase().indexOf(query.toLowerCase()) === 0 });
-	if (!r) r = members.find(m => { return !m.username ? false : m.username.toLowerCase().includes(query.toLowerCase()) });
-	if (server) {
-		if (!r) r = members.find(m => { return !server.detailsOf(m).nick ? false : server.detailsOf(m).nick.toLowerCase() === query.toLowerCase() });
-		if (!r) r = members.find(m => { return !server.detailsOf(m).nick ? false : server.detailsOf(m).nick.toLowerCase().indexOf(query.toLowerCase()) === 0 });
-		if (!r) r = members.find(m => { return !server.detailsOf(m).nick ? false : server.detailsOf(m).nick.toLowerCase().includes(query.toLowerCase()) });
-	}
-	return r || false;
+	guild.members.forEach(m => { if (m.user.username.toLowerCase() === query) found = m; });
+	if (!found) guild.members.forEach(m => { if (m.user.username.toLowerCase().indexOf(query) === 0) found = m; });
+	if (!found) guild.members.forEach(m => { if (m.user.username.toLowerCase().includes(query)) found = m; });
+	if (!found) guild.members.forEach(m => { if (m.nick !== null && m.nick.toLowerCase() === query) found = m; });
+	if (!found) guild.members.forEach(m => { if (m.nick !== null && m.nick.toLowerCase().indexOf(query) === 0) found = m; });
+	if (!found) guild.members.forEach(m => { if (m.nick !== null && m.nick.toLowerCase().includes(query)) found = m; });
+	return found;
 }
 
-/*
- * Update the server count on carbon
- * key: Bot's key
- * servercount: Server count
+/**
+* Update the server count on Carbon.
+* @arg {String} key The bot's key.
+* @arg {Number} servercount Server count.
 */
 exports.updateCarbon = function(key, servercount) {
 	if (!key || !servercount) return;
@@ -65,55 +71,35 @@ exports.updateCarbon = function(key, servercount) {
 		});
 }
 
-/*
- * Set the bot's avatar
- * file: file name with extension
- * bot: the client
+/**
+* Set the bot's avatar from /avatars/.
+* @arg {String} file File name with extension.
+* @arg {Eris} bot The client.
 */
 exports.setAvatar = function(file, bot) {
 	if (file && bot) {
 		fs.access(__dirname + '/../avatars/' + file, err => {
 			if (err) console.log("The file doesn't exist");
 			else {
-				let avatarB64 = 'data:image/jpeg;base64,' + fs.readFileSync(__dirname + '/../avatars/' + file, 'base64');
-				bot.setAvatar(avatarB64).catch(console.log);
+				let avatar = 'data:image/jpeg;base64,' + fs.readFileSync(__dirname + '/../avatars/' + file, 'base64');
+				bot.editSelf({avatar}).catch(console.log);
 			}
 		});
 	}
 }
 
-/*
- * Get previous channel messages. Return's an array starting at the newest message.
- * bot: The client
- * channel: The channel to get logs for
- * count: number of messages to get
- * before: get messages before this
+/**
+* Comma sperate a number.
+* @arg {Number} number The number to comma.
+* @returns {String} The formatted number.
 */
-function getLogs(bot, channel, count, before) {
-    return new Promise(resolve => {
-        bot.getChannelLogs(channel, count, before ? {before} : {}).then(newMessages => {
-            count -= 100;
-            if (count > 0 && newMessages.length == 100) { //if it still needs to grab more and there are more
-                getLogs(bot, channel, count, newMessages[99]).then(messages => {
-                    if (messages)
-                        resolve(newMessages.concat(messages)); //add the fetched messages to the end
-                    else
-                        resolve(messages);
-                }).catch(() => {resolve(newMessages)});
-            } else
-                resolve(newMessages);
-        });
-    });
-}
-exports.getLogs = getLogs;
-
-//comma sperate a number
 exports.comma = (number) => number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 
-//sort messages by earliest first
-exports.sortById = (a, b) => a.id - b.id;
-
-//Converts to human readable form
+/**
+* Converts to human readable form
+* @arg {Number} milliseconds Time to format in milliseconds.
+* @returns {String} The formatted time.
+*/
 exports.formatTime = function(milliseconds) {
 	let s = milliseconds / 1000;
 	let seconds = s % 60;
@@ -124,4 +110,19 @@ exports.formatTime = function(milliseconds) {
 	s /= 24;
 	let days = s;
 	return `${days} days, ${hours} hours, ${minutes} minutes, and ${seconds} seconds`;
+}
+
+/** Check for a newer version of BrussellBot */
+exports.checkForUpdates = function() {
+	let version = ~~(require('../package.json').version.split('.').join('')); //This is used to convert it to a number that can be compared
+	superagent.get("https://raw.githubusercontent.com/brussell98/BrussellBot/master/package.json")
+		.end((error, response) => {
+			if (error)
+				console.log(`${cWarn(' WARN ')} Error checking for updates: ${error.status} ${error.response}`);
+			else {
+				let latest = ~~(JSON.parse(response.text).version.split('.').join(''));
+				if (latest > version)
+					console.log(`${cWarn(' OUT OF DATE ')} A new version of BrussellBot is avalible`);
+			}
+	});
 }

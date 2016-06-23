@@ -14,8 +14,8 @@ module.exports = {
 	cooldown: 2,
 	task(bot, msg) {
 		let choice = ~~(Math.random() * cases.length);
-		bot.sendMessage(msg, cases[choice], (error, sentMsg) => {
-			bot.updateMessage(sentMsg, `${cases[choice]}    |    Round-trip delay: ${sentMsg.timestamp - msg.timestamp}ms`);
+		bot.createMessage(msg.channel.id, cases[choice]).then(sentMsg => {
+			bot.editMessage(sentMsg.channel.id, sentMsg.id, `${cases[choice]}    |    Round-trip delay: ${sentMsg.timestamp.valueOf() - msg.timestamp.valueOf()}ms`);
 		});
 	}
 };

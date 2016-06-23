@@ -4,6 +4,6 @@ module.exports = {
 	hidden: true,
 	task(bot, msg, suffix, config) {
 		if (config.adminIds.includes(msg.author.id) && suffix)
-			bot.sendMessage(msg, suffix);
+			bot.createMessage(msg.channel.id, suffix);
 	}
 };

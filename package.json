@@ -16,18 +16,24 @@
 	},
 	"scripts": {
 		"start": "node BrussellBot.js",
-		"test": "echo No test script"
+		"test": "echo No test script",
+		"docs": "node_modules/.bin/jsdoc --configure .jsdoc.json --verbose"
 	},
 	"license": "MIT",
 	"dependencies": {
-		"discord.js": "hydrabolt/discord.js#indev",
-		"superagent": "*",
-		"xml2js": "*",
-		"cleverbot-node": "*",
-		"osu-api": "*",
-		"chalk": "*",
-		"entities": "*",
-		"csslint": "*",
-		"require-reload": "*"
+		"eris": "https://YOUR_OAUTH_TOKEN_GOES_HERE:x-oauth-basic@github.com/abalabahaha/Eris.git",
+		"superagent": "^2.0.0",
+		"xml2js": "^0.4.16",
+		"cleverbot-node": "^0.2.2",
+		"osu-api": "^0.0.3",
+		"chalk": "^1.1.3",
+		"entities": "^1.1.1",
+		"csslint": "^0.10.0",
+		"require-reload": "^0.2.2"
+	},
+	"devDependencies": {
+		"jsdoc-parse": "^1.2.7",
+		"minami": "^1.1.1",
+		"eslint": "*"
 	}
 }

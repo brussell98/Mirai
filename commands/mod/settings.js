@@ -1,26 +1,42 @@
-var reload = require('require-reload')(require),
-	settingsManager = reload('../../utils/settingsManager.js');
-
 //Validates the message and updates the setting.
-function updateWelcome(bot, msg, args) {
-	if (args.toLowerCase() === 'disable') {
-		settingsManager.setWelcome(msg.server.id);
-		bot.sendMessage(msg, '⚙ Welcome message disabled');
+function updateWelcome(bot, msg, suffix, settingsManager) {
+	if (suffix.toLowerCase() === 'disable') {
+		settingsManager.setWelcome(msg.channel.guild.id);
+		bot.createMessage(msg.channel.id, '⚙ Welcome message disabled');
 	} else {
-		let newSettings = args.match(/<#([0-9]+)>(.*)/);
-		if (newSettings === null)
-			bot.sendMessage(msg, 'Please format your message in this format: `welcome <#channel> <message>`');
-		else if (!newSettings[1])
-			bot.sendMessage(msg, 'Please specify a channel before the welcome message.');
-		else if (!newSettings[2])
-			bot.sendMessage(msg, 'Please specify a welcome message.');
-		else if (!msg.server.channels.has('id', newSettings[1]))
-			bot.sendMessage(msg, "That channel doesn't seem to exist.");
-		else if (newSettings[2].length >= 1900)
-			bot.sendMessage(msg, "Sorry your welcome message needs to be under 1,900 characters.");
+		let newWelcome = suffix.replace(/<#[0-9]+>/, '').trim();
+		if (suffix === '')
+			bot.createMessage(msg.channel.id, 'Please format your message in this format: `welcome <#channel> <message>`');
+		else if (msg.channelMentions.length === 0)
+			bot.createMessage(msg.channel.id, 'Please specify a channel to send the welcome message to.');
+		else if (!newWelcome)
+			bot.createMessage(msg.channel.id, 'Please specify a welcome message.');
+		else if (newWelcome.length >= 1900)
+			bot.createMessage(msg.channel.id, "Sorry, your welcome message needs to be under 1,900 characters.");
 		else {
-			settingsManager.setWelcome(msg.server.id, newSettings[1], newSettings[2]);
-			bot.sendMessage(msg, "⚙ Settings updated");
+			settingsManager.setWelcome(msg.channel.guild.id, msg.channelMentions[0], newWelcome);
+			bot.createMessage(msg.channel.id, `⚙ Welcome message set to:\n${newWelcome} **in** ${msg.channelMentions[0]}`);
+		}
+	}
+}
+
+function handleEventsChange(bot, msg, suffix, settingsManager) {
+	if (suffix.toLowerCase() === 'disable') {
+		settingsManager.setEventChannel(msg.channel.guild.id);
+		bot.createMessage(msg.channel.id, '⚙ Events disabled');
+	} else {
+		if (msg.channelMentions.length > 0) {
+			settingsManager.setEventChannel(msg.channel.guild.id, msg.channelMentions[0]);
+			bot.createMessage(msg.channel.id, `⚙ Events will be posted in <#${msg.channelMentions[0]}> now`);
+		}
+		if (/\+[^ ]/.test(suffix)) {
+			settingsManager.subEvents(suffix.match(/(\+[^ ]+)/g), msg.channel)
+				.then(events => { bot.createMessage(msg.channel.id, `Subscried to: \`${events.join('` `')}\``); })
+				.catch(e => { bot.createMessage(msg.channel.id, e); });
+		} if (/\-[^ ]/.test(suffix)) {
+			settingsManager.unsubEvents(suffix.match(/(-[^ ]+)/g), msg.channel)
+				.then(events => { bot.createMessage(msg.channel.id, `Unsubscried from: \`${events.join('` `')}\``); })
+				.catch(e => { bot.createMessage(msg.channel.id, e); });
 		}
 	}
 }
@@ -31,14 +47,16 @@ module.exports = {
 	usage: "Usage at <http://brussell98.github.io/bot/serversettings.html>",
 	aliases: ['set', 'config'],
 	cooldown: 3,
-	task(bot, msg, suffix, config) {
-		if (msg.channel.isPrivate)
-			bot.sendMessage(msg, 'You have to do this in a server.');
-		else if (!msg.channel.permissionsOf(msg.author).hasPermission("manageServer") && !config.adminIds.includes(msg.author.id))
-			bot.sendMessage(msg, 'You need the `Manage Server` permission to use this.');
+	task(bot, msg, suffix, config, settingsManager) {
+		if (!msg.channel.guild)
+			bot.createMessage(msg.channel.id, 'You have to do this in a server.');
+		else if (!msg.channel.permissionsOf(msg.author.id).json.manageServer && !config.adminIds.includes(msg.author.id))
+			bot.createMessage(msg.channel.id, 'You need the `Manage Server` permission to use this.');
 		else if (!suffix)
 			return 'wrong usage';
 		else if (suffix.startsWith('welcome'))
-			updateWelcome(bot, msg, suffix.substr(7).trim());
+			updateWelcome(bot, msg, suffix.substr(7).trim(), settingsManager);
+		else if (suffix.startsWith('events'))
+			handleEventsChange(bot, msg, suffix.substr(6).trim(), settingsManager);
 	}
 };

@@ -1,19 +1,18 @@
 var reload			= require('require-reload')(require),
-	discord			= require('discord.js'),
-	bot				= new discord.Client({autoReconnect: true, forceFetchUsers: true, maxCachedMessages: 100, disableEveryone: true}),
+	Eris			= require('eris'),
 	_chalk			= require('chalk'),
 	chalk			= new _chalk.constructor({enabled: true}),
 	config			= reload('./config.json'),
 	validateConfig	= reload('./utils/validateConfig.js'),
 	CommandManager	= reload('./utils/CommandManager.js'),
 	utils			= reload('./utils/utils.js'),
-	checkForUpdates	= reload('./utils/checkForUpdates.js'),
+	settingsManager	= reload('./utils/settingsManager.js'),
 	ready = false;
 
 var events = {
 	ready: reload(`${__dirname}/events/ready.js`),
-	message: reload(`${__dirname}/events/message.js`),
-	serverNewMember: reload(`${__dirname}/events/serverNewMember.js`)
+	messageCreate: reload(`${__dirname}/events/messageCreate.js`),
+	guildMemberAdd: reload(`${__dirname}/events/guildMemberAdd.js`)
 };
 
 //console colors
@@ -29,8 +28,9 @@ cBlue	= chalk.bold.blue;
 commandsProcessed = 0;
 cleverbotTimesUsed = 0;
 
-
 validateConfig(config);
+
+var bot = new Eris(config.token, {autoReconnect: true, disableEveryone: true, getAllUsers: true, messageLimit: 200, sequencerWait: 100, moreMentions: true});
 
 var CommandManagers = [];
 for (let prefix in config.commandSets) { //Add command sets
@@ -58,7 +58,7 @@ function init(index = 0) {
 
 function login() {
 	console.log(cGreen('Logging in...'));
-	bot.loginWithToken(config.token).catch(err => console.error(err));
+	bot.connect().catch(err => console.error(err));
 }
 
 //Load commands and log in
@@ -69,31 +69,47 @@ init()
 	});
 
 
-bot.on('error', e => {
-	console.log(`${cError(' CLIENT ERROR ')} ${e}`);
+bot.on('error', (e, id) => {
+	console.log(`${cError(` SHARD ${id} ERROR `)} ${e}\n${e.stack}`);
 });
 
 bot.on('ready', () => {
 	ready = true;
-	checkForUpdates();
+	utils.checkForUpdates();
 	events.ready(bot, config, [], utils);
+});
+
+bot.on('shardReady', id => {
+	console.log(cGreen(` SHARD ${id} CONNECTED `));
 });
 
 bot.on('disconnected', () => {
 	console.log(cRed('Disconnected from Discord'));
 });
 
-bot.on('message', msg => {
+bot.on('shardDisconnect', (e, id) => {
+	console.log(`${cError(` SHARD ${id} DISCONNECT `)} ${e}`);
+});
+
+bot.on('shardResume', id => {
+	console.log(cGreen(` SHARD ${id} RESUMED `));
+});
+
+bot.on('messageCreate', msg => {
 	if (msg.content.startsWith(config.reloadCommand) && config.adminIds.includes(msg.author.id)) //check for reload or eval command
 		reloadModule(msg);
 	else if (msg.content.startsWith(config.evalCommand) && config.adminIds.includes(msg.author.id))
 		evaluate(msg);
 	else
-		events.message.handler(bot, msg, CommandManagers, config);
+		events.messageCreate.handler(bot, msg, CommandManagers, config, settingsManager);
 });
 
-bot.on('serverNewMember', (server, user) => {
-	events.serverNewMember(bot, server, user);
+bot.on('guildMemberAdd', (guild, member) => {
+	events.guildMemberAdd(bot, settingsManager, guild, member);
+});
+
+bot.on('channelDelete', channel => {
+	settingsManager.handleDeletedChannel(channel);
 });
 
 function reloadModule(msg) {

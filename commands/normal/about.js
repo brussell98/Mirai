@@ -1,15 +1,15 @@
-var libVersion = require('../../node_modules/discord.js/package.json').version,
+var libVersion = require('../../node_modules/eris/package.json').version,
 	botVersion = require('../../package.json').version;
 
 module.exports = {
 	desc: "Tells you about the bot.",
 	cooldown: 5,
 	task(bot, msg) {
-		bot.sendMessage(msg, `\`\`\`tex
+		bot.createMessage(msg.channel.id, `\`\`\`tex
 $ Bot-chan $
 
 # CREATOR: {Brussell}
-# LIBRARY: {Discord.js} {v${libVersion}}
+# LIBRARY: {Eris} {v${libVersion}}
 # VERSION: {${botVersion}}
 
 % Bot-chan is a multipurpose bot to handle most of your needs.
@@ -17,7 +17,7 @@ $ Bot-chan $
 % For a list of commands do ]help or }help
 
 # WEBSITE: {http://brussell98.github.io/bot/index.html}
-# SERVER: {discord.gg/0kvLlwb7slG3XCCQ}
+# SERVER: { discord.gg/0kvLlwb7slG3XCCQ }
 \`\`\``);
 	}
 };
