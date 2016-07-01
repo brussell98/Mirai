@@ -12,7 +12,10 @@ var reload			= require('require-reload')(require),
 var events = {
 	ready: reload(`${__dirname}/events/ready.js`),
 	messageCreate: reload(`${__dirname}/events/messageCreate.js`),
-	guildMemberAdd: reload(`${__dirname}/events/guildMemberAdd.js`)
+	guildMemberAdd: reload(`${__dirname}/events/guildMemberAdd.js`),
+	guildMemberRemove: reload(`${__dirname}/events/guildMemberRemove.js`),
+	guildBanAdd: reload(`${__dirname}/events/guildBanAdd.js`),
+	guildBanRemove: reload(`${__dirname}/events/guildBanRemove.js`)
 };
 
 //console colors
@@ -106,6 +109,18 @@ bot.on('messageCreate', msg => {
 
 bot.on('guildMemberAdd', (guild, member) => {
 	events.guildMemberAdd(bot, settingsManager, guild, member);
+});
+
+bot.on('guildMemberRemove', (guild, member) => {
+	events.guildMemberRemove(bot, settingsManager, guild, member);
+});
+
+bot.on('guildBanAdd', (guild, user) => {
+	events.guildBanAdd(bot, settingsManager, guild, user);
+});
+
+bot.on('guildBanRemove', (guild, user) => {
+	events.guilBanRemove(bot, settingsManager, guild, user);
 });
 
 bot.on('channelDelete', channel => {

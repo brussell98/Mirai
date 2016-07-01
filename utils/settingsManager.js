@@ -73,7 +73,7 @@ function getWelcome(guildId, username, serverName) {
 * @type Array<String>
 * @default
 */
-const eventList = ['memberjoined', 'memberleft', 'userbanned', 'namechanged', 'nicknamechanged'];
+const eventList = ['memberjoined', 'memberleft', 'userbanned', 'userunbanned', 'namechanged', 'nicknamechanged'];
 
 /**
 * Change where event notifications are sent.

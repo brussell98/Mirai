@@ -7,7 +7,7 @@ function updateWelcome(bot, msg, suffix, settingsManager) {
 		let newWelcome = suffix.replace(/(<#[0-9]+>|DM)/i, '').trim();
 		if (suffix === '')
 			bot.createMessage(msg.channel.id, 'Please format your message in this format: `welcome <#channel | DM> <message>`');
-		else if (msg.channelMentions.length === 0 && !msg.toLowerCase().startsWith('dm'))
+		else if (msg.channelMentions.length === 0 && !suffix.toLowerCase().startsWith('dm'))
 			bot.createMessage(msg.channel.id, 'Please specify a channel to send the welcome message to.');
 		else if (!newWelcome)
 			bot.createMessage(msg.channel.id, 'Please specify a welcome message.');
@@ -15,7 +15,7 @@ function updateWelcome(bot, msg, suffix, settingsManager) {
 			bot.createMessage(msg.channel.id, "Sorry, your welcome message needs to be under 1,900 characters.");
 		else {
 			settingsManager.setWelcome(msg.channel.guild.id, msg.channelMentions[0] || "DM", newWelcome);
-			bot.createMessage(msg.channel.id, `⚙ Welcome message set to:\n${newWelcome} **in** ${msg.channelMentions[0]}`);
+			bot.createMessage(msg.channel.id, `⚙ Welcome message set to:\n${newWelcome} **in** ${'<#' + msg.channelMentions[0] + '>' || 'a DM'}`);
 		}
 	}
 }
