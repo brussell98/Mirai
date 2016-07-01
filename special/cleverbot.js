@@ -1,9 +1,9 @@
 var reload		= require('require-reload')(require),
 	Cleverbot	= reload('cleverbot-node'),
 	Waifu		= new Cleverbot(),
-	entities	= require('entities');
+	entities	= require('entities'),
+	antiSpam	= {};
 
-var antiSpam = {};
 Cleverbot.prepare(() => {});
 
 function reset() {
@@ -28,17 +28,15 @@ function trimText(cleanContent, name, discriminator) {
 }
 
 function processUnicode(text) {
-	if (/\|/g.test(text)) { //Cleverbot returns unicode like |1234 for some reason. This fixes it
-		text = text.replace(/\|/g, '\\u'); //replace | with \u
-		text = text.replace(/\\u([\d\w]{4})/gi, (match, grp) => String.fromCharCode(parseInt(grp, 16))); //unescape unicode
-	}
+	if (/\|/g.test(text)) //Cleverbot returns unicode like |1234 for some reason. This fixes it
+		return text.replace(/\|/g, '\\u').replace(/\\u([\d\w]{4})/gi, (match, grp) => String.fromCharCode(parseInt(grp, 16))); //unescape unicode
 	return text;
 }
 
 module.exports = function(bot, msg) {
-	let text = !msg.channel.guild ? msg.content : trimText(msg.cleanContent, msg.channel.guild.members.get(bot.user.id).nick || bot.user.username, bot.user.discriminator);
+	let text = msg.channel.guild === null ? msg.content : trimText(msg.cleanContent, msg.channel.guild.members.get(bot.user.id).nick || bot.user.username, bot.user.discriminator);
 	if (spamCheck(msg.author.id, text)) {
-		if (!msg.channel.guild)
+		if (msg.channel.guild === null)
 			console.log(`${cGreen(msg.author.username)} > ${cYellow("@" + bot.user.username)} ${text}`);
 		else
 			console.log(`${cServer(msg.channel.guild.name)} >> ${cGreen(msg.author.username)} > ${cYellow("@" + bot.user.username)} ${text}`);

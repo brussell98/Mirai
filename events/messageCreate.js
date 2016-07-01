@@ -3,7 +3,7 @@ var reload		= require('require-reload')(require),
 
 module.exports = {
 	handler(bot, msg, CommandManagers, config, settingsManager) {
-		if (msg.author.bot)
+		if (msg.author.bot === true)
 			return;
 
 		for (let i = 0; i < CommandManagers.length; i++) {
@@ -13,7 +13,7 @@ module.exports = {
 			}
 		}
 
-		if (config.cleverbot && !msg.channel.guild || (msg.mentions.includes(bot.user.id) && msg.content.search(new RegExp(`^<@!?${bot.user.id}>`)) === 0))
+		if (config.cleverbot && msg.channel.guild === null || (msg.mentions.includes(bot.user.id) && msg.content.search(new RegExp(`^<@!?${bot.user.id}>`)) === 0))
 			cleverbot(bot, msg);
 	},
 	reloadCleverbot() {

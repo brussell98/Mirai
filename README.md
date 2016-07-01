@@ -1,7 +1,7 @@
 # Mirai Bot
 
-An easy to use bot framework using [Eris](https://github.com/abalabahaha/Eris/)   
-**Note:** NodeJS version 6.0.0+ is REQUIRED
+An easy to use bot framework using the [Eris](https://github.com/abalabahaha/Eris/) library.   
+**Note:** NodeJS version 6+ is ***REQUIRED***
 
 [Website](http://brussell98.github.io/bot/index.html)   
 [Documentation](http://brussell98.github.io/bot/docs/index.html)   

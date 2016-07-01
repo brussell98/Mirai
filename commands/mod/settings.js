@@ -4,17 +4,17 @@ function updateWelcome(bot, msg, suffix, settingsManager) {
 		settingsManager.setWelcome(msg.channel.guild.id);
 		bot.createMessage(msg.channel.id, '⚙ Welcome message disabled');
 	} else {
-		let newWelcome = suffix.replace(/<#[0-9]+>/, '').trim();
+		let newWelcome = suffix.replace(/(<#[0-9]+>|DM)/i, '').trim();
 		if (suffix === '')
-			bot.createMessage(msg.channel.id, 'Please format your message in this format: `welcome <#channel> <message>`');
-		else if (msg.channelMentions.length === 0)
+			bot.createMessage(msg.channel.id, 'Please format your message in this format: `welcome <#channel | DM> <message>`');
+		else if (msg.channelMentions.length === 0 && !msg.toLowerCase().startsWith('dm'))
 			bot.createMessage(msg.channel.id, 'Please specify a channel to send the welcome message to.');
 		else if (!newWelcome)
 			bot.createMessage(msg.channel.id, 'Please specify a welcome message.');
 		else if (newWelcome.length >= 1900)
 			bot.createMessage(msg.channel.id, "Sorry, your welcome message needs to be under 1,900 characters.");
 		else {
-			settingsManager.setWelcome(msg.channel.guild.id, msg.channelMentions[0], newWelcome);
+			settingsManager.setWelcome(msg.channel.guild.id, msg.channelMentions[0] || "DM", newWelcome);
 			bot.createMessage(msg.channel.id, `⚙ Welcome message set to:\n${newWelcome} **in** ${msg.channelMentions[0]}`);
 		}
 	}
@@ -48,7 +48,7 @@ module.exports = {
 	aliases: ['set', 'config'],
 	cooldown: 3,
 	task(bot, msg, suffix, config, settingsManager) {
-		if (!msg.channel.guild)
+		if (msg.channel.guild === null)
 			bot.createMessage(msg.channel.id, 'You have to do this in a server.');
 		else if (!msg.channel.permissionsOf(msg.author.id).json.manageServer && !config.adminIds.includes(msg.author.id))
 			bot.createMessage(msg.channel.id, 'You need the `Manage Server` permission to use this.');

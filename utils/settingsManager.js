@@ -26,7 +26,7 @@ setInterval(() => {
 /**
 * Set a guild's welcome message. If only guildId is passed it will disable it.
 * @arg {String} guildId The guild to change settings for.
-* @arg {String} [channelId] The channel to set the welcome message to.
+* @arg {String} [channelId] The channel to set the welcome message to or "DM" to DM it.
 * @arg {String} [message] The welcome message to set.
 */
 function setWelcome(guildId, channelId, message) {
