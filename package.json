@@ -1,15 +1,15 @@
 {
-	"name": "brussellbot",
+	"name": "miraibot",
 	"version": "3.0.0",
 	"description": "An easy to use bot framework",
 	"author": "brussell98",
-	"main": "BrussellBot.js",
+	"main": "Mirai.js",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/brussell98/BrussellBot"
+		"url": "https://github.com/brussell98/Mirai"
 	},
 	"bugs": {
-		"url": "https://github.com/brussell98/BrussellBot/issues"
+		"url": "https://github.com/brussell98/Mirai/issues"
 	},
 	"engines": {
 		"node": ">=6.0.0"
@@ -21,7 +21,7 @@
 	},
 	"license": "MIT",
 	"dependencies": {
-		"eris": "https://YOUR_OAUTH_TOKEN_GOES_HERE:x-oauth-basic@github.com/abalabahaha/Eris.git",
+		"eris": "https://github.com/abalabahaha/Eris.git",
 		"superagent": "^2.0.0",
 		"xml2js": "^0.4.16",
 		"cleverbot-node": "^0.2.2",

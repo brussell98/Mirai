@@ -112,17 +112,17 @@ exports.formatTime = function(milliseconds) {
 	return `${days} days, ${hours} hours, ${minutes} minutes, and ${seconds} seconds`;
 }
 
-/** Check for a newer version of BrussellBot */
+/** Check for a newer version of MiraiBot */
 exports.checkForUpdates = function() {
 	let version = ~~(require('../package.json').version.split('.').join('')); //This is used to convert it to a number that can be compared
-	superagent.get("https://raw.githubusercontent.com/brussell98/BrussellBot/master/package.json")
+	superagent.get("https://raw.githubusercontent.com/brussell98/Mirai/master/package.json")
 		.end((error, response) => {
 			if (error)
 				console.log(`${cWarn(' WARN ')} Error checking for updates: ${error.status} ${error.response}`);
 			else {
 				let latest = ~~(JSON.parse(response.text).version.split('.').join(''));
 				if (latest > version)
-					console.log(`${cWarn(' OUT OF DATE ')} A new version of BrussellBot is avalible`);
+					console.log(`${cWarn(' OUT OF DATE ')} A new version of MiraiBot is avalible`);
 			}
 	});
 }
