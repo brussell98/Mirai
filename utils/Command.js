@@ -82,7 +82,7 @@ class Command {
 	*/
 	execute(bot, msg, suffix, config, settingsManager) {
 		if (this.usersOnCooldown.hasOwnProperty(msg.author.id)) { //if the user is still on cooldown
-			bot.sendMessage(msg, `${msg.author.username}, this command can only be used every ${this.cooldown} seconds.`).then(sentMsg => {
+			bot.createMessage(msg.channel.id, `${msg.author.username}, this command can only be used every ${this.cooldown} seconds.`).then(sentMsg => {
 				setTimeout(() => {
 					bot.deleteMessage(msg.channel.id, msg.id);
 					bot.deleteMessage(sentMsg.channel.id, sentMsg.id);
@@ -106,7 +106,7 @@ class Command {
 						bot.deleteMessage(sentMsg.channel.id, sentMsg.id);
 					}, 10000);
 				});
-			} else {
+			} else if (!config.adminIds.includes(msg.author.id)) {
 				this.usersOnCooldown[msg.author.id] = '';
 				setTimeout(() => { //add the user to the cooldown list and remove them after {cooldown} seconds
 					delete this.usersOnCooldown[msg.author.id];

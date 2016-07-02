@@ -3,6 +3,14 @@ module.exports = function(config) {
 		console.log(cError(" CONFIG ERROR ") + " Bot token is not defined");
 		process.exit(0);
 	}
+	if (typeof config.shardCount !== 'number' || config.shardCount < 1) {
+		console.log(cError(" CONFIG ERROR ") + " shardCount must be a valid positive Number");
+		process.exit(0);
+	}
+	if (typeof config.disabledEvents !== 'object') {
+		console.log(cError(" CONFIG ERROR ") + " disabledEvents must be a valid Object");
+		process.exit(0);
+	}
 	//Check for invalid command sets
 	for (let prefix in config.commandSets) {
 		if (prefix === "") {

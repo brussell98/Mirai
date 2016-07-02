@@ -1,5 +1,12 @@
 {
 	"token": "",
+	"shardCount": 1,
+	"disabledEvents": {
+		"VOICE_STATE_UPDATE": true,
+		"TYPING_START": true,
+		"MESSAGE_DELETE_BULK": true,
+		"MESSAGE_DELETE": true
+	},
 	"commandSets": {
 		"]": {"dir": "commands/normal/"},
 		"}": {"dir": "commands/mod/", "color": "cBlue"}

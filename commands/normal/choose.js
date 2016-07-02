@@ -15,8 +15,9 @@ module.exports = {
 
 		let pick = ~~(Math.random() * choices.length);
 		choices.forEach((c, i) => {
-			if (c.includes('homework') || c.includes('sleep') || c.includes('study') || c.includes('productiv')) {
-				if (Math.random() > 0.4) pick = i; //Higher chance to pick choices containing key words
+			if ((c.includes('homework') || c.includes('sleep') || c.includes('study') || c.includes('productiv')) && Math.random() < .3) {
+				pick = i; //Higher chance to pick choices containing key words
+				return;
 			}
 		});
 		bot.createMessage(msg.channel.id, `I chose **${choices[pick]}**`);

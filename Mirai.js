@@ -33,7 +33,16 @@ cleverbotTimesUsed = 0;
 
 validateConfig(config);
 
-var bot = new Eris(config.token, {autoReconnect: true, disableEveryone: true, getAllUsers: true, messageLimit: 200, sequencerWait: 100, moreMentions: true});
+var bot = new Eris(config.token, {
+	autoReconnect: true,
+	disableEveryone: true,
+	getAllUsers: true,
+	messageLimit: 200,
+	sequencerWait: 100,
+	moreMentions: true,
+	disabledEvents: config.disabledEvents,
+	maxShards: config.shardCount
+});
 
 var CommandManagers = [];
 for (let prefix in config.commandSets) { //Add command sets
