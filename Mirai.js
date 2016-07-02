@@ -15,7 +15,9 @@ var events = {
 	guildMemberAdd: reload(`${__dirname}/events/guildMemberAdd.js`),
 	guildMemberRemove: reload(`${__dirname}/events/guildMemberRemove.js`),
 	guildBanAdd: reload(`${__dirname}/events/guildBanAdd.js`),
-	guildBanRemove: reload(`${__dirname}/events/guildBanRemove.js`)
+	guildBanRemove: reload(`${__dirname}/events/guildBanRemove.js`),
+	userUpdate: reload(`${__dirname}/events/userUpdate.js`),
+	guildMemberUpdate: reload(`${__dirname}/events/guildMemberUpdate.js`)
 };
 
 //console colors
@@ -129,11 +131,19 @@ bot.on('guildBanAdd', (guild, user) => {
 });
 
 bot.on('guildBanRemove', (guild, user) => {
-	events.guilBanRemove(bot, settingsManager, guild, user);
+	events.guildBanRemove(bot, settingsManager, guild, user);
 });
 
 bot.on('channelDelete', channel => {
 	settingsManager.handleDeletedChannel(channel);
+});
+
+bot.on('userUpdate', (user, oldUser) => {
+	events.userUpdate(bot, settingsManager, user, oldUser);
+});
+
+bot.on('guildMemberUpdate', (_, member, oldMember) => {
+	events.guildMemberUpdate(bot, settingsManager, member, oldMember);
 });
 
 function reloadModule(msg) {

@@ -7,10 +7,8 @@ module.exports = {
 			return;
 
 		for (let i = 0; i < CommandManagers.length; i++) {
-			if (msg.content.startsWith(CommandManagers[i].prefix)) {
-				console.log(`${cDebug(' MESSAGE HANDLER ')} Message matched prefix for CommandManager ${i} (${CommandManagers[i].prefix})`);
+			if (msg.content.startsWith(CommandManagers[i].prefix))
 				return CommandManagers[i].processCommand(bot, msg, config, settingsManager);
-			}
 		}
 
 		if (config.cleverbot && msg.channel.guild === null || (msg.mentions.includes(bot.user.id) && msg.content.search(new RegExp(`^<@!?${bot.user.id}>`)) === 0))
