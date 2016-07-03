@@ -1,10 +1,9 @@
-# Mirai Bot
-
-An easy to use bot framework using the [Eris](https://github.com/abalabahaha/Eris/) library.   
+![Mirai Bot](http://i.imgur.com/XF9vkMe.png)   
+An easy to use bot framework using the [Eris](https://github.com/abalabahaha/eris/) library.   
 **Note:** NodeJS version 6+ is ***REQUIRED***
 
 [Website](http://brussell98.github.io/bot/index.html)   
-[Documentation](http://brussell98.github.io/bot/docs/index.html)   
+[API Documentation](http://brussell98.github.io/bot/docs/index.html)   
 [Discord Server](https://discord.gg/0kvLlwb7slG3XCCQ)   
 [Wiki containing guides](https://github.com/brussell98/BrussellBot/wiki)   
 [Eris Documentation](https://abal.moe/Eris/docs/index.html)   

@@ -1,4 +1,5 @@
 var reload			= require('require-reload')(require),
+	fs				= require('fs'),
 	Eris			= require('eris'),
 	_chalk			= require('chalk'),
 	chalk			= new _chalk.constructor({enabled: true}),
@@ -7,7 +8,8 @@ var reload			= require('require-reload')(require),
 	CommandManager	= reload('./utils/CommandManager.js'),
 	utils			= reload('./utils/utils.js'),
 	settingsManager	= reload('./utils/settingsManager.js'),
-	ready = false;
+	CommandManagers	= [],
+	ready			= false;
 
 var events = {
 	ready: reload(`${__dirname}/events/ready.js`),
@@ -46,13 +48,17 @@ var bot = new Eris(config.token, {
 	maxShards: config.shardCount
 });
 
-var CommandManagers = [];
-for (let prefix in config.commandSets) { //Add command sets
-	let color = config.commandSets[prefix].hasOwnProperty('color') ? global[config.commandSets[prefix].color] : false;
-	if (color !== false && typeof color !== 'function') color = false; //If invalid color
-	CommandManagers.push(new CommandManager(prefix, config.commandSets[prefix].dir, color));
+function loadCommandSets() {
+	return new Promise(resolve => {
+		CommandManagers = [];
+		for (let prefix in config.commandSets) { //Add command sets
+			let color = config.commandSets[prefix].hasOwnProperty('color') ? global[config.commandSets[prefix].color] : false;
+			if (color !== false && typeof color !== 'function') color = false; //If invalid color
+			CommandManagers.push(new CommandManager(prefix, config.commandSets[prefix].dir, color));
+		}
+		resolve();
+	});
 }
-
 
 function init(index = 0) {
 	return new Promise((resolve, reject) => {
@@ -72,11 +78,12 @@ function init(index = 0) {
 
 function login() {
 	console.log(cGreen('Logging in...'));
-	bot.connect().catch(err => console.error(err));
+	bot.connect().catch(console.error);
 }
 
 //Load commands and log in
-init()
+loadCommandSets()
+	.then(init)
 	.then(login)
 	.catch(error => {
 		console.error(`${cError(' ERROR IN INIT ')} ${error}`);
@@ -148,10 +155,99 @@ bot.on('guildMemberUpdate', (_, member, oldMember) => {
 
 function reloadModule(msg) {
 	console.log(`${cDebug(' RELOAD MODULE ')} ${msg.author.username}: ${msg.content}`);
+	let arg = msg.content.substr(config.reloadCommand.length).trim();
+
+	for (let i = 0; i < CommandManagers.length; i++) { //If arg starts with a prefix for a CommandManager reload/load the file.
+		if (arg.startsWith(CommandManagers[i].prefix))
+			return CommandManagers[i].reload(bot, msg.channel.id, arg.substr(CommandManagers[i].prefix.length));
+	}
+
+	if (arg === 'CommandManagers') {
+
+		loadCommandSets()
+			.then(init)
+			.then(() => {
+				bot.createMessage(msg.channel.id, 'Reloaded CommandManagers');
+			}).catch(err => {
+				console.log(`${' ERROR IN INIT'} ${err}`);
+			});
+
+	} else if (arg.startsWith('utils/')) {
+
+		fs.access(`./${arg}.js`, fs.R_OK | fs.F_OK, err => {
+			if (err)
+				bot.createMessage(msg.channel.id, 'That file does not exist!');
+			else {
+				switch (arg.replace(/(utils\/|\.js)/g, '')) {
+					case 'CommandManager':
+						CommandManager = reload(`./${arg}.js`);
+						bot.createMessage(msg.channel.id, 'Reloaded utils/CommandManager.js');
+						break;
+					case 'settingsManager':
+						settingsManager = reload(`./${arg}.js`);
+						bot.createMessage(msg.channel.id, 'Reloaded utils/settingsManager.js');
+						break;
+					case 'utils':
+						utils = reload(`./${arg}.js`);
+						bot.createMessage(msg.channel.id, 'Reloaded utils/utils.js');
+						break;
+					case 'validateConfig':
+						validateConfig = reload(`./${arg}.js`);
+						bot.createMessage(msg.channel.id, 'Reloaded utils/validateConfig.js');
+						break;
+					default:
+						bot.createMessage(msg.channel.id, "Can't reload that because it isn't already loaded");
+						break;
+				}
+			}
+		});
+
+	} else if (arg.startsWith('events/')) {
+
+		arg = arg.substr(7);
+		if (events.hasOwnProperty(arg)) {
+			events[arg] = reload(`./events/${arg}.js`);
+			bot.createMessage(msg.channel.id, `Reloaded events/${arg}.js`);
+		} else {
+			bot.createMessage(msg.channel.id, "That events isn't loaded");
+		}
+
+	} else if (arg.startsWith('special/')) {
+
+		switch (arg.substr(8)) {
+			case 'cleverbot':
+				events.messageCreate.reloadCleverbot(bot, msg.channel.id);
+				break;
+			default:
+				bot.createMessage(msg.channel.id, "Not found");
+				break;
+		}
+
+	} else if (arg === 'config') {
+
+		validateConfig = reload('./utils/validateConfig.js');
+		config = reload('./config.json');
+		validateConfig(config);
+		bot.createMessage(msg.channel.id, "Reloaded config");
+	}
 }
 
 function evaluate(msg) {
 	console.log(`${cDebug(' EVAL ')} ${msg.author.username}: ${msg.content}`);
+	let toEval = msg.content.substr(config.evalCommand.length).trim();
+	let result = '~eval failed~';
+
+	try {
+		result = eval(toEval);
+	} catch (error) {
+		console.log(error.message);
+		bot.createMessage(msg.channel.id, `\`\`\`diff\n- ${error}\`\`\``); //Send error to chat also.
+	}
+
+	if (result !== '~eval failed~') {
+		console.log(`Result: ${result}`);
+		bot.createMessage(msg.channel.id, `__**Result:**__ \n${result}`);
+	}
 }
 
 if (config.carbonKey) { //Send servercount to Carbon bot list

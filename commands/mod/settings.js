@@ -1,8 +1,8 @@
 //Validates the message and updates the setting.
 function updateWelcome(bot, msg, suffix, settingsManager) {
 	if (suffix.toLowerCase() === 'disable') {
-		settingsManager.setWelcome(msg.channel.guild.id);
-		bot.createMessage(msg.channel.id, '⚙ Welcome message disabled');
+		settingsManager.setWelcome(msg.channel.guild.id)
+			.then(() => bot.createMessage(msg.channel.id, '⚙ Welcome message disabled'));
 	} else {
 		let newWelcome = suffix.replace(/(<#[0-9]+>|DM)/i, '').trim();
 		if (suffix === '')
@@ -14,8 +14,8 @@ function updateWelcome(bot, msg, suffix, settingsManager) {
 		else if (newWelcome.length >= 1900)
 			bot.createMessage(msg.channel.id, "Sorry, your welcome message needs to be under 1,900 characters.");
 		else {
-			settingsManager.setWelcome(msg.channel.guild.id, msg.channelMentions[0] || "DM", newWelcome);
-			bot.createMessage(msg.channel.id, `⚙ Welcome message set to:\n${newWelcome} **in** ${'<#' + msg.channelMentions[0] + '>' || 'a DM'}`);
+			settingsManager.setWelcome(msg.channel.guild.id, msg.channelMentions[0] || "DM", newWelcome)
+				.then(() => bot.createMessage(msg.channel.id, `⚙ Welcome message set to:\n${newWelcome} **in** ${'<#' + msg.channelMentions[0] + '>' || 'a DM'}`));
 		}
 	}
 }
@@ -43,7 +43,7 @@ function handleEventsChange(bot, msg, suffix, settingsManager) {
 
 module.exports = {
 	desc: "Adjust a server's settings.",
-	help: "Modify how the bot works on a server.\n\t__welcome__: Set the channel and message to be displayed to new members `welcome #general Welcome ${USER} to ${SERVER}`.",
+	help: "Modify how the bot works on a server.\n\t__welcome__: Set the channel and message to be displayed to new members `welcome #general Welcome ${USER} to ${SERVER}`.\n\t__events__: Modify event subscriptions `events #event-log +memberjoined +userbanned -namechanged`.",
 	usage: "Usage at <http://brussell98.github.io/bot/serversettings.html>",
 	aliases: ['set', 'config'],
 	cooldown: 3,

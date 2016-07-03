@@ -44,6 +44,7 @@ module.exports = function(bot, msg) {
 		if (text === '') //If they just did @Botname
 			bot.createMessage(msg.channel.id, 'Yes?');
 		else {
+			bot.sendChannelTyping(msg.channel.id);
 			Waifu.write(text, response => {
 				response = processUnicode(response.message);
 				if (response)

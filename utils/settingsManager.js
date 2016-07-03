@@ -28,28 +28,32 @@ setInterval(() => {
 * @arg {String} guildId The guild to change settings for.
 * @arg {String} [channelId] The channel to set the welcome message to or "DM" to DM it.
 * @arg {String} [message] The welcome message to set.
+* @returns {Promise} Resolves when done modifying settings.
 */
 function setWelcome(guildId, channelId, message) {
-	if (!genericSettings.hasOwnProperty(guildId))
-		genericSettings[guildId] = {};
-	if (!genericSettings[guildId].hasOwnProperty('welcome')) {
-		if (message) { //Setting message and enabling
-			genericSettings[guildId].welcome = {message, channelId};
-			console.log(`${cDebug(' SETTINGS MANAGER ')} Updated welcome message for ${guildId}`);
-			updateGeneric = true;
+	return new Promise(resolve => {
+		if (!genericSettings.hasOwnProperty(guildId))
+			genericSettings[guildId] = {};
+		if (!genericSettings[guildId].hasOwnProperty('welcome')) {
+			if (message) { //Setting message and enabling
+				genericSettings[guildId].welcome = {message, channelId};
+				console.log(`${cDebug(' SETTINGS MANAGER ')} Updated welcome message for ${guildId}`);
+				updateGeneric = true;
+			}
+		} else {
+			if (message && (genericSettings[guildId].welcome.message != message || genericSettings[guildId].welcome.channelId != channelId)) {
+				genericSettings[guildId].welcome.message = message; //Changing message
+				genericSettings[guildId].welcome.channelId = channelId;
+				console.log(`${cDebug(' SETTINGS MANAGER ')} Updated welcome message for ${guildId}`);
+				updateGeneric = true;
+			} else if (!message) { //disabling message that exists
+				console.log(`${cDebug(' SETTINGS MANAGER ')} Disabled welcome message for ${guildId}`);
+				delete genericSettings[guildId].welcome;
+				updateGeneric = true;
+			}
 		}
-	} else {
-		if (message && (genericSettings[guildId].welcome.message != message || genericSettings[guildId].welcome.channelId != channelId)) {
-			genericSettings[guildId].welcome.message = message; //Changing message
-			genericSettings[guildId].welcome.channelId = channelId;
-			console.log(`${cDebug(' SETTINGS MANAGER ')} Updated welcome message for ${guildId}`);
-			updateGeneric = true;
-		} else if (!message) { //disabling message that exists
-			console.log(`${cDebug(' SETTINGS MANAGER ')} Disabled welcome message for ${guildId}`);
-			delete genericSettings[guildId].welcome;
-			updateGeneric = true;
-		}
-	}
+		resolve();
+	});
 }
 
 /**

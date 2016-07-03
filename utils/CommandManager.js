@@ -42,7 +42,7 @@ class CommandManager {
 								console.log(`${cDebug(' COMMAND MANAGER ')} Added ${name}`);
 								this.commands[name.replace(/\.js$/, '')] = new Command(name.replace(/\.js$/, ''), this.prefix, reload(this.directory + name));
 							} catch (e) {
-								console.error(`Error loading command ${name}: ${e}`);
+								console.error(`Error loading command ${name}: ${e}\n${e.stack}`);
 							}
 					}
 					resolve();
@@ -142,6 +142,28 @@ class CommandManager {
 		else
 			toLog += this.prefix + commandName + after;
 		console.log(toLog);
+	}
+
+	/**
+	* Reload or load a command.
+	* @arg {Eris.Client} bot The Client.
+	* @arg {String} channelId The channel to respond in.
+	* @arg {String} command The comamnd to reload or load.
+	*/
+	reload(bot, channelId, command) {
+		fs.access(`${this.directory}${command}.js`, fs.R_OK | fs.F_OK, error => {
+			if (error)
+				bot.createMessage(channelId, 'Command does not exist');
+			else {
+				try {
+					this.commands[command] = new Command(command, this.prefix, reload(`${this.directory}${command}.js`));
+					bot.createMessage(channelId, `Command ${this.prefix}${command} loaded`);
+				} catch (err) {
+					console.log(error);
+					bot.createMessage(channelId, `Error loading command: ${error}`);
+				}
+			}
+		});
 	}
 }
 

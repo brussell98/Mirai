@@ -118,7 +118,7 @@ exports.checkForUpdates = function() {
 	superagent.get("https://raw.githubusercontent.com/brussell98/Mirai/master/package.json")
 		.end((error, response) => {
 			if (error)
-				console.log(`${cWarn(' WARN ')} Error checking for updates: ${error.status} ${error.response}`);
+				console.log(`${cWarn(' WARN ')} Error checking for updates: ${error.status}`);
 			else {
 				let latest = ~~(JSON.parse(response.text).version.split('.').join(''));
 				if (latest > version)

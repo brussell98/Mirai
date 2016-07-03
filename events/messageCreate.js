@@ -14,7 +14,13 @@ module.exports = {
 		if (config.cleverbot && msg.channel.guild === null || (msg.mentions.includes(bot.user.id) && msg.content.search(new RegExp(`^<@!?${bot.user.id}>`)) === 0))
 			cleverbot(bot, msg);
 	},
-	reloadCleverbot() {
-		cleverbot = reload('../special/cleverbot.js');
+	reloadCleverbot(bot, channelId) {
+		try {
+			cleverbot = reload('../special/cleverbot.js');
+			bot.createMessage(channelId, "Reloaded special/cleverbot");
+		} catch (error) {
+			console.log(error);
+			bot.createMessage(channelId, `Error reloading cleverbot: ${error}`);
+		}
 	}
 }

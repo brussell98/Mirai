@@ -21,7 +21,7 @@
 	},
 	"license": "MIT",
 	"dependencies": {
-		"eris": "https://github.com/abalabahaha/Eris.git",
+		"eris": "https://github.com/abalabahaha/eris.git",
 		"superagent": "^2.0.0",
 		"xml2js": "^0.4.16",
 		"cleverbot-node": "^0.2.2",
