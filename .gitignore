@@ -3,3 +3,12 @@
 .vscode
 node_modules
 docs
+commands/normal
+commands/mod
+
+!commands/normal/about
+!commands/normal/choose
+!commands/normal/invite
+!commands/normal/ping
+!commands/mod/echo
+!commands/mod/settings

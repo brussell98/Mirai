@@ -134,7 +134,7 @@ class CommandManager {
 	*/
 	logCommand(msg, commandName, after) {
 		let toLog = '';
-		if (msg.channel.guild !== null)
+		if (msg.channel.guild !== undefined)
 			toLog += `${cServer(msg.channel.guild.name)} >> `;
 		toLog += `${cGreen(msg.author.username)} > `;
 		if (this.color !== false)

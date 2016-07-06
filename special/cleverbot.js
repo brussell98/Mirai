@@ -34,9 +34,9 @@ function processUnicode(text) {
 }
 
 module.exports = function(bot, msg) {
-	let text = msg.channel.guild === null ? msg.content : trimText(msg.cleanContent, msg.channel.guild.members.get(bot.user.id).nick || bot.user.username, bot.user.discriminator);
+	let text = msg.channel.guild === undefined ? msg.content : trimText(msg.cleanContent, msg.channel.guild.members.get(bot.user.id).nick || bot.user.username, bot.user.discriminator);
 	if (spamCheck(msg.author.id, text)) {
-		if (msg.channel.guild === null)
+		if (msg.channel.guild === undefined)
 			console.log(`${cGreen(msg.author.username)} > ${cYellow("@" + bot.user.username)} ${text}`);
 		else
 			console.log(`${cServer(msg.channel.guild.name)} >> ${cGreen(msg.author.username)} > ${cYellow("@" + bot.user.username)} ${text}`);

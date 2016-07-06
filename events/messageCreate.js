@@ -11,7 +11,7 @@ module.exports = {
 				return CommandManagers[i].processCommand(bot, msg, config, settingsManager);
 		}
 
-		if (config.cleverbot && msg.channel.guild === null || (msg.mentions.includes(bot.user.id) && msg.content.search(new RegExp(`^<@!?${bot.user.id}>`)) === 0))
+		if (config.cleverbot && msg.channel.guild === undefined || (msg.mentions.includes(bot.user.id) && msg.content.search(new RegExp(`^<@!?${bot.user.id}>`)) === 0))
 			cleverbot(bot, msg);
 	},
 	reloadCleverbot(bot, channelId) {

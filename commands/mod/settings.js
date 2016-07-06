@@ -41,6 +41,14 @@ function handleEventsChange(bot, msg, suffix, settingsManager) {
 	}
 }
 
+function updateNSFWSetting(bot, msg, suffix, settingsManager) {
+	if (!suffix)
+		bot.createMessage(msg.channel.id, 'You need to specifiy wether to `allow` or `deny` NSFW here');
+	else {
+		settingsManager.setNSFW(msg.channel.guild.id, msg.channel.id, suffix)
+	}
+}
+
 module.exports = {
 	desc: "Adjust a server's settings.",
 	help: "Modify how the bot works on a server.\n\t__welcome__: Set the channel and message to be displayed to new members `welcome #general Welcome ${USER} to ${SERVER}`.\n\t__events__: Modify event subscriptions `events #event-log +memberjoined +userbanned -namechanged`.",
@@ -58,5 +66,7 @@ module.exports = {
 			updateWelcome(bot, msg, suffix.substr(7).trim(), settingsManager);
 		else if (suffix.startsWith('events'))
 			handleEventsChange(bot, msg, suffix.substr(6).trim(), settingsManager);
+		else if (suffix.toLowerCase().startsWith('nsfw'))
+			updateNSFWSetting(bot, msg, suffix.substr(5).trim().toLowerCase(), settingsManager);
 	}
 };

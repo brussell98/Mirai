@@ -73,19 +73,25 @@ exports.updateCarbon = function(key, servercount) {
 
 /**
 * Set the bot's avatar from /avatars/.
-* @arg {String} file File name with extension.
-* @arg {Eris} bot The client.
+* @arg {Eris.Client} bot The client.
+* @arg {String} url The direct url to the image.
+* @returns {Promise}
 */
-exports.setAvatar = function(file, bot) {
-	if (file && bot) {
-		fs.access(__dirname + '/../avatars/' + file, err => {
-			if (err) console.log("The file doesn't exist");
-			else {
-				let avatar = 'data:image/jpeg;base64,' + fs.readFileSync(__dirname + '/../avatars/' + file, 'base64');
-				bot.editSelf({avatar}).catch(console.log);
-			}
-		});
-	}
+exports.setAvatar = function(bot, url) {
+	return new Promise((resolve, reject) => {
+		if (bot !== undefined && typeof url === 'string') {
+			superagent.get(url)
+				.end((error, response) => {
+					if (!error && response.status === 200) {
+						bot.editSelf({file: `data:${response.header['content-type']};base64,${response.body.toString('base64')}`})
+							.then(resolve)
+							.catch(reject);
+					} else
+						reject('Got status code ' + error.status || response.status);
+				});
+		} else
+			reject('Invalid parameters');
+	});
 }
 
 /**
