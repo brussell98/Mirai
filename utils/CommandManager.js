@@ -26,11 +26,11 @@ class CommandManager {
 	}
 
 	/**
-	* Initialize the command manager.
-	* Loads each command in the set directory.
+	* Initialize the command manager, loading each command in the set directory.
+	* @arg {settingsManager} settingsManager The bot's {@link settingsManager}.
 	* @returns {Promise}
 	*/
-	initialize() {
+	initialize(settingsManager) {
 		return new Promise((resolve, reject) => {
 			fs.readdir(this.directory, (err, files) => {
 				if (err) reject(`Error reading commands directory: ${err}`);
@@ -41,6 +41,7 @@ class CommandManager {
 							try {
 								console.log(`${cDebug(' COMMAND MANAGER ')} Added ${name}`);
 								this.commands[name.replace(/\.js$/, '')] = new Command(name.replace(/\.js$/, ''), this.prefix, reload(this.directory + name));
+								settingsManager.commandList.push(this.prefix + name.replace(/\.js$/, ''));
 							} catch (e) {
 								console.error(`Error loading command ${name}: ${e}\n${e.stack}`);
 							}
@@ -56,7 +57,7 @@ class CommandManager {
 	* @arg {Eris} bot The client.
 	* @arg {Eris.Message} msg The matching message.
 	* @arg {Object} config The JSON formatted config file.
-	* @arg {settingsManager} settingsManager Used to adjust and get server settings.
+	* @arg {settingsManager} settingsManager The bot's {@link settingsManager}.
 	*/
 	processCommand(bot, msg, config, settingsManager) {
 		let name = msg.content.replace(this.prefix, '').split(' ')[0].toLowerCase();

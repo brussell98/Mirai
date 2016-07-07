@@ -62,7 +62,7 @@ function loadCommandSets() {
 
 function init(index = 0) {
 	return new Promise((resolve, reject) => {
-		CommandManagers[index].initialize() //Load CommandManager at {index}
+		CommandManagers[index].initialize(settingsManager) //Load CommandManager at {index}
 			.then(() => {
 				console.log(`${cDebug(' INIT ')} Loaded CommandManager ${index}`);
 				index++;

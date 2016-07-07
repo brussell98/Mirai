@@ -108,13 +108,13 @@ exports.comma = (number) => number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, "
 */
 exports.formatTime = function(milliseconds) {
 	let s = milliseconds / 1000;
-	let seconds = s % 60;
+	let seconds = (s % 60).toFixed(0);
 	s /= 60;
-	let minutes = s % 60;
+	let minutes = (s % 60).toFixed(0);
 	s /= 60;
-	let hours = s % 24;
+	let hours = (s % 24).toFixed(0);
 	s /= 24;
-	let days = s;
+	let days = s.toFixed(0);
 	return `${days} days, ${hours} hours, ${minutes} minutes, and ${seconds} seconds`;
 }
 

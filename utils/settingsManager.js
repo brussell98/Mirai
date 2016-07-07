@@ -72,6 +72,7 @@ function getWelcome(guild, member) {
 /////////// EVENT NOTIFICATIONS ///////////
 
 /**
+* A list of avalible events.
 * @const
 * @type Array<String>
 * @default
@@ -206,6 +207,16 @@ function getNSFW(guildId, channelId) {
 	return settingExistsFor(guildId, 'nsfw') && genericSettings[guildId].nsfw.includes(channelId);
 }
 
+////////// COMMAND IGNORING //////////
+
+/**
+* A list of commands loaded by the bot.
+* @type {Array<String>}
+*/
+var commandList = [];
+
+
+
 ////////// MISC ///////////
 
 /**
@@ -213,13 +224,19 @@ function getNSFW(guildId, channelId) {
 * @arg {Eris.Channel} channel The deleted channel.
 */
 function handleDeletedChannel(channel) {
-	if (genericSettings.hasOwnProperty(channel.guild.id)) {
+	if (channel.guild !== undefined && genericSettings.hasOwnProperty(channel.guild.id)) {
 		if (genericSettings[channel.guild.id].hasOwnProperty('welcome') && genericSettings[channel.guild.id].welcome.channelId === channel.id) {
 			delete genericSettings[channel.guild.id].welcome;
 			updateGeneric = true;
 		}
 		if (genericSettings[channel.guild.id].hasOwnProperty('events') && genericSettings[channel.guild.id].events.channelId === channel.id) {
 			delete genericSettings[channel.guild.id].events;
+			updateGeneric = true;
+		}
+		if (genericSettings[channel.guild.id].hasOwnProperty('nsfw') && genericSettings[channel.guild.id].nsfw.includes(channel.id)) {
+			genericSettings[channel.guild.id].nsfw.splice(genericSettings[channel.guild.id].nsfw.indexOf(channel.id), 1);
+			if (genericSettings[channel.guild.id].nsfw.length === 0)
+				delete genericSettings[channel.guild.id].nsfw;
 			updateGeneric = true;
 		}
 	}
@@ -239,5 +256,6 @@ module.exports = {
 	unsubEvents,
 	getEventSetting,
 	setNSFW,
-	getNSFW
+	getNSFW,
+	commandList
 };

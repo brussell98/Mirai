@@ -46,6 +46,8 @@ function updateNSFWSetting(bot, msg, suffix, settingsManager) {
 		bot.createMessage(msg.channel.id, 'You need to specifiy wether to `allow` or `deny` NSFW here');
 	else {
 		settingsManager.setNSFW(msg.channel.guild.id, msg.channel.id, suffix)
+			.then(m => { bot.createMessage(msg.channel.id, m) })
+			.catch(e => { bot.createMessage(msg.channel.id, e) });
 	}
 }
 

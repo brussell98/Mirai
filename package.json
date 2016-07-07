@@ -17,7 +17,7 @@
 	"scripts": {
 		"start": "node BrussellBot.js",
 		"test": "echo No test script",
-		"docs": "node_modules/.bin/jsdoc --configure .jsdoc.json --verbose"
+		"docs": "node_modules/.bin/jsdoc README.md --configure .jsdoc.json --verbose"
 	},
 	"license": "MIT",
 	"dependencies": {

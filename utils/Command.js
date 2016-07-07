@@ -92,6 +92,7 @@ class Command {
 		} else {
 			let result;
 			this.timesUsed++;
+			commandsProcessed++;
 			try {
 				result = this.task(bot, msg, suffix, config, settingsManager); //run the command
 			} catch (err) {

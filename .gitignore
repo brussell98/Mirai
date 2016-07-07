@@ -3,12 +3,15 @@
 .vscode
 node_modules
 docs
-commands/normal
-commands/mod
+commands/normal/*
+commands/mod/*
+special/*
 
-!commands/normal/about
-!commands/normal/choose
-!commands/normal/invite
-!commands/normal/ping
-!commands/mod/echo
-!commands/mod/settings
+!special/cleverbot.js
+!commands/normal/about.js
+!commands/normal/choose.js
+!commands/normal/invite.js
+!commands/normal/ping.js
+!commands/mod/echo.js
+!commands/mod/settings.js
+!commands/mod/stats.js
