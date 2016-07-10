@@ -159,7 +159,7 @@ function reloadModule(msg) {
 
 	for (let i = 0; i < CommandManagers.length; i++) { //If arg starts with a prefix for a CommandManager reload/load the file.
 		if (arg.startsWith(CommandManagers[i].prefix))
-			return CommandManagers[i].reload(bot, msg.channel.id, arg.substr(CommandManagers[i].prefix.length));
+			return CommandManagers[i].reload(bot, msg.channel.id, arg.substr(CommandManagers[i].prefix.length), settingsManager);
 	}
 
 	if (arg === 'CommandManagers') {

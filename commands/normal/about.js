@@ -6,7 +6,7 @@ module.exports = {
 	cooldown: 5,
 	task(bot, msg) {
 		bot.createMessage(msg.channel.id, `\`\`\`tex
-$ Bot-chan $
+$ Mirai $
 
 # CREATOR: {Brussell}
 # LIBRARY: {Eris} {v${libVersion}}

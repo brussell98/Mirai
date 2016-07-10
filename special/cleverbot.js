@@ -4,6 +4,8 @@ var reload		= require('require-reload')(require),
 	entities	= require('entities'),
 	antiSpam	= {};
 
+const Permissions = require('../node_modules/eris/lib/Constants.js').Permissions;
+
 Cleverbot.prepare(() => {});
 
 function reset() {
@@ -23,8 +25,8 @@ function spamCheck(userId, text) {
 	return true;
 }
 
-function trimText(cleanContent, name, discriminator) {
-	return cleanContent.replace(`@${name}#${discriminator}`, '').trim(); //Removes the @Bot part
+function trimText(cleanContent, name) {
+	return cleanContent.replace(`@${name}`, '').trim(); //Removes the @Bot part
 }
 
 function processUnicode(text) {
@@ -33,8 +35,10 @@ function processUnicode(text) {
 	return text;
 }
 
-module.exports = function(bot, msg) {
-	let text = msg.channel.guild === undefined ? msg.content : trimText(msg.cleanContent, msg.channel.guild.members.get(bot.user.id).nick || bot.user.username, bot.user.discriminator);
+module.exports = function(bot, msg, settingsManager) {
+	if (msg.channel.guild !== undefined && ~msg.channel.permissionsOf(msg.author.id).allow & Permissions.manageChannels && settingsManager.isCommandIgnored('', 'cleverbot', msg.channel.guild.id, msg.channel.id, msg.author.id) === true)
+		return;
+	let text = msg.channel.guild === undefined ? msg.cleanContent : trimText(msg.cleanContent, msg.channel.guild.members.get(bot.user.id).nick || bot.user.username);
 	if (spamCheck(msg.author.id, text)) {
 		cleverbotTimesUsed++;
 		if (msg.channel.guild === undefined)

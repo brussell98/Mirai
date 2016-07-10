@@ -51,6 +51,116 @@ function updateNSFWSetting(bot, msg, suffix, settingsManager) {
 	}
 }
 
+function addIgnores(bot, msg, suffix, settingsManager) {
+	let args = suffix.match(/\((.+)\) *\((.+)\)/);
+	if (args === null || args.length !== 3)
+		return bot.createMessage(msg.channel.id, "Please format you message like this: `ignore (@user | server | #channel) (]command | >all | }command)`");
+	let commands = args[2].split(/ *\| */).filter(x => x !== ''),
+		scopes = args[1].split(/ *\| */).filter(x => x !== '');
+	if (commands.length === 0 || scopes.length === 0)
+		return bot.createMessage(msg.channel.id, "Please format you message like this: `ignore (@user | server | #channel) (]command | >all | }command)`");
+
+	scopes.forEach(scope => {
+		let task,
+			args;
+
+		if (scope === 'server') {
+			task = settingsManager.addIgnoreForGuild;
+			args = [msg.channel.guild.id];
+
+		} else if (/<@!?[0-9]+>/.test(scope)) {
+			let id = scope.match(/[0-9]+/)[0];
+			if (msg.channel.guild.members.has(id)) {
+				task = settingsManager.addIgnoreForUserOrChannel;
+				args = [msg.channel.guild.id, 'userIgnores', id];
+			} else
+				return bot.createMessage(msg.channel.id, "Invalid user: " + scope);
+
+		} else if (/<#[0-9]+>/.test(scope)) {
+			let id = scope.match(/[0-9]+/)[0],
+				channel = msg.channel.guild.channels.get(id);
+			if (channel === null || channel.type === 'voice')
+				return bot.createMessage(msg.channel.id, "Invalid text channel: " + scope);
+			task = settingsManager.addIgnoreForUserOrChannel;
+			args = [msg.channel.guild.id, 'channelIgnores', id];
+		}
+
+		ignoreLoop(task, args, commands.slice())
+			.then(modified => {
+				bot.createMessage(msg.channel.id, `**Added the following ignores for ${scope}:**\n${modified.join(', ')}`);
+			})
+			.catch(error => {
+				bot.createMessage(msg.channel.id, `**Error adding ingores for ${scope}:**\n\t${error}`);
+			});
+	});
+}
+
+function removeIgnores(bot, msg, suffix, settingsManager) {
+	let args = suffix.match(/\((.+)\) *\((.+)\)/);
+	if (args === null || args.length !== 3)
+		return bot.createMessage(msg.channel.id, "Please format you message like this: `unignore (@user | server | #channel) (]command | >all | }command)`");
+	let commands = args[2].split(/ *\| */).filter(x => x !== ''),
+		scopes = args[1].split(/ *\| */).filter(x => x !== '');
+	if (commands.length === 0 || scopes.length === 0)
+		return bot.createMessage(msg.channel.id, "Please format you message like this: `unignore (@user | server | #channel) (]command | >all | }command)`");
+
+	scopes.forEach(scope => {
+		let task,
+			args;
+
+		if (scope === 'server') {
+			task = settingsManager.removeIgnoreForGuild;
+			args = [msg.channel.guild.id];
+
+		} else if (/<@!?[0-9]+>/.test(scope)) {
+			let id = scope.match(/[0-9]+/)[0];
+			if (msg.channel.guild.members.has(id)) {
+				task = settingsManager.removeIgnoreForUserOrChannel;
+				args = [msg.channel.guild.id, 'userIgnores', id];
+			} else
+				return bot.createMessage(msg.channel.id, "Invalid user: " + scope);
+
+		} else if (/<#[0-9]+>/.test(scope)) {
+			let id = scope.match(/[0-9]+/)[0],
+				channel = msg.channel.guild.channels.get(id);
+			if (channel === null || channel.type === 'voice')
+				return bot.createMessage(msg.channel.id, "Invalid text channel: " + scope);
+			task = settingsManager.removeIgnoreForUserOrChannel;
+			args = [msg.channel.guild.id, 'channelIgnores', id];
+		}
+
+		ignoreLoop(task, args, commands.slice())
+			.then(modified => {
+				bot.createMessage(msg.channel.id, `**Removed the following ignores for ${scope}:**\n${modified.join(', ')}`);
+			})
+			.catch(error => {
+				bot.createMessage(msg.channel.id, `**Error removing ingores for ${scope}:**\n\t${error}`);
+			});
+	});
+}
+
+function ignoreLoop(task, args, commands) {
+	return new Promise((resolve, reject) => {
+		let modified = [];
+		task(...args, commands[0])
+			.then(b => {
+				if (b === true)
+					modified.push(commands[0]);
+				commands.shift();
+				if (commands.length > 0) {
+					ignoreLoop(task, args, commands)
+						.then(m => {
+							modified.push(m);
+							return resolve(modified);
+						})
+						.catch(reject);
+				} else
+					return resolve(modified);
+			})
+			.catch(reject);
+	});
+}
+
 module.exports = {
 	desc: "Adjust a server's settings.",
 	help: "Modify how the bot works on a server.\n\t__welcome__: Set the channel and message to be displayed to new members `welcome #general Welcome ${USER} to ${SERVER}`.\n\t__events__: Modify event subscriptions `events #event-log +memberjoined +userbanned -namechanged`.",
@@ -70,5 +180,11 @@ module.exports = {
 			handleEventsChange(bot, msg, suffix.substr(6).trim(), settingsManager);
 		else if (suffix.toLowerCase().startsWith('nsfw'))
 			updateNSFWSetting(bot, msg, suffix.substr(5).trim().toLowerCase(), settingsManager);
+		else if (suffix.toLowerCase().startsWith('ignore'))
+			addIgnores(bot, msg, suffix.substr(7).trim().toLowerCase(), settingsManager);
+		else if (suffix.toLowerCase().startsWith('unignore'))
+			removeIgnores(bot, msg, suffix.substr(9).trim().toLowerCase(), settingsManager);
+		else
+			return 'wrong usage';
 	}
 };

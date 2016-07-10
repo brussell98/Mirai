@@ -9,7 +9,6 @@
 * @prop {Function} task The function to execute when the command is called.
 * @prop {Array<String>} aliases An array containing the aliases for the command.
 * @prop {Number} cooldown The colldown for the command in seconds.
-* @prop {Boolean} defaultDisabled If the command is disabled by default.
 * @prop {Boolean} hidden If the command should be hidden from help.
 * @prop {Number} timesUsed How many times the command has been used.
 * @prop {Object} usersOnCooldown Users that are still on cooldown.
@@ -27,7 +26,6 @@ class Command {
 	* @arg {Function} cmd.task
 	* @arg {Array<String>} cmd.aliases
 	* @arg {Number} cmd.cooldown
-	* @arg {Boolean} cmd.defaultDisabled
 	* @arg {Boolean} cmd.hidden
 	*/
 	constructor(name, prefix, cmd) {
@@ -39,7 +37,6 @@ class Command {
 		this.task = cmd.task;
 		this.aliases = cmd.aliases || [];
 		this.cooldown = cmd.cooldown || 0;
-		this.defaultDisabled = !!cmd.defaultDisabled || false;
 		this.hidden = !!cmd.hidden || false;
 		this.timesUsed = 0;
 		this.usersOnCooldown = {};
