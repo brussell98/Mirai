@@ -40,15 +40,15 @@ class CommandManager {
 				else {
 					settingsManager.commandList[this.prefix] = [];
 					for (let name of files) {
-						if (name.endsWith('.js'))
+						if (name.endsWith('.js')) {
 							try {
 								name = name.replace(/\.js$/, '');
-								console.log(`${cDebug(' COMMAND MANAGER ')} Added ${name}.js`);
 								this.commands[name] = new Command(name, this.prefix, reload(this.directory + name + '.js'));
 								settingsManager.commandList[this.prefix].push(name);
 							} catch (e) {
 								console.error(`Error loading command ${name}: ${e}\n${e.stack}`);
 							}
+						}
 					}
 					resolve();
 				}

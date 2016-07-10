@@ -462,7 +462,7 @@ function isCommandIgnored(prefix, command, guildId, channelId, userId) {
 		return true;
 	if (commandSettings[guildId].hasOwnProperty('channelIgnores') && commandSettings[guildId].channelIgnores.hasOwnProperty(channelId) && commandSettings[guildId].channelIgnores[channelId].includes(prefix + command))
 		return true;
-	if (commandSettings[guildId].hasOwnProperty('userIgnores') && commandSettings[guildId].userIgnores.hasOwnProperty(userId) && commandSettings[guildId].userIgnores.includes(prefix + command))
+	if (commandSettings[guildId].hasOwnProperty('userIgnores') && commandSettings[guildId].userIgnores.hasOwnProperty(userId) && commandSettings[guildId].userIgnores[userId].includes(prefix + command))
 		return true;
 	return false;
 }

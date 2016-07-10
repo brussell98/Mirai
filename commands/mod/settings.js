@@ -87,10 +87,13 @@ function addIgnores(bot, msg, suffix, settingsManager) {
 
 		ignoreLoop(task, args, commands.slice())
 			.then(modified => {
-				bot.createMessage(msg.channel.id, `**Added the following ignores for ${scope}:**\n${modified.join(', ')}`);
+				if (modified.length !== 0)
+					bot.createMessage(msg.channel.id, `**Added the following ignores for ${scope.replace(/@/g, '\u200b')}:**\n${modified.join(', ')}`);
+				else
+					bot.createMessage(msg.channel.id, `**No settings modified for ${scope.replace(/@/g, '\u200b')}**`);
 			})
 			.catch(error => {
-				bot.createMessage(msg.channel.id, `**Error adding ingores for ${scope}:**\n\t${error}`);
+				bot.createMessage(msg.channel.id, `**Error adding ingores for ${scope.replace(/@/g, '\u200b')}:**\n\t${error}`);
 			});
 	});
 }
@@ -131,10 +134,13 @@ function removeIgnores(bot, msg, suffix, settingsManager) {
 
 		ignoreLoop(task, args, commands.slice())
 			.then(modified => {
-				bot.createMessage(msg.channel.id, `**Removed the following ignores for ${scope}:**\n${modified.join(', ')}`);
+				if (modified.length !== 0)
+					bot.createMessage(msg.channel.id, `**Removed the following ignores for ${scope.replace(/@/g, '\u200b')}:**\n${modified.join(', ')}`);
+				else
+					bot.createMessage(msg.channel.id, `**No settings modified for ${scope.replace(/@/g, '\u200b')}**`);
 			})
 			.catch(error => {
-				bot.createMessage(msg.channel.id, `**Error removing ingores for ${scope}:**\n\t${error}`);
+				bot.createMessage(msg.channel.id, `**Error removing ingores for ${scope.replace(/@/g, '\u200b')}:**\n\t${error}`);
 			});
 	});
 }

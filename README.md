@@ -5,7 +5,7 @@ An easy to use bot framework using the [Eris](https://github.com/abalabahaha/eri
 [Website](http://brussell98.github.io/bot/index.html)   
 [Support on Patreon](http://patreon.com/brussell98)   
 [API Documentation](http://brussell98.github.io/bot/docs/index.html)   
-[Discord Server](https://discord.gg/0kvLlwb7slG3XCCQ)   
+[Discord Server](https://discord.gg/rkWPSdu)   
 [Wiki containing guides](https://github.com/brussell98/BrussellBot/wiki)   
 [Eris Documentation](https://abal.moe/Eris/docs/index.html)   
 [Todo List (Trello)](https://trello.com/b/Uw5wZLzJ)   

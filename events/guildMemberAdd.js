@@ -1,4 +1,4 @@
-module.exports = function(bot, settingsManager, guild, member) {
+module.exports = function(bot, settingsManager, _config, guild, member) {
 	let welcomeMessage = settingsManager.getWelcome(guild, member);
 	if (welcomeMessage !== null) {
 		if (welcomeMessage[0] === 'DM') {

@@ -9,18 +9,7 @@ var reload			= require('require-reload')(require),
 	utils			= reload('./utils/utils.js'),
 	settingsManager	= reload('./utils/settingsManager.js'),
 	CommandManagers	= [],
-	ready			= false;
-
-var events = {
-	ready: reload(`${__dirname}/events/ready.js`),
-	messageCreate: reload(`${__dirname}/events/messageCreate.js`),
-	guildMemberAdd: reload(`${__dirname}/events/guildMemberAdd.js`),
-	guildMemberRemove: reload(`${__dirname}/events/guildMemberRemove.js`),
-	guildBanAdd: reload(`${__dirname}/events/guildBanAdd.js`),
-	guildBanRemove: reload(`${__dirname}/events/guildBanRemove.js`),
-	userUpdate: reload(`${__dirname}/events/userUpdate.js`),
-	guildMemberUpdate: reload(`${__dirname}/events/guildMemberUpdate.js`)
-};
+	events			= {};
 
 //console colors
 cWarn	= chalk.bgYellow.black;
@@ -60,20 +49,68 @@ function loadCommandSets() {
 	});
 }
 
-function init(index = 0) {
+function initCommandManagers(index = 0) {
 	return new Promise((resolve, reject) => {
 		CommandManagers[index].initialize(settingsManager) //Load CommandManager at {index}
 			.then(() => {
 				console.log(`${cDebug(' INIT ')} Loaded CommandManager ${index}`);
 				index++;
 				if (CommandManagers.length > index) { //If there are more to load
-					init(index) //Loop through again
+					initCommandManagers(index) //Loop through again
 						.then(resolve)
 						.catch(reject);
 				} else //If that was the last one resolve
 					resolve();
 			}).catch(reject);
 	});
+}
+
+function loadEvents() {
+	return new Promise((resolve, reject) => {
+		fs.readdir('./events/', (err, files) => {
+			if (err) reject(`Error reading events directory: ${err}`);
+			else if (!files) reject('No files in directory events/');
+			else {
+				for (let name of files) {
+					if (name.endsWith('.js')) {
+						name = name.replace(/\.js$/, '');
+						try {
+							events[name] = reload(`./events/${name}.js`);
+							initEvent(name);
+						} catch (e) {
+							console.error(`Error loading event ${name.replace(/\.js$/, '')}: ${e}\n${e.stack}`);
+						}
+					}
+				}
+				resolve();
+			}
+		});
+	});
+}
+
+function initEvent(name) {
+	if (name === 'messageCreate') {
+		bot.on('messageCreate', msg => {
+			if (msg.content.startsWith(config.reloadCommand) && config.adminIds.includes(msg.author.id)) //check for reload or eval command
+				reloadModule(msg);
+			else if (msg.content.startsWith(config.evalCommand) && config.adminIds.includes(msg.author.id))
+				evaluate(msg);
+			else
+				events.messageCreate.handler(bot, msg, CommandManagers, config, settingsManager);
+		});
+	} else if (name === 'channelDelete') {
+		bot.on('channelDelete', channel => {
+			settingsManager.handleDeletedChannel(channel);
+		});
+	} else if (name === 'ready') {
+		bot.on('ready', () => {
+			events.ready(bot, config, [], utils);
+		});
+	} else {
+		bot.on(name, () => {
+			events[name](bot, settingsManager, config, ...arguments);
+		});
+	}
 }
 
 function login() {
@@ -83,75 +120,42 @@ function login() {
 
 //Load commands and log in
 loadCommandSets()
-	.then(init)
+	.then(initCommandManagers)
+	.then(loadEvents)
 	.then(login)
 	.catch(error => {
 		console.error(`${cError(' ERROR IN INIT ')} ${error}`);
 	});
 
+if (bot.listenerCount('error') === 0) {
+	bot.on('error', (e, id) => {
+		console.log(`${cError(` SHARD ${id} ERROR `)} ${e}\n${e.stack}`);
+	});
+}
 
-bot.on('error', (e, id) => {
-	console.log(`${cError(` SHARD ${id} ERROR `)} ${e}\n${e.stack}`);
-});
+if (bot.listenerCount('shardReady') === 0) {
+	bot.on('shardReady', id => {
+		console.log(cGreen(` SHARD ${id} CONNECTED `));
+	});
+}
 
-bot.on('ready', () => {
-	ready = true;
-	utils.checkForUpdates();
-	events.ready(bot, config, [], utils);
-});
+if (bot.listenerCount('disconnected') === 0) {
+	bot.on('disconnected', () => {
+		console.log(cRed('Disconnected from Discord'));
+	});
+}
 
-bot.on('shardReady', id => {
-	console.log(cGreen(` SHARD ${id} CONNECTED `));
-});
+if (bot.listenerCount('shardDisconnect') === 0) {
+	bot.on('shardDisconnect', (e, id) => {
+		console.log(`${cError(` SHARD ${id} DISCONNECT `)} ${e}`);
+	});
+}
 
-bot.on('disconnected', () => {
-	console.log(cRed('Disconnected from Discord'));
-});
-
-bot.on('shardDisconnect', (e, id) => {
-	console.log(`${cError(` SHARD ${id} DISCONNECT `)} ${e}`);
-});
-
-bot.on('shardResume', id => {
-	console.log(cGreen(` SHARD ${id} RESUMED `));
-});
-
-bot.on('messageCreate', msg => {
-	if (msg.content.startsWith(config.reloadCommand) && config.adminIds.includes(msg.author.id)) //check for reload or eval command
-		reloadModule(msg);
-	else if (msg.content.startsWith(config.evalCommand) && config.adminIds.includes(msg.author.id))
-		evaluate(msg);
-	else
-		events.messageCreate.handler(bot, msg, CommandManagers, config, settingsManager);
-});
-
-bot.on('guildMemberAdd', (guild, member) => {
-	events.guildMemberAdd(bot, settingsManager, guild, member);
-});
-
-bot.on('guildMemberRemove', (guild, member) => {
-	events.guildMemberRemove(bot, settingsManager, guild, member);
-});
-
-bot.on('guildBanAdd', (guild, user) => {
-	events.guildBanAdd(bot, settingsManager, guild, user);
-});
-
-bot.on('guildBanRemove', (guild, user) => {
-	events.guildBanRemove(bot, settingsManager, guild, user);
-});
-
-bot.on('channelDelete', channel => {
-	settingsManager.handleDeletedChannel(channel);
-});
-
-bot.on('userUpdate', (user, oldUser) => {
-	events.userUpdate(bot, settingsManager, user, oldUser);
-});
-
-bot.on('guildMemberUpdate', (_, member, oldMember) => {
-	events.guildMemberUpdate(bot, settingsManager, member, oldMember);
-});
+if (bot.listenerCount('shardResume') === 0) {
+	bot.on('shardResume', id => {
+		console.log(cGreen(` SHARD ${id} RESUMED `));
+	});
+}
 
 function reloadModule(msg) {
 	console.log(`${cDebug(' RELOAD MODULE ')} ${msg.author.username}: ${msg.content}`);
@@ -165,7 +169,7 @@ function reloadModule(msg) {
 	if (arg === 'CommandManagers') {
 
 		loadCommandSets()
-			.then(init)
+			.then(initCommandManagers)
 			.then(() => {
 				bot.createMessage(msg.channel.id, 'Reloaded CommandManagers');
 			}).catch(err => {
@@ -252,7 +256,7 @@ function evaluate(msg) {
 
 if (config.carbonKey) { //Send servercount to Carbon bot list
 	setInterval(() => {
-		if (ready)
-			utils.updateCarbon(config.carbonKey, bot.servers.length);
+		if (bot.guilds.size !== 0)
+			utils.updateCarbon(config.carbonKey, bot.guilds.size);
 	}, 1800000);
 }
