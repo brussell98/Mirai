@@ -15,7 +15,7 @@ function updateWelcome(bot, msg, suffix, settingsManager) {
 			bot.createMessage(msg.channel.id, "Sorry, your welcome message needs to be under 1,900 characters.");
 		else {
 			settingsManager.setWelcome(msg.channel.guild.id, msg.channelMentions[0] || "DM", newWelcome)
-				.then(() => bot.createMessage(msg.channel.id, `⚙ Welcome message set to:\n${newWelcome} **in** ${'<#' + msg.channelMentions[0] + '>' || 'a DM'}`));
+				.then(() => bot.createMessage(msg.channel.id, `⚙ Welcome message set to:\n${newWelcome} **in** ${msg.channelMentions[0] ? '<#' + msg.channelMentions[0] + '>' : 'a DM'}`));
 		}
 	}
 }
@@ -56,7 +56,7 @@ function addIgnores(bot, msg, suffix, settingsManager) {
 	if (args === null || args.length !== 3)
 		return bot.createMessage(msg.channel.id, "Please format you message like this: `ignore (@user | server | #channel) (]command | >all | }command)`");
 	let commands = args[2].split(/ *\| */).filter(x => x !== ''),
-		scopes = args[1].split(/ *\| */).filter(x => x !== '');
+		scopes = args[1].split(/ *\| */).filter(x => x !== ''); // Remove empty entries from the array
 	if (commands.length === 0 || scopes.length === 0)
 		return bot.createMessage(msg.channel.id, "Please format you message like this: `ignore (@user | server | #channel) (]command | >all | }command)`");
 
@@ -68,7 +68,7 @@ function addIgnores(bot, msg, suffix, settingsManager) {
 			task = settingsManager.addIgnoreForGuild;
 			args = [msg.channel.guild.id];
 
-		} else if (/<@!?[0-9]+>/.test(scope)) {
+		} else if (/<@!?[0-9]+>/.test(scope)) { // If adjusting for a user
 			let id = scope.match(/[0-9]+/)[0];
 			if (msg.channel.guild.members.has(id)) {
 				task = settingsManager.addIgnoreForUserOrChannel;
@@ -76,7 +76,7 @@ function addIgnores(bot, msg, suffix, settingsManager) {
 			} else
 				return bot.createMessage(msg.channel.id, "Invalid user: " + scope);
 
-		} else if (/<#[0-9]+>/.test(scope)) {
+		} else if (/<#[0-9]+>/.test(scope)) { // If adjusting for a channel
 			let id = scope.match(/[0-9]+/)[0],
 				channel = msg.channel.guild.channels.get(id);
 			if (channel === null || channel.type === 'voice')
@@ -85,15 +85,15 @@ function addIgnores(bot, msg, suffix, settingsManager) {
 			args = [msg.channel.guild.id, 'channelIgnores', id];
 		}
 
-		ignoreLoop(task, args, commands.slice())
+		ignoreLoop(task, args, commands.slice()) // commands must be passed as a copy, NOT AS A REFERENCE
 			.then(modified => {
 				if (modified.length !== 0)
-					bot.createMessage(msg.channel.id, `**Added the following ignores for ${scope.replace(/@/g, '\u200b')}:**\n${modified.join(', ')}`);
+					bot.createMessage(msg.channel.id, `**Added the following ignores for ${scope}:**\n${modified.join(', ')}`);
 				else
-					bot.createMessage(msg.channel.id, `**No settings modified for ${scope.replace(/@/g, '\u200b')}**`);
+					bot.createMessage(msg.channel.id, `**No settings modified for ${scope}**`);
 			})
 			.catch(error => {
-				bot.createMessage(msg.channel.id, `**Error adding ingores for ${scope.replace(/@/g, '\u200b')}:**\n\t${error}`);
+				bot.createMessage(msg.channel.id, `**Error adding ignores for ${scope}:**\n\t${error}`);
 			});
 	});
 }
@@ -135,12 +135,12 @@ function removeIgnores(bot, msg, suffix, settingsManager) {
 		ignoreLoop(task, args, commands.slice())
 			.then(modified => {
 				if (modified.length !== 0)
-					bot.createMessage(msg.channel.id, `**Removed the following ignores for ${scope.replace(/@/g, '\u200b')}:**\n${modified.join(', ')}`);
+					bot.createMessage(msg.channel.id, `**Removed the following ignores for ${scope}:**\n${modified.join(', ')}`);
 				else
-					bot.createMessage(msg.channel.id, `**No settings modified for ${scope.replace(/@/g, '\u200b')}**`);
+					bot.createMessage(msg.channel.id, `**No settings modified for ${scope}**`);
 			})
 			.catch(error => {
-				bot.createMessage(msg.channel.id, `**Error removing ingores for ${scope.replace(/@/g, '\u200b')}:**\n\t${error}`);
+				bot.createMessage(msg.channel.id, `**Error removing ignores for ${scope}:**\n\t${error}`);
 			});
 	});
 }
@@ -176,7 +176,7 @@ module.exports = {
 	task(bot, msg, suffix, config, settingsManager) {
 		if (msg.channel.guild === null)
 			bot.createMessage(msg.channel.id, 'You have to do this in a server.');
-		else if (!msg.channel.permissionsOf(msg.author.id).json.manageServer && !config.adminIds.includes(msg.author.id))
+		else if (!msg.member.permission.json.manageGuild && !config.adminIds.includes(msg.author.id))
 			bot.createMessage(msg.channel.id, 'You need the `Manage Server` permission to use this.');
 		else if (!suffix)
 			return 'wrong usage';

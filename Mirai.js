@@ -8,6 +8,7 @@ var reload			= require('require-reload')(require),
 	CommandManager	= reload('./utils/CommandManager.js'),
 	utils			= reload('./utils/utils.js'),
 	settingsManager	= reload('./utils/settingsManager.js'),
+	games			= reload('./special/games.json'),
 	CommandManagers	= [],
 	events			= {};
 
@@ -65,7 +66,7 @@ function initCommandManagers(index = 0) {
 	});
 }
 
-function loadEvents() {
+function loadEvents() { // Load all events in events/
 	return new Promise((resolve, reject) => {
 		fs.readdir('./events/', (err, files) => {
 			if (err) reject(`Error reading events directory: ${err}`);
@@ -88,7 +89,7 @@ function loadEvents() {
 	});
 }
 
-function initEvent(name) {
+function initEvent(name) { // Setup the event listener for each loaded event.
 	if (name === 'messageCreate') {
 		bot.on('messageCreate', msg => {
 			if (msg.content.startsWith(config.reloadCommand) && config.adminIds.includes(msg.author.id)) //check for reload or eval command
@@ -104,13 +105,55 @@ function initEvent(name) {
 		});
 	} else if (name === 'ready') {
 		bot.on('ready', () => {
-			events.ready(bot, config, [], utils);
+			events.ready(bot, config, games, utils);
 		});
 	} else {
-		bot.on(name, () => {
+		bot.on(name, function() { // MUST NOT BE ANNON/ARROW FUNCTION
 			events[name](bot, settingsManager, config, ...arguments);
 		});
 	}
+}
+
+function miscEvents() {
+	return new Promise(resolve => {
+		if (bot.listenerCount('error') === 0) {
+			bot.on('error', (e, id) => {
+				console.log(`${cError(` SHARD ${id} ERROR `)} ${e}\n${e.stack}`);
+			});
+		}
+		if (bot.listenerCount('shardReady') === 0) {
+			bot.on('shardReady', id => {
+				console.log(cGreen(` SHARD ${id} CONNECTED `));
+			});
+		}
+		if (bot.listenerCount('disconnected') === 0) {
+			bot.on('disconnected', () => {
+				console.log(cRed('Disconnected from Discord'));
+			});
+		}
+		if (bot.listenerCount('shardDisconnect') === 0) {
+			bot.on('shardDisconnect', (e, id) => {
+				console.log(`${cError(` SHARD ${id} DISCONNECT `)} ${e}`);
+			});
+		}
+		if (bot.listenerCount('shardResume') === 0) {
+			bot.on('shardResume', id => {
+				console.log(cGreen(` SHARD ${id} RESUMED `));
+			});
+		}
+		if (bot.listenerCount('guildCreate') === 0) {
+			bot.on('guildCreate', guild => {
+				console.log(`${cGreen(' GUILD CREATE ')}${guild.name}`);
+			});
+		}
+		if (bot.listenerCount('guildDelete') === 0) {
+			bot.on('guildDelete', (guild, unavalible) => {
+				if (unavalible === false)
+					console.log(`${cYellow(' GUILD LEAVE ')}${guild.name}`);
+			});
+		}
+		return resolve();
+	});
 }
 
 function login() {
@@ -122,40 +165,11 @@ function login() {
 loadCommandSets()
 	.then(initCommandManagers)
 	.then(loadEvents)
+	.then(miscEvents)
 	.then(login)
 	.catch(error => {
 		console.error(`${cError(' ERROR IN INIT ')} ${error}`);
 	});
-
-if (bot.listenerCount('error') === 0) {
-	bot.on('error', (e, id) => {
-		console.log(`${cError(` SHARD ${id} ERROR `)} ${e}\n${e.stack}`);
-	});
-}
-
-if (bot.listenerCount('shardReady') === 0) {
-	bot.on('shardReady', id => {
-		console.log(cGreen(` SHARD ${id} CONNECTED `));
-	});
-}
-
-if (bot.listenerCount('disconnected') === 0) {
-	bot.on('disconnected', () => {
-		console.log(cRed('Disconnected from Discord'));
-	});
-}
-
-if (bot.listenerCount('shardDisconnect') === 0) {
-	bot.on('shardDisconnect', (e, id) => {
-		console.log(`${cError(` SHARD ${id} DISCONNECT `)} ${e}`);
-	});
-}
-
-if (bot.listenerCount('shardResume') === 0) {
-	bot.on('shardResume', id => {
-		console.log(cGreen(` SHARD ${id} RESUMED `));
-	});
-}
 
 function reloadModule(msg) {
 	console.log(`${cDebug(' RELOAD MODULE ')} ${msg.author.username}: ${msg.content}`);
@@ -222,6 +236,10 @@ function reloadModule(msg) {
 			case 'cleverbot':
 				events.messageCreate.reloadCleverbot(bot, msg.channel.id);
 				break;
+			case 'games':
+				games = reload('./special/games.json');
+				bot.createMessage(msg.channel.id, `Reloaded special/games.json`);
+				break;
 			default:
 				bot.createMessage(msg.channel.id, "Not found");
 				break;
@@ -256,7 +274,15 @@ function evaluate(msg) {
 
 if (config.carbonKey) { //Send servercount to Carbon bot list
 	setInterval(() => {
-		if (bot.guilds.size !== 0)
+		if (bot.uptime !== 0)
 			utils.updateCarbon(config.carbonKey, bot.guilds.size);
 	}, 1800000);
 }
+
+setInterval(() => { // Update the bot's status for each shard every 10 minutes
+	if (games.length !== 0 && bot.uptime !== 0) {
+		bot.shards.forEach(shard => {
+			shard.editGame({name: games[~~(Math.random() * games.length)]});
+		});
+	}
+}, 600000);

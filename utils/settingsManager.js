@@ -258,12 +258,12 @@ function addIgnoreForUserOrChannel(guildId, type, id, command) {
 				}
 				if (!commandSettings[guildId][type][id].includes('cleverbot'))
 					commandSettings[guildId][type][id].push('cleverbot');
-			} else if (commandList.hasOwnProperty(prefix) && !commandSettings[guildId][type][id].includes(prefix))
+			} else if (commandList.hasOwnProperty(prefix) && !commandSettings[guildId][type][id].includes(prefix)) {
 				for (let c of commandList[prefix]) { //All of that prefix's commands.
 					if (!commandSettings[guildId][type][id].includes(prefix + c)) //If not already ignored.
 						commandSettings[guildId][type][id].push(prefix + c);
 				}
-			else {
+			} else {
 				return resolve(false);
 			}
 			updateCommand = true;
@@ -310,14 +310,14 @@ function removeIgnoreForUserOrChannel(guildId, type, id, command) {
 		if (command === 'all') {
 			if (prefix === undefined && commandSettings[guildId][type][id].length !== 0)
 				delete commandSettings[guildId][type][id];
-			else if (commandList.hasOwnProperty(prefix) && commandSettings[guildId][type][id].length !== 0)
+			else if (commandList.hasOwnProperty(prefix) && commandSettings[guildId][type][id].length !== 0) {
 				for (let c of commandList[prefix]) {
 					if (commandSettings[guildId][type][id].includes(prefix + c))
 						commandSettings[guildId][type][id].splice(commandSettings[guildId][type][id].indexOf(prefix + c), 1);
 				}
 				if (commandSettings[guildId][type][id].length === 0)
 					delete commandSettings[guildId][type][id];
-			else
+			} else
 				return resolve(false);
 			updateCommand = true;
 			return resolve(true);
@@ -372,12 +372,12 @@ function addIgnoreForGuild(guildId, command) {
 				}
 				if (!commandSettings[guildId].guildIgnores.includes('cleverbot'))
 					commandSettings[guildId].guildIgnores.push('cleverbot');
-			} else if (commandList.hasOwnProperty(prefix) && !commandSettings[guildId].guildIgnores.includes(prefix))
+			} else if (commandList.hasOwnProperty(prefix) && !commandSettings[guildId].guildIgnores.includes(prefix)) {
 				for (let c of commandList[prefix]) { //All of that prefix's commands.
 					if (!commandSettings[guildId].guildIgnores.includes(prefix + c)) //If not already ignored.
 						commandSettings[guildId].guildIgnores.push(prefix + c);
 				}
-			else
+			} else
 				return resolve(false);
 			updateCommand = true;
 			return resolve(true);
@@ -421,14 +421,14 @@ function removeIgnoreForGuild(guildId, command) {
 		if (command === 'all') {
 			if (prefix === undefined && commandSettings[guildId].guildIgnores.length !== 0)
 				delete commandSettings[guildId].guildIgnores;
-			else if (commandList.hasOwnProperty(prefix) && commandSettings[guildId].guildIgnores.length !== 0)
+			else if (commandList.hasOwnProperty(prefix) && commandSettings[guildId].guildIgnores.length !== 0) {
 				for (let c of commandList[prefix]) {
 					if (commandSettings[guildId].guildIgnores.includes(prefix + c))
 						commandSettings[guildId].guildIgnores.splice(commandSettings[guildId].guildIgnores.indexOf(prefix + c), 1);
 				}
 				if (commandSettings[guildId].guildIgnores.length === 0)
 					delete commandSettings[guildId].guildIgnores;
-			else
+			} else
 				return resolve(false);
 			updateCommand = true;
 			return resolve(true);

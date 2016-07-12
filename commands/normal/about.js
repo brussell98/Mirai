@@ -1,4 +1,4 @@
-var libVersion = require('../../node_modules/eris/package.json').version,
+const libVersion = require('../../node_modules/eris/package.json').version,
 	botVersion = require('../../package.json').version;
 
 module.exports = {

@@ -1,3 +1,10 @@
+const RESPONSES = [
+	c => `I chose **${c}**`,
+	c => `I pick ${c}`,
+	c => `${c} is the best choice`,
+	c => `${c} is my choice`
+];
+
 module.exports = {
 	desc: "Makes a choice for you.",
 	usage: "<choice> | <choice> [| choice...]",
@@ -15,11 +22,9 @@ module.exports = {
 
 		let pick = ~~(Math.random() * choices.length);
 		choices.forEach((c, i) => {
-			if ((c.includes('homework') || c.includes('sleep') || c.includes('study') || c.includes('productiv')) && Math.random() < .3) {
-				pick = i; //Higher chance to pick choices containing key words
-				return;
-			}
+			if ((c.includes('homework') || c.includes('sleep') || c.includes('study') || c.includes('productiv')) && Math.random() < .3)
+				return pick = i; //Higher chance to pick choices containing key words
 		});
-		bot.createMessage(msg.channel.id, `I chose **${choices[pick]}**`);
+		bot.createMessage(msg.channel.id, RESPONSES[~~(Math.random() * choices.length)](choices[pick]));
 	}
 };

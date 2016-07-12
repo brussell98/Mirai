@@ -1,4 +1,4 @@
-var cases = [
+const RESPONSES = [
 	"pong",
 	"*I-It's not like I wanted to say pong or anything...*",
 	"pong!",
@@ -13,9 +13,9 @@ module.exports = {
 	aliases: ['p'],
 	cooldown: 2,
 	task(bot, msg) {
-		let choice = ~~(Math.random() * cases.length);
-		bot.createMessage(msg.channel.id, cases[choice]).then(sentMsg => {
-			bot.editMessage(sentMsg.channel.id, sentMsg.id, `${cases[choice]}    |    Response delay: ${sentMsg.timestamp - msg.timestamp}ms`);
+		let choice = ~~(Math.random() * RESPONSES.length);
+		bot.createMessage(msg.channel.id, RESPONSES[choice]).then(sentMsg => {
+			bot.editMessage(sentMsg.channel.id, sentMsg.id, `${RESPONSES[choice]}    |    Response delay: ${sentMsg.timestamp - msg.timestamp}ms`);
 		});
 	}
 };
