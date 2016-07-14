@@ -1,7 +1,7 @@
 {
 	"token": "",
 	"shardCount": 1,
-	"disabledEvents": {
+	"disableEvents": {
 		"VOICE_STATE_UPDATE": true,
 		"TYPING_START": true,
 		"MESSAGE_DELETE_BULK": true,
@@ -17,12 +17,8 @@
 	"allowUserGames": false,
 	"cleverbot": true,
 	"inviteLink": "",
-	"errorMessage": "Oh no! I ran into an error! Please report this to the owner.",
+	"errorMessage": "Oh no! I ran into an error! Please report this to my owner.",
 	"carbonKey": "",
-	"OWMApiKey": "",
-	"MALUsername": "",
-	"MALPassword": "",
-	"osuApiKey": "",
 	"bannedServers": [],
 	"whitelistedServers": []
 }

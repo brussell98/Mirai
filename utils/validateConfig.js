@@ -7,8 +7,8 @@ module.exports = function(config) {
 		console.log(cError(" CONFIG ERROR ") + " shardCount must be a valid positive Number");
 		process.exit(0);
 	}
-	if (typeof config.disabledEvents !== 'object') {
-		console.log(cError(" CONFIG ERROR ") + " disabledEvents must be a valid Object");
+	if (typeof config.disableEvents !== 'object') {
+		console.log(cError(" CONFIG ERROR ") + " disableEvents must be a valid Object");
 		process.exit(0);
 	}
 	//Check for invalid command sets
@@ -42,12 +42,4 @@ module.exports = function(config) {
 		console.log(cWarn(" CONFIG WARNING ") + " allowUserGames is not defined");
 	if (typeof config.cleverbot !== 'boolean')
 		console.log(cWarn(" CONFIG WARNING ") + " cleverbot must be set to true or false");
-	if (!config.OWMApiKey)
-		console.log(cWarn(" CONFIG WARNING ") + " Open Weather Map API key is not defined");
-	if (!config.MALUsername)
-		console.log(cWarn(" CONFIG WARNING ") + " My Anime List username is not defined");
-	if (!config.MALPassword)
-		console.log(cWarn(" CONFIG WARNING ") + " My Anime List password is not defined");
-	if (!config.osuApiKey)
-		console.log(cWarn(" CONFIG WARNING ") + " osu API key is not defined");
 }

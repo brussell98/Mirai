@@ -37,7 +37,7 @@ class Command {
 		this.task = cmd.task;
 		this.aliases = cmd.aliases || [];
 		this.cooldown = cmd.cooldown || 0;
-		this.hidden = !!cmd.hidden || false;
+		this.hidden = !!cmd.hidden;
 		this.timesUsed = 0;
 		this.usersOnCooldown = {};
 	}

@@ -96,7 +96,7 @@ exports.setAvatar = function(bot, url) {
 
 /**
 * Comma sperate a number.
-* @arg {Number} number The number to comma.
+* @arg {Number|String} number The number to comma.
 * @returns {String} The formatted number.
 */
 exports.comma = (number) => number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");

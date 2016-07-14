@@ -31,10 +31,10 @@ var bot = new Eris(config.token, {
 	autoReconnect: true,
 	disableEveryone: true,
 	getAllUsers: true,
-	messageLimit: 200,
+	messageLimit: 50,
 	sequencerWait: 100,
 	moreMentions: true,
-	disabledEvents: config.disabledEvents,
+	disableEvents: config.disableEvents,
 	maxShards: config.shardCount
 });
 
@@ -147,8 +147,8 @@ function miscEvents() {
 			});
 		}
 		if (bot.listenerCount('guildDelete') === 0) {
-			bot.on('guildDelete', (guild, unavalible) => {
-				if (unavalible === false)
+			bot.on('guildDelete', (guild, unavailable) => {
+				if (unavailable === false)
 					console.log(`${cYellow(' GUILD LEAVE ')}${guild.name}`);
 			});
 		}
@@ -201,11 +201,13 @@ function reloadModule(msg) {
 						CommandManager = reload(`./${arg}.js`);
 						bot.createMessage(msg.channel.id, 'Reloaded utils/CommandManager.js');
 						break;
-					case 'settingsManager':
+					case 'settingsManager': {
+						let tempCommandList = settingsManager.commandList;
 						settingsManager = reload(`./${arg}.js`);
+						settingsManager.commandList = tempCommandList;
 						bot.createMessage(msg.channel.id, 'Reloaded utils/settingsManager.js');
 						break;
-					case 'utils':
+					} case 'utils':
 						utils = reload(`./${arg}.js`);
 						bot.createMessage(msg.channel.id, 'Reloaded utils/utils.js');
 						break;

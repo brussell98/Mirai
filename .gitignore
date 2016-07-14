@@ -8,6 +8,7 @@ commands/mod/*
 special/*
 
 !special/cleverbot.js
+!special/games.json
 !commands/normal/about.js
 !commands/normal/choose.js
 !commands/normal/invite.js

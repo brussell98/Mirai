@@ -54,6 +54,8 @@ function updateNSFWSetting(bot, msg, suffix, settingsManager) {
 function addIgnores(bot, msg, suffix, settingsManager) {
 	let args = suffix.match(/\((.+)\) *\((.+)\)/);
 	if (args === null || args.length !== 3)
+		args = suffix.match(/([^ ]+) +(.+)/);
+	if (args === null || args.length !== 3)
 		return bot.createMessage(msg.channel.id, "Please format you message like this: `ignore (@user | server | #channel) (]command | >all | }command)`");
 	let commands = args[2].split(/ *\| */).filter(x => x !== ''),
 		scopes = args[1].split(/ *\| */).filter(x => x !== ''); // Remove empty entries from the array
@@ -100,6 +102,8 @@ function addIgnores(bot, msg, suffix, settingsManager) {
 
 function removeIgnores(bot, msg, suffix, settingsManager) {
 	let args = suffix.match(/\((.+)\) *\((.+)\)/);
+	if (args === null || args.length !== 3)
+		args = suffix.match(/([^ ]+) +(.+)/);
 	if (args === null || args.length !== 3)
 		return bot.createMessage(msg.channel.id, "Please format you message like this: `unignore (@user | server | #channel) (]command | >all | }command)`");
 	let commands = args[2].split(/ *\| */).filter(x => x !== ''),
@@ -167,6 +171,26 @@ function ignoreLoop(task, args, commands) {
 	});
 }
 
+function checkIgnores(bot, msg, suffix, settingsManager) {
+	if (suffix) {
+		let ignored;
+		if (suffix === 'server')
+			ignored = settingsManager.checkIgnoresFor(msg.channel.guild.id, 'guild');
+		else if (msg.channelMentions.length !== 0)
+			ignored = settingsManager.checkIgnoresFor(msg.channel.guild.id, 'channel', msg.channelMentions[0]);
+		else if (msg.mentions.length !== 0)
+			ignored = settingsManager.checkIgnoresFor(msg.channel.guild.id, 'user', msg.mentions[0]);
+		else
+			return bot.createMessage(msg.channel.id, 'Please specify "server", a channel, or a user');
+
+		if (ignored.length === 0)
+			bot.createMessage(msg.channel.id, 'Nothing ignored');
+		else
+			bot.createMessage(msg.channel.id, '**Ignored:**\n' + ignored.join(', '));
+	} else
+		bot.createMessage(msg.channel.id, '');
+}
+
 module.exports = {
 	desc: "Adjust a server's settings.",
 	help: "Modify how the bot works on a server.\n\t__welcome__: Set the channel and message to be displayed to new members `welcome #general Welcome ${USER} to ${SERVER}`.\n\t__events__: Modify event subscriptions `events #event-log +memberjoined +userbanned -namechanged`.",
@@ -178,19 +202,22 @@ module.exports = {
 			bot.createMessage(msg.channel.id, 'You have to do this in a server.');
 		else if (!msg.member.permission.json.manageGuild && !config.adminIds.includes(msg.author.id))
 			bot.createMessage(msg.channel.id, 'You need the `Manage Server` permission to use this.');
-		else if (!suffix)
-			return 'wrong usage';
-		else if (suffix.startsWith('welcome'))
-			updateWelcome(bot, msg, suffix.substr(7).trim(), settingsManager);
-		else if (suffix.startsWith('events'))
-			handleEventsChange(bot, msg, suffix.substr(6).trim(), settingsManager);
-		else if (suffix.toLowerCase().startsWith('nsfw'))
-			updateNSFWSetting(bot, msg, suffix.substr(5).trim().toLowerCase(), settingsManager);
-		else if (suffix.toLowerCase().startsWith('ignore'))
-			addIgnores(bot, msg, suffix.substr(7).trim().toLowerCase(), settingsManager);
-		else if (suffix.toLowerCase().startsWith('unignore'))
-			removeIgnores(bot, msg, suffix.substr(9).trim().toLowerCase(), settingsManager);
-		else
+		if (suffix) {
+			if (suffix.startsWith('welcome'))
+				updateWelcome(bot, msg, suffix.substr(7).trim(), settingsManager);
+			else if (suffix.startsWith('events'))
+				handleEventsChange(bot, msg, suffix.substr(6).trim(), settingsManager);
+			else if (suffix.toLowerCase().startsWith('nsfw'))
+				updateNSFWSetting(bot, msg, suffix.substr(5).trim().toLowerCase(), settingsManager);
+			else if (suffix.startsWith('ignored') || suffix.startsWith('check ignores') || suffix.startsWith('check ignored'))
+				checkIgnores(bot, msg, suffix.substr(13).trim().toLowerCase(), settingsManager);
+			else if (suffix.startsWith('ignore'))
+				addIgnores(bot, msg, suffix.substr(7).trim().toLowerCase(), settingsManager);
+			else if (suffix.startsWith('unignore'))
+				removeIgnores(bot, msg, suffix.substr(9).trim().toLowerCase(), settingsManager);
+			else
+				return 'wrong usage';
+		} else
 			return 'wrong usage';
 	}
 };
