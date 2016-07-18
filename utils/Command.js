@@ -3,13 +3,14 @@
 * @classdesc Represents a command for the client.
 * @prop {String} name The command's name.
 * @prop {String} prefix Prefix for the command.
-* @prop {String} [usage=""] Usage for the command.
-* @prop {String} [desc="No description"] Short description of what the command does.
-* @prop {String} [help="No description"] Detailed description of what the command does.
+* @prop {String} usage Usage for the command.
+* @prop {String} desc Short description of what the command does.
+* @prop {String} help Detailed description of what the command does.
 * @prop {Function} task The function to execute when the command is called.
 * @prop {Array<String>} aliases An array containing the aliases for the command.
 * @prop {Number} cooldown The colldown for the command in seconds.
 * @prop {Boolean} hidden If the command should be hidden from help.
+* @prop {Boolean} ownerOnly If the command can only be used by a bot admin.
 * @prop {Number} timesUsed How many times the command has been used.
 * @prop {Object} usersOnCooldown Users that are still on cooldown.
 */
@@ -20,13 +21,14 @@ class Command {
 	* @arg {String} name Name of the command.
 	* @arg {String} prefix This prefix for the command.
 	* @arg {Object} cmd Object containing the appropriate properties including the function to run.
-	* @arg {String} cmd.usage
-	* @arg {String} cmd.desc
-	* @arg {String} cmd.help
+	* @arg {String} [cmd.usage=""]
+	* @arg {String} [cmd.desc="No description"]
+	* @arg {String} [cmd.help=""No description""]
 	* @arg {Function} cmd.task
-	* @arg {Array<String>} cmd.aliases
-	* @arg {Number} cmd.cooldown
-	* @arg {Boolean} cmd.hidden
+	* @arg {Array<String>} [cmd.aliases=[]]
+	* @arg {Number} [cmd.cooldown=0]
+	* @arg {Boolean} [cmd.hidden=false]
+	* @arg {Boolean} [ownerOnly=false]
 	*/
 	constructor(name, prefix, cmd) {
 		this.name = name;
@@ -38,6 +40,7 @@ class Command {
 		this.aliases = cmd.aliases || [];
 		this.cooldown = cmd.cooldown || 0;
 		this.hidden = !!cmd.hidden;
+		this.ownerOnly = !!cmd.ownerOnly;
 		this.timesUsed = 0;
 		this.usersOnCooldown = {};
 	}
@@ -78,7 +81,14 @@ class Command {
 	* @arg {settingsManager} settingsManager
 	*/
 	execute(bot, msg, suffix, config, settingsManager) {
-		if (this.usersOnCooldown.hasOwnProperty(msg.author.id)) { //if the user is still on cooldown
+		if (this.ownerOnly === true && !config.adminIds.includes(msg.author.id))
+			return bot.createMessage(msg.channel.id, 'Only the owner of this bot can use that command.').then(sentMsg => {
+				setTimeout(() => {
+					bot.deleteMessage(msg.channel.id, msg.id);
+					bot.deleteMessage(sentMsg.channel.id, sentMsg.id);
+				}, 6000);
+			});
+		else if (this.usersOnCooldown.hasOwnProperty(msg.author.id)) { //if the user is still on cooldown
 			bot.createMessage(msg.channel.id, `${msg.author.username}, this command can only be used every ${this.cooldown} seconds.`).then(sentMsg => {
 				setTimeout(() => {
 					bot.deleteMessage(msg.channel.id, msg.id);

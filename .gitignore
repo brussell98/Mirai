@@ -13,6 +13,8 @@ special/*
 !commands/normal/choose.js
 !commands/normal/invite.js
 !commands/normal/ping.js
+!commands/normal/coinflip.js
+!commands/normal/roll.js
 !commands/mod/echo.js
 !commands/mod/settings.js
 !commands/mod/stats.js

@@ -179,7 +179,7 @@ function checkIgnores(bot, msg, suffix, settingsManager) {
 		else if (msg.channelMentions.length !== 0)
 			ignored = settingsManager.checkIgnoresFor(msg.channel.guild.id, 'channel', msg.channelMentions[0]);
 		else if (msg.mentions.length !== 0)
-			ignored = settingsManager.checkIgnoresFor(msg.channel.guild.id, 'user', msg.mentions[0]);
+			ignored = settingsManager.checkIgnoresFor(msg.channel.guild.id, 'user', msg.mentions[0].id);
 		else
 			return bot.createMessage(msg.channel.id, 'Please specify "server", a channel, or a user');
 

@@ -35,7 +35,9 @@ var bot = new Eris(config.token, {
 	sequencerWait: 100,
 	moreMentions: true,
 	disableEvents: config.disableEvents,
-	maxShards: config.shardCount
+	maxShards: config.shardCount,
+	gatewayVersion: 6,
+	cleanContent: true
 });
 
 function loadCommandSets() {

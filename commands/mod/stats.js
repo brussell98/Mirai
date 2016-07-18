@@ -5,10 +5,10 @@ var reload = require('require-reload'),
 module.exports = {
 	desc: "Displays statistics about the bot.",
 	hidden: true,
-	task(bot, msg, suffix, config) {
-		if (config.adminIds.includes(msg.author.id)) {
-			let totalCommandUsage = commandsProcessed + cleverbotTimesUsed;
-			bot.createMessage(msg.channel.id, `\`\`\`md
+	ownerOnly: true,
+	task(bot, msg, suffix) {
+		let totalCommandUsage = commandsProcessed + cleverbotTimesUsed;
+		bot.createMessage(msg.channel.id, `\`\`\`md
 [Mirai Statistics]:
 [Uptime](${utils.formatTime(bot.uptime)})
 [Memory Usage](${Math.round(process.memoryUsage().rss / 1024 / 1000)}MB)
@@ -24,7 +24,5 @@ module.exports = {
 # Command Usage:
 [Total | Commands | Cleverbot](${utils.comma(totalCommandUsage)} | ${utils.comma(commandsProcessed)} | ${utils.comma(cleverbotTimesUsed)})
 [Average](${(totalCommandUsage / (bot.uptime / (1000 * 60))).toFixed(2)}/min)\`\`\``);
-		} else
-			bot.createMessage(msg.channel.id, "Only the owner of Mirai is allowed to use this command.");
 	}
 };

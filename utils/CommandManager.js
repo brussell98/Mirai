@@ -8,8 +8,8 @@ const Permissions = require('../node_modules/eris/lib/Constants.js').Permissions
 * @class
 * @classdesc Handles a directory of .js files formatted as {@link Command}.
 * @prop {String} prefix Prefix for the commands handled by this CommandManager.
-* @prop {String} dir="commands/normal/" Path where the commands are located from the root directory.
-* @prop {Function} [color=false] Color to log the commands as.
+* @prop {String} dir Path where the commands are located from the root directory.
+* @prop {Function} color Color to log the commands as.
 * @prop {Object<Command>} commands The loaded {@link Command}.
 */
 class CommandManager {
@@ -17,7 +17,7 @@ class CommandManager {
 	/**
 	* @constructor
 	* @arg {String} prefix Prefix for the commands handled by this CommandManager.
-	* @arg {String} dir="commands/normal/" Path to load commands from, from the root directory of the bot.
+	* @arg {String} [dir="commands/normal/"] Path to load commands from, from the root directory of the bot.
 	* @arg {Function} [color=false] Color to log the commands as.
 	*/
 	constructor(prefix, dir = 'commands/normal/', color) {
