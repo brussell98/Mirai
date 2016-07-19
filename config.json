@@ -19,6 +19,7 @@
 	"inviteLink": "",
 	"errorMessage": "Oh no! I ran into an error! Please report this to my owner.",
 	"carbonKey": "",
+	"cycleGames": true,
 	"bannedServers": [],
 	"whitelistedServers": []
 }

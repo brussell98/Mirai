@@ -42,4 +42,6 @@ module.exports = function(config) {
 		console.log(cWarn(" CONFIG WARNING ") + " allowUserGames is not defined");
 	if (typeof config.cleverbot !== 'boolean')
 		console.log(cWarn(" CONFIG WARNING ") + " cleverbot must be set to true or false");
+	if (typeof config.cycleGames !== 'boolean')
+		console.log(cWarn(" CONFIG WARNING ") + " cycleGames must be set to true or false");
 }

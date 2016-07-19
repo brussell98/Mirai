@@ -83,7 +83,7 @@ exports.setAvatar = function(bot, url) {
 			superagent.get(url)
 				.end((error, response) => {
 					if (!error && response.status === 200) {
-						bot.editSelf({file: `data:${response.header['content-type']};base64,${response.body.toString('base64')}`})
+						bot.editSelf({avatar: `data:${response.header['content-type']};base64,${response.body.toString('base64')}`})
 							.then(resolve)
 							.catch(reject);
 					} else

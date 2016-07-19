@@ -31,11 +31,11 @@ function handleEventsChange(bot, msg, suffix, settingsManager) {
 		}
 		if (/\+[^ ]/.test(suffix)) {
 			settingsManager.subEvents(suffix.match(/(\+[^ ]+)/g), msg.channel)
-				.then(events => { bot.createMessage(msg.channel.id, `Subscried to: \`${events.join('` `')}\``); })
+				.then(events => { bot.createMessage(msg.channel.id, `Subscribed to: \`${events.join('` `')}\``); })
 				.catch(e => { bot.createMessage(msg.channel.id, e); });
 		} if (/\-[^ ]/.test(suffix)) {
 			settingsManager.unsubEvents(suffix.match(/(-[^ ]+)/g), msg.channel)
-				.then(events => { bot.createMessage(msg.channel.id, `Unsubscried from: \`${events.join('` `')}\``); })
+				.then(events => { bot.createMessage(msg.channel.id, `Unsubscribed from: \`${events.join('` `')}\``); })
 				.catch(e => { bot.createMessage(msg.channel.id, e); });
 		}
 	}
@@ -56,11 +56,11 @@ function addIgnores(bot, msg, suffix, settingsManager) {
 	if (args === null || args.length !== 3)
 		args = suffix.match(/([^ ]+) +(.+)/);
 	if (args === null || args.length !== 3)
-		return bot.createMessage(msg.channel.id, "Please format you message like this: `ignore (@user | server | #channel) (]command | >all | }command)`");
+		return bot.createMessage(msg.channel.id, "Please format your message like this: `ignore (@user | server | #channel) (]command | >all | }command)`");
 	let commands = args[2].split(/ *\| */).filter(x => x !== ''),
 		scopes = args[1].split(/ *\| */).filter(x => x !== ''); // Remove empty entries from the array
 	if (commands.length === 0 || scopes.length === 0)
-		return bot.createMessage(msg.channel.id, "Please format you message like this: `ignore (@user | server | #channel) (]command | >all | }command)`");
+		return bot.createMessage(msg.channel.id, "Please format your message like this: `ignore (@user | server | #channel) (]command | >all | }command)`");
 
 	scopes.forEach(scope => {
 		let task,

@@ -284,7 +284,7 @@ if (config.carbonKey) { //Send servercount to Carbon bot list
 }
 
 setInterval(() => { // Update the bot's status for each shard every 10 minutes
-	if (games.length !== 0 && bot.uptime !== 0) {
+	if (games.length !== 0 && bot.uptime !== 0 && config.cycleGames === true) {
 		bot.shards.forEach(shard => {
 			shard.editGame({name: games[~~(Math.random() * games.length)]});
 		});
