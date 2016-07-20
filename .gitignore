@@ -15,6 +15,7 @@ special/*
 !commands/normal/ping.js
 !commands/normal/coinflip.js
 !commands/normal/roll.js
+!commands/normal/maluser.js.disabled
 !commands/mod/echo.js
 !commands/mod/settings.js
 !commands/mod/stats.js

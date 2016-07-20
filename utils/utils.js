@@ -35,12 +35,12 @@ exports.safeSave = function(file, ext = ".json", data, minSize = 5) {
 }
 
 /**
- * Find a user matching the input string or return null if none found
+ * Find a member matching the input string or return null if none found
  * @arg {String} query The input.
  * @arg {Eris.Guild} guild The guild to look on.
  * @returns {?Member} The found Member.
 */
-exports.findUser = function(query, guild) {
+exports.findMember = function(query, guild) {
 	let found = null;
 	if (query === undefined || guild === undefined)
 		return found;

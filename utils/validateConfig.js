@@ -11,6 +11,14 @@ module.exports = function(config) {
 		console.log(cError(" CONFIG ERROR ") + " disableEvents must be a valid Object");
 		process.exit(0);
 	}
+	if (!Array.isArray(config.bannedGuildIds)) {
+		console.log(cError(" CONFIG ERROR ") + " bannedGuildIds must be an array of strings.");
+		process.exit(0);
+	}
+	if (!Array.isArray(config.whitelistedGuildIds)) {
+		console.log(cError(" CONFIG ERROR ") + " whitelistedGuildIds must be an array of strings.");
+		process.exit(0);
+	}
 	//Check for invalid command sets
 	for (let prefix in config.commandSets) {
 		if (prefix === "") {
