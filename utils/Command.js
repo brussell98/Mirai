@@ -1,3 +1,5 @@
+const Permissions = require('../node_modules/eris/lib/Constants.js').Permissions;
+
 /**
 * @class
 * @classdesc Represents a command for the client.
@@ -11,6 +13,8 @@
 * @prop {Number} cooldown The colldown for the command in seconds.
 * @prop {Boolean} hidden If the command should be hidden from help.
 * @prop {Boolean} ownerOnly If the command can only be used by a bot admin.
+* @prop {Boolean} guildOnly If the command can only be used in a guild.
+* @prop {String} requiredPermission The permission needed to use the command.
 * @prop {Number} timesUsed How many times the command has been used.
 * @prop {Object} usersOnCooldown Users that are still on cooldown.
 */
@@ -28,7 +32,9 @@ class Command {
 	* @arg {Array<String>} [cmd.aliases=[]]
 	* @arg {Number} [cmd.cooldown=0]
 	* @arg {Boolean} [cmd.hidden=false]
-	* @arg {Boolean} [ownerOnly=false]
+	* @arg {Boolean} [cmd.ownerOnly=false]
+	* @prop {Boolean} [cmd.guildOnly=false]
+	* @prop {String} [cmd.requiredPermission=null]
 	*/
 	constructor(name, prefix, cmd) {
 		this.name = name;
@@ -41,6 +47,8 @@ class Command {
 		this.cooldown = cmd.cooldown || 0;
 		this.hidden = !!cmd.hidden;
 		this.ownerOnly = !!cmd.ownerOnly;
+		this.guildOnly = !!cmd.guildOnly;
+		this.requiredPermission = cmd.requiredPermission || null;
 		this.timesUsed = 0;
 		this.usersOnCooldown = {};
 	}
@@ -81,19 +89,19 @@ class Command {
 	* @arg {settingsManager} settingsManager
 	*/
 	execute(bot, msg, suffix, config, settingsManager) {
-		if (this.ownerOnly === true && !config.adminIds.includes(msg.author.id))
+		if (this.ownerOnly === true && !config.adminIds.includes(msg.author.id)) // ownerOnly check
 			return bot.createMessage(msg.channel.id, 'Only the owner of this bot can use that command.').then(sentMsg => {
-				setTimeout(() => {
-					bot.deleteMessage(msg.channel.id, msg.id);
-					bot.deleteMessage(sentMsg.channel.id, sentMsg.id);
-				}, 6000);
+				setTimeout(() => { bot.deleteMessage(msg.channel.id, msg.id); bot.deleteMessage(sentMsg.channel.id, sentMsg.id); }, 6000);
 			});
-		else if (this.usersOnCooldown.hasOwnProperty(msg.author.id)) { //if the user is still on cooldown
+		else if (this.guildOnly === true && msg.channel.guild === undefined) // guildOnly check
+			return bot.createMessage(msg.channel.id, 'This command can only be used in a server.');
+		else if (this.requiredPermission !== null && !config.adminIds.includes(msg.author.id) && ~msg.channel.permissionsOf(msg.author.id).allow & Permissions[this.requiredPermission]) // requiredPermission check
+			return bot.createMessage(msg.channel.id, `You need the ${this.requiredPermission} permission to use this command.`).then(sentMsg => {
+				setTimeout(() => { bot.deleteMessage(msg.channel.id, msg.id); bot.deleteMessage(sentMsg.channel.id, sentMsg.id); }, 6000);
+			});
+		else if (this.usersOnCooldown.hasOwnProperty(msg.author.id)) { // Cooldown check
 			bot.createMessage(msg.channel.id, `${msg.author.username}, this command can only be used every ${this.cooldown} seconds.`).then(sentMsg => {
-				setTimeout(() => {
-					bot.deleteMessage(msg.channel.id, msg.id);
-					bot.deleteMessage(sentMsg.channel.id, sentMsg.id);
-				}, 6000);
+				setTimeout(() => { bot.deleteMessage(msg.channel.id, msg.id); bot.deleteMessage(sentMsg.channel.id, sentMsg.id); }, 6000);
 			});
 
 		} else {

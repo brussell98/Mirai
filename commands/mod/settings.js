@@ -197,11 +197,9 @@ module.exports = {
 	usage: "Usage at <http://brussell98.github.io/bot/serversettings.html>",
 	aliases: ['set', 'config'],
 	cooldown: 3,
+	requiredPermission: "manageGuild",
+	guildOnly: true,
 	task(bot, msg, suffix, config, settingsManager) {
-		if (msg.channel.guild === null)
-			bot.createMessage(msg.channel.id, 'You have to do this in a server.');
-		else if (!msg.member.permission.json.manageGuild && !config.adminIds.includes(msg.author.id))
-			bot.createMessage(msg.channel.id, 'You need the `Manage Server` permission to use this.');
 		if (suffix) {
 			if (suffix.startsWith('welcome'))
 				updateWelcome(bot, msg, suffix.substr(7).trim(), settingsManager);

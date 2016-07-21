@@ -45,12 +45,11 @@ exports.findMember = function(query, guild) {
 	if (query === undefined || guild === undefined)
 		return found;
 	query = query.toLowerCase();
-	//order: match, starts with, contains, then repeat for nicks
 	guild.members.forEach(m => { if (m.user.username.toLowerCase() === query) found = m; });
-	if (!found) guild.members.forEach(m => { if (m.user.username.toLowerCase().indexOf(query) === 0) found = m; });
-	if (!found) guild.members.forEach(m => { if (m.user.username.toLowerCase().includes(query)) found = m; });
 	if (!found) guild.members.forEach(m => { if (m.nick !== null && m.nick.toLowerCase() === query) found = m; });
+	if (!found) guild.members.forEach(m => { if (m.user.username.toLowerCase().indexOf(query) === 0) found = m; });
 	if (!found) guild.members.forEach(m => { if (m.nick !== null && m.nick.toLowerCase().indexOf(query) === 0) found = m; });
+	if (!found) guild.members.forEach(m => { if (m.user.username.toLowerCase().includes(query)) found = m; });
 	if (!found) guild.members.forEach(m => { if (m.nick !== null && m.nick.toLowerCase().includes(query)) found = m; });
 	return found;
 }
