@@ -60,11 +60,14 @@ function setWelcome(guildId, channelId, message) {
 * Get a server's welcome message settings.
 * @arg {String} guild The guild to get the setings for.
 * @arg {String} member The user that joined.
+* @arg {Boolean} raw Return without placeholders replaced.
 * @returns {?Array<String>} Containing the channelId to send to and the message, or null.
 */
-function getWelcome(guild, member) {
+function getWelcome(guild, member, raw) {
 	if (genericSettingExistsFor(guild.id, 'welcome'))
-		return [genericSettings[guild.id].welcome.channelId,
+		return raw === true
+			? [genericSettings[guild.id].welcome.channelId, genericSettings[guild.id].welcome.message]
+			: [genericSettings[guild.id].welcome.channelId,
 				genericSettings[guild.id].welcome.message.replace(/\$\{USER\}/gi, member.user.username).replace(/\$\{SERVER\}/gi, guild.name).replace(/\$\{MENTION\}/gi, member.user.mention)]; //replace with names
 	return null;
 }
@@ -166,6 +169,15 @@ function getEventSetting(guildId, eventQ) {
 	return (genericSettingExistsFor(guildId, 'events') && genericSettings[guildId].events.subbed.includes(eventQ) === true) ? genericSettings[guildId].events.channelId : null;
 }
 
+/**
+* Check what events a guild is subscribed to and where they are posted.
+* @arg {String} guildId The id of the guild to check.
+* @returns {?Object} An object containing channelId and the subbed events.
+*/
+function getGuildsEvents(guildId) {
+	return genericSettingExistsFor(guildId, 'events') ? genericSettings[guildId].events : null;
+}
+
 ////////// NSFW ///////////
 
 /**
@@ -205,6 +217,15 @@ function setNSFW(guildId, channelId, task) {
 */
 function getNSFW(guildId, channelId) {
 	return genericSettingExistsFor(guildId, 'nsfw') && genericSettings[guildId].nsfw.includes(channelId);
+}
+
+/**
+* Check what channels in a guild have NSFW enabled
+* @arg {String} guildId The id of the guild.
+* @returns {?Array<String>} An array of the channel ids.
+*/
+function getAllNSFW(guildId) {
+	return genericSettingExistsFor(guildId, 'nsfw') ? genericSettings[guildId].nsfw : null;
 }
 
 ////////// COMMAND IGNORING //////////
@@ -528,12 +549,15 @@ module.exports = {
 	setWelcome,
 	getWelcome,
 	handleDeletedChannel,
+	eventList,
 	setEventChannel,
 	subEvents,
 	unsubEvents,
 	getEventSetting,
+	getGuildsEvents,
 	setNSFW,
 	getNSFW,
+	getAllNSFW,
 	commandList,
 	addIgnoreForUserOrChannel,
 	removeIgnoreForUserOrChannel,

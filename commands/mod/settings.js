@@ -3,6 +3,11 @@ function updateWelcome(bot, msg, suffix, settingsManager) {
 	if (suffix.toLowerCase() === 'disable') {
 		settingsManager.setWelcome(msg.channel.guild.id)
 			.then(() => bot.createMessage(msg.channel.id, '⚙ Welcome message disabled'));
+	} else if (suffix.toLowerCase() === 'check') {
+		let settings = settingsManager.getWelcome(msg.channel.guild, undefined, true);
+		bot.createMessage(msg.channel.id, settings === null
+			? 'You do not have a welcome message set.'
+			: `**Current welcome message:**\nChannel: ${settings[0] === 'DM' ? 'DM' : `<#${settings[0]}>`}\nMessage: ${settings[1]}`);
 	} else {
 		let newWelcome = suffix.replace(/(<#[0-9]+>|DM)/i, '').trim();
 		if (suffix === '')
@@ -24,6 +29,11 @@ function handleEventsChange(bot, msg, suffix, settingsManager) {
 	if (suffix.toLowerCase() === 'disable') {
 		settingsManager.setEventChannel(msg.channel.guild.id);
 		bot.createMessage(msg.channel.id, '⚙ Events disabled');
+	} else if (suffix.toLowerCase() === 'check') {
+		let settings = settingsManager.getGuildsEvents(msg.channel.guild.id);
+		bot.createMessage(msg.channel.id, settings === null ? 'You do not have event logging enabled.' : `**Event settings for this server**
+Channel: <#${settings.channelId}>
+${settingsManager.eventList.map(e => `${e}: ${settings.subbed.includes(e) === true ? 'subscribed' : 'not subscribed'}`).join('\n')}`);
 	} else {
 		if (msg.channelMentions.length > 0) {
 			settingsManager.setEventChannel(msg.channel.guild.id, msg.channelMentions[0]);
@@ -44,7 +54,10 @@ function handleEventsChange(bot, msg, suffix, settingsManager) {
 function updateNSFWSetting(bot, msg, suffix, settingsManager) {
 	if (!suffix)
 		bot.createMessage(msg.channel.id, 'You need to specifiy wether to `allow` or `deny` NSFW here');
-	else {
+	else if (suffix === 'check') {
+		let settings = settingsManager.getAllNSFW(msg.channel.guild.id);
+		bot.createMessage(msg.channel.id, settings === null ? 'There are no NSFW channels on this server.' : `**NSFW Channels:**\n<#${settings.join('>\n<#')}>`);
+	} else {
 		settingsManager.setNSFW(msg.channel.guild.id, msg.channel.id, suffix)
 			.then(m => { bot.createMessage(msg.channel.id, m) })
 			.catch(e => { bot.createMessage(msg.channel.id, e) });
