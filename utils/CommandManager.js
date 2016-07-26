@@ -66,13 +66,13 @@ class CommandManager {
 	processCommand(bot, msg, config, settingsManager) {
 		let name = msg.content.replace(this.prefix, '').split(' ')[0].toLowerCase();
 		if (name === "help")
-			return this.help(bot, msg, msg.content.replace(this.prefix + name, '').trim());
+			return this.help(bot, msg, msg.content.replace(this.prefix + name, '').trim(), config.logTimestamp);
 		let command = this.checkForMatch(name);
 		if (command !== null) {
 			if (msg.channel.guild !== undefined && ~msg.channel.permissionsOf(msg.author.id).allow & Permissions.manageChannels &&  settingsManager.isCommandIgnored(this.prefix, command.name, msg.channel.guild.id, msg.channel.id, msg.author.id) === true)
 				return;
 			let suffix = msg.content.replace(this.prefix + name, '').trim();
-			this.logCommand(msg, command.name, msg.cleanContent.replace(this.prefix + name, ''));
+			this.logCommand(msg, command.name, msg.cleanContent.replace(this.prefix + name, ''), config.logTimestamp);
 			return command.execute(bot, msg, suffix, config, settingsManager);
 		}
 	}
@@ -99,9 +99,10 @@ class CommandManager {
 	* @arg {Eris} bot The client.
 	* @arg {Eris.Message} msg The message that triggered the command.
 	* @arg {String} [command] The command to get help for.
+	* @arg {Boolean} [logTimestamp=false] Show timestamp in console.
 	*/
-	help(bot, msg, command) {
-		this.logCommand(msg, 'help', msg.cleanContent.replace(this.prefix + 'help', ''));
+	help(bot, msg, command, logTimestamp = false) {
+		this.logCommand(msg, 'help', msg.cleanContent.replace(this.prefix + 'help', ''), logTimestamp);
 		if (!command) {
 			let messageQueue = [];
 			let currentMessage = `\n// Here's a list of my commands. For more info do: ${this.prefix}help <command>`;
@@ -138,9 +139,10 @@ class CommandManager {
 	* @arg {Eris.Message} msg The message object that triggered the command.
 	* @arg {String} commandName The name of the executed command.
 	* @arg {String} after The text after the command and prefix, cleaned mentions.
+	* @arg {Boolean} [logTimestamp=false] Show timestamp in console.
 	*/
-	logCommand(msg, commandName, after) {
-		let toLog = '';
+	logCommand(msg, commandName, after, logTimestamp = false) {
+		let toLog = logTimestamp === true ? `[${new Date().toLocaleString()}] ` : '';
 		if (msg.channel.guild !== undefined)
 			toLog += `${cServer(msg.channel.guild.name)} >> `;
 		toLog += `${cGreen(msg.author.username)} > `;

@@ -14,7 +14,7 @@
 	"reloadCommand": "~$reload",
 	"evalCommand": "~$eval",
 	"adminIds": [""],
-	"allowUserGames": false,
+	"logTimestamp": false,
 	"cleverbot": true,
 	"inviteLink": "",
 	"errorMessage": "Oh no! I ran into an error! Please report this to my owner.",

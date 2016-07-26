@@ -33,8 +33,8 @@ class Command {
 	* @arg {Number} [cmd.cooldown=0]
 	* @arg {Boolean} [cmd.hidden=false]
 	* @arg {Boolean} [cmd.ownerOnly=false]
-	* @prop {Boolean} [cmd.guildOnly=false]
-	* @prop {String} [cmd.requiredPermission=null]
+	* @arg {Boolean} [cmd.guildOnly=false]
+	* @arg {String} [cmd.requiredPermission=null]
 	*/
 	constructor(name, prefix, cmd) {
 		this.name = name;

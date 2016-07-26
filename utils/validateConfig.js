@@ -46,8 +46,8 @@ module.exports = function(config) {
 	}
 	if (!config.inviteLink)
 		console.log(cWarn(" CONFIG WARNING ") + " Invite link is not defined");
-	if (config.allowUserGames === undefined)
-		console.log(cWarn(" CONFIG WARNING ") + " allowUserGames is not defined");
+	if (typeof config.logTimestamp !== 'boolean')
+		console.log(cWarn(" CONFIG WARNING ") + " logTimestamp needs to be set to true or false");
 	if (typeof config.cleverbot !== 'boolean')
 		console.log(cWarn(" CONFIG WARNING ") + " cleverbot must be set to true or false");
 	if (typeof config.cycleGames !== 'boolean')

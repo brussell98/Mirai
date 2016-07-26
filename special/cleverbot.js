@@ -35,16 +35,16 @@ function processUnicode(text) {
 	return text;
 }
 
-module.exports = function(bot, msg, settingsManager) {
+module.exports = function(bot, msg, config, settingsManager) {
 	if (msg.channel.guild !== undefined && ~msg.channel.permissionsOf(msg.author.id).allow & Permissions.manageChannels && settingsManager.isCommandIgnored('', 'cleverbot', msg.channel.guild.id, msg.channel.id, msg.author.id) === true)
 		return;
 	let text = msg.channel.guild === undefined ? msg.cleanContent : trimText(msg.cleanContent, msg.channel.guild.members.get(bot.user.id).nick || bot.user.username);
 	if (spamCheck(msg.author.id, text)) {
 		cleverbotTimesUsed++;
 		if (msg.channel.guild === undefined)
-			console.log(`${cGreen(msg.author.username)} > ${cYellow("@" + bot.user.username)} ${text}`);
+			console.log(`${config.logTimestamp === true ? `[${new Date().toLocaleString()}] ` : ''}${cGreen(msg.author.username)} > ${cYellow("@" + bot.user.username)} ${text}`);
 		else
-			console.log(`${cServer(msg.channel.guild.name)} >> ${cGreen(msg.author.username)} > ${cYellow("@" + bot.user.username)} ${text}`);
+			console.log(`${config.logTimestamp === true ? `[${new Date().toLocaleString()}] ` : ''}${cServer(msg.channel.guild.name)} >> ${cGreen(msg.author.username)} > ${cYellow("@" + bot.user.username)} ${text}`);
 
 		if (text === '') //If they just did @Botname
 			bot.createMessage(msg.channel.id, 'Yes?');

@@ -12,7 +12,7 @@ module.exports = {
 		}
 
 		if (config.cleverbot && msg.channel.guild === undefined || (msg.mentions.length !== 0 && msg.content.search(new RegExp(`^<@!?${bot.user.id}>`)) === 0))
-			cleverbot(bot, msg, settingsManager);
+			cleverbot(bot, msg, config, settingsManager);
 	},
 	reloadCleverbot(bot, channelId) {
 		try {

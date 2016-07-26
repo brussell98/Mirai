@@ -38,20 +38,42 @@ exports.safeSave = function(file, ext = ".json", data, minSize = 5) {
  * Find a member matching the input string or return null if none found
  * @arg {String} query The input.
  * @arg {Eris.Guild} guild The guild to look on.
- * @returns {?Member} The found Member.
+ * @arg {Boolean} [exact=false] Only look for an exact match.
+ * @returns {?Eris.Member} The found Member.
 */
-exports.findMember = function(query, guild) {
+exports.findMember = function(query, guild, exact = false) {
 	let found = null;
 	if (query === undefined || guild === undefined)
 		return found;
 	query = query.toLowerCase();
 	guild.members.forEach(m => { if (m.user.username.toLowerCase() === query) found = m; });
 	if (!found) guild.members.forEach(m => { if (m.nick !== null && m.nick.toLowerCase() === query) found = m; });
-	if (!found) guild.members.forEach(m => { if (m.user.username.toLowerCase().indexOf(query) === 0) found = m; });
-	if (!found) guild.members.forEach(m => { if (m.nick !== null && m.nick.toLowerCase().indexOf(query) === 0) found = m; });
-	if (!found) guild.members.forEach(m => { if (m.user.username.toLowerCase().includes(query)) found = m; });
-	if (!found) guild.members.forEach(m => { if (m.nick !== null && m.nick.toLowerCase().includes(query)) found = m; });
+	if (!found && exact === false) guild.members.forEach(m => { if (m.user.username.toLowerCase().indexOf(query) === 0) found = m; });
+	if (!found && exact === false) guild.members.forEach(m => { if (m.nick !== null && m.nick.toLowerCase().indexOf(query) === 0) found = m; });
+	if (!found && exact === false) guild.members.forEach(m => { if (m.user.username.toLowerCase().includes(query)) found = m; });
+	if (!found && exact === false) guild.members.forEach(m => { if (m.nick !== null && m.nick.toLowerCase().includes(query)) found = m; });
 	return found;
+}
+
+/**
+ * Find a user matching the input string or return null if none found
+ * @arg {String} query The input.
+ * @arg {Eris.Guild} guild The guild to look on.
+ * @arg {Boolean} [exact=false] Only look for an exact match.
+ * @returns {?Eris.User} The found User.
+*/
+exports.findUserInGuild = function(query, guild, exact = false) {
+	let found = null;
+	if (query === undefined || guild === undefined)
+		return found;
+	query = query.toLowerCase();
+	guild.members.forEach(m => { if (m.user.username.toLowerCase() === query) found = m; });
+	if (!found) guild.members.forEach(m => { if (m.nick !== null && m.nick.toLowerCase() === query) found = m; });
+	if (!found && exact === false) guild.members.forEach(m => { if (m.user.username.toLowerCase().indexOf(query) === 0) found = m; });
+	if (!found && exact === false) guild.members.forEach(m => { if (m.nick !== null && m.nick.toLowerCase().indexOf(query) === 0) found = m; });
+	if (!found && exact === false) guild.members.forEach(m => { if (m.user.username.toLowerCase().includes(query)) found = m; });
+	if (!found && exact === false) guild.members.forEach(m => { if (m.nick !== null && m.nick.toLowerCase().includes(query)) found = m; });
+	return found === null ? found : found.user;
 }
 
 /**
