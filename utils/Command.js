@@ -34,9 +34,12 @@ class Command {
 	* @arg {Boolean} [cmd.hidden=false]
 	* @arg {Boolean} [cmd.ownerOnly=false]
 	* @arg {Boolean} [cmd.guildOnly=false]
-	* @arg {String} [cmd.requiredPermission=null]
+	* @arg {String} [cmd.requiredPermission=null] A Discord [permission]{@link https://abal.moe/Eris/reference.html}
+	* @arg {String} [cmd.initialize] A function that runs at creation and is passed the client.
+	* @arg {Client} bot The client.
+	* @arg {Object} config The bot's config settings.
 	*/
-	constructor(name, prefix, cmd) {
+	constructor(name, prefix, cmd, bot, config) {
 		this.name = name;
 		this.prefix = prefix;
 		this.usage = cmd.usage || "";
@@ -51,6 +54,9 @@ class Command {
 		this.requiredPermission = cmd.requiredPermission || null;
 		this.timesUsed = 0;
 		this.usersOnCooldown = {};
+
+		if (typeof cmd.initialize === 'function')
+			cmd.initialize(bot, config);
 	}
 
 	/**
@@ -88,46 +94,45 @@ class Command {
 	* @arg {Object} config The config Object.
 	* @arg {settingsManager} settingsManager
 	*/
-	execute(bot, msg, suffix, config, settingsManager) {
+	execute(bot, msg, suffix, config, settingsManager, logger) {
 		if (this.ownerOnly === true && !config.adminIds.includes(msg.author.id)) // ownerOnly check
 			return bot.createMessage(msg.channel.id, 'Only the owner of this bot can use that command.').then(sentMsg => {
 				setTimeout(() => { bot.deleteMessage(msg.channel.id, msg.id); bot.deleteMessage(sentMsg.channel.id, sentMsg.id); }, 6000);
 			});
-		else if (this.guildOnly === true && msg.channel.guild === undefined) // guildOnly check
+		if (this.guildOnly === true && msg.channel.guild === undefined) // guildOnly check
 			return bot.createMessage(msg.channel.id, 'This command can only be used in a server.');
-		else if (this.requiredPermission !== null && !config.adminIds.includes(msg.author.id) && ~msg.channel.permissionsOf(msg.author.id).allow & Permissions[this.requiredPermission]) // requiredPermission check
+		if (this.requiredPermission !== null && !config.adminIds.includes(msg.author.id) && !(msg.channel.permissionsOf(msg.author.id).allow & Permissions[this.requiredPermission])) // requiredPermission check
 			return bot.createMessage(msg.channel.id, `You need the ${this.requiredPermission} permission to use this command.`).then(sentMsg => {
 				setTimeout(() => { bot.deleteMessage(msg.channel.id, msg.id); bot.deleteMessage(sentMsg.channel.id, sentMsg.id); }, 6000);
 			});
-		else if (this.usersOnCooldown.hasOwnProperty(msg.author.id)) { // Cooldown check
-			bot.createMessage(msg.channel.id, `${msg.author.username}, this command can only be used every ${this.cooldown} seconds.`).then(sentMsg => {
+		if (this.usersOnCooldown.hasOwnProperty(msg.author.id)) { // Cooldown check
+			return bot.createMessage(msg.channel.id, `${msg.author.username}, this command can only be used every ${this.cooldown} seconds.`).then(sentMsg => {
 				setTimeout(() => { bot.deleteMessage(msg.channel.id, msg.id); bot.deleteMessage(sentMsg.channel.id, sentMsg.id); }, 6000);
 			});
+		}
 
-		} else {
-			let result;
-			this.timesUsed++;
-			commandsProcessed++;
-			try {
-				result = this.task(bot, msg, suffix, config, settingsManager); //run the command
-			} catch (err) {
-				console.log(`${cError(' COMMAND EXECUTION ERROR ')} ${err}\n${err.stack}`);
-				if (config.errorMessage) bot.createMessage(msg.channel.id, config.errorMessage);
-			}
+		let result;
+		this.timesUsed++;
+		commandsProcessed++;
+		try {
+			result = this.task(bot, msg, suffix, config, settingsManager); //run the command
+		} catch (err) {
+			logger.error(`${err}\n${err.stack}`, 'COMMAND EXECUTION ERROR');
+			if (config.errorMessage) bot.createMessage(msg.channel.id, config.errorMessage);
+		}
 
-			if (result === 'wrong usage') {
-				bot.createMessage(msg.channel.id, `${msg.author.username}, try again using the following format:\n**\`${this.prefix}${this.name} ${this.usage}\`**`).then(sentMsg => {
-					setTimeout(() => {
-						bot.deleteMessage(msg.channel.id, msg.id);
-						bot.deleteMessage(sentMsg.channel.id, sentMsg.id);
-					}, 10000);
-				});
-			} else if (!config.adminIds.includes(msg.author.id)) {
-				this.usersOnCooldown[msg.author.id] = '';
-				setTimeout(() => { //add the user to the cooldown list and remove them after {cooldown} seconds
-					delete this.usersOnCooldown[msg.author.id];
-				}, this.cooldown * 1000);
-			}
+		if (result === 'wrong usage') {
+			bot.createMessage(msg.channel.id, `${msg.author.username}, try again using the following format:\n**\`${this.prefix}${this.name} ${this.usage}\`**`).then(sentMsg => {
+				setTimeout(() => {
+					bot.deleteMessage(msg.channel.id, msg.id);
+					bot.deleteMessage(sentMsg.channel.id, sentMsg.id);
+				}, 10000);
+			});
+		} else if (!config.adminIds.includes(msg.author.id)) {
+			this.usersOnCooldown[msg.author.id] = '';
+			setTimeout(() => { //add the user to the cooldown list and remove them after {cooldown} seconds
+				delete this.usersOnCooldown[msg.author.id];
+			}, this.cooldown * 1000);
 		}
 	}
 }

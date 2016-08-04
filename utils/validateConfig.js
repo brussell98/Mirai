@@ -1,55 +1,64 @@
+var reload = require('require-reload'),
+	_Logger = reload('./Logger.js'),
+	logger;
+
 module.exports = function(config) {
-	if (!config.token) {
-		console.log(cError(" CONFIG ERROR ") + " Bot token is not defined");
-		process.exit(0);
-	}
-	if (typeof config.shardCount !== 'number' || config.shardCount < 1) {
-		console.log(cError(" CONFIG ERROR ") + " shardCount must be a valid positive Number");
-		process.exit(0);
-	}
-	if (typeof config.disableEvents !== 'object') {
-		console.log(cError(" CONFIG ERROR ") + " disableEvents must be a valid Object");
-		process.exit(0);
-	}
-	if (!Array.isArray(config.bannedGuildIds)) {
-		console.log(cError(" CONFIG ERROR ") + " bannedGuildIds must be an array of strings.");
-		process.exit(0);
-	}
-	if (!Array.isArray(config.whitelistedGuildIds)) {
-		console.log(cError(" CONFIG ERROR ") + " whitelistedGuildIds must be an array of strings.");
-		process.exit(0);
-	}
-	//Check for invalid command sets
-	for (let prefix in config.commandSets) {
-		if (prefix === "") {
-			console.log(cError(" CONFIG ERROR ") + " One of your commandSets has no prefix");
-			process.exit(0);
-		} else if (!config.commandSets[prefix].hasOwnProperty('dir')) {
-			console.log(`${cError(" CONFIG ERROR ")} You need to define a dir for commandSet '${prefix}'`);
-			process.exit(0);
+	if (logger === undefined)
+		logger = new _Logger(config.logTimestamp);
+	return new Promise((resolve, reject) => {
+		if (!config.token) {
+			logger.error('Bot token is not defined', 'CONFIG ERROR');
+			return reject();
 		}
-	}
-	if (!config.adminIds || config.adminIds.length < 1) {
-		console.log(cError(" CONFIG ERROR ") + " You must specify at least one admin id");
-		process.exit(0);
-	} else if (typeof config.adminIds[0] !== 'string' || config.adminIds[0] === "") {
-		console.log(cError(" CONFIG ERROR ") + " Admin ID needs to be a string");
-		process.exit(0);
-	}
-	if (typeof config.reloadCommand !== 'string' || config.reloadCommand === "") {
-		console.log(cError(" CONFIG ERROR ") + " The reloadCommand needs to be a string");
-		process.exit(0);
-	}
-	if (typeof config.evalCommand !== 'string' || config.evalCommand === "") {
-		console.log(cError(" CONFIG ERROR ") + " The evalCommand needs to be a string");
-		process.exit(0);
-	}
-	if (!config.inviteLink)
-		console.log(cWarn(" CONFIG WARNING ") + " Invite link is not defined");
-	if (typeof config.logTimestamp !== 'boolean')
-		console.log(cWarn(" CONFIG WARNING ") + " logTimestamp needs to be set to true or false");
-	if (typeof config.cleverbot !== 'boolean')
-		console.log(cWarn(" CONFIG WARNING ") + " cleverbot must be set to true or false");
-	if (typeof config.cycleGames !== 'boolean')
-		console.log(cWarn(" CONFIG WARNING ") + " cycleGames must be set to true or false");
-}
+		if (typeof config.shardCount !== 'number' || config.shardCount < 1) {
+			logger.error('shardCount must be a valid positive Number', 'CONFIG ERROR');
+			return reject();
+		}
+		if (typeof config.disableEvents !== 'object') {
+			logger.error('disableEvents must be a valid Object', 'CONFIG ERROR');
+			return reject();
+		}
+		if (!Array.isArray(config.bannedGuildIds)) {
+			logger.error('bannedGuildIds must be an array of strings.', 'CONFIG ERROR');
+			return reject();
+		}
+		if (!Array.isArray(config.whitelistedGuildIds)) {
+			logger.error('whitelistedGuildIds must be an array of strings.', 'CONFIG ERROR');
+			return reject();
+		}
+		//Check for invalid command sets
+		for (let prefix in config.commandSets) {
+			if (prefix === "") {
+				logger.error('One of your commandSets has no prefix', 'CONFIG ERROR');
+				return reject();
+			} else if (!config.commandSets[prefix].hasOwnProperty('dir')) {
+				logger.error('You need to define a dir for commandSet ' + prefix, 'CONFIG ERROR');
+				return reject();
+			}
+		}
+		if (!config.adminIds || config.adminIds.length < 1) {
+			logger.error('You must specify at least one admin id', 'CONFIG ERROR');
+			return reject();
+		} else if (typeof config.adminIds[0] !== 'string' || config.adminIds[0] === "") {
+			logger.error('Admin ID needs to be a string', 'CONFIG ERROR');
+			return reject();
+		}
+		if (typeof config.reloadCommand !== 'string' || config.reloadCommand === "") {
+			logger.error('The reloadCommand needs to be a string', 'CONFIG ERROR');
+			return reject();
+		}
+		if (typeof config.evalCommand !== 'string' || config.evalCommand === "") {
+			logger.error('The evalCommand needs to be a string', 'CONFIG ERROR');
+			return reject();
+		}
+		if (!config.inviteLink)
+			logger.warn('Invite link is not defined', 'CONFIG WARNING');
+		if (typeof config.logTimestamp !== 'boolean')
+			logger.warn('logTimestamp needs to be set to true or false', 'CONFIG WARNING');
+		if (typeof config.cleverbot !== 'boolean')
+			logger.warn('cleverbot must be set to true or false', 'CONFIG WARNING');
+		if (typeof config.cycleGames !== 'boolean')
+			logger.warn('cycleGames must be set to true or false', 'CONFIG WARNING');
+		return resolve();
+	});
+};

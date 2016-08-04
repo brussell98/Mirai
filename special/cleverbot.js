@@ -1,8 +1,9 @@
-var reload		= require('require-reload')(require),
-	Cleverbot	= reload('cleverbot-node'),
-	Waifu		= new Cleverbot(),
-	entities	= require('entities'),
-	antiSpam	= {};
+var reload      = require('require-reload')(require),
+	Cleverbot   = reload('cleverbot-node'),
+	Waifu       = new Cleverbot(),
+	entities    = require('entities'),
+	logger      = new (reload('../utils/Logger.js'))((reload('../config.json')).logTimestamp, 'yellow'),
+	antiSpam    = {};
 
 const Permissions = require('../node_modules/eris/lib/Constants.js').Permissions;
 
@@ -41,11 +42,7 @@ module.exports = function(bot, msg, config, settingsManager) {
 	let text = msg.channel.guild === undefined ? msg.cleanContent : trimText(msg.cleanContent, msg.channel.guild.members.get(bot.user.id).nick || bot.user.username);
 	if (spamCheck(msg.author.id, text)) {
 		cleverbotTimesUsed++;
-		if (msg.channel.guild === undefined)
-			console.log(`${config.logTimestamp === true ? `[${new Date().toLocaleString()}] ` : ''}${cGreen(msg.author.username)} > ${cYellow("@" + bot.user.username)} ${text}`);
-		else
-			console.log(`${config.logTimestamp === true ? `[${new Date().toLocaleString()}] ` : ''}${cServer(msg.channel.guild.name)} >> ${cGreen(msg.author.username)} > ${cYellow("@" + bot.user.username)} ${text}`);
-
+		logger.logCommand(msg.channel.guild === undefined ? null : msg.channel.guild.name, msg.author.username, '@' + bot.user.username, text);
 		if (text === '') //If they just did @Botname
 			bot.createMessage(msg.channel.id, 'Yes?');
 		else {
@@ -56,7 +53,7 @@ module.exports = function(bot, msg, config, settingsManager) {
 					bot.createMessage(msg.channel.id, '💬 ' + entities.decodeHTML(response));
 				else { //API returned nothing back
 					reset();
-					console.log(`${cWarn(' WARN ')} Nothing was returned bu the cleverbot API. Reloading it now.`);
+					logger.warn('Nothing was returned by the cleverbot API. Reloading it now.');
 					bot.createMessage(msg.channel.id, '⚠ There was an error, try again.');
 				}
 			});

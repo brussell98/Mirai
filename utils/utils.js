@@ -1,5 +1,7 @@
 var fs = require('fs'),
-	superagent = require('superagent');
+	superagent = require('superagent'),
+	reload = require('require-reload'),
+	logger = new (reload('./Logger.js'))((reload('../config.json')).logTimestamp);
 
 /**
 * Contains various functions.
@@ -24,10 +26,10 @@ exports.safeSave = function(file, ext = ".json", data, minSize = 5) {
 			fs.stat(`${__dirname}/../${file}-temp${ext}`, (err, stats) => {
 				if (err) console.log(err);
 				else if (stats["size"] < minSize)
-					console.log('safeSave: Prevented file from being overwritten');
+					logger.debug('Prevented file from being overwritten', 'SAFE SAVE');
 				else {
 					fs.rename(`${__dirname}/../${file}-temp${ext}`, `${__dirname}/../${file}${ext}`, e => {if(e)console.log(e)});
-					console.log(`${cDebug(" SAFE SAVE ")} Updated ${file}${ext}`);
+					logger.debug(`Updated ${file}${ext}`, 'SAFE SAVE');
 				}
 			});
 		}
@@ -87,8 +89,25 @@ exports.updateCarbon = function(key, servercount) {
 		.type('application/json')
 		.send({key, servercount})
 		.end(error => {
-			console.log(`${cDebug(" CARBON UPDATE ")} Updated Carbon server count to ${servercount}`);
-			if (error) console.log(`${cError(' CARBON UPDATE ERROR ')} ${error.status} ${error.response}`);
+			logger.debug('Updated Carbon server count to ' + servercount, 'CARBON UPDATE');
+			if (error) logger.error(error.status || error.response, 'CARBON UPDATE ERROR');
+		});
+}
+
+/**
+* Update the server count on [Abalabahaha's bot list]@{link https://bots.discord.pw/}.
+* @arg {String} key Your API key.
+* @arg {Number} server_count Server count.
+*/
+exports.updateAbalBots = function(key, server_count) {
+	if (!key || !server_count) return;
+	superagent.post('https://bots.discord.pw/api/bots/:user_id/stats')
+		.set('Authorization', key)
+		.type('application/json')
+		.send({server_count})
+		.end(error => {
+			logger.debug('Updated bot server count to ' + server_count, 'ABAL BOT LIST UPDATE');
+			if (error) logger.error(error.status || error.response, 'ABAL BOT LIST UPDATE ERROR');
 		});
 }
 
@@ -116,13 +135,6 @@ exports.setAvatar = function(bot, url) {
 }
 
 /**
-* Comma sperate a number.
-* @arg {Number|String} number The number to comma.
-* @returns {String} The formatted number.
-*/
-exports.comma = (number) => number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-
-/**
 * Converts to human readable form
 * @arg {Number} milliseconds Time to format in milliseconds.
 * @returns {String} The formatted time.
@@ -145,11 +157,11 @@ exports.checkForUpdates = function() {
 	superagent.get("https://raw.githubusercontent.com/brussell98/Mirai/master/package.json")
 		.end((error, response) => {
 			if (error)
-				console.log(`${cWarn(' WARN ')} Error checking for updates: ${error.status}`);
+				logger.warn('Error checking for updates: ' + (error.status || error.response));
 			else {
 				let latest = ~~(JSON.parse(response.text).version.split('.').join(''));
 				if (latest > version)
-					console.log(`${cWarn(' OUT OF DATE ')} A new version of MiraiBot is avalible`);
+					logger.warn('A new version of MiraiBot is avalible', 'OUT OF DATE');
 			}
 	});
 }

@@ -9,7 +9,7 @@
 	},
 	"commandSets": {
 		"]": {"dir": "commands/normal/"},
-		"}": {"dir": "commands/mod/", "color": "cBlue"}
+		"}": {"dir": "commands/mod/", "color": "blue"}
 	},
 	"reloadCommand": "~$reload",
 	"evalCommand": "~$eval",
@@ -19,6 +19,7 @@
 	"inviteLink": "",
 	"errorMessage": "Oh no! I ran into an error! Please report this to my owner.",
 	"carbonKey": "",
+	"abalBotsKey": "",
 	"cycleGames": true,
 	"bannedGuildIds": [],
 	"whitelistedGuildIds": []

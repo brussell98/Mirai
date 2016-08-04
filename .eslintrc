@@ -21,18 +21,10 @@
         "space-before-function-paren": ["warn", "never"],
         "arrow-spacing": 1,
         "comma-spacing": ["warn", { "before": false, "after": true }]
-        },
+    },
     "globals": {
         "commandsProcessed",
-        "cleverbotTimesUsed",
-        "cWarn",
-        "cError",
-        "cDebug",
-        "cGreen",
-        "cRed",
-        "cServer",
-        "cYellow",
-        "cBlue"
+        "cleverbotTimesUsed"
     },
     extends: "eslint:recommended"
 }

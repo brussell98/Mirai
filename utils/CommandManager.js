@@ -1,6 +1,7 @@
-var reload	= require('require-reload')(require),
-	fs		= require('fs'),
-	Command	= reload('./Command.js');
+var reload  = require('require-reload')(require),
+    fs      = require('fs'),
+    Command = reload('./Command.js'),
+	_Logger = reload('./Logger.js');
 
 const Permissions = require('../node_modules/eris/lib/Constants.js').Permissions;
 
@@ -9,30 +10,32 @@ const Permissions = require('../node_modules/eris/lib/Constants.js').Permissions
 * @classdesc Handles a directory of .js files formatted as {@link Command}.
 * @prop {String} prefix Prefix for the commands handled by this CommandManager.
 * @prop {String} dir Path where the commands are located from the root directory.
-* @prop {Function} color Color to log the commands as.
-* @prop {Object<Command>} commands The loaded {@link Command}.
+* @prop {Object<Command>} commands The loaded {@link Command}s.
 */
 class CommandManager {
 
 	/**
 	* @constructor
+	* @arg {Object} config The bot's config settings.
 	* @arg {String} prefix Prefix for the commands handled by this CommandManager.
 	* @arg {String} [dir="commands/normal/"] Path to load commands from, from the root directory of the bot.
-	* @arg {Function} [color=false] Color to log the commands as.
+	* @arg {String} [color] The color to log commands with.
 	*/
-	constructor(prefix, dir = 'commands/normal/', color) {
+	constructor(config, prefix, dir = 'commands/normal/', color) {
 		this.prefix = prefix;
 		this.directory = `${__dirname}/../${dir}`;
-		this.color = color || false;
 		this.commands = {};
+		this.logger = new _Logger(config.logTimestamp, color);
 	}
 
 	/**
 	* Initialize the command manager, loading each command in the set directory.
+	* @arg {Client} bot
+	* @arg {Object} config The bot's config settings.
 	* @arg {settingsManager} settingsManager The bot's {@link settingsManager}.
 	* @returns {Promise}
 	*/
-	initialize(settingsManager) {
+	initialize(bot, config, settingsManager) {
 		return new Promise((resolve, reject) => {
 			fs.readdir(this.directory, (err, files) => {
 				if (err) reject(`Error reading commands directory: ${err}`);
@@ -43,10 +46,10 @@ class CommandManager {
 						if (name.endsWith('.js')) {
 							try {
 								name = name.replace(/\.js$/, '');
-								this.commands[name] = new Command(name, this.prefix, reload(this.directory + name + '.js'));
+								this.commands[name] = new Command(name, this.prefix, reload(this.directory + name + '.js'), bot, config);
 								settingsManager.commandList[this.prefix].push(name);
 							} catch (e) {
-								console.error(`Error loading command ${name}: ${e}\n${e.stack}`);
+								this.logger.error(`${e}\n${e.stack}`, 'Error loading command ' + name);
 							}
 						}
 					}
@@ -66,14 +69,14 @@ class CommandManager {
 	processCommand(bot, msg, config, settingsManager) {
 		let name = msg.content.replace(this.prefix, '').split(' ')[0].toLowerCase();
 		if (name === "help")
-			return this.help(bot, msg, msg.content.replace(this.prefix + name, '').trim(), config.logTimestamp);
+			return this.help(bot, msg, msg.content.replace(this.prefix + name, '').trim());
 		let command = this.checkForMatch(name);
 		if (command !== null) {
 			if (msg.channel.guild !== undefined && ~msg.channel.permissionsOf(msg.author.id).allow & Permissions.manageChannels &&  settingsManager.isCommandIgnored(this.prefix, command.name, msg.channel.guild.id, msg.channel.id, msg.author.id) === true)
 				return;
 			let suffix = msg.content.replace(this.prefix + name, '').trim();
-			this.logCommand(msg, command.name, msg.cleanContent.replace(this.prefix + name, ''), config.logTimestamp);
-			return command.execute(bot, msg, suffix, config, settingsManager);
+			this.logger.logCommand(msg.channel.guild === undefined ? null : msg.channel.guild.name, msg.author.username, this.prefix + command.name, msg.cleanContent.replace(this.prefix + name, '').trim());
+			return command.execute(bot, msg, suffix, config, settingsManager, this.logger);
 		}
 	}
 
@@ -99,10 +102,9 @@ class CommandManager {
 	* @arg {Eris} bot The client.
 	* @arg {Eris.Message} msg The message that triggered the command.
 	* @arg {String} [command] The command to get help for.
-	* @arg {Boolean} [logTimestamp=false] Show timestamp in console.
 	*/
-	help(bot, msg, command, logTimestamp = false) {
-		this.logCommand(msg, 'help', msg.cleanContent.replace(this.prefix + 'help', ''), logTimestamp);
+	help(bot, msg, command) {
+		this.logger.logCommand(msg.channel.guild === undefined ? null : msg.channel.guild.name, msg.author.username, this.prefix + 'help', command);
 		if (!command) {
 			let messageQueue = [];
 			let currentMessage = `\n// Here's a list of my commands. For more info do: ${this.prefix}help <command>`;
@@ -135,27 +137,8 @@ class CommandManager {
 	}
 
 	/**
-	* Show that a command was executed in the console.
-	* @arg {Eris.Message} msg The message object that triggered the command.
-	* @arg {String} commandName The name of the executed command.
-	* @arg {String} after The text after the command and prefix, cleaned mentions.
-	* @arg {Boolean} [logTimestamp=false] Show timestamp in console.
-	*/
-	logCommand(msg, commandName, after, logTimestamp = false) {
-		let toLog = logTimestamp === true ? `[${new Date().toLocaleString()}] ` : '';
-		if (msg.channel.guild !== undefined)
-			toLog += `${cServer(msg.channel.guild.name)} >> `;
-		toLog += `${cGreen(msg.author.username)} > `;
-		if (this.color !== false)
-			toLog += this.color(this.prefix + commandName) + after;
-		else
-			toLog += this.prefix + commandName + after;
-		console.log(toLog);
-	}
-
-	/**
 	* Reload or load a command.
-	* @arg {Eris.Client} bot The Client.
+	* @arg {Client} bot The Client.
 	* @arg {String} channelId The channel to respond in.
 	* @arg {String} command The comamnd to reload or load.
 	* @arg {settingsManager} settingsManager The bot's {@link settingsManager}.
@@ -166,12 +149,12 @@ class CommandManager {
 				bot.createMessage(channelId, 'Command does not exist');
 			else {
 				try {
-					this.commands[command] = new Command(command, this.prefix, reload(`${this.directory}${command}.js`));
+					this.commands[command] = new Command(command, this.prefix, reload(`${this.directory}${command}.js`), bot);
 					bot.createMessage(channelId, `Command ${this.prefix}${command} loaded`);
 					if (!settingsManager.commandList[this.prefix].includes(command))
 						settingsManager.commandList[this.prefix].push(command);
 				} catch (error) {
-					console.log(error);
+					this.logger.error(error, 'Error reloading command ' + command);
 					bot.createMessage(channelId, `Error loading command: ${error}`);
 				}
 			}
