@@ -49,6 +49,7 @@ function setWelcome(guildId, channelId, message) {
 				updateGeneric = true;
 			}
 		}
+		removeIfEmpty(genericSettings, guildId, updateGeneric);
 		resolve();
 	});
 }
@@ -88,6 +89,7 @@ function setEventChannel(guildId, channelId) {
 	if (!channelId && genericSettings.hasOwnProperty[guildId] && genericSettings[guildId].hasOwnProperty('events')) {
 		delete genericSettings[guildId].events; //Disable event notifications
 		updateGeneric = true;
+		removeIfEmpty(genericSettings, guildId);
 	} else if (channelId) {
 		if (!genericSettings.hasOwnProperty[guildId]) {
 			genericSettings[guildId] = {"events": {channelId, subbed: []}};
@@ -125,8 +127,10 @@ function subEvents(eventArray, channel) {
 		updateGeneric = true;
 		if (subbedEvents.length > 0) {
 			resolve(subbedEvents);
-		} else
+		} else {
+			removeIfEmpty(genericSettings, channel.guild.id);
 			reject('Subscribed to nothing');
+		}
 	});
 }
 
@@ -150,6 +154,7 @@ function unsubEvents(eventArray, channel) {
 		}
 		updateGeneric = true;
 		if (unsubbedEvents.length > 0) {
+			removeIfEmpty(genericSettings, channel.guild.id);
 			resolve(unsubbedEvents);
 		} else
 			reject('Unsubscribed to nothing');
@@ -200,9 +205,12 @@ function setNSFW(guildId, channelId, task) {
 			if (genericSettings[guildId].nsfw.length === 0)
 				delete genericSettings[guildId].nsfw;
 			updateGeneric = true;
+			removeIfEmpty(genericSettings, guildId);
 			resolve('NSFW commands are no longer allowed here');
-		} else
+		} else {
+			removeIfEmpty(genericSettings, guildId, updateGeneric);
 			reject('No settings changed');
+		}
 	});
 }
 
@@ -282,6 +290,9 @@ function addIgnoreForUserOrChannel(guildId, type, id, command) {
 						commandSettings[guildId][type][id].push(prefix + c);
 				}
 			} else {
+				removeIfEmptyArray(commandSettings[guildId][type], id, updateCommand);
+				removeIfEmpty(commandSettings[guildId], type, updateCommand);
+				removeIfEmpty(commandSettings, guildId, updateCommand);
 				return resolve(false);
 			}
 			updateCommand = true;
@@ -292,6 +303,9 @@ function addIgnoreForUserOrChannel(guildId, type, id, command) {
 			updateCommand = true;
 			return resolve(true);
 		}
+		removeIfEmptyArray(commandSettings[guildId][type], id, updateCommand);
+		removeIfEmpty(commandSettings[guildId], type, updateCommand);
+		removeIfEmpty(commandSettings, guildId, updateCommand);
 		resolve(false);
 	});
 }
@@ -314,8 +328,11 @@ function removeIgnoreForUserOrChannel(guildId, type, id, command) {
 		if (command === 'cleverbot') {
 			if (commandSettings[guildId][type][id].includes('cleverbot')) {
 				commandSettings[guildId][type][id].splice(commandSettings[guildId][type][id].indexOf('cleverbot'), 1);
-				if (commandSettings[guildId][type][id].length === 0)
+				if (commandSettings[guildId][type][id].length === 0) {
 					delete commandSettings[guildId][type][id];
+					removeIfEmpty(commandSettings[guildId], type);
+					removeIfEmpty(commandSettings, guildId);
+				}
 				updateCommand = true;
 				return resolve(true);
 			}
@@ -326,15 +343,20 @@ function removeIgnoreForUserOrChannel(guildId, type, id, command) {
 		command = command.replace(prefix, '');
 
 		if (command === 'all') {
-			if (prefix === undefined && commandSettings[guildId][type][id].length !== 0)
+			if (prefix === undefined && commandSettings[guildId][type][id].length !== 0) {
 				delete commandSettings[guildId][type][id];
-			else if (commandSettings[guildId][type][id].length !== 0) {
+				removeIfEmpty(commandSettings[guildId], type);
+				removeIfEmpty(commandSettings, guildId);
+			} else if (commandSettings[guildId][type][id].length !== 0) {
 				for (let c of commandList[prefix]) {
 					if (commandSettings[guildId][type][id].includes(prefix + c))
 						commandSettings[guildId][type][id].splice(commandSettings[guildId][type][id].indexOf(prefix + c), 1);
 				}
-				if (commandSettings[guildId][type][id].length === 0)
+				if (commandSettings[guildId][type][id].length === 0) {
 					delete commandSettings[guildId][type][id];
+					removeIfEmpty(commandSettings[guildId], type);
+					removeIfEmpty(commandSettings, guildId);
+				}
 			} else
 				return resolve(false);
 			updateCommand = true;
@@ -342,8 +364,11 @@ function removeIgnoreForUserOrChannel(guildId, type, id, command) {
 
 		} else if (commandList.hasOwnProperty(prefix) && commandList[prefix].includes(command) && commandSettings[guildId][type][id].includes(prefix + command)) {
 			commandSettings[guildId][type][id].splice(commandSettings[guildId][type][id].indexOf(prefix + command), 1);
-			if (commandSettings[guildId][type][id].length === 0)
+			if (commandSettings[guildId][type][id].length === 0) {
 				delete commandSettings[guildId][type][id];
+				removeIfEmpty(commandSettings[guildId], type);
+				removeIfEmpty(commandSettings, guildId);
+			}
 			updateCommand = true;
 			return resolve(true);
 		}
@@ -372,6 +397,8 @@ function addIgnoreForGuild(guildId, command) {
 				updateCommand = true;
 				return resolve(true);
 			}
+			removeIfEmptyArray(commandSettings[guildId], 'guildIgnores', updateCommand);
+			removeIfEmpty(commandSettings, guildId, updateCommand);
 			return resolve(false);
 		}
 
@@ -395,8 +422,11 @@ function addIgnoreForGuild(guildId, command) {
 					if (!commandSettings[guildId].guildIgnores.includes(prefix + c)) //If not already ignored.
 						commandSettings[guildId].guildIgnores.push(prefix + c);
 				}
-			} else
+			} else {
+				removeIfEmptyArray(commandSettings[guildId], 'guildIgnores', updateCommand);
+				removeIfEmpty(commandSettings, guildId, updateCommand);
 				return resolve(false);
+			}
 			updateCommand = true;
 			return resolve(true);
 
@@ -405,6 +435,8 @@ function addIgnoreForGuild(guildId, command) {
 			updateCommand = true;
 			return resolve(true);
 		}
+		removeIfEmptyArray(commandSettings[guildId], 'guildIgnores', updateCommand);
+		removeIfEmpty(commandSettings, guildId, updateCommand);
 		resolve(false);
 	});
 }
@@ -425,8 +457,10 @@ function removeIgnoreForGuild(guildId, command) {
 		if (command === 'cleverbot') {
 			if (commandSettings[guildId].guildIgnores.includes('cleverbot')) {
 				commandSettings[guildId].guildIgnores.splice(commandSettings[guildId].guildIgnores.indexOf('cleverbot'), 1);
-				if (commandSettings[guildId].guildIgnores.length === 0)
+				if (commandSettings[guildId].guildIgnores.length === 0) {
 					delete commandSettings[guildId].guildIgnores;
+					removeIfEmpty(commandSettings, guildId);
+				}
 				updateCommand = true;
 				return resolve(true);
 			}
@@ -437,15 +471,18 @@ function removeIgnoreForGuild(guildId, command) {
 		command = command.replace(prefix, '');
 
 		if (command === 'all') {
-			if (prefix === undefined && commandSettings[guildId].guildIgnores.length !== 0)
+			if (prefix === undefined && commandSettings[guildId].guildIgnores.length !== 0) {
 				delete commandSettings[guildId].guildIgnores;
-			else if (commandSettings[guildId].guildIgnores.length !== 0) {
+				removeIfEmpty(commandSettings, guildId, updateCommand);
+			} else if (commandSettings[guildId].guildIgnores.length !== 0) {
 				for (let c of commandList[prefix]) {
 					if (commandSettings[guildId].guildIgnores.includes(prefix + c))
 						commandSettings[guildId].guildIgnores.splice(commandSettings[guildId].guildIgnores.indexOf(prefix + c), 1);
 				}
-				if (commandSettings[guildId].guildIgnores.length === 0)
+				if (commandSettings[guildId].guildIgnores.length === 0) {
 					delete commandSettings[guildId].guildIgnores;
+					removeIfEmpty(commandSettings, guildId);
+				}
 			} else
 				return resolve(false);
 			updateCommand = true;
@@ -453,8 +490,10 @@ function removeIgnoreForGuild(guildId, command) {
 
 		} else if (commandList.hasOwnProperty(prefix) && commandList[prefix].includes(command) && commandSettings[guildId].guildIgnores.includes(prefix + command)) {
 			commandSettings[guildId].guildIgnores.splice(commandSettings[guildId].guildIgnores.indexOf(prefix + command), 1);
-			if (commandSettings[guildId].guildIgnores.length === 0)
+			if (commandSettings[guildId].guildIgnores.length === 0) {
 				delete commandSettings[guildId].guildIgnores;
+				removeIfEmpty(commandSettings, guildId);
+			}
 			updateCommand = true;
 			return resolve(true);
 		}
@@ -476,11 +515,11 @@ function isCommandIgnored(prefix, command, guildId, channelId, userId) {
 		return false;
 	if (!commandSettings.hasOwnProperty(guildId))
 		return false;
-	if (commandSettings[guildId].hasOwnProperty('guildIgnores') && commandSettings[guildId].guildIgnores.includes(prefix + command))
+	if (commandSettings[guildId].hasOwnProperty('guildIgnores') && (commandSettings[guildId].guildIgnores[0] === 'all' || commandSettings[guildId].guildIgnores.includes(prefix + 'all') || commandSettings[guildId].guildIgnores.includes(prefix + command)))
 		return true;
-	if (commandSettings[guildId].hasOwnProperty('channelIgnores') && commandSettings[guildId].channelIgnores.hasOwnProperty(channelId) && commandSettings[guildId].channelIgnores[channelId].includes(prefix + command))
+	if (commandSettings[guildId].hasOwnProperty('channelIgnores') && commandSettings[guildId].channelIgnores.hasOwnProperty(channelId) && (commandSettings[guildId].channelIgnores[channelId][0] === 'all' || commandSettings[guildId].channelIgnores[channelId].includes(prefix + 'all') || commandSettings[guildId].channelIgnores[channelId].includes(prefix + command)))
 		return true;
-	if (commandSettings[guildId].hasOwnProperty('userIgnores') && commandSettings[guildId].userIgnores.hasOwnProperty(userId) && commandSettings[guildId].userIgnores[userId].includes(prefix + command))
+	if (commandSettings[guildId].hasOwnProperty('userIgnores') && commandSettings[guildId].userIgnores.hasOwnProperty(userId) && (commandSettings[guildId].userIgnores[userId][0] === 'all' || commandSettings[guildId].userIgnores[userId].includes(prefix + 'all') || commandSettings[guildId].userIgnores[userId].includes(prefix + command)))
 		return true;
 	return false;
 }
@@ -514,21 +553,25 @@ function handleDeletedChannel(channel) {
 	if (channel.guild !== undefined && genericSettings.hasOwnProperty(channel.guild.id)) {
 		if (genericSettings[channel.guild.id].hasOwnProperty('welcome') && genericSettings[channel.guild.id].welcome.channelId === channel.id) {
 			delete genericSettings[channel.guild.id].welcome;
+			removeIfEmpty(genericSettings[channel.guild.id], 'welcome');
 			updateGeneric = true;
 		}
 		if (genericSettings[channel.guild.id].hasOwnProperty('events') && genericSettings[channel.guild.id].events.channelId === channel.id) {
 			delete genericSettings[channel.guild.id].events;
+			removeIfEmpty(genericSettings[channel.guild.id], 'events');
 			updateGeneric = true;
 		}
 		if (genericSettings[channel.guild.id].hasOwnProperty('nsfw') && genericSettings[channel.guild.id].nsfw.includes(channel.id)) {
 			genericSettings[channel.guild.id].nsfw.splice(genericSettings[channel.guild.id].nsfw.indexOf(channel.id), 1);
-			if (genericSettings[channel.guild.id].nsfw.length === 0)
-				delete genericSettings[channel.guild.id].nsfw;
+			removeIfEmptyArray(genericSettings[channel.guild.id], 'nsfw');
 			updateGeneric = true;
 		}
+		removeIfEmpty(genericSettings, channel.guild.id, updateGeneric);
 	}
 	if (commandSettingExistsFor(channel.guild.id, 'channelIgnores') && commandSettings[channel.guild.id].channelIgnores.hasOwnProperty(channel.id)) {
 		delete commandSettings[channel.guild.id].channelIgnores[channel.id];
+		removeIfEmpty(commandSettings[channel.guild.id], 'channelIgnores');
+		removeIfEmpty(commandSettings, channel.guild.id);
 		updateCommand = true;
 	}
 }
@@ -540,6 +583,23 @@ function genericSettingExistsFor(guildId, setting) {
 
 function commandSettingExistsFor(guildId, setting) {
 	return commandSettings.hasOwnProperty(guildId) && commandSettings[guildId].hasOwnProperty(setting);
+}
+
+//Used to remove unneccesary keys.
+function removeIfEmpty(obj, key, updater) {
+	if (Object.keys(obj[key]).length === 0) {
+		delete obj[key];
+		if (updater !== undefined)
+			updater = true;
+	}
+}
+
+function removeIfEmptyArray(obj, key, updater) {
+	if (obj[key].length === 0) {
+		delete obj[key];
+		if (updater !== undefined)
+			updater = true;
+	}
 }
 
 module.exports = {
