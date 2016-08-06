@@ -21,14 +21,16 @@ exports.safeSave = function(file, ext = ".json", data, minSize = 5) {
 	if (!ext.startsWith('.')) ext = '.' + ext;
 
 	fs.writeFile(`${__dirname}/../${file}-temp${ext}`, data, error => {
-		if (error) console.log(error);
+		if (error) logger.error(error, 'SAFE SAVE WRITE');
 		else {
 			fs.stat(`${__dirname}/../${file}-temp${ext}`, (err, stats) => {
-				if (err) console.log(err);
+				if (err) logger.error(err, 'SAFE SAVE STAT');
 				else if (stats["size"] < minSize)
 					logger.debug('Prevented file from being overwritten', 'SAFE SAVE');
 				else {
-					fs.rename(`${__dirname}/../${file}-temp${ext}`, `${__dirname}/../${file}${ext}`, e => {if(e)console.log(e)});
+					fs.rename(`${__dirname}/../${file}-temp${ext}`, `${__dirname}/../${file}${ext}`, e => {
+						if(e) logger.error(e, 'SAFE SAVE RENAME');
+					});
 					logger.debug(`Updated ${file}${ext}`, 'SAFE SAVE');
 				}
 			});

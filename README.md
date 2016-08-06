@@ -61,4 +61,9 @@ module.exports = function(bot, settingsManager, config, guild) {
 
 ---
 
+## Naming commands and invalid prefixes
+Command names and prefixes must not contain a `space` or a `|`. Avoid using an `@` as it may resolve into a user.
+
+---
+
 Disclaimer: There is no guarantee that this will continue to be maintained. I may decide one day to discontinue this.

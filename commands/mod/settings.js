@@ -98,7 +98,8 @@ function addIgnores(bot, msg, suffix, settingsManager) {
 				return bot.createMessage(msg.channel.id, "Invalid text channel: " + scope);
 			task = settingsManager.addIgnoreForUserOrChannel;
 			args = [msg.channel.guild.id, 'channelIgnores', id];
-		}
+		} else
+			return bot.createMessage(msg.channel.id, `Invalid scope "${scope}"`);
 
 		ignoreLoop(task, args, commands.slice()) // commands must be passed as a copy, NOT AS A REFERENCE
 			.then(modified => {
@@ -147,7 +148,8 @@ function removeIgnores(bot, msg, suffix, settingsManager) {
 				return bot.createMessage(msg.channel.id, "Invalid text channel: " + scope);
 			task = settingsManager.removeIgnoreForUserOrChannel;
 			args = [msg.channel.guild.id, 'channelIgnores', id];
-		}
+		} else
+			return bot.createMessage(msg.channel.id, `Invalid scope "${scope}"`);
 
 		ignoreLoop(task, args, commands.slice())
 			.then(modified => {
