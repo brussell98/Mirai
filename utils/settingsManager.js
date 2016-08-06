@@ -152,11 +152,14 @@ function unsubEvents(eventArray, channel) {
 				unsubbedEvents.push(e);
 			}
 		}
-		updateGeneric = true;
-		if (unsubbedEvents.length > 0) {
+		if (genericSettings[channel.guild.id].events.subbed.length === 0) {
+			delete genericSettings[channel.guild.id].events;
 			removeIfEmpty(genericSettings, channel.guild.id);
+		}
+		updateGeneric = true;
+		if (unsubbedEvents.length > 0)
 			resolve(unsubbedEvents);
-		} else
+		else
 			reject('Unsubscribed to nothing');
 	});
 }

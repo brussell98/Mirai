@@ -119,11 +119,11 @@ function removeIgnores(bot, msg, suffix, settingsManager) {
 	if (args === null || args.length !== 3)
 		args = suffix.match(/([^ ]+) +(.+)/);
 	if (args === null || args.length !== 3)
-		return bot.createMessage(msg.channel.id, "Please format you message like this: `unignore (@user | server | #channel) (]command | >all | }command)`");
+		return bot.createMessage(msg.channel.id, "Please format you message like this: `unignore (@user | server | #channel) (]command | ]all | }command)`");
 	let commands = args[2].split(/ *\| */).filter(x => x !== ''),
 		scopes = args[1].split(/ *\| */).filter(x => x !== '');
 	if (commands.length === 0 || scopes.length === 0)
-		return bot.createMessage(msg.channel.id, "Please format you message like this: `unignore (@user | server | #channel) (]command | >all | }command)`");
+		return bot.createMessage(msg.channel.id, "Please format you message like this: `unignore (@user | server | #channel) (]command | ]all | }command)`");
 
 	scopes.forEach(scope => {
 		let task,
@@ -208,8 +208,13 @@ function checkIgnores(bot, msg, suffix, settingsManager) {
 
 module.exports = {
 	desc: "Adjust a server's settings.",
-	help: "Modify how the bot works on a server.\n\t__welcome__: Set the channel and message to be displayed to new members `welcome #general Welcome ${USER} to ${SERVER}`.\n\t__events__: Modify event subscriptions `events #event-log +memberjoined +userbanned -namechanged`.",
-	usage: "Usage at <http://brussell98.github.io/bot/serversettings.html>",
+	help: `Modify how the bot works on a server.
+	__welcome__: Set the channel and message to be displayed to new members \`welcome #general Welcome \${USER} to \${SERVER}\`.
+	__events__: Modify event subscriptions \`events #event-log +memberjoined +userbanned -namechanged\`.
+	__nsfw__: Allow NSFW commands to be used in the channel \`nsfw allow\` \`nsfw deny\`.
+	__ignore__: Block commands \`ignore #no-bot >all\`.
+	__unignore__: Allow commands \`unignore @User >ping | >choose\`.`,
+	usage: "Usage at <http://brussell98.github.io/bot/settings.html>",
 	aliases: ['set', 'config'],
 	cooldown: 3,
 	requiredPermission: "manageGuild",
