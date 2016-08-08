@@ -6,7 +6,8 @@ var reload = require('require-reload'),
 module.exports = {
 	desc: "Displays statistics about the bot.",
 	hidden: true,
-	ownerOnly: true,
+	guildOnly: true,
+	requiredPermission: 'manageGuild',
 	task(bot, msg) {
 		let totalCommandUsage = commandsProcessed + cleverbotTimesUsed;
 		bot.createMessage(msg.channel.id, `\`\`\`md

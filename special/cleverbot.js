@@ -5,8 +5,6 @@ var reload      = require('require-reload')(require),
 	logger      = new (reload('../utils/Logger.js'))((reload('../config.json')).logTimestamp, 'yellow'),
 	antiSpam    = {};
 
-const Permissions = require('../node_modules/eris/lib/Constants.js').Permissions;
-
 Cleverbot.prepare(() => {});
 
 function reset() {
@@ -37,7 +35,7 @@ function processUnicode(text) {
 }
 
 module.exports = function(bot, msg, config, settingsManager) {
-	if (msg.channel.guild !== undefined && ~msg.channel.permissionsOf(msg.author.id).allow & Permissions.manageChannels && settingsManager.isCommandIgnored('', 'cleverbot', msg.channel.guild.id, msg.channel.id, msg.author.id) === true)
+	if (msg.channel.guild !== undefined && !msg.channel.permissionsOf(msg.author.id).has('manageChannels') && settingsManager.isCommandIgnored('', 'cleverbot', msg.channel.guild.id, msg.channel.id, msg.author.id) === true)
 		return;
 	let text = msg.channel.guild === undefined ? msg.cleanContent : trimText(msg.cleanContent, msg.channel.guild.members.get(bot.user.id).nick || bot.user.username);
 	if (spamCheck(msg.author.id, text)) {

@@ -1,5 +1,3 @@
-const Permissions = require('../node_modules/eris/lib/Constants.js').Permissions;
-
 /**
 * @class
 * @classdesc Represents a command for the client.
@@ -101,7 +99,7 @@ class Command {
 			});
 		if (this.guildOnly === true && msg.channel.guild === undefined) // guildOnly check
 			return bot.createMessage(msg.channel.id, 'This command can only be used in a server.');
-		if (this.requiredPermission !== null && !config.adminIds.includes(msg.author.id) && !(msg.channel.permissionsOf(msg.author.id).allow & Permissions[this.requiredPermission])) // requiredPermission check
+		if (this.requiredPermission !== null && !config.adminIds.includes(msg.author.id) && !msg.channel.permissionsOf(msg.author.id).has(this.requiredPermission)) // requiredPermission check
 			return bot.createMessage(msg.channel.id, `You need the ${this.requiredPermission} permission to use this command.`).then(sentMsg => {
 				setTimeout(() => { bot.deleteMessage(msg.channel.id, msg.id); bot.deleteMessage(sentMsg.channel.id, sentMsg.id); }, 6000);
 			});

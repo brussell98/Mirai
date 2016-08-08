@@ -3,8 +3,6 @@ var reload  = require('require-reload')(require),
     Command = reload('./Command.js'),
 	_Logger = reload('./Logger.js');
 
-const Permissions = require('../node_modules/eris/lib/Constants.js').Permissions;
-
 /**
 * @class
 * @classdesc Handles a directory of .js files formatted as {@link Command}.
@@ -72,7 +70,7 @@ class CommandManager {
 			return this.help(bot, msg, msg.content.replace(this.prefix + name, '').trim());
 		let command = this.checkForMatch(name);
 		if (command !== null) {
-			if (msg.channel.guild !== undefined && ~msg.channel.permissionsOf(msg.author.id).allow & Permissions.manageChannels &&  settingsManager.isCommandIgnored(this.prefix, command.name, msg.channel.guild.id, msg.channel.id, msg.author.id) === true)
+			if (msg.channel.guild !== undefined && !msg.channel.permissionsOf(msg.author.id).has('manageChannels') && settingsManager.isCommandIgnored(this.prefix, command.name, msg.channel.guild.id, msg.channel.id, msg.author.id) === true)
 				return;
 			let suffix = msg.content.replace(this.prefix + name, '').trim();
 			this.logger.logCommand(msg.channel.guild === undefined ? null : msg.channel.guild.name, msg.author.username, this.prefix + command.name, msg.cleanContent.replace(this.prefix + name, '').trim());
