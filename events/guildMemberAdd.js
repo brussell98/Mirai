@@ -11,5 +11,5 @@ module.exports = function(bot, settingsManager, _config, guild, member) {
 
 	let joinEventChannel = settingsManager.getEventSetting(guild.id, 'memberjoined');
 	if (joinEventChannel !== null)
-		bot.createMessage(joinEventChannel, `\`[${new Date().toUTCString()}]\` **Member Joined:** ${member.user.username}`);
+		bot.createMessage(joinEventChannel, `\`[${new Date().toLocaleString()}]\` **Member Joined:** ${member.user.username}`);
 }

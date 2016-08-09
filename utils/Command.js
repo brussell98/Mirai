@@ -14,7 +14,7 @@
 * @prop {Boolean} guildOnly If the command can only be used in a guild.
 * @prop {String} requiredPermission The permission needed to use the command.
 * @prop {Number} timesUsed How many times the command has been used.
-* @prop {Object} usersOnCooldown Users that are still on cooldown.
+* @prop {Set} usersOnCooldown Users that are still on cooldown.
 */
 class Command {
 
@@ -51,7 +51,7 @@ class Command {
 		this.guildOnly = !!cmd.guildOnly;
 		this.requiredPermission = cmd.requiredPermission || null;
 		this.timesUsed = 0;
-		this.usersOnCooldown = {};
+		this.usersOnCooldown = new Set();
 
 		if (typeof cmd.initialize === 'function')
 			cmd.initialize(bot, config);
@@ -103,7 +103,7 @@ class Command {
 			return bot.createMessage(msg.channel.id, `You need the ${this.requiredPermission} permission to use this command.`).then(sentMsg => {
 				setTimeout(() => { bot.deleteMessage(msg.channel.id, msg.id); bot.deleteMessage(sentMsg.channel.id, sentMsg.id); }, 6000);
 			});
-		if (this.usersOnCooldown.hasOwnProperty(msg.author.id)) { // Cooldown check
+		if (this.usersOnCooldown.has(msg.author.id)) { // Cooldown check
 			return bot.createMessage(msg.channel.id, `${msg.author.username}, this command can only be used every ${this.cooldown} seconds.`).then(sentMsg => {
 				setTimeout(() => { bot.deleteMessage(msg.channel.id, msg.id); bot.deleteMessage(sentMsg.channel.id, sentMsg.id); }, 6000);
 			});
@@ -127,9 +127,9 @@ class Command {
 				}, 10000);
 			});
 		} else if (!config.adminIds.includes(msg.author.id)) {
-			this.usersOnCooldown[msg.author.id] = '';
+			this.usersOnCooldown.add(msg.author.id);
 			setTimeout(() => { //add the user to the cooldown list and remove them after {cooldown} seconds
-				delete this.usersOnCooldown[msg.author.id];
+				this.usersOnCooldown.delete(msg.author.id);
 			}, this.cooldown * 1000);
 		}
 	}
