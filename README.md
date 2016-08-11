@@ -4,6 +4,9 @@ An easy to use bot framework using the [Eris](https://github.com/abalabahaha/eri
 
 #### [Website](http://brussell98.github.io/bot/index.html) | [Support on Patreon](http://patreon.com/brussell98) | [Documentation](http://brussell98.github.io/bot/docs/index.html) | [Discord Server](https://discord.gg/rkWPSdu) | [Wiki](https://github.com/brussell98/BrussellBot/wiki) | [Eris Docs](https://abal.moe/Eris/docs/index.html) | [Todo List](https://trello.com/b/Uw5wZLzJ)   
 
+## Before Running:
+`npm i --no-optional --production` then, optionally, `npm i eventemitter3`
+
 ---
 
 ## Example of a command
@@ -42,27 +45,27 @@ module.exports = function(bot, settingsManager, config, guild) {
 ---
 
 ## Config Reference
-- token: The Bot's token.
-- shardCount: The number of shards to run.
-- disableEvents: An object containing events to disable. This saves resources. A full list of events can be found here: [Eris Reference](https://abal.moe/Eris/reference.html).
-- commandSets: An object defining what commands to load. The key is the prefix, `dir` is the path to the from the root of the bot. If you want to make the commands a certain color in the console add a `color` property with a valid [chalk color](https://github.com/chalk/chalk#colors).
-- reloadCommand: The command to use for reloading modules/commands.
-- evalCommand: The command to use for running arbitrary code.
-- adminIds: An array of user ids that have full control over the bot.
-- logTimestamp: If the console should include timestmaps.
-- cleverbot: If cleverbot should be enabled.
-- inviteLink: A link to add the bot to a server.
-- errorMessage: An optional error message to post in chat.
-- carbinKey: Your key for updating carbon information.
-- abalBotsKey: Your https://bots.discord.pw/ API key.
-- cycleGames: Randomly changes the bot's status.
-- bannedGuildIds: Servers that can not add the bot.
-- whitelistedGuildIds: For future use.
+- **token:** The Bot's token.
+- **shardCount:** The number of shards to run.
+- **disableEvents:** An object containing events to disable. This saves resources. A full list of events can be found here: [Eris Reference](https://abal.moe/Eris/reference.html).
+- **commandSets:** An object defining what commands to load. The key is the prefix, `dir` is the path to the from the root of the bot. If you want to make the commands a certain color in the console add a `color` property with a valid [chalk color](https://github.com/chalk/chalk#colors).
+- **reloadCommand:** The command to use for reloading modules/commands.
+- **evalCommand:** The command to use for running arbitrary code.
+- **adminIds:** An array of user ids that have full control over the bot.
+- **logTimestamp:** If the console should include timestmaps.
+- **cleverbot:** If cleverbot should be enabled.
+- **inviteLink:** A link to add the bot to a server.
+- **errorMessage:** An optional error message to post in chat.
+- **carbinKey:** Your key for updating carbon information.
+- **abalBotsKey:** Your https://bots.discord.pw/ API key.
+- **cycleGames:** Randomly changes the bot's status.
+- **bannedGuildIds:** Servers that can not add the bot.
+- **whitelistedGuildIds:** For future use.
 
 ---
 
 ## Naming commands and invalid prefixes
-Command names and prefixes must not contain a `space` or a `|`. Avoid using an `@` as it may resolve into a user.
+Command names must not contain a `space` or a `|`. Prefixes must not contain a `|`. Avoid using a `@` as it may resolve into a user.
 
 ---
 

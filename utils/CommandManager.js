@@ -65,7 +65,7 @@ class CommandManager {
 	* @arg {settingsManager} settingsManager The bot's {@link settingsManager}.
 	*/
 	processCommand(bot, msg, config, settingsManager) {
-		let name = msg.content.replace(this.prefix, '').split(' ')[0].toLowerCase();
+		let name = msg.content.replace(this.prefix, '').split(/ |\n/)[0].toLowerCase();
 		if (name === "help")
 			return this.help(bot, msg, msg.content.replace(this.prefix + name, '').trim());
 		let command = this.checkForMatch(name);

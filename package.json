@@ -1,6 +1,6 @@
 {
 	"name": "miraibot",
-	"version": "3.0.0-beta13",
+	"version": "3.0.0",
 	"description": "An easy to use bot framework",
 	"author": "brussell98",
 	"main": "Mirai.js",

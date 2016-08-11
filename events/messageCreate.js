@@ -18,8 +18,8 @@ module.exports = {
 		try {
 			cleverbot = reload('../special/cleverbot.js');
 			bot.createMessage(channelId, "Reloaded special/cleverbot");
-		} catch (error) {
-			console.log(error);
+		} catch(error) {
+			console.error(error);
 			bot.createMessage(channelId, `Error reloading cleverbot: ${error}`);
 		}
 	}
