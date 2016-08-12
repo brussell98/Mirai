@@ -95,17 +95,17 @@ class Command {
 	execute(bot, msg, suffix, config, settingsManager, logger) {
 		if (this.ownerOnly === true && !config.adminIds.includes(msg.author.id)) // ownerOnly check
 			return bot.createMessage(msg.channel.id, 'Only the owner of this bot can use that command.').then(sentMsg => {
-				setTimeout(() => { bot.deleteMessage(msg.channel.id, msg.id); bot.deleteMessage(sentMsg.channel.id, sentMsg.id); }, 6000);
+				setTimeout(() => { bot.deleteMessage(msg.channel.id, msg.id).catch(); bot.deleteMessage(sentMsg.channel.id, sentMsg.id); }, 6000);
 			});
 		if (this.guildOnly === true && msg.channel.guild === undefined) // guildOnly check
 			return bot.createMessage(msg.channel.id, 'This command can only be used in a server.');
 		if (this.requiredPermission !== null && !config.adminIds.includes(msg.author.id) && !msg.channel.permissionsOf(msg.author.id).has(this.requiredPermission)) // requiredPermission check
 			return bot.createMessage(msg.channel.id, `You need the ${this.requiredPermission} permission to use this command.`).then(sentMsg => {
-				setTimeout(() => { bot.deleteMessage(msg.channel.id, msg.id); bot.deleteMessage(sentMsg.channel.id, sentMsg.id); }, 6000);
+				setTimeout(() => { bot.deleteMessage(msg.channel.id, msg.id).catch(); bot.deleteMessage(sentMsg.channel.id, sentMsg.id); }, 6000);
 			});
 		if (this.usersOnCooldown.has(msg.author.id)) { // Cooldown check
 			return bot.createMessage(msg.channel.id, `${msg.author.username}, this command can only be used every ${this.cooldown} seconds.`).then(sentMsg => {
-				setTimeout(() => { bot.deleteMessage(msg.channel.id, msg.id); bot.deleteMessage(sentMsg.channel.id, sentMsg.id); }, 6000);
+				setTimeout(() => { bot.deleteMessage(msg.channel.id, msg.id).catch(); bot.deleteMessage(sentMsg.channel.id, sentMsg.id); }, 6000);
 			});
 		}
 
@@ -122,7 +122,7 @@ class Command {
 		if (result === 'wrong usage') {
 			bot.createMessage(msg.channel.id, `${msg.author.username}, try again using the following format:\n**\`${this.prefix}${this.name} ${this.usage}\`**`).then(sentMsg => {
 				setTimeout(() => {
-					bot.deleteMessage(msg.channel.id, msg.id);
+					bot.deleteMessage(msg.channel.id, msg.id).catch();
 					bot.deleteMessage(sentMsg.channel.id, sentMsg.id);
 				}, 10000);
 			});

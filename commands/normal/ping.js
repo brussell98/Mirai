@@ -11,7 +11,7 @@ var Nf = new Intl.NumberFormat('en-US');
 
 module.exports = {
 	desc: "Responds with pong.",
-	help: "Used to check if the bot is working.\nReplies with 'pong' and the time taken.",
+	help: "Used to check if the bot is working.\nReplies with 'pong' and the response delay.",
 	aliases: ['p'],
 	cooldown: 2,
 	task(bot, msg) {

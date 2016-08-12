@@ -25,6 +25,6 @@ module.exports = {
 			if ((c.includes('homework') || c.includes('sleep') || c.includes('study') || c.includes('productiv')) && Math.random() < .3)
 				return pick = i; //Higher chance to pick choices containing key words
 		});
-		bot.createMessage(msg.channel.id, RESPONSES[~~(Math.random() * choices.length)](choices[pick]));
+		bot.createMessage(msg.channel.id, RESPONSES[~~(Math.random() * RESPONSES.length)](choices[pick]));
 	}
 };

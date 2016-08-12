@@ -7,6 +7,7 @@ module.exports = {
 	desc: "Displays statistics about the bot.",
 	hidden: true,
 	guildOnly: true,
+	cooldown: 10,
 	requiredPermission: 'manageGuild',
 	task(bot, msg) {
 		let totalCommandUsage = commandsProcessed + cleverbotTimesUsed;
