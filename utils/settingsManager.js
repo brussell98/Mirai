@@ -91,7 +91,7 @@ function setEventChannel(guildId, channelId) {
 		updateGeneric = true;
 		removeIfEmpty(genericSettings, guildId);
 	} else if (channelId) {
-		if (!genericSettings.hasOwnProperty[guildId]) {
+		if (!genericSettings.hasOwnProperty(guildId)) {
 			genericSettings[guildId] = {"events": {channelId, subbed: []}};
 			updateGeneric = true;
 		} else if (!genericSettings[guildId].hasOwnProperty('events')) {

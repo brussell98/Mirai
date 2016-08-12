@@ -8,7 +8,8 @@ module.exports = function(bot, config, games, utils) {
 		logger = new _Logger(config.logTimestamp);
 	utils.checkForUpdates();
 	bot.shards.forEach(shard => {
-		shard.editGame({name: games[~~(Math.random() * games.length)]});
+		let name = games[~~(Math.random() * games.length)];
+		shard.editGame({name});
 	});
 	logger.logWithHeader('READY', 'bgGreen', 'black', `S:${Nf.format(bot.guilds.size)} U:${Nf.format(bot.users.size)} AVG:${Nf.format((bot.users.size / bot.guilds.size).toFixed(2))}`);
 }

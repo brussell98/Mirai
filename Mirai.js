@@ -21,7 +21,7 @@ var bot = new Eris(config.token, {
 	autoReconnect: true,
 	disableEveryone: true,
 	getAllUsers: true,
-	messageLimit: 50,
+	messageLimit: 10,
 	sequencerWait: 100,
 	moreMentions: true,
 	disableEvents: config.disableEvents,
@@ -292,7 +292,8 @@ if (config.abalBotsKey) { //Send servercount to Abal's bot list
 setInterval(() => { // Update the bot's status for each shard every 10 minutes
 	if (games.length !== 0 && bot.uptime !== 0 && config.cycleGames === true) {
 		bot.shards.forEach(shard => {
-			shard.editGame({name: games[~~(Math.random() * games.length)]});
+			let name = games[~~(Math.random() * games.length)];
+			shard.editGame({name});
 		});
 	}
 }, 600000);
