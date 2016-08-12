@@ -101,9 +101,9 @@ exports.updateCarbon = function(key, servercount) {
 * @arg {String} key Your API key.
 * @arg {Number} server_count Server count.
 */
-exports.updateAbalBots = function(key, server_count) {
+exports.updateAbalBots = function(id, key, server_count) {
 	if (!key || !server_count) return;
-	superagent.post('https://bots.discord.pw/api/bots/:user_id/stats')
+	superagent.post(`https://bots.discord.pw/api/bots/${id}/stats`)
 		.set('Authorization', key)
 		.type('application/json')
 		.send({server_count})

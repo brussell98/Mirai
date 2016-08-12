@@ -63,7 +63,7 @@ function initCommandManagers(index = 0) {
 
 function loadEvents() { // Load all events in events/
 	return new Promise((resolve, reject) => {
-		fs.readdir('./events/', (err, files) => {
+		fs.readdir(__dirname + '/events/', (err, files) => {
 			if (err) reject(`Error reading events directory: ${err}`);
 			else if (!files) reject('No files in directory events/');
 			else {
@@ -189,7 +189,7 @@ function reloadModule(msg) {
 
 	} else if (arg.startsWith('utils/')) {
 
-		fs.access(`./${arg}.js`, fs.R_OK | fs.F_OK, err => {
+		fs.access(`${__dirname}/${arg}.js`, fs.R_OK | fs.F_OK, err => {
 			if (err)
 				bot.createMessage(msg.channel.id, 'That file does not exist!');
 			else {
@@ -230,7 +230,7 @@ function reloadModule(msg) {
 			events[arg] = reload(`./events/${arg}.js`);
 			bot.createMessage(msg.channel.id, `Reloaded events/${arg}.js`);
 		} else {
-			bot.createMessage(msg.channel.id, "That events isn't loaded");
+			bot.createMessage(msg.channel.id, "That event isn't loaded");
 		}
 
 	} else if (arg.startsWith('special/')) {
@@ -285,7 +285,7 @@ if (config.carbonKey) { //Send servercount to Carbon bot list
 if (config.abalBotsKey) { //Send servercount to Abal's bot list
 	setInterval(() => {
 		if (bot.uptime !== 0)
-			utils.updateAbalBots(config.abalBotsKey, bot.guilds.size);
+			utils.updateAbalBots(bot.user.id, config.abalBotsKey, bot.guilds.size);
 	}, 1800000);
 }
 
