@@ -1,144 +1,169 @@
 var fs = require('fs'),
-	request = require('request');
+	superagent = require('superagent'),
+	reload = require('require-reload'),
+	logger = new (reload('./Logger.js'))((reload('../config.json')).logTimestamp);
 
-/*
-Save a file safely
-	dir: path from root folder (EX: db/servers)
-	ext: file extension (EX: .json)
-	data: data to be written to the file
-	minSize: will not save if less than this size in bytes (optional, defaults to 5)
+/**
+* Contains various functions.
+* @module utils
 */
-exports.safeSave = function(dir, ext, data, minSize = 5) {
-	if (!dir || !ext || !data) return;
-	if (dir.startsWith('/')) dir = dir.substr(1);
+
+/**
+* Save a file safely, preventing it from being cleared.
+* @arg {String} dir Path from root folder including filename. (EX: db/servers)
+* @arg {String} ext=".json" File extension.
+* @arg {String} data Data to be written to the file.
+* @arg {Number} minSize=5 Will not save if less than this size in bytes.
+*/
+exports.safeSave = function(file, ext = ".json", data, minSize = 5) {
+	if (!file || !ext || !data) return;
+	if (file.startsWith('/')) file = file.substr(1);
 	if (!ext.startsWith('.')) ext = '.' + ext;
 
-	fs.writeFile(`${__dirname}/../${dir}-temp${ext}`, data, error => {
-		if (error) console.log(error);
+	fs.writeFile(`${__dirname}/../${file}-temp${ext}`, data, error => {
+		if (error) logger.error(error, 'SAFE SAVE WRITE');
 		else {
-			fs.stat(`${__dirname}/../${dir}-temp${ext}`, (err, stats) => {
-				if (err) console.log(err);
+			fs.stat(`${__dirname}/../${file}-temp${ext}`, (err, stats) => {
+				if (err) logger.error(err, 'SAFE SAVE STAT');
 				else if (stats["size"] < minSize)
-					console.log('safeSave: Prevented file from being overwritten');
+					logger.debug('Prevented file from being overwritten', 'SAFE SAVE');
 				else {
-					fs.rename(`${__dirname}/../${dir}-temp${ext}`, `${__dirname}/../${dir}${ext}`, e => {if(e)console.log(e)});
-					if (debug) console.log(cDebug(" DEBUG ") + " Updated " + dir + ext);
+					fs.rename(`${__dirname}/../${file}-temp${ext}`, `${__dirname}/../${file}${ext}`, e => {
+						if(e) logger.error(e, 'SAFE SAVE RENAME');
+					});
+					logger.debug(`Updated ${file}${ext}`, 'SAFE SAVE');
 				}
 			});
 		}
 	});
 }
 
-/*
-Find a user matching the input string or return false if none found
-	query: the input
-	members: the array of users to search
-	server: server to look for nicknames on (optional)
+/**
+ * Find a member matching the input string or return null if none found
+ * @arg {String} query The input.
+ * @arg {Eris.Guild} guild The guild to look on.
+ * @arg {Boolean} [exact=false] Only look for an exact match.
+ * @returns {?Eris.Member} The found Member.
 */
-exports.findUser = function(query, members, server) {
-	//order: match, starts with, contains, then repeat for nicks
-	if (!query || !members || typeof query != 'string') return false;
-	let r = members.find(m => { return !m.username ? false : m.username.toLowerCase() == query.toLowerCase() });
-	if (!r) r = members.find(m => { return !m.username ? false : m.username.toLowerCase().indexOf(query.toLowerCase()) == 0 });
-	if (!r) r = members.find(m => { return !m.username ? false : m.username.toLowerCase().includes(query.toLowerCase()) });
-	if (server) {
-		if (!r) r = members.find(m => { return !server.detailsOf(m).nick ? false : server.detailsOf(m).nick.toLowerCase() === query.toLowerCase() });
-		if (!r) r = members.find(m => { return !server.detailsOf(m).nick ? false : server.detailsOf(m).nick.toLowerCase().indexOf(query.toLowerCase()) === 0 });
-		if (!r) r = members.find(m => { return !server.detailsOf(m).nick ? false : server.detailsOf(m).nick.toLowerCase().includes(query.toLowerCase()) });
-	}
-	return r || false;
+exports.findMember = function(query, guild, exact = false) {
+	let found = null;
+	if (query === undefined || guild === undefined)
+		return found;
+	query = query.toLowerCase();
+	guild.members.forEach(m => { if (m.user.username.toLowerCase() === query) found = m; });
+	if (!found) guild.members.forEach(m => { if (m.nick !== null && m.nick.toLowerCase() === query) found = m; });
+	if (!found && exact === false) guild.members.forEach(m => { if (m.user.username.toLowerCase().indexOf(query) === 0) found = m; });
+	if (!found && exact === false) guild.members.forEach(m => { if (m.nick !== null && m.nick.toLowerCase().indexOf(query) === 0) found = m; });
+	if (!found && exact === false) guild.members.forEach(m => { if (m.user.username.toLowerCase().includes(query)) found = m; });
+	if (!found && exact === false) guild.members.forEach(m => { if (m.nick !== null && m.nick.toLowerCase().includes(query)) found = m; });
+	return found;
 }
 
-/*
-Tell the user the correct usage of a command
-	cmd: The name of the command
-	usage: The usage of the command
-	msg: The message object to reply to
-	bot: The bot
-	prefix: The command's prefix
-	delay: How long to wait before deleting (optional, defaults to 10 seconds)
+/**
+ * Find a user matching the input string or return null if none found
+ * @arg {String} query The input.
+ * @arg {Eris.Guild} guild The guild to look on.
+ * @arg {Boolean} [exact=false] Only look for an exact match.
+ * @returns {?Eris.User} The found User.
 */
-exports.correctUsage = function(cmd, usage, msg, bot, prefix, delay = 10000) {
-	if (!cmd || !usage || !msg || !bot || !prefix) return;
-	bot.sendMessage(msg, `${msg.author.username.replace(/@/g, '@\u200b')}, the correct usage is *\`${prefix}${cmd} ${usage}\`*`, (e, m) => {bot.deleteMessage(m, {"wait": delay});});
-	bot.deleteMessage(msg, {"wait": delay});
+exports.findUserInGuild = function(query, guild, exact = false) {
+	let found = null;
+	if (query === undefined || guild === undefined)
+		return found;
+	query = query.toLowerCase();
+	guild.members.forEach(m => { if (m.user.username.toLowerCase() === query) found = m; });
+	if (!found) guild.members.forEach(m => { if (m.nick !== null && m.nick.toLowerCase() === query) found = m; });
+	if (!found && exact === false) guild.members.forEach(m => { if (m.user.username.toLowerCase().indexOf(query) === 0) found = m; });
+	if (!found && exact === false) guild.members.forEach(m => { if (m.nick !== null && m.nick.toLowerCase().indexOf(query) === 0) found = m; });
+	if (!found && exact === false) guild.members.forEach(m => { if (m.user.username.toLowerCase().includes(query)) found = m; });
+	if (!found && exact === false) guild.members.forEach(m => { if (m.nick !== null && m.nick.toLowerCase().includes(query)) found = m; });
+	return found === null ? found : found.user;
 }
 
-/*
-Update the server count on carbon
-	key: Bot's key
-	servers: Server count
+/**
+* Update the server count on Carbon.
+* @arg {String} key The bot's key.
+* @arg {Number} servercount Server count.
 */
-exports.updateCarbon = function(key, servers) {
-	if (!key || !servers) return;
-	request.post({
-			"url": "https://www.carbonitex.net/discord/data/botdata.php",
-			"headers": {"content-type": "application/json"}, "json": true,
-			body: {
-				"key": key,
-				"servercount": servers
-			}
-		}, (e, r) => {
-		if (debug) console.log(cDebug(" DEBUG ") + " Updated Carbon server count");
-		if (e) console.log("Error updating carbon stats: " + e);
-		if (r.statusCode !== 200) console.log("Error updating carbon stats: Status Code " + r.statusCode);
-	});
-}
-
-/*
-Set the bot's avatar
-	file: file name with extension
-	bot: the client
-*/
-exports.setAvatar = function(file, bot) {
-	if (file && bot) {
-		fs.access(__dirname + '/../avatars/' + file, err => {
-			if (err) console.log("The file doesn't exist");
-			else {
-				let avatarB64 = 'data:image/jpeg;base64,' + fs.readFileSync(__dirname + '/../avatars/' + file, 'base64');
-				bot.setAvatar(avatarB64).catch(console.log);
-			}
+exports.updateCarbon = function(key, servercount) {
+	if (!key || !servercount) return;
+	superagent.post('https://www.carbonitex.net/discord/data/botdata.php')
+		.type('application/json')
+		.send({key, servercount})
+		.end(error => {
+			logger.debug('Updated Carbon server count to ' + servercount, 'CARBON UPDATE');
+			if (error) logger.error(error.status || error.response, 'CARBON UPDATE ERROR');
 		});
-	}
 }
 
-/*
-Get 700 channel messages if needed
-	bot: The client
-	channel: The channel to get logs for
+/**
+* Update the server count on [Abalabahaha's bot list]@{link https://bots.discord.pw/}.
+* @arg {String} key Your API key.
+* @arg {Number} server_count Server count.
 */
-exports.getLogs = function(bot, channel) {
+exports.updateAbalBots = function(key, server_count) {
+	if (!key || !server_count) return;
+	superagent.post('https://bots.discord.pw/api/bots/:user_id/stats')
+		.set('Authorization', key)
+		.type('application/json')
+		.send({server_count})
+		.end(error => {
+			logger.debug('Updated bot server count to ' + server_count, 'ABAL BOT LIST UPDATE');
+			if (error) logger.error(error.status || error.response, 'ABAL BOT LIST UPDATE ERROR');
+		});
+}
+
+/**
+* Set the bot's avatar from /avatars/.
+* @arg {Eris.Client} bot The client.
+* @arg {String} url The direct url to the image.
+* @returns {Promise}
+*/
+exports.setAvatar = function(bot, url) {
 	return new Promise((resolve, reject) => {
-		if (channel.messages.length >= 700)
-			resolve();
-		else {
-			bot.getChannelLogs(channel, 100, (e, ms) => {
-				if (e) { reject(e); return; }
-				if (ms < 100) { resolve(); return; }
-				bot.getChannelLogs(channel, 100, {before:ms[99]}, (e, ms) => {
-					if (e) { reject(e); return; }
-					if (ms < 100) { resolve(); return; }
-					bot.getChannelLogs(channel, 100, {before:ms[99]}, (e, ms) => {
-						if (e) { reject(e); return; }
-						if (ms < 100) { resolve(); return; }
-						bot.getChannelLogs(channel, 100, {before:ms[99]}, (e, ms) => {
-							if (e) { reject(e); return; }
-							if (ms < 100) { resolve(); return; }
-							bot.getChannelLogs(channel, 100, {before:ms[99]}, (e, ms) => {
-								if (e) { reject(e); return; }
-								if (ms < 100) { resolve(); return; }
-								bot.getChannelLogs(channel, 100, {before:ms[99]}, (e, ms) => {
-									if (e) { reject(e); return; }
-									if (ms < 100) { resolve(); return; }
-									bot.getChannelLogs(channel, 100, {before:ms[99]}, () => {
-										resolve();
-			});});});});});});});
-		}
+		if (bot !== undefined && typeof url === 'string') {
+			superagent.get(url)
+				.end((error, response) => {
+					if (!error && response.status === 200) {
+						bot.editSelf({avatar: `data:${response.header['content-type']};base64,${response.body.toString('base64')}`})
+							.then(resolve)
+							.catch(reject);
+					} else
+						reject('Got status code ' + error.status || response.status);
+				});
+		} else
+			reject('Invalid parameters');
 	});
 }
 
-//comma sperate a number
-exports.comma = (number) => number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+/**
+* Converts to human readable form
+* @arg {Number} milliseconds Time to format in milliseconds.
+* @returns {String} The formatted time.
+*/
+exports.formatTime = function(milliseconds) {
+	let s = milliseconds / 1000;
+	let seconds = (s % 60).toFixed(0);
+	s /= 60;
+	let minutes = (s % 60).toFixed(0);
+	s /= 60;
+	let hours = (s % 24).toFixed(0);
+	s /= 24;
+	let days = s.toFixed(0);
+	return `${days} days, ${hours} hours, ${minutes} minutes, and ${seconds} seconds`;
+}
 
-//sort messages by earliest first
-exports.sortById = (a, b) => a.id - b.id;
+/** Check for a newer version of MiraiBot */
+exports.checkForUpdates = function() {
+	let version = ~~(require('../package.json').version.split('.').join('')); //This is used to convert it to a number that can be compared
+	superagent.get("https://raw.githubusercontent.com/brussell98/Mirai/master/package.json")
+		.end((error, response) => {
+			if (error)
+				logger.warn('Error checking for updates: ' + (error.status || error.response));
+			else {
+				let latest = ~~(JSON.parse(response.text).version.split('.').join(''));
+				if (latest > version)
+					logger.warn('A new version of MiraiBot is avalible', 'OUT OF DATE');
+			}
+	});
+}

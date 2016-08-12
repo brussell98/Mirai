@@ -1,0 +1,26 @@
+{
+	"token": "",
+	"shardCount": 1,
+	"disableEvents": {
+		"VOICE_STATE_UPDATE": true,
+		"TYPING_START": true,
+		"MESSAGE_DELETE_BULK": true,
+		"MESSAGE_DELETE": true
+	},
+	"commandSets": {
+		"]": {"dir": "commands/normal/"},
+		"}": {"dir": "commands/mod/", "color": "blue"}
+	},
+	"reloadCommand": "~$reload",
+	"evalCommand": "~$eval",
+	"adminIds": [""],
+	"logTimestamp": false,
+	"cleverbot": true,
+	"inviteLink": "",
+	"errorMessage": "Oh no! I ran into an error! Please report this to my owner.",
+	"carbonKey": "",
+	"abalBotsKey": "",
+	"cycleGames": true,
+	"bannedGuildIds": [],
+	"whitelistedGuildIds": []
+}

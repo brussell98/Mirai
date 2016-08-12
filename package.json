@@ -1,31 +1,36 @@
 {
-	"name": "brussellbot",
-	"version": "2.3.1",
-	"description": "A Discord bot that does everything",
+	"name": "miraibot",
+	"version": "3.0.0",
+	"description": "An easy to use bot framework",
 	"author": "brussell98",
-	"main": "BrussellBot.js",
+	"main": "Mirai.js",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/brussell98/BrussellBot"
+		"url": "https://github.com/brussell98/Mirai"
 	},
 	"bugs": {
-		"url": "https://github.com/brussell98/BrussellBot/issues"
+		"url": "https://github.com/brussell98/Mirai/issues"
 	},
 	"engines": {
 		"node": ">=6.0.0"
 	},
 	"scripts": {
-		"start": "node BrussellBot.js --harmony"
+		"start": "node BrussellBot.js",
+		"test": "echo No test script",
+		"docs": "node_modules/.bin/jsdoc README.md --configure .jsdoc.json --verbose"
 	},
 	"license": "MIT",
 	"dependencies": {
-		"discord.js": "hydrabolt/discord.js#indev",
-		"request": "*",
-		"xml2js": "*",
-		"cleverbot-node": "*",
-		"osu-api": "*",
-		"chalk": "*",
-		"entities": ">=1.1.1",
-		"csslint": "*"
+		"eris": "abalabahaha/eris#dev",
+		"superagent": "^2.1.0",
+		"cleverbot-node": "^0.2.2",
+		"chalk": "^1.1.3",
+		"entities": "^1.1.1",
+		"require-reload": "^0.2.2"
+	},
+	"devDependencies": {
+		"jsdoc-parse": "^1.2.7",
+		"minami": "^1.1.1",
+		"eslint": "*"
 	}
 }
