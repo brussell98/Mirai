@@ -65,10 +65,10 @@ class CommandManager {
 	* @arg {settingsManager} settingsManager The bot's {@link settingsManager}.
 	*/
 	processCommand(bot, msg, config, settingsManager) {
-		let name = msg.content.replace(this.prefix, '').split(/ |\n/)[0].toLowerCase();
-		if (name === "help")
+		let name = msg.content.replace(this.prefix, '').split(/ |\n/)[0];
+		if (name.toLowerCase() === "help")
 			return this.help(bot, msg, msg.content.replace(this.prefix + name, '').trim());
-		let command = this.checkForMatch(name);
+		let command = this.checkForMatch(name.toLowerCase());
 		if (command !== null) {
 			if (msg.channel.guild !== undefined && !msg.channel.permissionsOf(msg.author.id).has('manageChannels') && settingsManager.isCommandIgnored(this.prefix, command.name, msg.channel.guild.id, msg.channel.id, msg.author.id) === true)
 				return;

@@ -297,3 +297,11 @@ setInterval(() => { // Update the bot's status for each shard every 10 minutes
 		});
 	}
 }, 600000);
+
+process.on('SIGINT', () => {
+	bot.disconnect({reconnect: false});
+	settingsManager.handleShutdown().then(() => process.exit(0));
+	setTimeout(() => {
+		process.exit(0);
+	}, 5000);
+});

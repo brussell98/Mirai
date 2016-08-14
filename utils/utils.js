@@ -14,27 +14,40 @@ var fs = require('fs'),
 * @arg {String} ext=".json" File extension.
 * @arg {String} data Data to be written to the file.
 * @arg {Number} minSize=5 Will not save if less than this size in bytes.
+* @returns {Promise<Boolean|Error>} Will resolve with true if saved successfully.
 */
 exports.safeSave = function(file, ext = ".json", data, minSize = 5) {
-	if (!file || !ext || !data) return;
-	if (file.startsWith('/')) file = file.substr(1);
-	if (!ext.startsWith('.')) ext = '.' + ext;
+	return new Promise((resolve, reject) => {
+		if (!file || !ext || !data)
+			return reject(new Error('Invalid arguments'));
+		if (file.startsWith('/')) file = file.substr(1);
+		if (!ext.startsWith('.')) ext = '.' + ext;
 
-	fs.writeFile(`${__dirname}/../${file}-temp${ext}`, data, error => {
-		if (error) logger.error(error, 'SAFE SAVE WRITE');
-		else {
-			fs.stat(`${__dirname}/../${file}-temp${ext}`, (err, stats) => {
-				if (err) logger.error(err, 'SAFE SAVE STAT');
-				else if (stats["size"] < minSize)
-					logger.debug('Prevented file from being overwritten', 'SAFE SAVE');
-				else {
-					fs.rename(`${__dirname}/../${file}-temp${ext}`, `${__dirname}/../${file}${ext}`, e => {
-						if(e) logger.error(e, 'SAFE SAVE RENAME');
-					});
-					logger.debug(`Updated ${file}${ext}`, 'SAFE SAVE');
-				}
-			});
-		}
+		fs.writeFile(`${__dirname}/../${file}-temp${ext}`, data, error => {
+			if (error) {
+				logger.error(error, 'SAFE SAVE WRITE');
+				reject(error);
+			} else {
+				fs.stat(`${__dirname}/../${file}-temp${ext}`, (err, stats) => {
+					if (err) {
+						logger.error(err, 'SAFE SAVE STAT');
+						reject(err);
+					} else if (stats["size"] < minSize) {
+						logger.debug('Prevented file from being overwritten', 'SAFE SAVE');
+						resolve(false);
+					} else {
+						fs.rename(`${__dirname}/../${file}-temp${ext}`, `${__dirname}/../${file}${ext}`, e => {
+							if (e) {
+								logger.error(e, 'SAFE SAVE RENAME');
+								reject(e);
+							} else
+								resolve(true);
+						});
+						logger.debug(`Updated ${file}${ext}`, 'SAFE SAVE');
+					}
+				});
+			}
+		});
 	});
 }
 
@@ -129,7 +142,7 @@ exports.setAvatar = function(bot, url) {
 							.then(resolve)
 							.catch(reject);
 					} else
-						reject('Got status code ' + error.status || response.status);
+						reject('Got status code ' + error.status || error.response);
 				});
 		} else
 			reject('Invalid parameters');

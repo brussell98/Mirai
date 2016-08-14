@@ -16,6 +16,10 @@ setInterval(() => {
 	}
 }, 20000);
 
+function handleShutdown() {
+	return Promise.all([utils.safeSave('db/genericSettings', '.json', JSON.stringify(genericSettings)), utils.safeSave('db/commandSettings', '.json', JSON.stringify(commandSettings))]);
+}
+
 /**
 * Manages settings for the bot.
 * @module settingsManager
@@ -688,6 +692,7 @@ function removeIfEmptyArray(obj, key, updater) {
 }
 
 module.exports = {
+	handleShutdown,
 	setWelcome,
 	getWelcome,
 	handleDeletedChannel,
