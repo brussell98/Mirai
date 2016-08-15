@@ -195,25 +195,25 @@ function reloadModule(msg) {
 			else {
 				switch (arg.replace(/(utils\/|\.js)/g, '')) {
 					case 'CommandManager':
-						CommandManager = reload('./CommandManager.js');
+						CommandManager = reload('./utils/CommandManager.js');
 						bot.createMessage(msg.channel.id, 'Reloaded utils/CommandManager.js');
 						break;
 					case 'settingsManager': {
 						let tempCommandList = settingsManager.commandList;
-						settingsManager = reload('./settingsManager.js');
+						settingsManager = reload('./utils/settingsManager.js');
 						settingsManager.commandList = tempCommandList;
 						bot.createMessage(msg.channel.id, 'Reloaded utils/settingsManager.js');
 						break;
 					} case 'utils':
-						utils = reload('./utils.js');
+						utils = reload('./utils/utils.js');
 						bot.createMessage(msg.channel.id, 'Reloaded utils/utils.js');
 						break;
 					case 'validateConfig':
-						validateConfig = reload('./validateConfig.js');
+						validateConfig = reload('./utils/validateConfig.js');
 						bot.createMessage(msg.channel.id, 'Reloaded utils/validateConfig.js');
 						break;
 					case 'Logger':
-						logger = new (reload('./Logger.js'))(config.logTimestamp);
+						logger = new (reload('./utils/Logger.js'))(config.logTimestamp);
 						bot.createMessage(msg.channel.id, 'Reloaded utils/Logger.js');
 						break;
 					default:
