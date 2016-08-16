@@ -15,7 +15,7 @@
 		"node": ">=6.0.0"
 	},
 	"scripts": {
-		"start": "node BrussellBot.js",
+		"start": "node Mirai.js",
 		"test": "echo No test script",
 		"docs": "node_modules/.bin/jsdoc README.md --configure .jsdoc.json --verbose"
 	},

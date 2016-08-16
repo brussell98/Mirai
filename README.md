@@ -56,7 +56,7 @@ module.exports = function(bot, settingsManager, config, guild) {
 - **cleverbot:** If cleverbot should be enabled.
 - **inviteLink:** A link to add the bot to a server.
 - **errorMessage:** An optional error message to post in chat.
-- **carbinKey:** Your key for updating carbon information.
+- **carbonKey:** Your key for updating carbon information.
 - **abalBotsKey:** Your https://bots.discord.pw/ API key.
 - **cycleGames:** Randomly changes the bot's status.
 - **bannedGuildIds:** Servers that can not add the bot.
