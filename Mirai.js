@@ -1,3 +1,6 @@
+if (parseFloat(process.versions.node) < 6)
+	throw new Error('Incompatible node version. Install Node 6 or higher.');
+
 var reload          = require('require-reload')(require),
     fs              = require('fs'),
     Eris            = require('eris'),

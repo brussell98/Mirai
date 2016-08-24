@@ -214,7 +214,7 @@ module.exports = {
 	__nsfw__: Allow NSFW commands to be used in the channel \`nsfw allow\` \`nsfw deny\`.
 	__ignore__: Block commands \`ignore #no-bot >all\`.
 	__unignore__: Allow commands \`unignore @User >ping | >choose\`.`,
-	usage: "Usage at <http://brussell98.github.io/bot/settings.html>",
+	usage: "Usage at <http://brussell98.tk/bot/settings.html>",
 	aliases: ['set', 'config'],
 	cooldown: 3,
 	requiredPermission: "manageGuild",

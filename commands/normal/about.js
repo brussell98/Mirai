@@ -4,6 +4,7 @@ const libVersion = require('../../node_modules/eris/package.json').version,
 module.exports = {
 	desc: "Tells you about the bot.",
 	cooldown: 5,
+	aliases: ['info'],
 	task(bot, msg) {
 		bot.createMessage(msg.channel.id, `\`\`\`tex
 $ Mirai $
@@ -16,7 +17,7 @@ $ Mirai $
 % If you have any feedback or suggestions head over to my server
 % For a list of commands do ]help or }help
 
-# WEBSITE: {http://brussell98.github.io/bot/index.html}
+# WEBSITE: {http://miraibot.ml}
 # SERVER: { discord.gg/rkWPSdu }
 # PATREON: {http://patreon.com/brussell98}
 \`\`\``);

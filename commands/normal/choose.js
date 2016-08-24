@@ -2,7 +2,8 @@ const RESPONSES = [
 	c => `I chose **${c}**`,
 	c => `I pick ${c}`,
 	c => `${c} is the best choice`,
-	c => `${c} is my choice`
+	c => `${c} is my choice`,
+	c => `${c} of course!`
 ];
 
 module.exports = {
