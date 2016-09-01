@@ -19,8 +19,8 @@ function updateWelcome(bot, msg, suffix, settingsManager) {
 		else if (newWelcome.length >= 1900)
 			bot.createMessage(msg.channel.id, "Sorry, your welcome message needs to be under 1,900 characters.");
 		else {
-			settingsManager.setWelcome(msg.channel.guild.id, msg.channelMentions[0] || "DM", newWelcome)
-				.then(() => bot.createMessage(msg.channel.id, `⚙ Welcome message set to:\n${newWelcome} **in** ${msg.channelMentions[0] ? '<#' + msg.channelMentions[0] + '>' : 'a DM'}`));
+			settingsManager.setWelcome(msg.channel.guild.id, suffix.toLowerCase().startsWith('dm') ? 'DM' : msg.channelMentions[0], newWelcome)
+				.then(() => bot.createMessage(msg.channel.id, `⚙ Welcome message set to:\n${newWelcome} **in** ${suffix.toLowerCase().startsWith('dm') ? 'a DM' : '<#' + msg.channelMentions[0] + '>'}`));
 		}
 	}
 }

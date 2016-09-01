@@ -178,5 +178,5 @@ exports.checkForUpdates = function() {
 				if (latest > version)
 					logger.warn('A new version of MiraiBot is avalible', 'OUT OF DATE');
 			}
-	});
+		});
 }

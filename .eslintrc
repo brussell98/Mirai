@@ -20,7 +20,8 @@
         "no-trailing-spaces": 1,
         "space-before-function-paren": ["warn", "never"],
         "arrow-spacing": 1,
-        "comma-spacing": ["warn", { "before": false, "after": true }]
+        "comma-spacing": ["warn", { "before": false, "after": true }],
+        "indent": ["error", "tab"]
     },
     "globals": {
         "commandsProcessed",
