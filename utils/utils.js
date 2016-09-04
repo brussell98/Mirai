@@ -14,9 +14,10 @@ var fs = require('fs'),
 * @arg {String} ext File extension.
 * @arg {String} data Data to be written to the file.
 * @arg {Number} minSize=5 Will not save if less than this size in bytes.
+* @arg {Boolean} log=5 If it should log to the console.
 * @returns {Promise<Boolean|Error>} Will resolve with true if saved successfully.
 */
-exports.safeSave = function(file, ext, data, minSize = 5) {
+exports.safeSave = function(file, ext, data, minSize = 5, log = true) {
 	return new Promise((resolve, reject) => {
 		if (!file || !ext || !data)
 			return reject(new Error('Invalid arguments'));
@@ -43,7 +44,8 @@ exports.safeSave = function(file, ext, data, minSize = 5) {
 							} else
 								resolve(true);
 						});
-						logger.debug(`Updated ${file}${ext}`, 'SAFE SAVE');
+						if (log === true)
+							logger.debug(`Updated ${file}${ext}`, 'SAFE SAVE');
 					}
 				});
 			}

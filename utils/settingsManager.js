@@ -5,7 +5,7 @@ var reload = require('require-reload')(require),
 	updateGeneric = false,
 	updateCommand = false;
 
-setInterval(() => {
+const interval = setInterval(() => {
 	if (updateGeneric === true) {
 		utils.safeSave('db/genericSettings', '.json', JSON.stringify(genericSettings));
 		updateGeneric = false;
@@ -18,6 +18,14 @@ setInterval(() => {
 
 function handleShutdown() {
 	return Promise.all([utils.safeSave('db/genericSettings', '.json', JSON.stringify(genericSettings)), utils.safeSave('db/commandSettings', '.json', JSON.stringify(commandSettings))]);
+}
+
+function destroy() {
+	clearInterval(interval);
+	if (updateGeneric === true)
+		utils.safeSave('db/genericSettings', '.json', JSON.stringify(genericSettings));
+	if (updateCommand === true)
+		utils.safeSave('db/commandSettings', '.json', JSON.stringify(commandSettings));
 }
 
 /**
@@ -692,6 +700,7 @@ function removeIfEmptyArray(obj, key, updater) {
 }
 
 module.exports = {
+	destroy,
 	handleShutdown,
 	setWelcome,
 	getWelcome,

@@ -15,6 +15,7 @@
 * @prop {String} requiredPermission The permission needed to use the command.
 * @prop {Number} timesUsed How many times the command has been used.
 * @prop {Set} usersOnCooldown Users that are still on cooldown.
+* @prop {Function} destroyFunction A function that runs at destruction.
 */
 class Command {
 
@@ -33,7 +34,8 @@ class Command {
 	* @arg {Boolean} [cmd.ownerOnly=false]
 	* @arg {Boolean} [cmd.guildOnly=false]
 	* @arg {String} [cmd.requiredPermission=null] A Discord [permission]{@link https://abal.moe/Eris/reference.html}
-	* @arg {String} [cmd.initialize] A function that runs at creation and is passed the client.
+	* @arg {Function} [cmd.initialize] A function that runs at creation and is passed the client.
+	* @arg {Function} [cmd.destroy] A function that runs at destruction.
 	* @arg {Client} bot The client.
 	* @arg {Object} config The bot's config settings.
 	*/
@@ -52,6 +54,7 @@ class Command {
 		this.requiredPermission = cmd.requiredPermission || null;
 		this.timesUsed = 0;
 		this.usersOnCooldown = new Set();
+		this.destroyFunction = cmd.destroy;
 
 		if (typeof cmd.initialize === 'function')
 			cmd.initialize(bot, config);
@@ -132,6 +135,12 @@ class Command {
 				this.usersOnCooldown.delete(msg.author.id);
 			}, this.cooldown * 1000);
 		}
+	}
+
+	/** Destroys the command */
+	destroy() {
+		if (typeof this.destroyFunction === 'function')
+			this.destroyFunction();
 	}
 }
 

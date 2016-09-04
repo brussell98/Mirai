@@ -203,6 +203,7 @@ function reloadModule(msg) {
 					break;
 				case 'settingsManager': {
 					let tempCommandList = settingsManager.commandList;
+					settingsManager.destroy();
 					settingsManager = reload('./utils/settingsManager.js');
 					settingsManager.commandList = tempCommandList;
 					bot.createMessage(msg.channel.id, 'Reloaded utils/settingsManager.js');
