@@ -1,6 +1,6 @@
 var reload  = require('require-reload')(require),
-    fs      = require('fs'),
-    Command = reload('./Command.js'),
+	fs      = require('fs'),
+	Command = reload('./Command.js'),
 	_Logger = reload('./Logger.js');
 
 /**
@@ -139,15 +139,16 @@ class CommandManager {
 	* @arg {Client} bot The Client.
 	* @arg {String} channelId The channel to respond in.
 	* @arg {String} command The comamnd to reload or load.
+	* @arg {Object} config The bot's config.
 	* @arg {settingsManager} settingsManager The bot's {@link settingsManager}.
 	*/
-	reload(bot, channelId, command, settingsManager) {
+	reload(bot, channelId, command, config, settingsManager) {
 		fs.access(`${this.directory}${command}.js`, fs.R_OK | fs.F_OK, error => {
 			if (error)
 				bot.createMessage(channelId, 'Command does not exist');
 			else {
 				try {
-					this.commands[command] = new Command(command, this.prefix, reload(`${this.directory}${command}.js`), bot);
+					this.commands[command] = new Command(command, this.prefix, reload(`${this.directory}${command}.js`), config, bot);
 					bot.createMessage(channelId, `Command ${this.prefix}${command} loaded`);
 					if (!settingsManager.commandList[this.prefix].includes(command))
 						settingsManager.commandList[this.prefix].push(command);

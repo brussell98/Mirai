@@ -2,17 +2,17 @@ if (parseFloat(process.versions.node) < 6)
 	throw new Error('Incompatible node version. Install Node 6 or higher.');
 
 var reload          = require('require-reload')(require),
-    fs              = require('fs'),
-    Eris            = require('eris'),
-    config          = reload('./config.json'),
-    validateConfig  = reload('./utils/validateConfig.js'),
-    CommandManager  = reload('./utils/CommandManager.js'),
-    utils           = reload('./utils/utils.js'),
-    settingsManager = reload('./utils/settingsManager.js'),
-    logger,
-    games           = reload('./special/games.json'),
-    CommandManagers = [],
-    events          = {};
+	fs              = require('fs'),
+	Eris            = require('eris'),
+	config          = reload('./config.json'),
+	validateConfig  = reload('./utils/validateConfig.js'),
+	CommandManager  = reload('./utils/CommandManager.js'),
+	utils           = reload('./utils/utils.js'),
+	settingsManager = reload('./utils/settingsManager.js'),
+	logger,
+	games           = reload('./special/games.json'),
+	CommandManagers = [],
+	events          = {};
 
 commandsProcessed = 0;
 cleverbotTimesUsed = 0;
@@ -177,7 +177,7 @@ function reloadModule(msg) {
 
 	for (let i = 0; i < CommandManagers.length; i++) { //If arg starts with a prefix for a CommandManager reload/load the file.
 		if (arg.startsWith(CommandManagers[i].prefix))
-			return CommandManagers[i].reload(bot, msg.channel.id, arg.substr(CommandManagers[i].prefix.length), settingsManager);
+			return CommandManagers[i].reload(bot, msg.channel.id, arg.substr(CommandManagers[i].prefix.length), config, settingsManager);
 	}
 
 	if (arg === 'CommandManagers') {
@@ -197,31 +197,31 @@ function reloadModule(msg) {
 				bot.createMessage(msg.channel.id, 'That file does not exist!');
 			else {
 				switch (arg.replace(/(utils\/|\.js)/g, '')) {
-					case 'CommandManager':
-						CommandManager = reload('./utils/CommandManager.js');
-						bot.createMessage(msg.channel.id, 'Reloaded utils/CommandManager.js');
-						break;
-					case 'settingsManager': {
-						let tempCommandList = settingsManager.commandList;
-						settingsManager = reload('./utils/settingsManager.js');
-						settingsManager.commandList = tempCommandList;
-						bot.createMessage(msg.channel.id, 'Reloaded utils/settingsManager.js');
-						break;
-					} case 'utils':
-						utils = reload('./utils/utils.js');
-						bot.createMessage(msg.channel.id, 'Reloaded utils/utils.js');
-						break;
-					case 'validateConfig':
-						validateConfig = reload('./utils/validateConfig.js');
-						bot.createMessage(msg.channel.id, 'Reloaded utils/validateConfig.js');
-						break;
-					case 'Logger':
-						logger = new (reload('./utils/Logger.js'))(config.logTimestamp);
-						bot.createMessage(msg.channel.id, 'Reloaded utils/Logger.js');
-						break;
-					default:
-						bot.createMessage(msg.channel.id, "Can't reload that because it isn't already loaded");
-						break;
+				case 'CommandManager':
+					CommandManager = reload('./utils/CommandManager.js');
+					bot.createMessage(msg.channel.id, 'Reloaded utils/CommandManager.js');
+					break;
+				case 'settingsManager': {
+					let tempCommandList = settingsManager.commandList;
+					settingsManager = reload('./utils/settingsManager.js');
+					settingsManager.commandList = tempCommandList;
+					bot.createMessage(msg.channel.id, 'Reloaded utils/settingsManager.js');
+					break;
+				} case 'utils':
+					utils = reload('./utils/utils.js');
+					bot.createMessage(msg.channel.id, 'Reloaded utils/utils.js');
+					break;
+				case 'validateConfig':
+					validateConfig = reload('./utils/validateConfig.js');
+					bot.createMessage(msg.channel.id, 'Reloaded utils/validateConfig.js');
+					break;
+				case 'Logger':
+					logger = new (reload('./utils/Logger.js'))(config.logTimestamp);
+					bot.createMessage(msg.channel.id, 'Reloaded utils/Logger.js');
+					break;
+				default:
+					bot.createMessage(msg.channel.id, "Can't reload that because it isn't already loaded");
+					break;
 				}
 			}
 		});
@@ -239,16 +239,16 @@ function reloadModule(msg) {
 	} else if (arg.startsWith('special/')) {
 
 		switch (arg.substr(8)) {
-			case 'cleverbot':
-				events.messageCreate.reloadCleverbot(bot, msg.channel.id);
-				break;
-			case 'games':
-				games = reload('./special/games.json');
-				bot.createMessage(msg.channel.id, `Reloaded special/games.json`);
-				break;
-			default:
-				bot.createMessage(msg.channel.id, "Not found");
-				break;
+		case 'cleverbot':
+			events.messageCreate.reloadCleverbot(bot, msg.channel.id);
+			break;
+		case 'games':
+			games = reload('./special/games.json');
+			bot.createMessage(msg.channel.id, `Reloaded special/games.json`);
+			break;
+		default:
+			bot.createMessage(msg.channel.id, "Not found");
+			break;
 		}
 
 	} else if (arg === 'config') {

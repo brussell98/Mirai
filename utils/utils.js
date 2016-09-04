@@ -11,12 +11,12 @@ var fs = require('fs'),
 /**
 * Save a file safely, preventing it from being cleared.
 * @arg {String} dir Path from root folder including filename. (EX: db/servers)
-* @arg {String} ext=".json" File extension.
+* @arg {String} ext File extension.
 * @arg {String} data Data to be written to the file.
 * @arg {Number} minSize=5 Will not save if less than this size in bytes.
 * @returns {Promise<Boolean|Error>} Will resolve with true if saved successfully.
 */
-exports.safeSave = function(file, ext = ".json", data, minSize = 5) {
+exports.safeSave = function(file, ext, data, minSize = 5) {
 	return new Promise((resolve, reject) => {
 		if (!file || !ext || !data)
 			return reject(new Error('Invalid arguments'));
