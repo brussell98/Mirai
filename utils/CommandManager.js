@@ -148,7 +148,8 @@ class CommandManager {
 				bot.createMessage(channelId, 'Command does not exist');
 			else {
 				try {
-					this.commands[command].destroy();
+					if (this.commands.hasOwnProperty(command))
+						this.commands[command].destroy();
 					this.commands[command] = new Command(command, this.prefix, reload(`${this.directory}${command}.js`), config, bot);
 					bot.createMessage(channelId, `Command ${this.prefix}${command} loaded`);
 					if (!settingsManager.commandList[this.prefix].includes(command))
