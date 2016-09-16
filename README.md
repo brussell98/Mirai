@@ -1,8 +1,9 @@
-![Mirai Bot](http://i.imgur.com/UHJ7Nig.png)   
+![Mirai Bot](http://i.imgur.com/BO18mRW.png)   
+[![David](https://img.shields.io/david/brussell98/Mirai.svg?maxAge=2592000)](https://david-dm.org/brussell98/Mirai) [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/brussell98/Mirai/master/LICENSE)
 
 An easy to use bot framework using the [Eris](https://github.com/abalabahaha/eris/) library. NodeJS version 6+ is ***REQUIRED***
 
-#### [Website](http://miraibot.ml) | [Support on Patreon](http://patreon.com/brussell98) | [Documentation](http://brussell98.tk/bot/docs/index.html) | [Discord Server](https://discord.gg/rkWPSdu) | [Wiki](https://github.com/brussell98/BrussellBot/wiki) | [Eris Docs](https://abal.moe/Eris/docs/index.html) | [Todo List](https://trello.com/b/Uw5wZLzJ)   
+#### [Website](http://miraibot.ml) | [Support on Patreon](http://patreon.com/brussell98) | [Documentation](http://brussell98.tk/bot/docs/index.html) | [Discord Server](https://discord.gg/rkWPSdu) | [Eris Docs](https://abal.moe/Eris/docs/index.html) | [Todo List](https://trello.com/b/Uw5wZLzJ)   
 
 ## Installing:
 1. Install `NodeJS` `Git` and `Python2.7` (and add them to your PATH).
@@ -29,7 +30,7 @@ module.exports = {
 	ownerOnly: true, // Only a user in config.adminIds can use this
 	guildOnly: true, // This can't be used in a DM
 	requiredPermission: 'manageMessages', // You need manageMessages to use this
-	task(bot, msg, suffix, config, settingsManager) { // Avaliable args
+	task(bot, msg, suffix, config, settingsManager) { // Available args
 		if (suffix.startsWith('hello'))
 			return bot.createMessage(msg.channel.id, suffix);
 		return 'wrong usage'; // Send the correct usage to the user
@@ -57,7 +58,7 @@ module.exports = function(bot, settingsManager, config, guild) {
 - **reloadCommand:** The command to use for reloading modules/commands.
 - **evalCommand:** The command to use for running arbitrary code.
 - **adminIds:** An array of user ids that have full control over the bot.
-- **logTimestamp:** If the console should include timestmaps.
+- **logTimestamp:** If the console should include timestamps.
 - **cleverbot:** If cleverbot should be enabled.
 - **inviteLink:** A link to add the bot to a server.
 - **errorMessage:** An optional error message to post in chat.
