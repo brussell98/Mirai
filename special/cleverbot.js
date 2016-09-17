@@ -42,17 +42,17 @@ module.exports = function(bot, msg, config, settingsManager) {
 		cleverbotTimesUsed++;
 		logger.logCommand(msg.channel.guild === undefined ? null : msg.channel.guild.name, msg.author.username, '@' + bot.user.username, text);
 		if (text === '') //If they just did @Botname
-			bot.createMessage(msg.channel.id, 'Yes?');
+			msg.channel.createMessage('Yes?');
 		else {
-			bot.sendChannelTyping(msg.channel.id);
+			msg.channel.sendTyping();
 			Waifu.write(text, response => {
 				response = processUnicode(response.message);
 				if (response)
-					bot.createMessage(msg.channel.id, '💬 ' + entities.decodeHTML(response));
+					msg.channel.createMessage('💬 ' + entities.decodeHTML(response));
 				else { //API returned nothing back
 					reset();
 					logger.warn('Nothing was returned by the cleverbot API. Reloading it now.');
-					bot.createMessage(msg.channel.id, '⚠ There was an error, try again.');
+					msg.channel.createMessage('⚠ There was an error, try again.');
 				}
 			});
 		}

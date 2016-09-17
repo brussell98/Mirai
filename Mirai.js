@@ -185,7 +185,7 @@ function reloadModule(msg) {
 		loadCommandSets()
 			.then(initCommandManagers)
 			.then(() => {
-				bot.createMessage(msg.channel.id, 'Reloaded CommandManagers');
+				msg.channel.createMessage('Reloaded CommandManagers');
 			}).catch(error => {
 				logger.error(error, 'ERROR IN INIT');
 			});
@@ -194,34 +194,34 @@ function reloadModule(msg) {
 
 		fs.access(`${__dirname}/${arg}.js`, fs.R_OK | fs.F_OK, err => {
 			if (err)
-				bot.createMessage(msg.channel.id, 'That file does not exist!');
+				msg.channel.createMessage('That file does not exist!');
 			else {
 				switch (arg.replace(/(utils\/|\.js)/g, '')) {
 				case 'CommandManager':
 					CommandManager = reload('./utils/CommandManager.js');
-					bot.createMessage(msg.channel.id, 'Reloaded utils/CommandManager.js');
+					msg.channel.createMessage('Reloaded utils/CommandManager.js');
 					break;
 				case 'settingsManager': {
 					let tempCommandList = settingsManager.commandList;
 					settingsManager.destroy();
 					settingsManager = reload('./utils/settingsManager.js');
 					settingsManager.commandList = tempCommandList;
-					bot.createMessage(msg.channel.id, 'Reloaded utils/settingsManager.js');
+					msg.channel.createMessage('Reloaded utils/settingsManager.js');
 					break;
 				} case 'utils':
 					utils = reload('./utils/utils.js');
-					bot.createMessage(msg.channel.id, 'Reloaded utils/utils.js');
+					msg.channel.createMessage('Reloaded utils/utils.js');
 					break;
 				case 'validateConfig':
 					validateConfig = reload('./utils/validateConfig.js');
-					bot.createMessage(msg.channel.id, 'Reloaded utils/validateConfig.js');
+					msg.channel.createMessage('Reloaded utils/validateConfig.js');
 					break;
 				case 'Logger':
 					logger = new (reload('./utils/Logger.js'))(config.logTimestamp);
-					bot.createMessage(msg.channel.id, 'Reloaded utils/Logger.js');
+					msg.channel.createMessage('Reloaded utils/Logger.js');
 					break;
 				default:
-					bot.createMessage(msg.channel.id, "Can't reload that because it isn't already loaded");
+					msg.channel.createMessage( "Can't reload that because it isn't already loaded");
 					break;
 				}
 			}
@@ -232,10 +232,9 @@ function reloadModule(msg) {
 		arg = arg.substr(7);
 		if (events.hasOwnProperty(arg)) {
 			events[arg] = reload(`./events/${arg}.js`);
-			bot.createMessage(msg.channel.id, `Reloaded events/${arg}.js`);
-		} else {
-			bot.createMessage(msg.channel.id, "That event isn't loaded");
-		}
+			msg.channel.createMessage(`Reloaded events/${arg}.js`);
+		} else
+			msg.channel.createMessage("That event isn't loaded");
 
 	} else if (arg.startsWith('special/')) {
 
@@ -245,10 +244,10 @@ function reloadModule(msg) {
 			break;
 		case 'games':
 			games = reload('./special/games.json');
-			bot.createMessage(msg.channel.id, `Reloaded special/games.json`);
+			msg.channel.createMessage('Reloaded special/games.json');
 			break;
 		default:
-			bot.createMessage(msg.channel.id, "Not found");
+			msg.channel.createMessage("Not found");
 			break;
 		}
 
@@ -257,7 +256,7 @@ function reloadModule(msg) {
 		validateConfig = reload('./utils/validateConfig.js');
 		config = reload('./config.json');
 		validateConfig(config).catch(() => process.exit(0));
-		bot.createMessage(msg.channel.id, "Reloaded config");
+		msg.channel.createMessage("Reloaded config");
 	}
 }
 
@@ -270,12 +269,12 @@ function evaluate(msg) {
 		result = eval(toEval);
 	} catch (error) {
 		logger.debug(error.message, 'EVAL FAILED');
-		bot.createMessage(msg.channel.id, `\`\`\`diff\n- ${error}\`\`\``); //Send error to chat also.
+		msg.channel.createMessage(`\`\`\`diff\n- ${error}\`\`\``); //Send error to chat also.
 	}
 
 	if (result !== '~eval failed~') {
 		logger.debug(result, 'EVAL RESULT');
-		bot.createMessage(msg.channel.id, `__**Result:**__ \n${result}`);
+		msg.channel.createMessage(`__**Result:**__ \n${result}`);
 	}
 }
 

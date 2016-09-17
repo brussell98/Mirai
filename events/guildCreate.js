@@ -8,8 +8,7 @@ module.exports = function(bot, _settingsManager, config, guild) {
 	logger.logWithHeader('JOINED GUILD', 'bgGreen', 'black', `${guild.name} owned by ${guild.members.get(guild.ownerID).user.username}`);
 	if (config.bannedGuildIds.includes(guild.id)) {
 		logger.logWithHeader('LEFT BANNED GUILD', 'bgRed', 'black', guild.name);
-		bot.leaveGuild(guild.id);
-	} else {
-		bot.createMessage(guild.defaultChannel.id, "Hi, I'm Mirai!\nYou can find my commands at http://brussell98.tk/bot/commands.html or by doing ]help and }help\nYou can get more information about me by doing ]about");
-	}
+		guild.leave();
+	} else
+		guild.defaultChannel.createMessage("Hi, I'm Mirai!\nYou can find my commands at http://brussell98.tk/bot/commands.html or by doing ]help and }help\nYou can get more information about me by doing ]about");
 }
