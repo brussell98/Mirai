@@ -23,9 +23,5 @@
         "comma-spacing": ["warn", { "before": false, "after": true }],
         "indent": ["error", "tab"]
     },
-    "globals": {
-        "commandsProcessed",
-        "cleverbotTimesUsed"
-    },
     extends: "eslint:recommended"
 }
