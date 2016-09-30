@@ -9,7 +9,7 @@ module.exports = function(bot, config, games, utils) {
 	utils.checkForUpdates();
 	bot.shards.forEach(shard => {
 		let name = games[~~(Math.random() * games.length)];
-		shard.editGame({name});
+		shard.editStatus(null, {name});
 	});
 	logger.logWithHeader('READY', 'bgGreen', 'black', `S:${Nf.format(bot.guilds.size)} U:${Nf.format(bot.users.size)} AVG:${Nf.format((bot.users.size / bot.guilds.size).toFixed(2))}`);
 }
