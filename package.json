@@ -16,7 +16,6 @@
 	},
 	"scripts": {
 		"start": "node Mirai.js",
-		"test": "echo No test script",
 		"docs": "node_modules/.bin/jsdoc README.md --configure .jsdoc.json --verbose"
 	},
 	"license": "MIT",

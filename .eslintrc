@@ -24,8 +24,8 @@
         "indent": ["error", "tab"]
     },
     "globals": {
-        "commandsProcessed",
-        "cleverbotTimesUsed"
+        "commandsProcessed": true,
+        "cleverbotTimesUsed": true"
     },
     extends: "eslint:recommended"
 }
