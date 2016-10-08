@@ -1,4 +1,1 @@
-module.exorts = {
-	Bot: require('./lib/Bot.js'),
-	Logger: require('./lib/Logger.js')
-};
+module.exorts = require('./lib/Bot.js');

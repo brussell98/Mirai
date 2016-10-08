@@ -1,7 +1,7 @@
 {
-	"name": "mirai-bot",
+	"name": "mirai-bot-discord",
 	"version": "4.0.0-alpha",
-	"description": "A powerful Discord bot base",
+	"description": "A simple Discord bot base",
 	"author": "brussell98",
 	"main": "index.js",
 	"keywords": [
@@ -28,15 +28,15 @@
 	"license": "MIT",
 	"dependencies": {
 		"eris": "abalabahaha/eris#dev",
-		"unirest": "^0.5.0",
+		"unirest": "^0.5.1",
 		"chalk": "^1.1.3"
 	},
 	"optionalDependencies": {
-		"eventemitter3": "^2.0.0",
+		"eventemitter3": "^2.0.2",
 		"bluebird": "^3.4.6"
 	},
 	"devDependencies": {
-		"jsdoc-parse": "^1.2.7",
+		"jsdoc-parse": "^2.0.5",
 		"minami": "^1.1.1",
 		"eslint": "*"
 	}
