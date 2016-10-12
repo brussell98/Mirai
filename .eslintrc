@@ -21,7 +21,7 @@
         "space-before-function-paren": ["warn", "never"],
         "arrow-spacing": 1,
         "comma-spacing": ["warn", { "before": false, "after": true }],
-        "indent": ["error", "tab"]
+        "indent": ["error", "tab", { "SwitchCase": 1 }]
     },
     extends: "eslint:recommended"
 }
