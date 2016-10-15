@@ -18,7 +18,7 @@ module.exports = {
 [Version](MiraiBot ${version})
 [Shards](${bot.shards.size})
 
-# Avalible to:
+# Available to:
 [Guilds](${Nf.format(bot.guilds.size)})
 [Channels](${Nf.format(Object.keys(bot.channelGuildMap).length)})
 [Private Channels](${Nf.format(bot.privateChannels.size)})
