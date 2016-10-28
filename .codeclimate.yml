@@ -4,7 +4,7 @@ engines:
     channel: "eslint-2"
     config: .eslintrc
   duplication:
-    enabled: true
+    enabled: false
     config:
       languages:
       - javascript

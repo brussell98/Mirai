@@ -2,3 +2,4 @@ docs
 examples
 .hound.yml
 .jsdoc.json
+.codeclimate.yml
