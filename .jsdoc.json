@@ -12,6 +12,13 @@
         "plugins/markdown"
     ],
     "templates": {
+		"default": {
+			"outputSourceFiles": false,
+			"includeDate": false
+		},
+		"docdash": {
+			"sort": true
+		},
         "cleverLinks": false,
         "monospaceLinks": true
     },
@@ -20,6 +27,6 @@
         "encoding": "utf8",
         "private": true,
         "recurse": true,
-        "template": "./node_modules/minami"
+        "template": "./node_modules/docdash"
     }
 }

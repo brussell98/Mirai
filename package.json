@@ -23,7 +23,7 @@
   },
   "scripts": {
     "start": "node index.js",
-    "docs": "node_modules/.bin/jsdoc README.md --configure .jsdoc.json --verbose"
+    "docs": "node_modules/.bin/jsdoc README.md --configure .jsdoc.json --verbose && node docBeautify.js"
   },
   "license": "MIT",
   "dependencies": {
@@ -36,8 +36,9 @@
     "bluebird": "^3.4.6"
   },
   "devDependencies": {
+    "eslint": "*",
+    "js-beautify": "^1.6.4",
     "jsdoc-parse": "^2.0.5",
-    "minami": "^1.1.1",
-    "eslint": "*"
+	"docdash": "https://github.com/brussell98/docdash.git"
   }
 }
