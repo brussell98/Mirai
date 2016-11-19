@@ -11,6 +11,10 @@ class GeneralCommands extends AbstractCommandPlugin {
 		return 'general';
 	}
 
+	get help() {
+		return 'General: ' + Object.keys(this.commands).join(', ');
+	}
+
 	load(bot) {
 		return new Promise((resolve, reject) => {
 			super.load(bot);
@@ -24,7 +28,7 @@ class GeneralCommands extends AbstractCommandPlugin {
 							this.commands[command.name] = command;
 						});
 					} catch (e) {
-						this.bot.logger.error(`Error loading ${file}: ${e.stack}`);
+						this.logger.error(`Error loading ${file}: ${e.stack}`);
 					}
 				}
 				resolve();
@@ -33,7 +37,7 @@ class GeneralCommands extends AbstractCommandPlugin {
 	}
 
 	handle(message) {
-		if (message[0] === '!') {
+		if (message.content[0] === '!') {
 			let command = message.content.substr(1);
 			for (let name in this.commands) {
 				if (command.startsWith(name))

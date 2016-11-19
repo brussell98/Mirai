@@ -5,5 +5,5 @@ var GeneralCommands = new (require('./commands/GeneralCommands'));
 
 var mirai = new Mirai(config);
 mirai.loadCommandPlugin(GeneralCommands)
-	.then(() => mirai.run())
+	.then(() => mirai.connect())
 	.catch(console.error);
