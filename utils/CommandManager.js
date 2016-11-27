@@ -23,6 +23,7 @@ class CommandManager {
 		this.prefix = prefix;
 		this.directory = `${__dirname}/../${dir}`;
 		this.commands = {};
+		this.fallbackCommands = [];
 		this.logger = new _Logger(config.logTimestamp, color);
 	}
 
@@ -44,8 +45,12 @@ class CommandManager {
 						if (name.endsWith('.js')) {
 							try {
 								name = name.replace(/\.js$/, '');
-								this.commands[name] = new Command(name, this.prefix, reload(this.directory + name + '.js'), bot, config);
+								let command = new Command(name, this.prefix, reload(this.directory + name + '.js'), bot, config);
+								this.commands[name] = command;
 								settingsManager.commandList[this.prefix].push(name);
+								if (command.fallback) {
+									this.fallbackCommands.push(command);
+								}
 							} catch (e) {
 								this.logger.error(`${e}\n${e.stack}`, 'Error loading command ' + name);
 							}
@@ -67,15 +72,34 @@ class CommandManager {
 	processCommand(bot, msg, config, settingsManager) {
 		let name = msg.content.replace(this.prefix, '').split(/ |\n/)[0];
 		let command = this.checkForMatch(name.toLowerCase());
+		let suffix = msg.content.replace(this.prefix + name, '').trim();
 		if (command !== null) {
 			if (msg.channel.guild !== undefined && !msg.channel.permissionsOf(msg.author.id).has('manageChannels') && settingsManager.isCommandIgnored(this.prefix, command.name, msg.channel.guild.id, msg.channel.id, msg.author.id) === true)
 				return;
-			let suffix = msg.content.replace(this.prefix + name, '').trim();
-			this.logger.logCommand(msg.channel.guild === undefined ? null : msg.channel.guild.name, msg.author.username, this.prefix + command.name, msg.cleanContent.replace(this.prefix + name, '').trim());
+			this.logCommand(msg, command.name, name);
 			return command.execute(bot, msg, suffix, config, settingsManager, this.logger);
 		} else if (name.toLowerCase() === "help") {
 			return this.help(bot, msg, msg.content.replace(this.prefix + name, '').trim());
+		} else if (this.fallbackCommands.length > 0) {
+			this.logCommand(msg, name, name);
+			let commandResults = [];
+			for (let i = 0; i < this.fallbackCommands.length; ++i) {
+				let command = this.fallbackCommands[i];
+				commandResults.push(command.execute(bot, msg, suffix, config, settingsManager, this.logger));
+			}
+
+			return commandResults;
 		}
+	}
+
+	/**
+	* Logs a command
+	* @arg {Eris.Message} msg The message containing the command to log.
+	* @arg {String} commandNameToLog The command name that should appear in the log.
+	* @arg {String} commandNameEntered The actual command name that the user typed and which is contained in msg.
+	*/
+	logCommand(msg, commandNameToLog, commandNameEntered) {
+		this.logger.logCommand(msg.channel.guild === undefined ? null : msg.channel.guild.name, msg.author.username, this.prefix + commandNameToLog, msg.cleanContent.replace(this.prefix + commandNameEntered, '').trim());
 	}
 
 	/**

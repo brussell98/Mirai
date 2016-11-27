@@ -12,6 +12,7 @@
 * @prop {Boolean} hidden If the command should be hidden from help.
 * @prop {Boolean} ownerOnly If the command can only be used by a bot admin.
 * @prop {Boolean} guildOnly If the command can only be used in a guild.
+* @prop {Boolean} fallback If this command should be executed when there are no other matching commands.
 * @prop {String} requiredPermission The permission needed to use the command.
 * @prop {Number} timesUsed How many times the command has been used.
 * @prop {Set} usersOnCooldown Users that are still on cooldown.
@@ -33,6 +34,7 @@ class Command {
 	* @arg {Boolean} [cmd.hidden=false]
 	* @arg {Boolean} [cmd.ownerOnly=false]
 	* @arg {Boolean} [cmd.guildOnly=false]
+	* @arg {Boolean} [cmd.fallback=false]
 	* @arg {String} [cmd.requiredPermission=null] A Discord [permission]{@link https://abal.moe/Eris/reference.html}
 	* @arg {Function} [cmd.initialize] A function that runs at creation and is passed the client.
 	* @arg {Function} [cmd.destroy] A function that runs at destruction.
@@ -51,6 +53,7 @@ class Command {
 		this.hidden = !!cmd.hidden;
 		this.ownerOnly = !!cmd.ownerOnly;
 		this.guildOnly = !!cmd.guildOnly;
+		this.fallback = !!cmd.fallback;
 		this.requiredPermission = cmd.requiredPermission || null;
 		this.timesUsed = 0;
 		this.usersOnCooldown = new Set();
