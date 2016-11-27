@@ -66,8 +66,6 @@ class CommandManager {
 	*/
 	processCommand(bot, msg, config, settingsManager) {
 		let name = msg.content.replace(this.prefix, '').split(/ |\n/)[0];
-		if (name.toLowerCase() === "help")
-			return this.help(bot, msg, msg.content.replace(this.prefix + name, '').trim());
 		let command = this.checkForMatch(name.toLowerCase());
 		if (command !== null) {
 			if (msg.channel.guild !== undefined && !msg.channel.permissionsOf(msg.author.id).has('manageChannels') && settingsManager.isCommandIgnored(this.prefix, command.name, msg.channel.guild.id, msg.channel.id, msg.author.id) === true)
@@ -75,6 +73,8 @@ class CommandManager {
 			let suffix = msg.content.replace(this.prefix + name, '').trim();
 			this.logger.logCommand(msg.channel.guild === undefined ? null : msg.channel.guild.name, msg.author.username, this.prefix + command.name, msg.cleanContent.replace(this.prefix + name, '').trim());
 			return command.execute(bot, msg, suffix, config, settingsManager, this.logger);
+		} else if (name.toLowerCase() === "help") {
+			return this.help(bot, msg, msg.content.replace(this.prefix + name, '').trim());
 		}
 	}
 
