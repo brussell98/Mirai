@@ -5,18 +5,14 @@ A powerful Discord bot base using [Eris](https://github.com/abalabahaha/eris/). 
 
 > By using this you agree to not ask any questions unless you have a basic understanding of installing programs, running node applications, and developing JavaScript applications.
 
-#### [Website](http://miraibot.ml) | [Support my projects on Patreon](http://patreon.com/brussell98) | [Documentation](http://brussell98.tk/Mirai/index.html) | [Discord Server](https://discord.gg/rkWPSdu) | [Eris Docs](https://abal.moe/Eris/docs/index.html) | [Todo List](https://trello.com/b/Uw5wZLzJ)   
+#### [Website](http://mirai.brussell.me) | [Support my projects on Patreon](http://patreon.com/brussell98) | [Documentation](http://brussell.me/Mirai/index.html) | [Discord Server](https://discord.gg/rkWPSdu) | [Eris Docs](https://abal.moe/Eris/docs/index.html) | [Todo List](https://trello.com/b/Uw5wZLzJ)   
 
 ## Installing:
 ```
-npm i -S mirai-bot-base
+npm i -S mirai-bot-discord
 ```
 ```js
 const Mirai = require('mirai-bot-discord'),
       bot = new Mirai(config);
 ```
 Add your bot to a server using `https://discordapp.com/oauth2/authorize?client_id=YOUR_CLIENT_ID&scope=bot`.
-
----
-
-Disclaimer: There is no guarantee that this will continue to be maintained. I may decide one day to discontinue this.
