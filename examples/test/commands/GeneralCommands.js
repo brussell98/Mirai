@@ -38,6 +38,11 @@ class GeneralCommands extends AbstractCommandPlugin {
 		});
 	}
 
+	destroy() {
+		super.destroy();
+		return Promise.all(Object.keys(this.commands).map(c => this.commands[c].destroy()));
+	}
+
 	handle(message) {
 		if (message.content.startsWith('m.')) {
 			let command = message.content.substr(2);

@@ -21,7 +21,26 @@
         "space-before-function-paren": ["warn", "never"],
         "arrow-spacing": 1,
         "comma-spacing": ["warn", { "before": false, "after": true }],
-        "indent": ["error", "tab", { "SwitchCase": 1 }]
+        "indent": ["error", "tab", { "SwitchCase": 1 }],
+        "require-jsdoc": ["warn", { "require": { "MethodDefinition": true, "ClassDeclaration": true } }],
+        "valid-jsdoc": ["warn", {
+            "prefer": {
+                "arg": "param",
+                "argument": "param",
+                "constructor": "class",
+                "return": "returns",
+                "virtual": "abstract"
+            },
+            "preferType": {
+                "boolean": "Boolean",
+                "number": "Number",
+                "object": "Object",
+                "string": "String"
+            },
+            "requireReturn": false,
+            "requireParamDescription": true,
+            "requireReturnDescription": true
+        }]
     },
     extends: "eslint:recommended"
 }
