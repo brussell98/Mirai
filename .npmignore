@@ -1,5 +1,11 @@
+*.tmp
+*.env
+.vscode
+node_modules
+config.json
+
+# npm ignore
 docs
 examples
-.hound.yml
 .jsdoc.json
 .codeclimate.yml

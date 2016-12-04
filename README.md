@@ -16,3 +16,13 @@ const Mirai = require('mirai-bot-core'),
       bot = new Mirai(config);
 ```
 Add your bot to a server using `https://discordapp.com/oauth2/authorize?client_id=YOUR_CLIENT_ID&scope=bot`.
+
+## Abstract Classes:
+Abstract classes are provided to ensure you have the required methods. They can be accessed like so:
+```js
+const AbstractCommand = require('mirai-bot-core/lib/Base/AbstractCommand');
+
+class PingCommand extends AbstractCommand {
+	
+}
+```
