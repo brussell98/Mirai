@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="utf-8">
+	<title>Bot - Documentation</title>
+	<script src="scripts/prettify/prettify.js"></script>
+	<script src="scripts/prettify/lang-css.js"></script>
+	<!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+	<link type="text/css" rel="stylesheet" href="styles/prettify.css">
+	<link type="text/css" rel="stylesheet" href="styles/jsdoc.css"> </head>
+
+<body> <input type="checkbox" id="nav-trigger" class="nav-trigger" /> <label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label> <label for="nav-trigger" class="overlay"></label>
+	<nav>
+		<h2><a href="index.html">Home</a></h2>
+		<h3>Classes</h3>
+		<ul>
+			<li><a href="AbstractCommand.html">AbstractCommand</a>
+				<ul class='methods'>
+					<li data-type='method'><a href="AbstractCommand.html#_sendMessage">_sendMessage</a></li>
+					<li data-type='method'><a href="AbstractCommand.html#awaitMessage">awaitMessage</a></li>
+					<li data-type='method'><a href="AbstractCommand.html#destroy">destroy</a></li>
+					<li data-type='method'><a href="AbstractCommand.html#load">load</a></li>
+					<li data-type='method'><a href="AbstractCommand.html#sendMessage">sendMessage</a></li>
+					<li data-type='method'><a href="AbstractCommand.html#userOnCooldown">userOnCooldown</a></li>
+				</ul>
+			</li>
+			<li><a href="AbstractCommandPlugin.html">AbstractCommandPlugin</a>
+				<ul class='methods'>
+					<li data-type='method'><a href="AbstractCommandPlugin.html#destroy">destroy</a></li>
+					<li data-type='method'><a href="AbstractCommandPlugin.html#handle">handle</a></li>
+					<li data-type='method'><a href="AbstractCommandPlugin.html#load">load</a></li>
+				</ul>
+			</li>
+			<li><a href="Bot.html">Bot</a>
+				<ul class='methods'>
+					<li data-type='method'><a href="Bot.html#findMember">findMember</a></li>
+					<li data-type='method'><a href="Bot.html#findUser">findUser</a></li>
+					<li data-type='method'><a href="Bot.html#loadCommandPlugin">loadCommandPlugin</a></li>
+					<li data-type='method'><a href="Bot.html#loadEventPlugin">loadEventPlugin</a></li>
+					<li data-type='method'><a href="Bot.html#loadMiddleware">loadMiddleware</a></li>
+					<li data-type='method'><a href="Bot.html#reloadCommandPlugin">reloadCommandPlugin</a></li>
+					<li data-type='method'><a href="Bot.html#reloadEventPlugin">reloadEventPlugin</a></li>
+					<li data-type='method'><a href="Bot.html#reloadMiddleware">reloadMiddleware</a></li>
+					<li data-type='method'><a href="Bot.html#setAvatar">setAvatar</a></li>
+					<li data-type='method'><a href="Bot.html#updateCarbon">updateCarbon</a></li>
+					<li data-type='method'><a href="Bot.html#updateDiscordBots">updateDiscordBots</a></li>
+				</ul>
+			</li>
+			<li><a href="ChatHandler.html">ChatHandler</a>
+				<ul class='methods'>
+					<li data-type='method'><a href="ChatHandler.html#awaitMessage">awaitMessage</a></li>
+					<li data-type='method'><a href="ChatHandler.html#getHelp">getHelp</a></li>
+					<li data-type='method'><a href="ChatHandler.html#run">run</a></li>
+					<li data-type='method'><a href="ChatHandler.html#stop">stop</a></li>
+				</ul>
+			</li>
+			<li><a href="Logger.html">Logger</a>
+				<ul class='methods'>
+					<li data-type='method'><a href="Logger.html#debug">debug</a></li>
+					<li data-type='method'><a href="Logger.html#error">error</a></li>
+					<li data-type='method'><a href="Logger.html#info">info</a></li>
+					<li data-type='method'><a href="Logger.html#log">log</a></li>
+					<li data-type='method'><a href="Logger.html#warn">warn</a></li>
+				</ul>
+			</li>
+		</ul>
+	</nav>
+	<div id="main">
+		<h1 class="page-title">Bot</h1>
+		<section>
+			<header>
+				<h2> Bot </h2>
+				<div class="class-description">
+					<p>Manages the connection to Discord and interaction between plugins</p>
+				</div>
+			</header>
+			<article>
+				<div class="container-overview">
+					<h2>Constructor</h2>
+					<h4 class="name" id="Bot"><span class="type-signature"></span>new Bot<span class="signature">(options<span class="signature-attributes">opt</span>, rLogger<span class="signature-attributes">opt</span>, rChatHandler<span class="signature-attributes">opt</span>)</span>
+						<span
+										class="type-signature"></span>
+					</h4>
+					<dl class="details"> <dt class="tag-see">See:</dt>
+						<dd class="tag-see">
+							<ul>
+								<li><a href="https://abal.moe/Eris/docs/Client">Eris.Client</a></li>
+							</ul>
+						</dd>
+					</dl>
+					<h5 class="subsection-title">Properties:</h5>
+					<table class="props">
+						<thead>
+							<tr>
+								<th>Name</th>
+								<th>Type</th>
+								<th class="last">Description</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td class="name"><code>carbonBotsKey</code></td>
+								<td class="type"> <span class="param-type">String</span> </td>
+								<td class="description last">
+									<p>The API key for carbon</p>
+								</td>
+							</tr>
+							<tr>
+								<td class="name"><code>discordBotsKey</code></td>
+								<td class="type"> <span class="param-type">String</span> </td>
+								<td class="description last">
+									<p>The API key for discord bots</p>
+								</td>
+							</tr>
+							<tr>
+								<td class="name"><code>logger</code></td>
+								<td class="type"> <span class="param-type">function</span> </td>
+								<td class="description last">
+									<p>The logging wrapper</p>
+								</td>
+							</tr>
+							<tr>
+								<td class="name"><code>chatHandler</code></td>
+								<td class="type"> <span class="param-type">function</span> </td>
+								<td class="description last">
+									<p>The class handling chat messages</p>
+								</td>
+							</tr>
+							<tr>
+								<td class="name"><code>blacklistedGuilds</code></td>
+								<td class="type"> <span class="param-type">Array.&lt;String></span> </td>
+								<td class="description last">
+									<p>Guilds that are banned from using the bot</p>
+								</td>
+							</tr>
+							<tr>
+								<td class="name"><code>blacklistedUsers</code></td>
+								<td class="type"> <span class="param-type">Array.&lt;String></span> </td>
+								<td class="description last">
+									<p>Users that are banned from using the bot</p>
+								</td>
+							</tr>
+							<tr>
+								<td class="name"><code>commandPlugins</code></td>
+								<td class="type"> <span class="param-type">Array.&lt;function()></span> </td>
+								<td class="description last">
+									<p>The loaded command plugins</p>
+								</td>
+							</tr>
+							<tr>
+								<td class="name"><code>eventPlugins</code></td>
+								<td class="type"> <span class="param-type">Array.&lt;function()></span> </td>
+								<td class="description last">
+									<p>The loaded event plugins</p>
+								</td>
+							</tr>
+							<tr>
+								<td class="name"><code>middleware</code></td>
+								<td class="type"> <span class="param-type">Array.&lt;function()></span> </td>
+								<td class="description last">
+									<p>The loaded middleware</p>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+					<div class="description">
+						<p>Creates a new instance of Mirai</p>
+					</div>
+					<h5>Parameters:</h5>
+					<table class="params">
+						<thead>
+							<tr>
+								<th>Name</th>
+								<th>Type</th>
+								<th>Attributes</th>
+								<th class="last">Description</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td class="name"><code>options</code></td>
+								<td class="type"> <span class="param-type">Object</span> </td>
+								<td class="attributes"> &lt;optional><br> </td>
+								<td class="description last">
+									<p>An object defining the configuration for Mirai</p>
+									<h6>Properties</h6>
+									<table class="params">
+										<thead>
+											<tr>
+												<th>Name</th>
+												<th>Type</th>
+												<th>Attributes</th>
+												<th class="last">Description</th>
+											</tr>
+										</thead>
+										<tbody>
+											<tr>
+												<td class="name"><code>carbonBotsKey</code></td>
+												<td class="type"> <span class="param-type">Boolean</span> </td>
+												<td class="attributes"> &lt;optional><br> </td>
+												<td class="description last">
+													<p>The API key for carbon's bot list</p>
+												</td>
+											</tr>
+											<tr>
+												<td class="name"><code>carbonBotsKey</code></td>
+												<td class="type"> <span class="param-type">Boolean</span> </td>
+												<td class="attributes"> &lt;optional><br> </td>
+												<td class="description last">
+													<p>The API key for the discord bots website</p>
+												</td>
+											</tr>
+											<tr>
+												<td class="name"><code>blacklistedGuilds</code></td>
+												<td class="type"> <span class="param-type">Array.&lt;String></span> </td>
+												<td class="attributes"> &lt;optional><br> </td>
+												<td class="description last">
+													<p>Guilds that are banned from using the bot</p>
+												</td>
+											</tr>
+											<tr>
+												<td class="name"><code>blacklistedUsers</code></td>
+												<td class="type"> <span class="param-type">Array.&lt;String></span> </td>
+												<td class="attributes"> &lt;optional><br> </td>
+												<td class="description last">
+													<p>Users that are banned from using the bot</p>
+												</td>
+											</tr>
+											<tr>
+												<td class="name"><code>gracefulExit</code></td>
+												<td class="type"> <span class="param-type">Boolean</span> </td>
+												<td class="attributes"> &lt;optional><br> </td>
+												<td class="description last">
+													<p>When SIGINT is recieved, destroy all plugins and middleware, and disconnect the bot</p>
+												</td>
+											</tr>
+										</tbody>
+									</table>
+								</td>
+							</tr>
+							<tr>
+								<td class="name"><code>rLogger</code></td>
+								<td class="type"> <span class="param-type">function</span> </td>
+								<td class="attributes"> &lt;optional><br> </td>
+								<td class="description last">
+									<p>A replacement Logger. Must implement <code>log</code> <code>info</code> <code>debug</code> <code>warn</code> and <code>error</code></p>
+								</td>
+							</tr>
+							<tr>
+								<td class="name"><code>rChatHandler</code></td>
+								<td class="type"> <span class="param-type">function</span> </td>
+								<td class="attributes"> &lt;optional><br> </td>
+								<td class="description last">
+									<p>A replacement ChatHandler. Must implement <code>run</code> and <code>stop</code></p>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+				<h3 class="subsection-title">Extends</h3>
+				<ul>
+					<li>Eris.Client</li>
+				</ul>
+				<h3 class="subsection-title">Methods</h3>
+				<h4 class="name" id="findMember"><span class="type-signature"></span>findMember<span class="signature">(query, members)</span><span class="type-signature"> &rarr; (nullable) {Member}</span></h4>
+				<dl class="details"> <dt class="tag-see">See:</dt>
+					<dd class="tag-see">
+						<ul>
+							<li><a href="https://abal.moe/Eris/docs/Member">Eris.Member</a></li>
+						</ul>
+					</dd>
+				</dl>
+				<div class="description">
+					<p>Resolve a name to a guild member</p>
+				</div>
+				<h5>Parameters:</h5>
+				<table class="params">
+					<thead>
+						<tr>
+							<th>Name</th>
+							<th>Type</th>
+							<th class="last">Description</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td class="name"><code>query</code></td>
+							<td class="type"> <span class="param-type">String</span> </td>
+							<td class="description last">
+								<p>The name to match</p>
+							</td>
+						</tr>
+						<tr>
+							<td class="name"><code>members</code></td>
+							<td class="type"> <span class="param-type">Collection</span> </td>
+							<td class="description last">
+								<p>The Collection of guild members</p>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+				<h5>Returns:</h5>
+				<div class="param-desc">
+					<p>The member the was found, or null</p>
+				</div>
+				<dl class="param-type"> <dt>
+        Type
+    </dt>
+					<dd> <span class="param-type">Member</span> </dd>
+				</dl>
+				<h4 class="name" id="findUser"><span class="type-signature"></span>findUser<span class="signature">(query)</span><span class="type-signature"> &rarr; (nullable) {User}</span></h4>
+				<dl class="details"> <dt class="tag-see">See:</dt>
+					<dd class="tag-see">
+						<ul>
+							<li><a href="https://abal.moe/Eris/docs/User">Eris.User</a></li>
+						</ul>
+					</dd>
+				</dl>
+				<div class="description">
+					<p>Resolve a name to a user</p>
+				</div>
+				<h5>Parameters:</h5>
+				<table class="params">
+					<thead>
+						<tr>
+							<th>Name</th>
+							<th>Type</th>
+							<th class="last">Description</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td class="name"><code>query</code></td>
+							<td class="type"> <span class="param-type">String</span> </td>
+							<td class="description last">
+								<p>The name to match</p>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+				<h5>Returns:</h5>
+				<div class="param-desc">
+					<p>The user the was found, or null</p>
+				</div>
+				<dl class="param-type"> <dt>
+        Type
+    </dt>
+					<dd> <span class="param-type">User</span> </dd>
+				</dl>
+				<h4 class="name" id="loadCommandPlugin"><span class="type-signature"></span>loadCommandPlugin<span class="signature">(plugin)</span><span class="type-signature"> &rarr; {Promise}</span></h4>
+				<dl class="details"> <dt class="tag-see">See:</dt>
+					<dd class="tag-see">
+						<ul>
+							<li><a href="AbstractCommandPlugin.html"><code>AbstractCommandPlugin</code></a></li>
+						</ul>
+					</dd>
+				</dl>
+				<h5>Example</h5>
+				<p class="code-caption">Loading a Command Plugin</p> <pre class="prettyprint"><code>var funCommands = new FunCommandsPlugin();
+mirai.loadCommandPlugin(funCommands);</code></pre>
+				<h5>Parameters:</h5>
+				<table class="params">
+					<thead>
+						<tr>
+							<th>Name</th>
+							<th>Type</th>
+							<th class="last">Description</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td class="name"><code>plugin</code></td>
+							<td class="type"> <span class="param-type">function</span> </td>
+							<td class="description last">
+								<p>The plugin to load. Must have a <code>load</code> method which is passed <code>this</code></p>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+				<h5>Returns:</h5>
+				<div class="param-desc">
+					<p>The result of <code>plugin.load</code></p>
+				</div>
+				<dl class="param-type"> <dt>
+        Type
+    </dt>
+					<dd> <span class="param-type">Promise</span> </dd>
+				</dl>
+				<h4 class="name" id="loadEventPlugin"><span class="type-signature"></span>loadEventPlugin<span class="signature">(plugin)</span><span class="type-signature"> &rarr; {Promise}</span></h4>
+				<dl class="details"> </dl>
+				<h5>Parameters:</h5>
+				<table class="params">
+					<thead>
+						<tr>
+							<th>Name</th>
+							<th>Type</th>
+							<th class="last">Description</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td class="name"><code>plugin</code></td>
+							<td class="type"> <span class="param-type">function</span> </td>
+							<td class="description last">
+								<p>The plugin to load. Must have a <code>load</code> method which is passed <code>this</code></p>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+				<h5>Returns:</h5>
+				<div class="param-desc">
+					<p>The result of <code>plugin.load</code></p>
+				</div>
+				<dl class="param-type"> <dt>
+        Type
+    </dt>
+					<dd> <span class="param-type">Promise</span> </dd>
+				</dl>
+				<h4 class="name" id="loadMiddleware"><span class="type-signature"></span>loadMiddleware<span class="signature">(middleware)</span><span class="type-signature"> &rarr; {Promise}</span></h4>
+				<dl class="details"> </dl>
+				<h5>Parameters:</h5>
+				<table class="params">
+					<thead>
+						<tr>
+							<th>Name</th>
+							<th>Type</th>
+							<th class="last">Description</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td class="name"><code>middleware</code></td>
+							<td class="type"> <span class="param-type">function</span> </td>
+							<td class="description last">
+								<p>The middleware to load. Must have a <code>load</code> method which is passed <code>this</code></p>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+				<h5>Returns:</h5>
+				<div class="param-desc">
+					<p>The result of <code>middleware.load</code></p>
+				</div>
+				<dl class="param-type"> <dt>
+        Type
+    </dt>
+					<dd> <span class="param-type">Promise</span> </dd>
+				</dl>
+				<h4 class="name" id="reloadCommandPlugin"><span class="type-signature"></span>reloadCommandPlugin<span class="signature">(plugin)</span><span class="type-signature"> &rarr; {Promise}</span></h4>
+				<dl class="details"> </dl>
+				<div class="description">
+					<p>Reload a plugin by seaching for a plugin with the same name and removing it</p>
+				</div>
+				<h5>Parameters:</h5>
+				<table class="params">
+					<thead>
+						<tr>
+							<th>Name</th>
+							<th>Type</th>
+							<th class="last">Description</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td class="name"><code>plugin</code></td>
+							<td class="type"> <span class="param-type">function</span> </td>
+							<td class="description last">
+								<p>The plugin to load. Must have a <code>load</code> method which is passed <code>this</code></p>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+				<h5>Returns:</h5>
+				<div class="param-desc">
+					<p>Rejects with an error, if there is one</p>
+				</div>
+				<dl class="param-type"> <dt>
+        Type
+    </dt>
+					<dd> <span class="param-type">Promise</span> </dd>
+				</dl>
+				<h4 class="name" id="reloadEventPlugin"><span class="type-signature"></span>reloadEventPlugin<span class="signature">(plugin)</span><span class="type-signature"> &rarr; {Promise}</span></h4>
+				<dl class="details"> </dl>
+				<div class="description">
+					<p>Reload a plugin by seaching for a plugin with the same name and removing it</p>
+				</div>
+				<h5>Parameters:</h5>
+				<table class="params">
+					<thead>
+						<tr>
+							<th>Name</th>
+							<th>Type</th>
+							<th class="last">Description</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td class="name"><code>plugin</code></td>
+							<td class="type"> <span class="param-type">function</span> </td>
+							<td class="description last">
+								<p>The plugin to load. Must have a <code>load</code> method which is passed <code>this</code></p>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+				<h5>Returns:</h5>
+				<div class="param-desc">
+					<p>Rejects with an error, if there is one</p>
+				</div>
+				<dl class="param-type"> <dt>
+        Type
+    </dt>
+					<dd> <span class="param-type">Promise</span> </dd>
+				</dl>
+				<h4 class="name" id="reloadMiddleware"><span class="type-signature"></span>reloadMiddleware<span class="signature">(middleware)</span><span class="type-signature"> &rarr; {Promise}</span></h4>
+				<dl class="details"> </dl>
+				<div class="description">
+					<p>Reload middleware by seaching for middleware with the same name and removing it</p>
+				</div>
+				<h5>Parameters:</h5>
+				<table class="params">
+					<thead>
+						<tr>
+							<th>Name</th>
+							<th>Type</th>
+							<th class="last">Description</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td class="name"><code>middleware</code></td>
+							<td class="type"> <span class="param-type">function</span> </td>
+							<td class="description last">
+								<p>The middleware to load. Must have a <code>load</code> method which is passed <code>this</code></p>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+				<h5>Returns:</h5>
+				<div class="param-desc">
+					<p>Rejects with an error, if there is one</p>
+				</div>
+				<dl class="param-type"> <dt>
+        Type
+    </dt>
+					<dd> <span class="param-type">Promise</span> </dd>
+				</dl>
+				<h4 class="name" id="setAvatar"><span class="type-signature"></span>setAvatar<span class="signature">(url)</span><span class="type-signature"> &rarr; {Promise}</span></h4>
+				<dl class="details"> </dl>
+				<div class="description">
+					<p>Sets the bot's avatar from a url</p>
+				</div>
+				<h5>Parameters:</h5>
+				<table class="params">
+					<thead>
+						<tr>
+							<th>Name</th>
+							<th>Type</th>
+							<th class="last">Description</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td class="name"><code>url</code></td>
+							<td class="type"> <span class="param-type">String</span> </td>
+							<td class="description last">
+								<p>A direct link to an image</p>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+				<h5>Returns:</h5>
+				<div class="param-desc">
+					<p>Rejects with an error, if there is one. May be a <code>String</code> or <code>Error</code></p>
+				</div>
+				<dl class="param-type"> <dt>
+        Type
+    </dt>
+					<dd> <span class="param-type">Promise</span> </dd>
+				</dl>
+				<h4 class="name" id="updateCarbon"><span class="type-signature"></span>updateCarbon<span class="signature">(key<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Promise}</span></h4>
+				<dl class="details"> <dt class="tag-see">See:</dt>
+					<dd class="tag-see">
+						<ul>
+							<li><a href="https://github.com/mzabriskie/axios/blob/master/README.md#response-schema">Axios response</a></li>
+						</ul>
+					</dd>
+				</dl>
+				<div class="description">
+					<p>Updates information on carbonitex.net</p>
+				</div>
+				<h5>Parameters:</h5>
+				<table class="params">
+					<thead>
+						<tr>
+							<th>Name</th>
+							<th>Type</th>
+							<th>Attributes</th>
+							<th class="last">Description</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td class="name"><code>key</code></td>
+							<td class="type"> <span class="param-type">String</span> </td>
+							<td class="attributes"> &lt;optional><br> </td>
+							<td class="description last">
+								<p>Carbon API key</p>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+				<h5>Returns:</h5>
+				<div class="param-desc">
+					<p>The axios request</p>
+				</div>
+				<dl class="param-type"> <dt>
+        Type
+    </dt>
+					<dd> <span class="param-type">Promise</span> </dd>
+				</dl>
+				<h4 class="name" id="updateDiscordBots"><span class="type-signature"></span>updateDiscordBots<span class="signature">(key<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Promise}</span></h4>
+				<dl class="details"> <dt class="tag-see">See:</dt>
+					<dd class="tag-see">
+						<ul>
+							<li><a href="https://github.com/mzabriskie/axios/blob/master/README.md#response-schema">Axios response</a></li>
+						</ul>
+					</dd>
+				</dl>
+				<div class="description">
+					<p>Updates information on bots.discord.pw</p>
+				</div>
+				<h5>Parameters:</h5>
+				<table class="params">
+					<thead>
+						<tr>
+							<th>Name</th>
+							<th>Type</th>
+							<th>Attributes</th>
+							<th class="last">Description</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td class="name"><code>key</code></td>
+							<td class="type"> <span class="param-type">String</span> </td>
+							<td class="attributes"> &lt;optional><br> </td>
+							<td class="description last">
+								<p>bots.discord.pw API key</p>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+				<h5>Returns:</h5>
+				<div class="param-desc">
+					<p>The axios request</p>
+				</div>
+				<dl class="param-type"> <dt>
+        Type
+    </dt>
+					<dd> <span class="param-type">Promise</span> </dd>
+				</dl>
+			</article>
+		</section>
+	</div> <br class="clear">
+	<!--<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.2</a> using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>-->
+	<script>
+		prettyPrint();
+
+	</script>
+	<script src="scripts/linenumber.js"></script>
+</body>
+
+</html>

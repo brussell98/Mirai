@@ -1,12 +1,25 @@
 {
-	"name": "miraibot",
-	"version": "3.2.0",
-	"description": "An easy to use bot framework",
+	"name": "mirai-bot-core",
+	"version": "4.0.0-beta",
+	"description": "A Discord bot core allowing easy plugging in of modules",
 	"author": "brussell98",
-	"main": "Mirai.js",
+	"main": "index.js",
+	"keywords": [
+		"discord",
+		"bot",
+		"core",
+		"framework",
+		"eris",
+		"es6",
+		"plugins",
+		"middleware",
+		"modules",
+		"mirai"
+	],
+	"homepage": "https://github.com/brussell98/Mirai#readme",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/brussell98/Mirai"
+		"url": "git+https://github.com/brussell98/Mirai.git"
 	},
 	"bugs": {
 		"url": "https://github.com/brussell98/Mirai/issues"
@@ -15,21 +28,23 @@
 		"node": ">=6.0.0"
 	},
 	"scripts": {
-		"start": "node Mirai.js",
-		"docs": "node_modules/.bin/jsdoc README.md --configure .jsdoc.json --verbose"
+		"start": "node index.js",
+		"docs": "node_modules/.bin/jsdoc README.md --configure .jsdoc.json --verbose && node docBeautify.js"
 	},
 	"license": "MIT",
 	"dependencies": {
-		"eris": "^0.5.1",
-		"superagent": "^2.1.0",
-		"cleverbot-node": "^0.2.2",
+		"axios": "^0.15.3",
 		"chalk": "^1.1.3",
-		"entities": "^1.1.1",
-		"require-reload": "^0.2.2"
+		"eris": "abalabahaha/eris#dev"
+	},
+	"optionalDependencies": {
+		"eventemitter3": "^2.0.2",
+		"bluebird": "^3.4.6"
 	},
 	"devDependencies": {
-		"jsdoc-parse": "^1.2.7",
-		"minami": "^1.1.1",
-		"eslint": "*"
+		"eslint": "*",
+		"js-beautify": "^1.6.4",
+		"jsdoc-parse": "^2.0.5",
+		"docdash": "https://github.com/brussell98/docdash.git"
 	}
 }

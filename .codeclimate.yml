@@ -1,15 +1,18 @@
 engines:
   eslint:
     enabled: true
-    channel: "eslint-2"
+    channel: "eslint-3"
     config: .eslintrc
   duplication:
-    enabled: true
+    enabled: false
     config:
       languages:
       - javascript
+  fixme:
+      enabled: true
 ratings:
   paths:
   - "**.js"
 exclude_paths:
 - docs/*
+- examples/*
