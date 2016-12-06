@@ -1,5 +1,6 @@
 ![Mirai Bot](http://i.imgur.com/BO18mRW.png)   
 [![David](https://img.shields.io/david/brussell98/Mirai.svg?maxAge=2592000)](https://david-dm.org/brussell98/Mirai) [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/brussell98/Mirai/master/LICENSE) [![Code Climate](https://codeclimate.com/github/brussell98/Mirai/badges/gpa.svg)](https://codeclimate.com/github/brussell98/Mirai)
+[![npm](https://img.shields.io/npm/v/mirai-bot-core.svg)](https://www.npmjs.com/package/mirai-bot-core)
 
 A powerful Discord bot core using [Eris](https://github.com/abalabahaha/eris/). At least NodeJS v6 *Argon* is **REQUIRED**
 
@@ -23,6 +24,6 @@ Abstract classes are provided to ensure you have the required methods. They can 
 const AbstractCommand = require('mirai-bot-core/lib/Base/AbstractCommand');
 
 class PingCommand extends AbstractCommand {
-	
+
 }
 ```
