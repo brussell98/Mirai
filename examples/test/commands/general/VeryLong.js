@@ -10,6 +10,10 @@ class VeryLongCommand extends AbstractCommand {
 		return 'veryLong';
 	}
 
+	get description() {
+		return 'Pagination test. Do not use or I will ban you';
+	}
+
 	handle(message) {
 		if (this.userOnCooldown(message.author.id, 60000))
 			return this.sendMessage(message, 'You can only use this command once every minute.', { deleteAfter: 4000, deleteTrigger: true });

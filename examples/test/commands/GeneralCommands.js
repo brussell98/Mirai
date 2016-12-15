@@ -4,15 +4,19 @@ var fs = require('fs'),
 class GeneralCommands extends AbstractCommandPlugin {
 	constructor() {
 		super();
-		this.commands = {}
+		this.prefix = 'm.';
 	}
 
 	get name() {
-		return 'general';
+		return 'General';
+	}
+
+	get description() {
+		return 'General commands for testing';
 	}
 
 	get help() {
-		return 'General: ' + Object.keys(this.commands).join(', ');
+		return [this.name, this.description, Object.keys(this.commands).map(cmd => this.prefix + cmd), Object.keys(this.commands).map(cmd => this.commands[cmd].description)];
 	}
 
 	load(bot) {

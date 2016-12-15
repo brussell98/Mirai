@@ -9,6 +9,10 @@ class SetAvatarCommand extends AbstractCommand {
 		return 'setAvatar';
 	}
 
+	get description() {
+		return "Set the bot's avatar from a URL";
+	}
+
 	handle(message, args) {
 		if (message.author.id === '95286900801146880') {
 			this.parent.bot.setAvatar(args).then(() => {

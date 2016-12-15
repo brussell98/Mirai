@@ -9,6 +9,10 @@ class ResolveCommand extends AbstractCommand {
 		return 'resolve';
 	}
 
+	get description() {
+		return 'Resolve a name to a valid guild member';
+	}
+
 	handle(message, args) {
 		let member = this.parent.bot.findMember(args, message.channel.guild.members);
 		if (member === null)
