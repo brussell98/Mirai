@@ -36,6 +36,12 @@
 					<li data-type='method'><a href="AbstractCommandPlugin.html#load">load</a></li>
 				</ul>
 			</li>
+			<li><a href="AbstractEventPlugin.html">AbstractEventPlugin</a>
+				<ul class='methods'>
+					<li data-type='method'><a href="AbstractEventPlugin.html#destroy">destroy</a></li>
+					<li data-type='method'><a href="AbstractEventPlugin.html#load">load</a></li>
+				</ul>
+			</li>
 			<li><a href="Bot.html">Bot</a>
 				<ul class='methods'>
 					<li data-type='method'><a href="Bot.html#findMember">findMember</a></li>
@@ -108,8 +114,9 @@
 					<li> <span class="param-type">String</span> </li>
 				</ul>
 				<h3 class="subsection-title">Methods</h3>
-				<h4 class="name" id="_sendMessage"><span class="type-signature">(private) </span>_sendMessage<span class="signature">(channel, content, options<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
-				<dl class="details"> </dl>
+				<h4 class="name" id="_sendMessage"><span class="type-signature">(private) </span>_sendMessage<span class="signature">(channel, content, options<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Promise.&lt;Message>}</span></h4>
+				<dl class="details">
+				</dl>
 				<h5>Parameters:</h5>
 				<table class="params">
 					<thead>
@@ -147,6 +154,15 @@
 						</tr>
 					</tbody>
 				</table>
+				<h5>Returns:</h5>
+				<div class="param-desc">
+					<p>The sent message</p>
+				</div>
+				<dl class="param-type"> <dt>
+        Type
+    </dt>
+					<dd> <span class="param-type">Promise.&lt;Message></span> </dd>
+				</dl>
 				<h4 class="name" id="awaitMessage"><span class="type-signature"></span>awaitMessage<span class="signature">(trigger, action, timeout<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Number}</span></h4>
 				<dl class="details"> </dl>
 				<div class="description">
@@ -245,7 +261,7 @@
     </dt>
 					<dd> <span class="param-type">Promise</span> </dd>
 				</dl>
-				<h4 class="name" id="sendMessage"><span class="type-signature"></span>sendMessage<span class="signature">(message, content, options<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
+				<h4 class="name" id="sendMessage"><span class="type-signature"></span>sendMessage<span class="signature">(message, content, options<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Promise.&lt;Message>}</span></h4>
 				<dl class="details"> <dt class="tag-see">See:</dt>
 					<dd class="tag-see">
 						<ul>
@@ -352,6 +368,15 @@
 						</tr>
 					</tbody>
 				</table>
+				<h5>Returns:</h5>
+				<div class="param-desc">
+					<p>The sent message, or nothing if pagination is true</p>
+				</div>
+				<dl class="param-type"> <dt>
+        Type
+    </dt>
+					<dd> <span class="param-type">Promise.&lt;Message></span> </dd>
+				</dl>
 				<h4 class="name" id="userOnCooldown"><span class="type-signature"></span>userOnCooldown<span class="signature">(userID, waitTime)</span><span class="type-signature"> &rarr; {Boolean}</span></h4>
 				<dl class="details"> </dl>
 				<div class="description">
