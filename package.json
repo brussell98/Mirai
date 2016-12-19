@@ -1,6 +1,6 @@
 {
 	"name": "mirai-bot-core",
-	"version": "4.0.0-beta",
+	"version": "4.0.0-beta2",
 	"description": "A Discord bot core allowing easy plugging in of modules",
 	"author": "brussell98",
 	"main": "index.js",
