@@ -1,6 +1,6 @@
 {
 	"name": "mirai-bot-core",
-	"version": "4.0.0-beta2",
+	"version": "4.0.0",
 	"description": "A Discord bot core allowing easy plugging in of modules",
 	"author": "brussell98",
 	"main": "index.js",
@@ -43,7 +43,7 @@
 	},
 	"devDependencies": {
 		"eslint": "*",
-		"js-beautify": "^1.6.4",
+		"js-beautify": "^1.6.6",
 		"jsdoc-parse": "^2.0.5",
 		"docdash": "https://github.com/brussell98/docdash.git"
 	}

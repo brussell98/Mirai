@@ -3,7 +3,7 @@
 
 <head>
 	<meta charset="utf-8">
-	<title>Home - Documentation</title>
+	<title>AbstractMiddleware - Documentation</title>
 	<script src="scripts/prettify/prettify.js"></script>
 	<script src="scripts/prettify/lang-css.js"></script>
 	<!--[if lt IE 9]>
@@ -83,32 +83,82 @@
 		</ul>
 	</nav>
 	<div id="main">
-		<section class="readme">
+		<h1 class="page-title">AbstractMiddleware</h1>
+		<section>
+			<header>
+				<h2> AbstractMiddleware </h2>
+				<div class="class-description">
+					<p>Manages external connections to and from the bot</p>
+				</div>
+			</header>
 			<article>
-				<h1>Mirai Bot</h1>
-				<p>
-					<a href="https://discord.gg/rkWPSdu"><img src="https://discordapp.com/api/guilds/135496553786769408/embed.png" alt="Discord server" /></a>
-					<a href="https://david-dm.org/brussell98/Mirai"><img src="https://img.shields.io/david/brussell98/Mirai.svg?maxAge=2592000" alt="David"></a>
-					<a href="https://raw.githubusercontent.com/brussell98/Mirai/master/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="GitHub license"></a>
-					<a href="https://codeclimate.com/github/brussell98/Mirai"><img src="https://codeclimate.com/github/brussell98/Mirai/badges/gpa.svg" alt="Code Climate"></a>
-					<a href="https://www.npmjs.com/package/mirai-bot-core"><img src="https://img.shields.io/npm/v/mirai-bot-core.svg" alt="npm"></a>
-				</p>
-				<p>A powerful Discord bot core using <a href="https://github.com/abalabahaha/eris/">Eris</a>. At least NodeJS v6 <em>Argon</em> is <strong>REQUIRED</strong></p>
-				<blockquote>
-					<p>By using mirai-bot-core you agree to not ask any questions unless you have a basic understanding of installing programs, running node applications, and developing JavaScript applications.</p>
-				</blockquote>
-				<h4><a href="http://brussell.me/Mirai/index.html">Documentation</a> | <a href="https://abal.moe/Eris/docs/index.html">Eris Docs</a> | <a href="http://mirai.brussell.me">Mirai Bot Website</a> | <a href="http://patreon.com/brussell98">Support me on Patreon</a>					| <a href="https://discord.gg/rkWPSdu">Discord Server</a> | <a href="https://trello.com/b/Uw5wZLzJ">Mirai Bot Combined Todo List</a></h4>
-				<h2>Installing:</h2><pre class="prettyprint source"><code>npm i -S mirai-bot-core</code></pre><pre class="prettyprint source lang-js"><code>const Mirai = require('mirai-bot-core'),
-      bot = new Mirai(config);</code></pre>
-				<p>Add your bot to a server using <code>https://discordapp.com/oauth2/authorize?client_id=YOUR_CLIENT_ID&amp;scope=bot</code>.</p>
-				<h2>Abstract Classes:</h2>
-				<p>Abstract classes are provided to ensure you have the required methods. They can be accessed like so:</p> <pre class="prettyprint source lang-js"><code>const AbstractCommand = require('mirai-bot-core/lib/Base/AbstractCommand');
-
-class PingCommand extends AbstractCommand {
-    constructor() {
-        super();
-    }
-}</code></pre></article>
+				<div class="container-overview">
+					<h2>Constructor</h2>
+					<h4 class="name" id="AbstractMiddleware"><span class="type-signature">(abstract) </span>new AbstractMiddleware<span class="signature">()</span><span class="type-signature"></span></h4>
+					<dl class="details"> </dl>
+					<div class="description">
+						<p>Creates a new AbstractMiddleware</p>
+					</div>
+				</div>
+				<h3 class="subsection-title">Members</h3>
+				<h4 class="name" id="name"><span class="type-signature">(abstract) </span>name<span class="type-signature"> :String</span></h4>
+				<dl class="details"> </dl>
+				<div class="description">
+					<p>The name of the middleware</p>
+				</div>
+				<h5>Type:</h5>
+				<ul>
+					<li> <span class="param-type">String</span> </li>
+				</ul>
+				<h3 class="subsection-title">Methods</h3>
+				<h4 class="name" id="destroy"><span class="type-signature"></span>destroy<span class="signature">()</span><span class="type-signature"> &rarr; {Promise}</span></h4>
+				<dl class="details"> </dl>
+				<div class="description">
+					<p>Destroys/unloads the middleware</p>
+				</div>
+				<h5>Returns:</h5>
+				<div class="param-desc">
+					<p>Resolves with no value</p>
+				</div>
+				<dl class="param-type"> <dt>
+        Type
+    </dt>
+					<dd> <span class="param-type">Promise</span> </dd>
+				</dl>
+				<h4 class="name" id="load"><span class="type-signature"></span>load<span class="signature">(bot)</span><span class="type-signature"> &rarr; {Promise}</span></h4>
+				<dl class="details"> </dl>
+				<div class="description">
+					<p>Loads the middleware</p>
+				</div>
+				<h5>Parameters:</h5>
+				<table class="params">
+					<thead>
+						<tr>
+							<th>Name</th>
+							<th>Type</th>
+							<th class="last">Description</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td class="name"><code>bot</code></td>
+							<td class="type"> <span class="param-type"><a href="Bot.html">Bot</a></span> </td>
+							<td class="description last">
+								<p>The main client</p>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+				<h5>Returns:</h5>
+				<div class="param-desc">
+					<p>Resolves with <code>this</code></p>
+				</div>
+				<dl class="param-type"> <dt>
+        Type
+    </dt>
+					<dd> <span class="param-type">Promise</span> </dd>
+				</dl>
+			</article>
 		</section>
 	</div> <br class="clear">
 	<!--<footer>
