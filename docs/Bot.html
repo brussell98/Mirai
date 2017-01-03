@@ -94,11 +94,9 @@
 			<article>
 				<div class="container-overview">
 					<h2>Constructor</h2>
-					<h4 class="name" id="Bot"><span class="type-signature"></span>new Bot<span class="signature">(options<span class="signature-attributes">opt</span>, rLogger<span class="signature-attributes">opt</span>, rChatHandler<span class="signature-attributes">opt</span>)</span>
-						<span
-										class="type-signature"></span>
-					</h4>
-					<dl class="details"> <dt class="tag-see">See:</dt>
+					<h4 class="name" id="Bot"><span class="type-signature"></span>new Bot<span class="signature">(options, rLogger<span class="signature-attributes">opt</span>, rChatHandler<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
+					<dl class="details">
+					<dt class="tag-see">See:</dt>
 						<dd class="tag-see">
 							<ul>
 								<li><a href="https://abal.moe/Eris/docs/Client">Eris.Client</a></li>
@@ -197,7 +195,7 @@
 							<tr>
 								<td class="name"><code>options</code></td>
 								<td class="type"> <span class="param-type">Object</span> </td>
-								<td class="attributes"> &lt;optional><br> </td>
+								<td class="attributes"> </td>
 								<td class="description last">
 									<p>An object defining the configuration for Mirai</p>
 									<h6>Properties</h6>
@@ -211,6 +209,14 @@
 											</tr>
 										</thead>
 										<tbody>
+											<tr>
+												<td class="name"><code>token</code></td>
+												<td class="type"> <span class="param-type">String</span> </td>
+												<td class="attributes"> </td>
+												<td class="description last">
+													<p>The token for your bot</p>
+												</td>
+											</tr>
 											<tr>
 												<td class="name"><code>carbonBotsKey</code></td>
 												<td class="type"> <span class="param-type">Boolean</span> </td>
@@ -249,6 +255,30 @@
 												<td class="attributes"> &lt;optional><br> </td>
 												<td class="description last">
 													<p>When SIGINT is recieved, destroy all plugins and middleware, and disconnect the bot</p>
+												</td>
+											</tr>
+											<tr>
+												<td class="name"><code>eris</code></td>
+												<td class="type"> <span class="param-type">Object</span> </td>
+												<td class="attributes"> &lt;optional><br> </td>
+												<td class="description last">
+													<p>The options to pass to the eris client. See <a href="https://abal.moe/Eris/docs/Client">the Eris docs</a></p>
+												</td>
+											</tr>
+											<tr>
+												<td class="name"><code>logger</code></td>
+												<td class="type"> <span class="param-type">Object</span> </td>
+												<td class="attributes"> &lt;optional><br> </td>
+												<td class="description last">
+													<p>The options to pass to the logger</p>
+												</td>
+											</tr>
+											<tr>
+												<td class="name"><code>chatHandler</code></td>
+												<td class="type"> <span class="param-type">Object</span> </td>
+												<td class="attributes"> &lt;optional><br> </td>
+												<td class="description last">
+													<p>The options to pass to the chatHandler</p>
 												</td>
 											</tr>
 										</tbody>
