@@ -290,7 +290,7 @@
 								<td class="type"> <span class="param-type">function</span> </td>
 								<td class="attributes"> &lt;optional><br> </td>
 								<td class="description last">
-									<p>A replacement Logger. Must implement <code>log</code> <code>info</code> <code>debug</code> <code>warn</code> and <code>error</code></p>
+									<p>A replacement Logger. Must implement <code>log</code> <code>info</code> <code>debug</code> <code>warn</code> and <code>error</code>. Is passed <code>this</code> and <code>options.logger</code></p>
 								</td>
 							</tr>
 							<tr>
@@ -298,7 +298,7 @@
 								<td class="type"> <span class="param-type">function</span> </td>
 								<td class="attributes"> &lt;optional><br> </td>
 								<td class="description last">
-									<p>A replacement ChatHandler. Must implement <code>run</code> and <code>stop</code></p>
+									<p>A replacement ChatHandler. Must implement <code>run</code> and <code>stop</code>. Is passed <code>this</code> and <code>options.chatHandler</code></p>
 								</td>
 							</tr>
 						</tbody>
