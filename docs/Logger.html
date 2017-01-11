@@ -88,7 +88,7 @@
 			<header>
 				<h2> Logger </h2>
 				<div class="class-description">
-					<p>Displays text to the console</p>
+					<p>Displays text to the console. Also supports sentry</p>
 				</div>
 			</header>
 			<article>
@@ -96,6 +96,25 @@
 					<h2>Constructor</h2>
 					<h4 class="name" id="Logger"><span class="type-signature"></span>new Logger<span class="signature">(options<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
 					<dl class="details"> </dl>
+					<h5 class="subsection-title">Properties:</h5>
+					<table class="props">
+						<thead>
+							<tr>
+								<th>Name</th>
+								<th>Type</th>
+								<th class="last">Description</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td class="name"><code>raven</code></td>
+								<td class="type"> <span class="param-type">RavenClient</span> </td>
+								<td class="description last">
+									<p>The Raven client used for sentry, if enabled.</p>
+								</td>
+							</tr>
+						</tbody>
+					</table>
 					<div class="description">
 						<p>Creates a new Logger</p>
 					</div>
@@ -129,30 +148,157 @@
 										</thead>
 										<tbody>
 											<tr>
-												<td class="name"><code>showDebug</code></td>
-												<td class="type"> <span class="param-type">Boolean</span> </td>
-												<td class="attributes"> &lt;optional><br> </td>
-												<td class="default"> <code>false</code> </td>
-												<td class="description last">
-													<p>Display <code>debug()</code> in the console</p>
-												</td>
-											</tr>
-											<tr>
-												<td class="name"><code>onlyErrors</code></td>
-												<td class="type"> <span class="param-type">Boolean</span> </td>
-												<td class="attributes"> &lt;optional><br> </td>
-												<td class="default"> <code>false</code> </td>
-												<td class="description last">
-													<p>Only display <code>error()</code> in the console</p>
-												</td>
-											</tr>
-											<tr>
 												<td class="name"><code>timestamps</code></td>
 												<td class="type"> <span class="param-type">Boolean</span> </td>
 												<td class="attributes"> &lt;optional><br> </td>
 												<td class="default"> <code>false</code> </td>
 												<td class="description last">
 													<p>Add a timestamp to each message logged</p>
+												</td>
+											</tr>
+											<tr>
+												<td class="name"><code>levels</code></td>
+												<td class="type"> <span class="param-type">Object</span> </td>
+												<td class="attributes"> &lt;optional><br> </td>
+												<td class="default"> </td>
+												<td class="description last">
+													<p>An object deciding what log levels should display</p>
+													<h6>Properties</h6>
+													<table class="params">
+														<thead>
+															<tr>
+																<th>Name</th>
+																<th>Type</th>
+																<th>Attributes</th>
+																<th>Default</th>
+																<th class="last">Description</th>
+															</tr>
+														</thead>
+														<tbody>
+															<tr>
+																<td class="name"><code>log</code></td>
+																<td class="type"> <span class="param-type">Boolean</span> </td>
+																<td class="attributes"> &lt;optional><br> </td>
+																<td class="default"> <code>true</code> </td>
+																<td class="description last">
+																	<p>Show <code>log()</code></p>
+																</td>
+															</tr>
+															<tr>
+																<td class="name"><code>info</code></td>
+																<td class="type"> <span class="param-type">Boolean</span> </td>
+																<td class="attributes"> &lt;optional><br> </td>
+																<td class="default"> <code>true</code> </td>
+																<td class="description last">
+																	<p>Show <code>info()</code></p>
+																</td>
+															</tr>
+															<tr>
+																<td class="name"><code>debug</code></td>
+																<td class="type"> <span class="param-type">Boolean</span> </td>
+																<td class="attributes"> &lt;optional><br> </td>
+																<td class="default"> <code>false</code> </td>
+																<td class="description last">
+																	<p>Show <code>debug()</code></p>
+																</td>
+															</tr>
+															<tr>
+																<td class="name"><code>warning</code></td>
+																<td class="type"> <span class="param-type">Boolean</span> </td>
+																<td class="attributes"> &lt;optional><br> </td>
+																<td class="default"> <code>true</code> </td>
+																<td class="description last">
+																	<p>Show <code>warn()</code></p>
+																</td>
+															</tr>
+															<tr>
+																<td class="name"><code>error</code></td>
+																<td class="type"> <span class="param-type">Boolean</span> </td>
+																<td class="attributes"> &lt;optional><br> </td>
+																<td class="default"> <code>true</code> </td>
+																<td class="description last">
+																	<p>Show <code>error()</code></p>
+																</td>
+															</tr>
+														</tbody>
+													</table>
+												</td>
+											</tr>
+											<tr>
+												<td class="name"><code>raven</code></td>
+												<td class="type"> <span class="param-type">Object</span> </td>
+												<td class="attributes"> &lt;optional><br> </td>
+												<td class="default"> </td>
+												<td class="description last">
+													<p>Raven options. If falsy, raven will not be required.</p>
+													<h6>Properties</h6>
+													<table class="params">
+														<thead>
+															<tr>
+																<th>Name</th>
+																<th>Type</th>
+																<th>Attributes</th>
+																<th>Default</th>
+																<th class="last">Description</th>
+															</tr>
+														</thead>
+														<tbody>
+															<tr>
+																<td class="name"><code>url</code></td>
+																<td class="type"> <span class="param-type">String</span> </td>
+																<td class="attributes"> </td>
+																<td class="default"> </td>
+																<td class="description last">
+																	<p>Your project's sentry.io url</p>
+																</td>
+															</tr>
+															<tr>
+																<td class="name"><code>config</code></td>
+																<td class="type"> <span class="param-type">Object</span> </td>
+																<td class="attributes"> &lt;optional><br> </td>
+																<td class="default"> </td>
+																<td class="description last">
+																	<p>A custom raven config. For more info check <a href="https://docs.sentry.io/clients/node/config/">their docs</a></p>
+																</td>
+															</tr>
+															<tr>
+																<td class="name"><code>info</code></td>
+																<td class="type"> <span class="param-type">Boolean</span> </td>
+																<td class="attributes"> &lt;optional><br> </td>
+																<td class="default"> <code>false</code> </td>
+																<td class="description last">
+																	<p>Send <code>info()</code> messages to sentry</p>
+																</td>
+															</tr>
+															<tr>
+																<td class="name"><code>debug</code></td>
+																<td class="type"> <span class="param-type">Boolean</span> </td>
+																<td class="attributes"> &lt;optional><br> </td>
+																<td class="default"> <code>false</code> </td>
+																<td class="description last">
+																	<p>Send <code>debug()</code> messages to sentry</p>
+																</td>
+															</tr>
+															<tr>
+																<td class="name"><code>warning</code></td>
+																<td class="type"> <span class="param-type">Boolean</span> </td>
+																<td class="attributes"> &lt;optional><br> </td>
+																<td class="default"> <code>false</code> </td>
+																<td class="description last">
+																	<p>Send <code>warn()</code> messages to sentry. If an <code>Error</code> is passed in the arguments, that will be sent alone.</p>
+																</td>
+															</tr>
+															<tr>
+																<td class="name"><code>error</code></td>
+																<td class="type"> <span class="param-type">Boolean</span> </td>
+																<td class="attributes"> &lt;optional><br> </td>
+																<td class="default"> <code>true</code> </td>
+																<td class="description last">
+																	<p>Send <code>error()</code> errors to sentry. If an <code>Error</code> is passed in the arguments, that will be sent alone.</p>
+																</td>
+															</tr>
+														</tbody>
+													</table>
 												</td>
 											</tr>
 										</tbody>
