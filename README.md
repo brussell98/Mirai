@@ -8,7 +8,7 @@ A powerful Discord bot core using [Eris](https://github.com/abalabahaha/eris/). 
 
 > By using mirai-bot-core you agree to not ask any questions unless you have a basic understanding of installing programs, running node applications, and developing JavaScript applications.
 
-mirai-bot-core supports advanced application monitoring with **[sentry.io](http://ssentry.io)** using raven. For more information [head over to the docs](http://brussell.me/Mirai/Logger.html).
+mirai-bot-core supports advanced application monitoring with **[sentry.io](http://sentry.io)** using raven. For more information [head over to the docs](http://brussell.me/Mirai/Logger.html).
 
 ## Installing:
 ```
