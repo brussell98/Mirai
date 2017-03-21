@@ -1,4 +1,4 @@
-# Mirai Bot  
+# Mirai Bot Core
 <a href="https://discord.gg/rkWPSdu"><img src="https://discordapp.com/api/guilds/135496553786769408/embed.png" alt="Discord server" /></a> [![David](https://img.shields.io/david/brussell98/Mirai.svg?maxAge=2592000)](https://david-dm.org/brussell98/Mirai) [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/brussell98/Mirai/master/LICENSE) [![Code Climate](https://codeclimate.com/github/brussell98/Mirai/badges/gpa.svg)](https://codeclimate.com/github/brussell98/Mirai)
 [![npm](https://img.shields.io/npm/v/mirai-bot-core.svg)](https://www.npmjs.com/package/mirai-bot-core)
 
@@ -10,7 +10,7 @@ A powerful Discord bot core using [Eris](https://github.com/abalabahaha/eris/). 
 
 mirai-bot-core supports advanced application monitoring with **[sentry.io](http://sentry.io)** using raven. For more information [head over to the docs](http://brussell.me/Mirai/Logger.html).
 
-## Installing:
+## Installing
 ```
 npm i -S mirai-bot-core
 ```
@@ -20,7 +20,7 @@ const Mirai = require('mirai-bot-core'),
 ```
 Add your bot to a server using `https://discordapp.com/oauth2/authorize?client_id=YOUR_CLIENT_ID&scope=bot`.
 
-## Abstract Classes:
+## Abstract Classes
 Abstract classes are provided to ensure you have the required methods. They can be accessed like so:
 ```js
 const AbstractCommand = require('mirai-bot-core/lib/Base/AbstractCommand');
