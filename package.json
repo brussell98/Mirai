@@ -1,6 +1,6 @@
 {
 	"name": "mirai-bot-core",
-	"version": "4.2.6",
+	"version": "4.3.0",
 	"description": "A Discord bot core allowing easy plugging in of modules",
 	"author": "brussell98",
 	"main": "index.js",
@@ -35,12 +35,12 @@
 	"dependencies": {
 		"axios": "^0.16.2",
 		"chalk": "^2.1.0",
-		"eris": "^0.7.1"
+		"eris": "^0.8.0"
 	},
 	"optionalDependencies": {
 		"eventemitter3": "^2.0.3",
 		"bluebird": "^3.5.0",
-		"raven": "^2.1.2"
+		"raven": "^2.2.1"
 	},
 	"devDependencies": {
 		"eslint": "*",
