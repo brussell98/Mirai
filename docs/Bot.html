@@ -62,6 +62,7 @@
 					<li data-type='method'><a href="Bot.html#setAvatar">setAvatar</a></li>
 					<li data-type='method'><a href="Bot.html#updateCarbon">updateCarbon</a></li>
 					<li data-type='method'><a href="Bot.html#updateDiscordBots">updateDiscordBots</a></li>
+					<li data-type='method'><a href="Bot.html#updateDiscordBotsOrg">updateDiscordBotsOrg</a></li>
 				</ul>
 			</li>
 			<li><a href="ChatHandler.html">ChatHandler</a>
@@ -126,6 +127,13 @@
 								<td class="type"> <span class="param-type">String</span> </td>
 								<td class="description last">
 									<p>The API key for discord bots</p>
+								</td>
+							</tr>
+							<tr>
+								<td class="name"><code>discordBotsOrgKey</code></td>
+								<td class="type"> <span class="param-type">String</span> </td>
+								<td class="description last">
+									<p>The API key for discordbots.org</p>
 								</td>
 							</tr>
 							<tr>
@@ -227,11 +235,19 @@
 												</td>
 											</tr>
 											<tr>
-												<td class="name"><code>carbonBotsKey</code></td>
+												<td class="name"><code>discordBotsKey</code></td>
 												<td class="type"> <span class="param-type">Boolean</span> </td>
 												<td class="attributes"> &lt;optional><br> </td>
 												<td class="description last">
 													<p>The API key for the discord bots website</p>
+												</td>
+											</tr>
+											<tr>
+												<td class="name"><code>discordBotsOrgKey</code></td>
+												<td class="type"> <span class="param-type">Boolean</span> </td>
+												<td class="attributes"> &lt;optional><br> </td>
+												<td class="description last">
+													<p>The API key for the discordbots.org website</p>
 												</td>
 											</tr>
 											<tr>
@@ -696,6 +712,47 @@ mirai.loadCommandPlugin(funCommands);</code></pre>
 							<td class="attributes"> &lt;optional><br> </td>
 							<td class="description last">
 								<p>bots.discord.pw API key</p>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+				<h5>Returns:</h5>
+				<div class="param-desc">
+					<p>The axios request</p>
+				</div>
+				<dl class="param-type"> <dt>
+        Type
+    </dt>
+					<dd> <span class="param-type">Promise</span> </dd>
+				</dl>
+				<h4 class="name" id="updateDiscordBotsOrg"><span class="type-signature"></span>updateDiscordBotsOrg<span class="signature">(key<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Promise}</span></h4>
+				<dl class="details"> <dt class="tag-see">See:</dt>
+					<dd class="tag-see">
+						<ul>
+							<li><a href="https://github.com/mzabriskie/axios/blob/master/README.md#response-schema">Axios response</a></li>
+						</ul>
+					</dd>
+				</dl>
+				<div class="description">
+					<p>Updates information on discordbots.org</p>
+				</div>
+				<h5>Parameters:</h5>
+				<table class="params">
+					<thead>
+						<tr>
+							<th>Name</th>
+							<th>Type</th>
+							<th>Attributes</th>
+							<th class="last">Description</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td class="name"><code>key</code></td>
+							<td class="type"> <span class="param-type">String</span> </td>
+							<td class="attributes"> &lt;optional><br> </td>
+							<td class="description last">
+								<p>discordbots API key</p>
 							</td>
 						</tr>
 					</tbody>
