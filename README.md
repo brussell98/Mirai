@@ -4,11 +4,11 @@
 
 A powerful Discord bot core using [Eris](https://github.com/abalabahaha/eris/). At least NodeJS v6 *Argon* is **REQUIRED**
 
-#### [Documentation](http://brussell.me/Mirai/index.html) | [Eris Docs](https://abal.moe/Eris/docs/index.html) | [Mirai Bot Website](http://mirai.brussell.me) | [Support me on Patreon](http://patreon.com/brussell98) | [Discord Server](https://discord.gg/rkWPSdu) | [Mirai Bot Combined Todo List](https://trello.com/b/Uw5wZLzJ)
+#### [Documentation](http://brussell98.github.io/Mirai/index.html) | [Eris Docs](https://abal.moe/Eris/docs/index.html) | [Mirai Bot Website](http://mirai.brussell.me) | [Support me on Patreon](http://patreon.com/brussell98) | [Discord Server](https://discord.gg/rkWPSdu) | [Mirai Bot Combined Todo List](https://trello.com/b/Uw5wZLzJ)
 
 > By using mirai-bot-core you agree to not ask any questions unless you have a basic understanding of installing programs, running node applications, and developing JavaScript applications.
 
-mirai-bot-core supports advanced application monitoring with **[sentry.io](http://sentry.io)** using raven. For more information [head over to the docs](http://brussell.me/Mirai/Logger.html).
+mirai-bot-core supports advanced application monitoring with **[sentry.io](http://sentry.io)** using raven. For more information [head over to the docs](http://brussell98.github.io/Mirai/Logger.html).
 
 ## Installing
 ```
