@@ -1,6 +1,6 @@
 {
 	"name": "mirai-bot-core",
-	"version": "4.3.2",
+	"version": "4.4.0",
 	"description": "A Discord bot core allowing easy plugging in of modules",
 	"author": "brussell98",
 	"main": "index.js",
@@ -33,19 +33,21 @@
 	},
 	"license": "MIT",
 	"dependencies": {
-		"axios": "^0.16.2",
-		"chalk": "^2.1.0",
-		"eris": "^0.8.0"
+		"axios": "^0.18.0",
+		"chalk": "^2.4.1",
+		"eris": "^0.9.0"
 	},
 	"optionalDependencies": {
-		"eventemitter3": "^2.0.3",
-		"bluebird": "^3.5.0",
-		"raven": "^2.2.1"
+		"eventemitter3": "^3.1.0",
+		"bluebird": "^3.5.1",
+		"raven": "^2.6.3",
+		"bufferutil": "^4.0.0",
+		"utf-8-validate": "^5.0.1"
 	},
 	"devDependencies": {
 		"eslint": "*",
-		"js-beautify": "^1.6.6",
-		"jsdoc-parse": "^2.0.5",
+		"js-beautify": "^1.7.5",
+		"jsdoc": "^3.5.5",
 		"docdash": "https://github.com/brussell98/docdash.git"
 	}
 }

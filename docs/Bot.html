@@ -60,6 +60,7 @@
 					<li data-type='method'><a href="Bot.html#reloadEventPlugin">reloadEventPlugin</a></li>
 					<li data-type='method'><a href="Bot.html#reloadMiddleware">reloadMiddleware</a></li>
 					<li data-type='method'><a href="Bot.html#setAvatar">setAvatar</a></li>
+					<li data-type='method'><a href="Bot.html#updateBotsOnDiscord">updateBotsOnDiscord</a></li>
 					<li data-type='method'><a href="Bot.html#updateCarbon">updateCarbon</a></li>
 					<li data-type='method'><a href="Bot.html#updateDiscordBots">updateDiscordBots</a></li>
 					<li data-type='method'><a href="Bot.html#updateDiscordBotsOrg">updateDiscordBotsOrg</a></li>
@@ -119,14 +120,14 @@
 								<td class="name"><code>carbonBotsKey</code></td>
 								<td class="type"> <span class="param-type">String</span> </td>
 								<td class="description last">
-									<p>The API key for carbon</p>
+									<p>The API key for carbon bot list</p>
 								</td>
 							</tr>
 							<tr>
 								<td class="name"><code>discordBotsKey</code></td>
 								<td class="type"> <span class="param-type">String</span> </td>
 								<td class="description last">
-									<p>The API key for discord bots</p>
+									<p>The API key for bots.discord.pw</p>
 								</td>
 							</tr>
 							<tr>
@@ -134,6 +135,13 @@
 								<td class="type"> <span class="param-type">String</span> </td>
 								<td class="description last">
 									<p>The API key for discordbots.org</p>
+								</td>
+							</tr>
+							<tr>
+								<td class="name"><code>botsOnDiscordKey</code></td>
+								<td class="type"> <span class="param-type">String</span> </td>
+								<td class="description last">
+									<p>The API key for bots.ondiscord.xyz</p>
 								</td>
 							</tr>
 							<tr>
@@ -228,26 +236,34 @@
 											</tr>
 											<tr>
 												<td class="name"><code>carbonBotsKey</code></td>
-												<td class="type"> <span class="param-type">Boolean</span> </td>
+												<td class="type"> <span class="param-type">String</span> </td>
 												<td class="attributes"> &lt;optional><br> </td>
 												<td class="description last">
-													<p>The API key for carbon's bot list</p>
+													<p>An API key for carbon bot list</p>
 												</td>
 											</tr>
 											<tr>
 												<td class="name"><code>discordBotsKey</code></td>
-												<td class="type"> <span class="param-type">Boolean</span> </td>
+												<td class="type"> <span class="param-type">String</span> </td>
 												<td class="attributes"> &lt;optional><br> </td>
 												<td class="description last">
-													<p>The API key for the discord bots website</p>
+													<p>An API key for bots.discord.pw</p>
 												</td>
 											</tr>
 											<tr>
 												<td class="name"><code>discordBotsOrgKey</code></td>
-												<td class="type"> <span class="param-type">Boolean</span> </td>
+												<td class="type"> <span class="param-type">String</span> </td>
 												<td class="attributes"> &lt;optional><br> </td>
 												<td class="description last">
-													<p>The API key for the discordbots.org website</p>
+													<p>An API key for discordbots.org</p>
+												</td>
+											</tr>
+											<tr>
+												<td class="name"><code>botsOnDiscordKey</code></td>
+												<td class="type"> <span class="param-type">String</span> </td>
+												<td class="attributes"> &lt;optional><br> </td>
+												<td class="description last">
+													<p>An API key for bots.ondiscord.xyz</p>
 												</td>
 											</tr>
 											<tr>
@@ -365,7 +381,7 @@
 				</table>
 				<h5>Returns:</h5>
 				<div class="param-desc">
-					<p>The member the was found, or null</p>
+					<p>The member the was found</p>
 				</div>
 				<dl class="param-type"> <dt>
         Type
@@ -404,14 +420,14 @@
 				</table>
 				<h5>Returns:</h5>
 				<div class="param-desc">
-					<p>The user the was found, or null</p>
+					<p>The user the was found</p>
 				</div>
 				<dl class="param-type"> <dt>
         Type
     </dt>
 					<dd> <span class="param-type">User</span> </dd>
 				</dl>
-				<h4 class="name" id="loadCommandPlugin"><span class="type-signature"></span>loadCommandPlugin<span class="signature">(plugin)</span><span class="type-signature"> &rarr; {Promise}</span></h4>
+				<h4 class="name" id="loadCommandPlugin"><span class="type-signature">(async) </span>loadCommandPlugin<span class="signature">(plugin)</span><span class="type-signature"> &rarr; {Promise}</span></h4>
 				<dl class="details"> <dt class="tag-see">See:</dt>
 					<dd class="tag-see">
 						<ul>
@@ -444,14 +460,14 @@ mirai.loadCommandPlugin(funCommands);</code></pre>
 				</table>
 				<h5>Returns:</h5>
 				<div class="param-desc">
-					<p>The result of <code>plugin.load</code></p>
+					<p>The return value of <code>plugin.load</code></p>
 				</div>
 				<dl class="param-type"> <dt>
         Type
     </dt>
 					<dd> <span class="param-type">Promise</span> </dd>
 				</dl>
-				<h4 class="name" id="loadEventPlugin"><span class="type-signature"></span>loadEventPlugin<span class="signature">(plugin)</span><span class="type-signature"> &rarr; {Promise}</span></h4>
+				<h4 class="name" id="loadEventPlugin"><span class="type-signature">(async) </span>loadEventPlugin<span class="signature">(plugin)</span><span class="type-signature"> &rarr; {Promise}</span></h4>
 				<dl class="details"> </dl>
 				<h5>Parameters:</h5>
 				<table class="params">
@@ -474,14 +490,14 @@ mirai.loadCommandPlugin(funCommands);</code></pre>
 				</table>
 				<h5>Returns:</h5>
 				<div class="param-desc">
-					<p>The result of <code>plugin.load</code></p>
+					<p>The return value of <code>plugin.load</code></p>
 				</div>
 				<dl class="param-type"> <dt>
         Type
     </dt>
 					<dd> <span class="param-type">Promise</span> </dd>
 				</dl>
-				<h4 class="name" id="loadMiddleware"><span class="type-signature"></span>loadMiddleware<span class="signature">(middleware)</span><span class="type-signature"> &rarr; {Promise}</span></h4>
+				<h4 class="name" id="loadMiddleware"><span class="type-signature">(async) </span>loadMiddleware<span class="signature">(middleware)</span><span class="type-signature"> &rarr; {Promise}</span></h4>
 				<dl class="details"> </dl>
 				<h5>Parameters:</h5>
 				<table class="params">
@@ -504,14 +520,14 @@ mirai.loadCommandPlugin(funCommands);</code></pre>
 				</table>
 				<h5>Returns:</h5>
 				<div class="param-desc">
-					<p>The result of <code>middleware.load</code></p>
+					<p>The return value of <code>middleware.load</code></p>
 				</div>
 				<dl class="param-type"> <dt>
         Type
     </dt>
 					<dd> <span class="param-type">Promise</span> </dd>
 				</dl>
-				<h4 class="name" id="reloadCommandPlugin"><span class="type-signature"></span>reloadCommandPlugin<span class="signature">(plugin)</span><span class="type-signature"> &rarr; {Promise}</span></h4>
+				<h4 class="name" id="reloadCommandPlugin"><span class="type-signature">(async) </span>reloadCommandPlugin<span class="signature">(plugin)</span><span class="type-signature"> &rarr; {Promise}</span></h4>
 				<dl class="details"> </dl>
 				<div class="description">
 					<p>Reload a plugin by searching for a plugin with the same name and replacing it</p>
@@ -537,14 +553,14 @@ mirai.loadCommandPlugin(funCommands);</code></pre>
 				</table>
 				<h5>Returns:</h5>
 				<div class="param-desc">
-					<p>Rejects with an error, if there is one</p>
+					<p>The return value of <code>plugin.load</code></p>
 				</div>
 				<dl class="param-type"> <dt>
         Type
     </dt>
 					<dd> <span class="param-type">Promise</span> </dd>
 				</dl>
-				<h4 class="name" id="reloadEventPlugin"><span class="type-signature"></span>reloadEventPlugin<span class="signature">(plugin)</span><span class="type-signature"> &rarr; {Promise}</span></h4>
+				<h4 class="name" id="reloadEventPlugin"><span class="type-signature">(async) </span>reloadEventPlugin<span class="signature">(plugin)</span><span class="type-signature"> &rarr; {Promise}</span></h4>
 				<dl class="details"> </dl>
 				<div class="description">
 					<p>Reload a plugin by searching for a plugin with the same name and replacing it</p>
@@ -570,14 +586,14 @@ mirai.loadCommandPlugin(funCommands);</code></pre>
 				</table>
 				<h5>Returns:</h5>
 				<div class="param-desc">
-					<p>Rejects with an error, if there is one</p>
+					<p>The return value of <code>plugin.load</code></p>
 				</div>
 				<dl class="param-type"> <dt>
         Type
     </dt>
 					<dd> <span class="param-type">Promise</span> </dd>
 				</dl>
-				<h4 class="name" id="reloadMiddleware"><span class="type-signature"></span>reloadMiddleware<span class="signature">(middleware)</span><span class="type-signature"> &rarr; {Promise}</span></h4>
+				<h4 class="name" id="reloadMiddleware"><span class="type-signature">(async) </span>reloadMiddleware<span class="signature">(middleware)</span><span class="type-signature"> &rarr; {Promise}</span></h4>
 				<dl class="details"> </dl>
 				<div class="description">
 					<p>Reload middleware by searching for middleware with the same name and replacing it</p>
@@ -603,14 +619,14 @@ mirai.loadCommandPlugin(funCommands);</code></pre>
 				</table>
 				<h5>Returns:</h5>
 				<div class="param-desc">
-					<p>Rejects with an error, if there is one</p>
+					<p>The return value of <code>middleware.load</code></p>
 				</div>
 				<dl class="param-type"> <dt>
         Type
     </dt>
 					<dd> <span class="param-type">Promise</span> </dd>
 				</dl>
-				<h4 class="name" id="setAvatar"><span class="type-signature"></span>setAvatar<span class="signature">(url)</span><span class="type-signature"> &rarr; {Promise}</span></h4>
+				<h4 class="name" id="setAvatar"><span class="type-signature">(async) </span>setAvatar<span class="signature">(url)</span><span class="type-signature"> &rarr; {Promise}</span></h4>
 				<dl class="details"> </dl>
 				<div class="description">
 					<p>Sets the bot's avatar from a url</p>
@@ -636,14 +652,55 @@ mirai.loadCommandPlugin(funCommands);</code></pre>
 				</table>
 				<h5>Returns:</h5>
 				<div class="param-desc">
-					<p>Rejects with an error, if there is one. May be a <code>String</code> or <code>Error</code></p>
+					<p>Resolves on completion</p>
 				</div>
 				<dl class="param-type"> <dt>
         Type
     </dt>
 					<dd> <span class="param-type">Promise</span> </dd>
 				</dl>
-				<h4 class="name" id="updateCarbon"><span class="type-signature"></span>updateCarbon<span class="signature">(key<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Promise}</span></h4>
+				<h4 class="name" id="updateBotsOnDiscord"><span class="type-signature">(async) </span>updateBotsOnDiscord<span class="signature">(key<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Promise}</span></h4>
+				<dl class="details"> <dt class="tag-see">See:</dt>
+					<dd class="tag-see">
+						<ul>
+							<li><a href="https://github.com/mzabriskie/axios/blob/master/README.md#response-schema">Axios response</a></li>
+						</ul>
+					</dd>
+				</dl>
+				<div class="description">
+					<p>Updates information on bots.ondiscord.xyz</p>
+				</div>
+				<h5>Parameters:</h5>
+				<table class="params">
+					<thead>
+						<tr>
+							<th>Name</th>
+							<th>Type</th>
+							<th>Attributes</th>
+							<th class="last">Description</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td class="name"><code>key</code></td>
+							<td class="type"> <span class="param-type">String</span> </td>
+							<td class="attributes"> &lt;optional><br> </td>
+							<td class="description last">
+								<p>bots.ondiscord.xyz API key</p>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+				<h5>Returns:</h5>
+				<div class="param-desc">
+					<p>The axios request result or error</p>
+				</div>
+				<dl class="param-type"> <dt>
+        Type
+    </dt>
+					<dd> <span class="param-type">Promise</span> </dd>
+				</dl>
+				<h4 class="name" id="updateCarbon"><span class="type-signature">(async) </span>updateCarbon<span class="signature">(key<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Promise}</span></h4>
 				<dl class="details"> <dt class="tag-see">See:</dt>
 					<dd class="tag-see">
 						<ul>
@@ -677,14 +734,14 @@ mirai.loadCommandPlugin(funCommands);</code></pre>
 				</table>
 				<h5>Returns:</h5>
 				<div class="param-desc">
-					<p>The axios request</p>
+					<p>The axios request result or error</p>
 				</div>
 				<dl class="param-type"> <dt>
         Type
     </dt>
 					<dd> <span class="param-type">Promise</span> </dd>
 				</dl>
-				<h4 class="name" id="updateDiscordBots"><span class="type-signature"></span>updateDiscordBots<span class="signature">(key<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Promise}</span></h4>
+				<h4 class="name" id="updateDiscordBots"><span class="type-signature">(async) </span>updateDiscordBots<span class="signature">(key<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Promise}</span></h4>
 				<dl class="details"> <dt class="tag-see">See:</dt>
 					<dd class="tag-see">
 						<ul>
@@ -718,14 +775,14 @@ mirai.loadCommandPlugin(funCommands);</code></pre>
 				</table>
 				<h5>Returns:</h5>
 				<div class="param-desc">
-					<p>The axios request</p>
+					<p>The axios request result or error</p>
 				</div>
 				<dl class="param-type"> <dt>
         Type
     </dt>
 					<dd> <span class="param-type">Promise</span> </dd>
 				</dl>
-				<h4 class="name" id="updateDiscordBotsOrg"><span class="type-signature"></span>updateDiscordBotsOrg<span class="signature">(key<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Promise}</span></h4>
+				<h4 class="name" id="updateDiscordBotsOrg"><span class="type-signature">(async) </span>updateDiscordBotsOrg<span class="signature">(key<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Promise}</span></h4>
 				<dl class="details"> <dt class="tag-see">See:</dt>
 					<dd class="tag-see">
 						<ul>
@@ -759,7 +816,7 @@ mirai.loadCommandPlugin(funCommands);</code></pre>
 				</table>
 				<h5>Returns:</h5>
 				<div class="param-desc">
-					<p>The axios request</p>
+					<p>The axios request result or error</p>
 				</div>
 				<dl class="param-type"> <dt>
         Type
