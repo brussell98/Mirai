@@ -10,11 +10,15 @@
       <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
 	<link type="text/css" rel="stylesheet" href="styles/prettify.css">
-	<link type="text/css" rel="stylesheet" href="styles/jsdoc.css"> </head>
+	<link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+</head>
 
-<body> <input type="checkbox" id="nav-trigger" class="nav-trigger" /> <label for="nav-trigger" class="navicon-button x">
-  <div class="navicon"></div>
-</label> <label for="nav-trigger" class="overlay"></label>
+<body>
+	<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+	<label for="nav-trigger" class="navicon-button x">
+		<div class="navicon"></div>
+	</label>
+	<label for="nav-trigger" class="overlay"></label>
 	<nav>
 		<h2><a href="index.html">Home</a></h2>
 		<h3>Classes</h3>
@@ -98,7 +102,8 @@
 				<div class="container-overview">
 					<h2>Constructor</h2>
 					<h4 class="name" id="Logger"><span class="type-signature"></span>new Logger<span class="signature">(options<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
-					<dl class="details"> </dl>
+					<dl class="details">
+					</dl>
 					<h5 class="subsection-title">Properties:</h5>
 					<table class="props">
 						<thead>
@@ -111,7 +116,9 @@
 						<tbody>
 							<tr>
 								<td class="name"><code>raven</code></td>
-								<td class="type"> <span class="param-type">RavenClient</span> </td>
+								<td class="type">
+									<span class="param-type">RavenClient</span>
+								</td>
 								<td class="description last">
 									<p>The Raven client used for sentry, if enabled.</p>
 								</td>
@@ -134,8 +141,11 @@
 						<tbody>
 							<tr>
 								<td class="name"><code>options</code></td>
-								<td class="type"> <span class="param-type">Object</span> </td>
-								<td class="attributes"> &lt;optional><br> </td>
+								<td class="type">
+									<span class="param-type">Object</span>
+								</td>
+								<td class="attributes"> &lt;optional><br>
+								</td>
 								<td class="description last">
 									<p>The configuration for the logger</p>
 									<h6>Properties</h6>
@@ -152,18 +162,27 @@
 										<tbody>
 											<tr>
 												<td class="name"><code>timestamps</code></td>
-												<td class="type"> <span class="param-type">Boolean</span> </td>
-												<td class="attributes"> &lt;optional><br> </td>
-												<td class="default"> <code>false</code> </td>
+												<td class="type">
+													<span class="param-type">Boolean</span>
+												</td>
+												<td class="attributes"> &lt;optional><br>
+												</td>
+												<td class="default">
+													<code>false</code>
+												</td>
 												<td class="description last">
 													<p>Add a timestamp to each message logged</p>
 												</td>
 											</tr>
 											<tr>
 												<td class="name"><code>levels</code></td>
-												<td class="type"> <span class="param-type">Object</span> </td>
-												<td class="attributes"> &lt;optional><br> </td>
-												<td class="default"> </td>
+												<td class="type">
+													<span class="param-type">Object</span>
+												</td>
+												<td class="attributes"> &lt;optional><br>
+												</td>
+												<td class="default">
+												</td>
 												<td class="description last">
 													<p>An object deciding what log levels should display</p>
 													<h6>Properties</h6>
@@ -180,45 +199,70 @@
 														<tbody>
 															<tr>
 																<td class="name"><code>log</code></td>
-																<td class="type"> <span class="param-type">Boolean</span> </td>
-																<td class="attributes"> &lt;optional><br> </td>
-																<td class="default"> <code>true</code> </td>
+																<td class="type">
+																	<span class="param-type">Boolean</span>
+																</td>
+																<td class="attributes"> &lt;optional><br>
+																</td>
+																<td class="default">
+																	<code>true</code>
+																</td>
 																<td class="description last">
 																	<p>Show <code>log()</code></p>
 																</td>
 															</tr>
 															<tr>
 																<td class="name"><code>info</code></td>
-																<td class="type"> <span class="param-type">Boolean</span> </td>
-																<td class="attributes"> &lt;optional><br> </td>
-																<td class="default"> <code>true</code> </td>
+																<td class="type">
+																	<span class="param-type">Boolean</span>
+																</td>
+																<td class="attributes"> &lt;optional><br>
+																</td>
+																<td class="default">
+																	<code>true</code>
+																</td>
 																<td class="description last">
 																	<p>Show <code>info()</code></p>
 																</td>
 															</tr>
 															<tr>
 																<td class="name"><code>debug</code></td>
-																<td class="type"> <span class="param-type">Boolean</span> </td>
-																<td class="attributes"> &lt;optional><br> </td>
-																<td class="default"> <code>false</code> </td>
+																<td class="type">
+																	<span class="param-type">Boolean</span>
+																</td>
+																<td class="attributes"> &lt;optional><br>
+																</td>
+																<td class="default">
+																	<code>false</code>
+																</td>
 																<td class="description last">
 																	<p>Show <code>debug()</code></p>
 																</td>
 															</tr>
 															<tr>
 																<td class="name"><code>warning</code></td>
-																<td class="type"> <span class="param-type">Boolean</span> </td>
-																<td class="attributes"> &lt;optional><br> </td>
-																<td class="default"> <code>true</code> </td>
+																<td class="type">
+																	<span class="param-type">Boolean</span>
+																</td>
+																<td class="attributes"> &lt;optional><br>
+																</td>
+																<td class="default">
+																	<code>true</code>
+																</td>
 																<td class="description last">
 																	<p>Show <code>warn()</code></p>
 																</td>
 															</tr>
 															<tr>
 																<td class="name"><code>error</code></td>
-																<td class="type"> <span class="param-type">Boolean</span> </td>
-																<td class="attributes"> &lt;optional><br> </td>
-																<td class="default"> <code>true</code> </td>
+																<td class="type">
+																	<span class="param-type">Boolean</span>
+																</td>
+																<td class="attributes"> &lt;optional><br>
+																</td>
+																<td class="default">
+																	<code>true</code>
+																</td>
 																<td class="description last">
 																	<p>Show <code>error()</code></p>
 																</td>
@@ -229,9 +273,13 @@
 											</tr>
 											<tr>
 												<td class="name"><code>raven</code></td>
-												<td class="type"> <span class="param-type">Object</span> </td>
-												<td class="attributes"> &lt;optional><br> </td>
-												<td class="default"> </td>
+												<td class="type">
+													<span class="param-type">Object</span>
+												</td>
+												<td class="attributes"> &lt;optional><br>
+												</td>
+												<td class="default">
+												</td>
 												<td class="description last">
 													<p>Raven options. If falsy, raven will not be required.</p>
 													<h6>Properties</h6>
@@ -248,54 +296,82 @@
 														<tbody>
 															<tr>
 																<td class="name"><code>url</code></td>
-																<td class="type"> <span class="param-type">String</span> </td>
-																<td class="attributes"> </td>
-																<td class="default"> </td>
+																<td class="type">
+																	<span class="param-type">String</span>
+																</td>
+																<td class="attributes">
+																</td>
+																<td class="default">
+																</td>
 																<td class="description last">
 																	<p>Your project's sentry.io url</p>
 																</td>
 															</tr>
 															<tr>
 																<td class="name"><code>config</code></td>
-																<td class="type"> <span class="param-type">Object</span> </td>
-																<td class="attributes"> &lt;optional><br> </td>
-																<td class="default"> </td>
+																<td class="type">
+																	<span class="param-type">Object</span>
+																</td>
+																<td class="attributes"> &lt;optional><br>
+																</td>
+																<td class="default">
+																</td>
 																<td class="description last">
 																	<p>A custom raven config. For more info check <a href="https://docs.sentry.io/clients/node/config/">their docs</a></p>
 																</td>
 															</tr>
 															<tr>
 																<td class="name"><code>info</code></td>
-																<td class="type"> <span class="param-type">Boolean</span> </td>
-																<td class="attributes"> &lt;optional><br> </td>
-																<td class="default"> <code>false</code> </td>
+																<td class="type">
+																	<span class="param-type">Boolean</span>
+																</td>
+																<td class="attributes"> &lt;optional><br>
+																</td>
+																<td class="default">
+																	<code>false</code>
+																</td>
 																<td class="description last">
 																	<p>Send <code>info()</code> messages to sentry</p>
 																</td>
 															</tr>
 															<tr>
 																<td class="name"><code>debug</code></td>
-																<td class="type"> <span class="param-type">Boolean</span> </td>
-																<td class="attributes"> &lt;optional><br> </td>
-																<td class="default"> <code>false</code> </td>
+																<td class="type">
+																	<span class="param-type">Boolean</span>
+																</td>
+																<td class="attributes"> &lt;optional><br>
+																</td>
+																<td class="default">
+																	<code>false</code>
+																</td>
 																<td class="description last">
 																	<p>Send <code>debug()</code> messages to sentry</p>
 																</td>
 															</tr>
 															<tr>
 																<td class="name"><code>warning</code></td>
-																<td class="type"> <span class="param-type">Boolean</span> </td>
-																<td class="attributes"> &lt;optional><br> </td>
-																<td class="default"> <code>false</code> </td>
+																<td class="type">
+																	<span class="param-type">Boolean</span>
+																</td>
+																<td class="attributes"> &lt;optional><br>
+																</td>
+																<td class="default">
+																	<code>false</code>
+																</td>
 																<td class="description last">
 																	<p>Send <code>warn()</code> messages to sentry. If an <code>Error</code> is passed in the arguments, that will be sent alone.</p>
 																</td>
 															</tr>
 															<tr>
 																<td class="name"><code>error</code></td>
-																<td class="type"> <span class="param-type">Boolean</span> </td>
-																<td class="attributes"> &lt;optional><br> </td>
-																<td class="default"> <code>true</code> </td>
+																<td class="type">
+																	<span class="param-type">Boolean</span>
+																</td>
+																<td class="attributes"> &lt;optional><br>
+																</td>
+																<td class="default">
+																	<code>true</code>
+																</td>
 																<td class="description last">
 																	<p>Send <code>error()</code> errors to sentry. If an <code>Error</code> is passed in the arguments, that will be sent alone.</p>
 																</td>
@@ -313,43 +389,52 @@
 				</div>
 				<h3 class="subsection-title">Members</h3>
 				<h4 class="name" id="timestamp"><span class="type-signature"></span>timestamp<span class="type-signature"> :String</span></h4>
-				<dl class="details"> </dl>
+				<dl class="details">
+				</dl>
 				<div class="description">
 					<p>A formatted timestamp</p>
 				</div>
 				<h5>Type:</h5>
 				<ul>
-					<li> <span class="param-type">String</span> </li>
+					<li>
+						<span class="param-type">String</span>
+					</li>
 				</ul>
 				<h3 class="subsection-title">Methods</h3>
 				<h4 class="name" id="debug"><span class="type-signature"></span>debug<span class="signature">()</span><span class="type-signature"></span></h4>
-				<dl class="details"> </dl>
+				<dl class="details">
+				</dl>
 				<div class="description">
 					<p>Log debugging information</p>
 				</div>
 				<h4 class="name" id="error"><span class="type-signature"></span>error<span class="signature">()</span><span class="type-signature"></span></h4>
-				<dl class="details"> </dl>
+				<dl class="details">
+				</dl>
 				<div class="description">
 					<p>Log an error</p>
 				</div>
 				<h4 class="name" id="info"><span class="type-signature"></span>info<span class="signature">()</span><span class="type-signature"></span></h4>
-				<dl class="details"> </dl>
+				<dl class="details">
+				</dl>
 				<div class="description">
 					<p>Log informal text</p>
 				</div>
 				<h4 class="name" id="log"><span class="type-signature"></span>log<span class="signature">()</span><span class="type-signature"></span></h4>
-				<dl class="details"> </dl>
+				<dl class="details">
+				</dl>
 				<div class="description">
 					<p>Log generic text</p>
 				</div>
 				<h4 class="name" id="warn"><span class="type-signature"></span>warn<span class="signature">()</span><span class="type-signature"></span></h4>
-				<dl class="details"> </dl>
+				<dl class="details">
+				</dl>
 				<div class="description">
 					<p>Log a warning</p>
 				</div>
 			</article>
 		</section>
-	</div> <br class="clear">
+	</div>
+	<br class="clear">
 	<!--<footer>
     Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
 </footer>-->
