@@ -10,11 +10,15 @@
       <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
 	<link type="text/css" rel="stylesheet" href="styles/prettify.css">
-	<link type="text/css" rel="stylesheet" href="styles/jsdoc.css"> </head>
+	<link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+</head>
 
-<body> <input type="checkbox" id="nav-trigger" class="nav-trigger" /> <label for="nav-trigger" class="navicon-button x">
-  <div class="navicon"></div>
-</label> <label for="nav-trigger" class="overlay"></label>
+<body>
+	<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+	<label for="nav-trigger" class="navicon-button x">
+		<div class="navicon"></div>
+	</label>
+	<label for="nav-trigger" class="overlay"></label>
 	<nav>
 		<h2><a href="index.html">Home</a></h2>
 		<h3>Classes</h3>
@@ -98,29 +102,36 @@
 				<div class="container-overview">
 					<h2>Constructor</h2>
 					<h4 class="name" id="AbstractCommand"><span class="type-signature">(abstract) </span>new AbstractCommand<span class="signature">()</span><span class="type-signature"></span></h4>
-					<dl class="details"> </dl>
+					<dl class="details">
+					</dl>
 					<div class="description">
 						<p>Creates a new AbstractCommand</p>
 					</div>
 				</div>
 				<h3 class="subsection-title">Members</h3>
 				<h4 class="name" id="description"><span class="type-signature">(abstract) </span>description<span class="type-signature"> :String</span></h4>
-				<dl class="details"> </dl>
+				<dl class="details">
+				</dl>
 				<div class="description">
 					<p>A description of the command</p>
 				</div>
 				<h5>Type:</h5>
 				<ul>
-					<li> <span class="param-type">String</span> </li>
+					<li>
+						<span class="param-type">String</span>
+					</li>
 				</ul>
 				<h4 class="name" id="name"><span class="type-signature">(abstract) </span>name<span class="type-signature"> :String</span></h4>
-				<dl class="details"> </dl>
+				<dl class="details">
+				</dl>
 				<div class="description">
 					<p>The name of the command</p>
 				</div>
 				<h5>Type:</h5>
 				<ul>
-					<li> <span class="param-type">String</span> </li>
+					<li>
+						<span class="param-type">String</span>
+					</li>
 				</ul>
 				<h3 class="subsection-title">Methods</h3>
 				<h4 class="name" id="_sendMessage"><span class="type-signature">(private) </span>_sendMessage<span class="signature">(channel, content, options<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Promise.&lt;Message>}</span></h4>
@@ -139,24 +150,33 @@
 					<tbody>
 						<tr>
 							<td class="name"><code>channel</code></td>
-							<td class="type"> <span class="param-type">Channel</span> </td>
-							<td class="attributes"> </td>
+							<td class="type">
+								<span class="param-type">Channel</span>
+							</td>
+							<td class="attributes">
+							</td>
 							<td class="description last">
 								<p>The channel to create the message in</p>
 							</td>
 						</tr>
 						<tr>
 							<td class="name"><code>content</code></td>
-							<td class="type"> <span class="param-type">String</span> | <span class="param-type">Object</span> </td>
-							<td class="attributes"> </td>
+							<td class="type">
+								<span class="param-type">String</span> | <span class="param-type">Object</span>
+							</td>
+							<td class="attributes">
+							</td>
 							<td class="description last">
 								<p>The content to be passed to Eris.Client#createMessage</p>
 							</td>
 						</tr>
 						<tr>
 							<td class="name"><code>options</code></td>
-							<td class="type"> <span class="param-type">Object</span> </td>
-							<td class="attributes"> &lt;optional><br> </td>
+							<td class="type">
+								<span class="param-type">Object</span>
+							</td>
+							<td class="attributes"> &lt;optional><br>
+							</td>
 							<td class="description last">
 								<p>Options for sending the message</p>
 							</td>
@@ -167,13 +187,15 @@
 				<div class="param-desc">
 					<p>The sent message</p>
 				</div>
-				<dl class="param-type"> <dt>
-        Type
-    </dt>
-					<dd> <span class="param-type">Promise.&lt;Message></span> </dd>
+				<dl class="param-type">
+					<dt> Type </dt>
+					<dd>
+						<span class="param-type">Promise.&lt;Message></span>
+					</dd>
 				</dl>
 				<h4 class="name" id="awaitMessage"><span class="type-signature"></span>awaitMessage<span class="signature">(trigger, action, timeout<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Number}</span></h4>
-				<dl class="details"> </dl>
+				<dl class="details">
+				</dl>
 				<div class="description">
 					<p>Await a message, the trigger a function</p>
 				</div>
@@ -190,24 +212,33 @@
 					<tbody>
 						<tr>
 							<td class="name"><code>trigger</code></td>
-							<td class="type"> <span class="param-type">function</span> </td>
-							<td class="attributes"> </td>
+							<td class="type">
+								<span class="param-type">function</span>
+							</td>
+							<td class="attributes">
+							</td>
 							<td class="description last">
-								<p>A funcion that takes a Message and returns a Boolean</p>
+								<p>A function that takes a Message and returns a Boolean</p>
 							</td>
 						</tr>
 						<tr>
 							<td class="name"><code>action</code></td>
-							<td class="type"> <span class="param-type">function</span> </td>
-							<td class="attributes"> </td>
+							<td class="type">
+								<span class="param-type">function</span>
+							</td>
+							<td class="attributes">
+							</td>
 							<td class="description last">
 								<p>A function to be executed when <code>trigger</code> returns true</p>
 							</td>
 						</tr>
 						<tr>
 							<td class="name"><code>timeout</code></td>
-							<td class="type"> <span class="param-type">Number</span> </td>
-							<td class="attributes"> &lt;optional><br> </td>
+							<td class="type">
+								<span class="param-type">Number</span>
+							</td>
+							<td class="attributes"> &lt;optional><br>
+							</td>
 							<td class="description last">
 								<p>Delete the await after this many milliseconds</p>
 							</td>
@@ -218,13 +249,15 @@
 				<div class="param-desc">
 					<p>The unique id of the await</p>
 				</div>
-				<dl class="param-type"> <dt>
-        Type
-    </dt>
-					<dd> <span class="param-type">Number</span> </dd>
+				<dl class="param-type">
+					<dt> Type </dt>
+					<dd>
+						<span class="param-type">Number</span>
+					</dd>
 				</dl>
 				<h4 class="name" id="destroy"><span class="type-signature"></span>destroy<span class="signature">()</span><span class="type-signature"> &rarr; {Promise}</span></h4>
-				<dl class="details"> </dl>
+				<dl class="details">
+				</dl>
 				<div class="description">
 					<p>Destroys/unloads the command</p>
 				</div>
@@ -232,13 +265,15 @@
 				<div class="param-desc">
 					<p>Resolves with no value</p>
 				</div>
-				<dl class="param-type"> <dt>
-        Type
-    </dt>
-					<dd> <span class="param-type">Promise</span> </dd>
+				<dl class="param-type">
+					<dt> Type </dt>
+					<dd>
+						<span class="param-type">Promise</span>
+					</dd>
 				</dl>
 				<h4 class="name" id="escapeMarkdown"><span class="type-signature"></span>escapeMarkdown<span class="signature">(text)</span><span class="type-signature"> &rarr; {String}</span></h4>
-				<dl class="details"> </dl>
+				<dl class="details">
+				</dl>
 				<div class="description">
 					<p>Escape any discord markdown present in a string</p>
 				</div>
@@ -254,7 +289,9 @@
 					<tbody>
 						<tr>
 							<td class="name"><code>text</code></td>
-							<td class="type"> <span class="param-type">String</span> </td>
+							<td class="type">
+								<span class="param-type">String</span>
+							</td>
 							<td class="description last">
 								<p>The text to escape</p>
 							</td>
@@ -265,13 +302,15 @@
 				<div class="param-desc">
 					<p>The escaped text</p>
 				</div>
-				<dl class="param-type"> <dt>
-        Type
-    </dt>
-					<dd> <span class="param-type">String</span> </dd>
+				<dl class="param-type">
+					<dt> Type </dt>
+					<dd>
+						<span class="param-type">String</span>
+					</dd>
 				</dl>
 				<h4 class="name" id="load"><span class="type-signature"></span>load<span class="signature">(parent)</span><span class="type-signature"> &rarr; {Promise}</span></h4>
-				<dl class="details"> </dl>
+				<dl class="details">
+				</dl>
 				<div class="description">
 					<p>Loads the command</p>
 				</div>
@@ -287,7 +326,9 @@
 					<tbody>
 						<tr>
 							<td class="name"><code>parent</code></td>
-							<td class="type"> <span class="param-type"><a href="AbstractCommandPlugin.html">AbstractCommandPlugin</a></span> </td>
+							<td class="type">
+								<span class="param-type"><a href="AbstractCommandPlugin.html">AbstractCommandPlugin</a></span>
+							</td>
 							<td class="description last">
 								<p>The plugin managing this command</p>
 							</td>
@@ -298,13 +339,15 @@
 				<div class="param-desc">
 					<p>Resolves with <code>this</code></p>
 				</div>
-				<dl class="param-type"> <dt>
-        Type
-    </dt>
-					<dd> <span class="param-type">Promise</span> </dd>
+				<dl class="param-type">
+					<dt> Type </dt>
+					<dd>
+						<span class="param-type">Promise</span>
+					</dd>
 				</dl>
 				<h4 class="name" id="sendMessage"><span class="type-signature"></span>sendMessage<span class="signature">(message, content, options<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Promise.&lt;Message>}</span></h4>
-				<dl class="details"> <dt class="tag-see">See:</dt>
+				<dl class="details">
+					<dt class="tag-see">See:</dt>
 					<dd class="tag-see">
 						<ul>
 							<li><a href="http://eris.tachibana.erendale.abal.moe/Eris/docs/Client#function-createMessage">Eris.Client#createMessage</a></li>
@@ -327,24 +370,33 @@
 					<tbody>
 						<tr>
 							<td class="name"><code>message</code></td>
-							<td class="type"> <span class="param-type">Message</span> </td>
-							<td class="attributes"> </td>
+							<td class="type">
+								<span class="param-type">Message</span>
+							</td>
+							<td class="attributes">
+							</td>
 							<td class="description last">
 								<p>The message to respond to</p>
 							</td>
 						</tr>
 						<tr>
 							<td class="name"><code>content</code></td>
-							<td class="type"> <span class="param-type">String</span> | <span class="param-type">Object</span> </td>
-							<td class="attributes"> </td>
+							<td class="type">
+								<span class="param-type">String</span> | <span class="param-type">Object</span>
+							</td>
+							<td class="attributes">
+							</td>
 							<td class="description last">
 								<p>The content to be passed to Eris.Client#createMessage</p>
 							</td>
 						</tr>
 						<tr>
 							<td class="name"><code>options</code></td>
-							<td class="type"> <span class="param-type">Object</span> </td>
-							<td class="attributes"> &lt;optional><br> </td>
+							<td class="type">
+								<span class="param-type">Object</span>
+							</td>
+							<td class="attributes"> &lt;optional><br>
+							</td>
 							<td class="description last">
 								<p>Options for sending the message</p>
 								<h6>Properties</h6>
@@ -361,47 +413,70 @@
 									<tbody>
 										<tr>
 											<td class="name"><code>deleteTrigger</code></td>
-											<td class="type"> <span class="param-type">Boolean</span> </td>
-											<td class="attributes"> &lt;optional><br> </td>
-											<td class="default"> <code>false</code> </td>
+											<td class="type">
+												<span class="param-type">Boolean</span>
+											</td>
+											<td class="attributes"> &lt;optional><br>
+											</td>
+											<td class="default">
+												<code>false</code>
+											</td>
 											<td class="description last">
 												<p>Delete the message that triggered the command</p>
 											</td>
 										</tr>
 										<tr>
 											<td class="name"><code>deleteAfter</code></td>
-											<td class="type"> <span class="param-type">Number</span> </td>
-											<td class="attributes"> &lt;optional><br> </td>
-											<td class="default"> <code>0</code> </td>
+											<td class="type">
+												<span class="param-type">Number</span>
+											</td>
+											<td class="attributes"> &lt;optional><br>
+											</td>
+											<td class="default">
+												<code>0</code>
+											</td>
 											<td class="description last">
 												<p>Delete the created message after this many milliseconds</p>
 											</td>
 										</tr>
 										<tr>
 											<td class="name"><code>DM</code></td>
-											<td class="type"> <span class="param-type">Boolean</span> </td>
-											<td class="attributes"> &lt;optional><br> </td>
-											<td class="default"> <code>false</code> </td>
+											<td class="type">
+												<span class="param-type">Boolean</span>
+											</td>
+											<td class="attributes"> &lt;optional><br>
+											</td>
+											<td class="default">
+												<code>false</code>
+											</td>
 											<td class="description last">
 												<p>Send in a Direct Message</p>
 											</td>
 										</tr>
 										<tr>
 											<td class="name"><code>file</code></td>
-											<td class="type"> <span class="param-type">Object</span> </td>
-											<td class="attributes"> &lt;optional><br> </td>
-											<td class="default"> </td>
+											<td class="type">
+												<span class="param-type">Object</span>
+											</td>
+											<td class="attributes"> &lt;optional><br>
+											</td>
+											<td class="default">
+											</td>
 											<td class="description last">
 												<p>The file to be sent with the message. Format as shown in the Eris docs</p>
 											</td>
 										</tr>
 										<tr>
 											<td class="name"><code>paginate</code></td>
-											<td class="type"> <span class="param-type">Boolean</span> </td>
-											<td class="attributes"> &lt;optional><br> </td>
-											<td class="default"> </td>
+											<td class="type">
+												<span class="param-type">Boolean</span>
+											</td>
+											<td class="attributes"> &lt;optional><br>
+											</td>
+											<td class="default">
+											</td>
 											<td class="description last">
-												<p>Split the message at 2000 charcter intervals. Used to send log messages that would normally fail</p>
+												<p>Split the message at 2000 character intervals. Used to send log messages that would normally fail</p>
 											</td>
 										</tr>
 									</tbody>
@@ -414,13 +489,15 @@
 				<div class="param-desc">
 					<p>The sent message, or nothing if pagination is true</p>
 				</div>
-				<dl class="param-type"> <dt>
-        Type
-    </dt>
-					<dd> <span class="param-type">Promise.&lt;Message></span> </dd>
+				<dl class="param-type">
+					<dt> Type </dt>
+					<dd>
+						<span class="param-type">Promise.&lt;Message></span>
+					</dd>
 				</dl>
 				<h4 class="name" id="userOnCooldown"><span class="type-signature"></span>userOnCooldown<span class="signature">(userID, waitTime)</span><span class="type-signature"> &rarr; {Boolean}</span></h4>
-				<dl class="details"> </dl>
+				<dl class="details">
+				</dl>
 				<div class="description">
 					<p>Check if a user is on cooldown</p>
 				</div>
@@ -436,14 +513,18 @@
 					<tbody>
 						<tr>
 							<td class="name"><code>userID</code></td>
-							<td class="type"> <span class="param-type">String</span> </td>
+							<td class="type">
+								<span class="param-type">String</span>
+							</td>
 							<td class="description last">
 								<p>The id of the user to check for</p>
 							</td>
 						</tr>
 						<tr>
 							<td class="name"><code>waitTime</code></td>
-							<td class="type"> <span class="param-type">Number</span> </td>
+							<td class="type">
+								<span class="param-type">Number</span>
+							</td>
 							<td class="description last">
 								<p>If not on cooldown, put them on cooldown for this many milliseconds</p>
 							</td>
@@ -454,14 +535,16 @@
 				<div class="param-desc">
 					<p>If the user is still on cooldown</p>
 				</div>
-				<dl class="param-type"> <dt>
-        Type
-    </dt>
-					<dd> <span class="param-type">Boolean</span> </dd>
+				<dl class="param-type">
+					<dt> Type </dt>
+					<dd>
+						<span class="param-type">Boolean</span>
+					</dd>
 				</dl>
 			</article>
 		</section>
-	</div> <br class="clear">
+	</div>
+	<br class="clear">
 	<!--<footer>
     Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
 </footer>-->
