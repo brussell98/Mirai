@@ -1,11 +1,10 @@
 /* eslint-disable require-jsdoc */
-
-const Mirai = require('mirai-bot-core'),
-	mirai = new Mirai({ /* config here */ }),
-	MongoDB = require('./MongoMiddle'),
-	AbstractCommandPlugin = require('mirai-bot-core/lib/Base/AbstractCommandPlugin');
-
 global.Promise = require("bluebird");
+
+const Mirai = require('mirai-bot-core');
+const mirai = new Mirai({ /* config here */ });
+const MongoDB = require('./MongoMiddle');
+const AbstractCommandPlugin = require('mirai-bot-core/lib/Base/AbstractCommandPlugin');
 
 mirai.connect()
 	.then(() => mirai.loadMiddleware(MongoDB))
@@ -43,18 +42,17 @@ class MongoTest extends AbstractCommandPlugin {
 	}
 
 	handle(message) {
-		if (message.content === this.prefix + 'find') {
+		if (message.content === this.prefix + 'find')
 			this.database.findOne('examples', { id: message.author.id }, null, { mUseCache: true, lean: true }).then(doc => {
 				console.log(doc);
 			});
-		} else if (message.content === this.prefix + 'create') {
+		else if (message.content === this.prefix + 'create')
 			this.database.models.examples.create({ id: message.author.id, uses: 0 }).then(() => {
 				console.log('Created document');
 			});
-		} else if (message.content === this.prefix + 'update') {
+		else if (message.content === this.prefix + 'update')
 			this.database.update('examples', { id: message.author.id }, { $inc: { uses: 1 } }).then(() => {
 				console.log('Increased uses by 1');
 			});
-		}
 	}
 }

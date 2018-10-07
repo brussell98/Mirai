@@ -4,8 +4,8 @@
 // Allows plugins to access a Mongo database
 // Includes caching with options.mUseCache to reduce delay
 
-const Mongoose = require('mongoose'),
-	Schema = Mongoose.Schema;
+const Mongoose = require('mongoose');
+const Schema = Mongoose.Schema;
 
 var exampleSchema = new Schema({
 	id: String,
@@ -27,9 +27,10 @@ class MongoDBMiddleware {
 		return new Promise(resolve => {
 			this.bot = bot;
 			Mongoose.Promise = global.Promise;
-			Mongoose.connect(this.URI);
+			Mongoose.connect(this.URI, { useNewUrlParser: true });
 			Mongoose.connection.on('error', this.bot.logger.error.bind(this.bot.logger, 'Mongoose error:'));
 			Mongoose.connection.once('open', () => this.bot.logger.info('Mongoose Connected'));
+			Mongoose.set('useCreateIndex', true);
 			return resolve(this);
 		});
 	}
@@ -66,14 +67,14 @@ class MongoDBMiddleware {
 		if (conditions.hasOwnProperty('id'))
 			this.invalidate(collection, conditions.id);
 
-		return this.models[collection].update(conditions, doc, options);
+		return this.models[collection].updateOne(conditions, doc, options);
 	}
 
 	remove(collection, conditions) {
 		if (conditions.hasOwnProperty('id'))
 			this.invalidate(collection, conditions.id);
 
-		return this.models[collection].remove(conditions);
+		return this.models[collection].deleteOne(conditions);
 	}
 }
 
